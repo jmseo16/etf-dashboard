@@ -28,7 +28,15 @@ netlist before it is handed over.
    ```
    Check against `references/style_rules.md` (mirror symmetry, VDD top / ground bottom,
    PMOS above NMOS, loads above drains, tails centred, no overlapping text). Lint must be 0.
-5. **Fix recognition if needed** with an annotations file and rebuild with
+5. **Viewer self-test** (whenever the viewer or renderer changed, and before delivering):
+   ```bash
+   node scripts/ui_selftest.js OUT.html
+   ```
+   Presses every control on desktop and on an emulated phone (real touch events: pan,
+   pinch, thumb taps) and asserts the drawing stays put / on screen, toggles only change
+   labels, navigation lands on the right cell, no tooltip is left behind, no JS errors.
+   Must end with `0 failed`.
+6. **Fix recognition if needed** with an annotations file and rebuild with
    `--annotations ann.json`:
    ```json
    {"cells": {"MY_SLICER": {"class": "latch"}, "TOP__AUTO0": {"class": "summer", "label": "Summer"}},
@@ -37,7 +45,7 @@ netlist before it is handed over.
    Classes: `ctle, buffer, diff_buffer, amplifier, comparator, inverter, nand, nor, and, or, xor,
    summer, latch, dff, mux, dfe, generic`. `mos_types` maps model names whose N/P type cannot be
    guessed (model names are never shown in the drawing).
-6. **Deliver** the HTML and summarise: hierarchy, recognised blocks (with reasons), auto-blocks
+7. **Deliver** the HTML and summarise: hierarchy, recognised blocks (with reasons), auto-blocks
    created, verification result, anything that needed an override.
 
 ## What the tool does automatically
@@ -68,4 +76,5 @@ netlist before it is handed over.
 - `scripts/hsch/render.py`, `assets/viewer.*` – HTML/SVG + viewer
 - `scripts/hsch/verify.py` – connectivity extraction from the drawing + visual lint
 - `scripts/screenshot.js` – PNG per view for visual review
+- `scripts/ui_selftest.js` – automated test of every viewer control (desktop + phone)
 - `references/style_rules.md` – the drawing rules (from the user's reference figures)

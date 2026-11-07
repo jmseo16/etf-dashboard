@@ -35,13 +35,15 @@ body {
 .crumbs .sep { color: var(--ui-mute); }
 .tools { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
 .tools label { display: inline-flex; gap: 4px; align-items: center; cursor: pointer; user-select: none; }
+.bar, .side { touch-action: manipulation; }   /* no double-tap zoom eating quick taps */
 .tools button, .tools select {
   font: inherit; padding: 3px 9px; border: 1px solid var(--ui-line); border-radius: 5px;
   background: #fff; color: var(--ui-fg); cursor: pointer;
 }
 .tools button:hover { border-color: #aaa; }
 main { flex: 1; display: flex; min-height: 0; }
-.canvas { flex: 1; position: relative; background: var(--paper); overflow: hidden; min-width: 0; }
+.canvas { flex: 1; position: relative; background: var(--paper); overflow: hidden; min-width: 0;
+  touch-action: none; overscroll-behavior: contain; }
 .view { position: absolute; inset: 0; }
 .view[hidden] { display: none; }
 svg.sch { width: 100%; height: 100%; display: block; cursor: grab; user-select: none; }
@@ -1083,6 +1085,33 @@ body:not(.show-net) .lbl-net { display: none; }
   function store(k, v) { try { localStorage.setItem("hsch:" + k, v); } catch (e) {} }
   function load(k) { try { return localStorage.getItem("hsch:" + k); } catch (e) { return null; } }
 
+  // ---------------------------------------------------------------- reliable taps
+  // Touch browsers drop the click of a tap that follows a pan/fling within ~300 ms and
+  // delay clicks in general. On touch we act on the finger-up of a short tap and swallow
+  // the click that may follow; mouse and keyboard keep using the normal click.
+  var lastTouch = 0;
+  var TAP_SLOP = 12;
+  function onTap(el, fn) {
+    var down = null, fired = 0;
+    el.addEventListener("pointerdown", function (ev) {
+      if (ev.pointerType !== "mouse") { lastTouch = Date.now(); down = { id: ev.pointerId, x: ev.clientX, y: ev.clientY }; }
+    });
+    el.addEventListener("pointerup", function (ev) {
+      if (!down || ev.pointerId !== down.id) return;
+      var d = Math.abs(ev.clientX - down.x) + Math.abs(ev.clientY - down.y);
+      down = null;
+      lastTouch = Date.now();
+      if (d > TAP_SLOP) return;
+      fired = Date.now();
+      fn(ev, false);
+    });
+    el.addEventListener("pointercancel", function () { down = null; });
+    el.addEventListener("click", function (ev) {
+      if (Date.now() - fired < 800) { ev.preventDefault(); ev.stopPropagation(); return; }
+      fn(ev, true);
+    }, true);
+  }
+
   // ---------------------------------------------------------------- toggles
   var TOGGLES = { wl: "hide-wl", val: "hide-val", name: "hide-name", net: "show-net" };
   Array.prototype.forEach.call(document.querySelectorAll("[data-toggle]"), function (cb) {
@@ -1096,7 +1125,12 @@ body:not(.show-net) .lbl-net { display: none; }
       else document.body.classList.toggle(cls, on);
       store("t-" + key, on ? "1" : "0");
     }
-    cb.addEventListener("change", apply);
+    cb.addEventListener("change", apply);         // mouse / keyboard (native toggle)
+    onTap(cb.closest("label") || cb, function (ev, fromClick) {
+      if (fromClick) return;                      // native click toggles, change -> apply
+      cb.checked = !cb.checked;                   // touch: toggle on finger-up
+      apply();
+    });
     apply();
   });
 
@@ -1110,6 +1144,7 @@ body:not(.show-net) .lbl-net { display: none; }
     sticky = null;
     clearHL();
     hideTip();   // a tooltip must never survive a change of view
+    resetGesture();
     if (!viewBoxes[cell]) fit(cell);
     renderCrumbs();
     renderSide();
@@ -1137,7 +1172,7 @@ body:not(.show-net) .lbl-net { display: none; }
       var info = cellInfo(s.cell);
       a.textContent = (s.inst ? s.inst + " : " : "") + (info.display || s.cell);
       if (i === stack.length - 1) a.className = "cur";
-      else a.addEventListener("click", function () { stack = stack.slice(0, i + 1); show(s.cell, true); });
+      else onTap(a, function () { stack = stack.slice(0, i + 1); show(s.cell, true); });
       crumbs.appendChild(a);
     });
   }
@@ -1182,7 +1217,7 @@ body:not(.show-net) .lbl-net { display: none; }
       }
     }
     (info.warnings || []).forEach(function (w) { h += '<div class="warn">' + esc(w) + "</div>"; });
-    h += '<h3>사용법</h3><div class="why">블록 클릭 → 내부 보기 · Esc → 상위 · 휠 → 확대/축소 · 드래그 → 이동 · 넷 클릭 → 강조 고정 · F → 화면 맞춤</div>';
+    h += '<h3>사용법</h3><div class="why">블록 클릭/탭 → 내부 보기 · Esc → 상위 · 휠 또는 두 손가락 → 확대/축소 · 드래그 → 이동 · 넷 클릭 → 강조 고정 · 소자 탭 → 정보 · F/더블클릭 → 화면 맞춤</div>';
     side.innerHTML = h;
     Array.prototype.forEach.call(side.querySelectorAll(".netlink"), function (el) {
       el.addEventListener("mouseenter", function () { hl(el.getAttribute("data-net")); });
@@ -1218,25 +1253,27 @@ body:not(.show-net) .lbl-net { display: none; }
     return t;
   }
 
-  canvas.addEventListener("mousemove", function (ev) {
-    var g = ev.target.closest ? ev.target.closest(".symg") : null;
-    var netEl = ev.target.closest ? ev.target.closest("[data-net]") : null;
+  function showTipFor(target, cx, cy) {
+    var g = target.closest ? target.closest(".symg") : null;
+    var netEl = target.closest ? target.closest("[data-net]") : null;
     var r = canvas.getBoundingClientRect();
-    if (g && !netEl) {
-      tip.textContent = devTip(current(), g.getAttribute("data-inst"));
-      tip.hidden = false;
-      tip.style.left = Math.min(ev.clientX - r.left + 14, r.width - 290) + "px";
-      tip.style.top = (ev.clientY - r.top + 14) + "px";
-    } else if (netEl) {
-      tip.textContent = "net: " + netEl.getAttribute("data-net");
-      tip.hidden = false;
-      tip.style.left = Math.min(ev.clientX - r.left + 14, r.width - 290) + "px";
-      tip.style.top = (ev.clientY - r.top + 14) + "px";
-      if (!sticky) hl(netEl.getAttribute("data-net"));
-    } else {
-      tip.hidden = true;
-      if (!sticky) clearHL();
-    }
+    var text = null;
+    if (g && !netEl) text = devTip(current(), g.getAttribute("data-inst"));
+    else if (netEl) text = "net: " + netEl.getAttribute("data-net");
+    if (!text) { hideTip(); return null; }
+    tip.textContent = text;
+    tip.hidden = false;
+    tip.style.left = Math.max(4, Math.min(cx - r.left + 14, r.width - 290)) + "px";
+    tip.style.top = Math.max(4, Math.min(cy - r.top + 14, r.height - 60)) + "px";
+    return netEl;
+  }
+  canvas.addEventListener("mousemove", function (ev) {
+    // touch screens emit compatibility mouse events after a tap: ignore them, or a
+    // tooltip pops up on whatever is under the finger in the view we just opened
+    if (Date.now() - lastTouch < 800) return;
+    var netEl = showTipFor(ev.target, ev.clientX, ev.clientY);
+    if (netEl) { if (!sticky) hl(netEl.getAttribute("data-net")); }
+    else if (!sticky) clearHL();
   });
   function hideTip() { tip.hidden = true; tip.textContent = ""; }
   canvas.addEventListener("mouseleave", function () { hideTip(); if (!sticky) clearHL(); });
@@ -1252,61 +1289,154 @@ body:not(.show-net) .lbl-net { display: none; }
     setVB(cell, [b[0], b[1], b[2] - b[0], b[3] - b[1]]);
   }
 
-  var drag = null, moved = false;
+  // ---------------------------------------------------------------- pointer gestures
+  // One finger / mouse drag = pan, two fingers = pinch zoom, wheel = zoom.
+  // Every pointer is tracked by id and captured by the canvas, and pointercancel /
+  // lostpointercapture end the gesture, so a cancelled touch can never leave a stale
+  // drag behind (that stale drag is what threw the drawing off-screen on the next tap).
+  var pointers = {};
+  var gesture = null;
+  var moved = false;
+  var multi = false;
+
+  function geom(s, vb) {
+    var r = s.getBoundingClientRect();
+    var sc = Math.min(r.width / vb[2], r.height / vb[3]) || 1;
+    return { r: r, sc: sc, ox: (r.width - vb[2] * sc) / 2, oy: (r.height - vb[3] * sc) / 2 };
+  }
+  function toUser(s, vb, cx, cy) {
+    var g = geom(s, vb);
+    return { x: vb[0] + (cx - g.r.left - g.ox) / g.sc, y: vb[1] + (cy - g.r.top - g.oy) / g.sc };
+  }
+  function clampK(cell, vb, k) {
+    var b = svgOf(cell).getAttribute("data-bounds").split(",").map(Number);
+    var w0 = b[2] - b[0];
+    var w = vb[2] * k;
+    if (w < w0 * 0.05) k = (w0 * 0.05) / vb[2];
+    if (w > w0 * 20) k = (w0 * 20) / vb[2];
+    return k;
+  }
+  function zoomAt(vb, mx, my, k) {
+    return [mx - (mx - vb[0]) * k, my - (my - vb[1]) * k, vb[2] * k, vb[3] * k];
+  }
+  function resetGesture() { pointers = {}; gesture = null; }
+  function startGesture() {
+    var ids = Object.keys(pointers);
+    if (!ids.length) { gesture = null; return; }
+    var vb = getVB(current()).slice();
+    if (ids.length === 1) {
+      var p = pointers[ids[0]];
+      gesture = { vb: vb, x: p.x, y: p.y };
+    } else {
+      var a = pointers[ids[0]], b = pointers[ids[1]];
+      gesture = { vb: vb, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, dist: Math.hypot(a.x - b.x, a.y - b.y) || 1 };
+    }
+  }
+  function endPointer(ev) {
+    // lostpointercapture bubbles up from the element that held the implicit touch capture
+    // when the canvas takes over; only the canvas losing capture ends the gesture
+    if (ev.type === "lostpointercapture" && ev.target !== canvas) return;
+    if (!(ev.pointerId in pointers)) return;
+    delete pointers[ev.pointerId];
+    svgOf(current()).classList.remove("dragging");
+    startGesture();            // pinch -> pan hand-over without a jump
+  }
+
   canvas.addEventListener("wheel", function (ev) {
     var s = svgOf(current());
     if (!s.contains(ev.target) && ev.target !== s) return;
     ev.preventDefault();
-    var vb = getVB(current()).slice();
-    var r = s.getBoundingClientRect();
-    var scale = Math.min(r.width / vb[2], r.height / vb[3]);
-    var ox = (r.width - vb[2] * scale) / 2, oy = (r.height - vb[3] * scale) / 2;
-    var mx = vb[0] + (ev.clientX - r.left - ox) / scale;
-    var my = vb[1] + (ev.clientY - r.top - oy) / scale;
     hideTip();
-    var k = Math.exp(ev.deltaY * 0.0015);
-    vb[0] = mx - (mx - vb[0]) * k; vb[1] = my - (my - vb[1]) * k; vb[2] *= k; vb[3] *= k;
-    setVB(current(), vb);
+    var vb = getVB(current()).slice();
+    var m = toUser(s, vb, ev.clientX, ev.clientY);
+    var k = clampK(current(), vb, Math.exp(ev.deltaY * 0.0015));
+    setVB(current(), zoomAt(vb, m.x, m.y, k));
   }, { passive: false });
 
   canvas.addEventListener("pointerdown", function (ev) {
-    if (ev.pointerType !== "mouse") hideTip();
-    if (ev.button !== 0) return;
-    drag = { x: ev.clientX, y: ev.clientY, vb: getVB(current()).slice() };
-    moved = false;
-  });
-  window.addEventListener("pointermove", function (ev) {
-    if (!drag) return;
     var s = svgOf(current());
-    var r = s.getBoundingClientRect();
-    var vb = drag.vb;
-    var scale = Math.min(r.width / vb[2], r.height / vb[3]);
-    var dx = (ev.clientX - drag.x) / scale, dy = (ev.clientY - drag.y) / scale;
-    if (Math.abs(ev.clientX - drag.x) + Math.abs(ev.clientY - drag.y) > 4) { moved = true; s.classList.add("dragging"); }
-    if (moved) setVB(current(), [vb[0] - dx, vb[1] - dy, vb[2], vb[3]]);
+    if (!s.contains(ev.target) && ev.target !== s) return;
+    if (ev.pointerType === "mouse" && ev.button !== 0) return;
+    if (ev.pointerType !== "mouse") { hideTip(); lastTouch = Date.now(); }
+    if (!Object.keys(pointers).length) { moved = false; multi = false; }
+    pointers[ev.pointerId] = { x: ev.clientX, y: ev.clientY };
+    if (Object.keys(pointers).length > 1) multi = true;
+    // capture only once a real drag/pinch starts: capturing on pointerdown would retarget
+    // the following click to the canvas and break clicking blocks / nets
+    if (Object.keys(pointers).length > 1) capture(ev.pointerId);
+    startGesture();
   });
-  window.addEventListener("pointerup", function () {
-    if (drag) svgOf(current()).classList.remove("dragging");
-    drag = null;
+  function capture(id) {
+    try { if (!canvas.hasPointerCapture(id)) canvas.setPointerCapture(id); } catch (e) {}
+  }
+  canvas.addEventListener("pointermove", function (ev) {
+    if (!(ev.pointerId in pointers) || !gesture) return;
+    pointers[ev.pointerId] = { x: ev.clientX, y: ev.clientY };
+    var s = svgOf(current());
+    var ids = Object.keys(pointers);
+    var vb = gesture.vb;
+    if (ids.length === 1) {
+      var dx = ev.clientX - gesture.x, dy = ev.clientY - gesture.y;
+      var slop = ev.pointerType === "mouse" ? 4 : 12;               // a thumb tap wobbles
+      if (!moved && Math.abs(dx) + Math.abs(dy) <= slop) return;   // still a tap
+      moved = true;
+      capture(ev.pointerId);
+      s.classList.add("dragging");
+      hideTip();
+      var sc = geom(s, vb).sc;
+      setVB(current(), [vb[0] - dx / sc, vb[1] - dy / sc, vb[2], vb[3]]);
+    } else {
+      var a = pointers[ids[0]], b = pointers[ids[1]];
+      var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+      var dist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+      moved = true;
+      hideTip();
+      var anchor = toUser(s, vb, gesture.x, gesture.y);
+      var k = clampK(current(), vb, gesture.dist / dist);
+      var nvb = zoomAt(vb, anchor.x, anchor.y, k);
+      var sc2 = geom(s, nvb).sc;
+      nvb[0] -= (mx - gesture.x) / sc2;
+      nvb[1] -= (my - gesture.y) / sc2;
+      setVB(current(), nvb);
+    }
+  });
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach(function (t) {
+    canvas.addEventListener(t, endPointer);
   });
 
-  canvas.addEventListener("click", function (ev) {
-    if (moved) { moved = false; return; }
-    var g = ev.target.closest ? ev.target.closest(".symg.clickable") : null;
-    var netEl = ev.target.closest ? ev.target.closest("[data-net]") : null;
+  // what a click (mouse) or a tap (touch) on the drawing does
+  function canvasAction(target, cx, cy, isTouch) {
+    var g = target.closest ? target.closest(".symg.clickable") : null;
+    var netEl = target.closest ? target.closest("[data-net]") : null;
     if (netEl && !g) {
       var n = netEl.getAttribute("data-net");
       sticky = sticky === n ? null : n;
       if (sticky) hl(sticky); else clearHL();
+      if (isTouch) { if (sticky) showTipFor(target, cx, cy); else hideTip(); }
       return;
     }
     if (g) { hideTip(); descend(g.getAttribute("data-inst"), g.getAttribute("data-ref")); return; }
     sticky = null; clearHL();
+    if (isTouch) showTipFor(target, cx, cy);   // tap a transistor -> its W/L and nets
+    else hideTip();
+  }
+  var canvasTapAt = 0;
+  canvas.addEventListener("pointerup", function (ev) {
+    if (ev.pointerType === "mouse" || moved || multi) return;
+    if (Object.keys(pointers).length) return;            // other fingers still down
+    lastTouch = Date.now();
+    canvasTapAt = Date.now();
+    canvasAction(ev.target, ev.clientX, ev.clientY, true);
+  });
+  canvas.addEventListener("click", function (ev) {
+    if (Date.now() - canvasTapAt < 800) return;          // already handled as a tap
+    if (moved) { moved = false; return; }
+    canvasAction(ev.target, ev.clientX, ev.clientY, false);
   });
   canvas.addEventListener("dblclick", function () { fit(current()); });
 
-  document.getElementById("btn-up").addEventListener("click", up);
-  document.getElementById("btn-fit").addEventListener("click", function () { fit(current()); });
+  onTap(document.getElementById("btn-up"), function () { up(); });
+  onTap(document.getElementById("btn-fit"), function () { fit(current()); });
   document.addEventListener("keydown", function (ev) {
     var tg = ev.target || {};
     if ((tg.tagName === "INPUT" && tg.type !== "checkbox") || /select|textarea/i.test(tg.tagName || "")) return;
