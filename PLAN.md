@@ -11,7 +11,7 @@ Virtuoso에서 뽑은 HSPICE netlist를 넣으면, 블록 다이어그램에서 
 | 규모 | 셀당 트랜지스터 수십 개, 계층 깊이 3~5 (유닛마다 다름) |
 | 공정 모델명 | 그림에 표시하지 않음 (N/P 구분에만 내부적으로 사용) |
 | 블록 정의 | `.subckt`는 블록. top이나 subckt 안에 트랜지스터가 섞여 있으면 **자동으로 묶어서 블록 생성** |
-| 트랜지스터 표기 | W, L, M 표시 / nf 표시 안 함 / **3-terminal** 심볼 (bulk 생략) |
+| 트랜지스터 표기 | W, L, M 표시 (뷰어에서 **on/off 토글**) / nf 표시 안 함 / **3-terminal** 심볼 (bulk 생략) |
 | 인터랙션 | 보기 전용 (pan/zoom, 클릭해서 계층 이동, 브레드크럼, net 하이라이트, 툴팁). 편집 없음 |
 | 출력 | 오프라인에서 열리는 단일 HTML (JS/CSS 모두 inline, CDN 사용 안 함) |
 | 스택 | Python (파서, 인식, 검증) + JS (레이아웃 ELK.js, 렌더링 SVG) |
@@ -70,3 +70,18 @@ netlist.sp
 ## 테스트 코퍼스
 - 사용자가 Gemini로 만든 netlist (Virtuoso 형식)
 - 보조 golden set: 인버터, NAND2, CML 버퍼, 5T OTA, 2-stage op-amp, StrongARM 래치, TSPC DFF, 링 오실레이터, 그리고 트랜지스터가 섞인 계층형 top
+
+## 그림 규칙
+사용자가 준 참고 그림(merged CTLE + DFE summer, CTLE, transceiver 블록도)에서 뽑은 규칙은
+`hspice-schematic/references/style_rules.md`에 정리. 핵심: 차동 쌍은 y축 대칭, 입력 쌍 게이트는
+바깥쪽 / cross-coupled 쌍은 안쪽 X 배선, degeneration은 R_S 위 C_S 아래, 상위 블록 글씨 겹침 0.
+
+## 진행 상황 (2026-11-07)
+- [x] Phase 1 Parser + IR + 자동 블록 생성
+- [x] Phase 2 트랜지스터 레벨 렌더러 + 연결 검증기 (스타일 1차 피드백 반영)
+- [x] Phase 3 블록 심볼 + 블록 레벨 레이아웃 + 드릴다운
+- [x] Phase 4 Recognizer (이름 힌트 + 토폴로지 + overrides)
+- [x] Phase 5 시각 검증 (lint: 글씨 겹침, 대칭, 4-way junction, 심볼 관통 / 스크린샷 리뷰)
+- [ ] Phase 6 실제 Virtuoso netlist로 검증, skill-creator eval
+- 테스트: `python3 -m unittest discover -s tests -v`
+- 예시 출력: `examples/*.html`

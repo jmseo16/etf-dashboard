@@ -1,0 +1,103 @@
+{
+ "ok": true,
+ "views": {
+  "INPUT_BUFFER_SYSTEM": {
+   "ok": true,
+   "errors": [],
+   "lint": {
+    "crossings": 0,
+    "text_overlaps": 0,
+    "warnings": []
+   }
+  },
+  "CTLE": {
+   "ok": true,
+   "errors": [],
+   "lint": {
+    "crossings": 0,
+    "text_overlaps": 0,
+    "warnings": []
+   }
+  },
+  "DFE_1TAP": {
+   "ok": true,
+   "errors": [],
+   "lint": {
+    "crossings": 5,
+    "text_overlaps": 0,
+    "warnings": []
+   }
+  },
+  "DFE_1TAP__AUTO0": {
+   "ok": true,
+   "errors": [],
+   "lint": {
+    "crossings": 1,
+    "text_overlaps": 0,
+    "warnings": []
+   }
+  },
+  "CML_DFF": {
+   "ok": true,
+   "errors": [],
+   "lint": {
+    "crossings": 1,
+    "text_overlaps": 0,
+    "warnings": []
+   }
+  },
+  "CML_LATCH": {
+   "ok": true,
+   "errors": [],
+   "lint": {
+    "crossings": 2,
+    "text_overlaps": 0,
+    "warnings": []
+   }
+  }
+ },
+ "classes": {
+  "CTLE": {
+   "class": "ctle",
+   "shape": "amp",
+   "title": "CTLE",
+   "label": "CTLE",
+   "reason": "name 'CTLE'; source-degenerated pair (R/C between sources) with loads"
+  },
+  "CML_LATCH": {
+   "class": "latch",
+   "shape": "latch",
+   "title": "LATCH",
+   "label": "Latch",
+   "reason": "name 'CML_LATCH'; cross-coupled pair + steering pairs"
+  },
+  "CML_DFF": {
+   "class": "dff",
+   "shape": "dff",
+   "title": "DFF",
+   "label": "D flip-flop",
+   "reason": "name 'CML_DFF'; two latches in series (master/slave)"
+  },
+  "DFE_1TAP": {
+   "class": "dfe",
+   "shape": "box",
+   "title": "DFE",
+   "label": "DFE",
+   "reason": "name 'DFE_1TAP'"
+  },
+  "INPUT_BUFFER_SYSTEM": {
+   "class": "buffer",
+   "shape": "amp",
+   "title": "",
+   "label": "Buffer",
+   "reason": "name 'INPUT_BUFFER_SYSTEM'"
+  },
+  "DFE_1TAP__AUTO0": {
+   "class": "summer",
+   "shape": "sum",
+   "title": "",
+   "label": "Summer",
+   "reason": "several diff pairs summing into the same drains"
+  }
+ }
+}

@@ -1,0 +1,1337 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>INPUT_BUFFER_SYSTEM schematic</title>
+<style>:root {
+  --ink: #111;
+  --paper: #fff;
+  --ui-bg: #f6f6f4;
+  --ui-fg: #222;
+  --ui-mute: #6b6b6b;
+  --ui-line: #d9d9d4;
+  --accent: #d0451b;
+  --wl: #1d5fa8;
+  --val: #1d5fa8;
+  --net: #6b4f9e;
+  --blk-hover: #fff4e5;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--ui-bg); color: var(--ui-fg);
+  font: 13px/1.4 -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", Roboto, sans-serif;
+  display: flex; flex-direction: column;
+}
+.bar {
+  display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between;
+  padding: 8px 16px; border-bottom: 1px solid var(--ui-line); background: var(--ui-bg);
+}
+.crumbs { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-weight: 600; }
+.crumbs a { color: var(--ui-fg); text-decoration: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; }
+.crumbs a:hover { background: #e9e9e4; }
+.crumbs a.cur { color: var(--accent); cursor: default; }
+.crumbs .sep { color: var(--ui-mute); }
+.tools { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.tools label { display: inline-flex; gap: 4px; align-items: center; cursor: pointer; user-select: none; }
+.tools button, .tools select {
+  font: inherit; padding: 3px 9px; border: 1px solid var(--ui-line); border-radius: 5px;
+  background: #fff; color: var(--ui-fg); cursor: pointer;
+}
+.tools button:hover { border-color: #aaa; }
+main { flex: 1; display: flex; min-height: 0; }
+.canvas { flex: 1; position: relative; background: var(--paper); overflow: hidden; min-width: 0; }
+.view { position: absolute; inset: 0; }
+.view[hidden] { display: none; }
+svg.sch { width: 100%; height: 100%; display: block; cursor: grab; user-select: none; }
+svg.sch.dragging { cursor: grabbing; }
+.side {
+  width: 300px; max-width: 40vw; overflow: auto; padding: 12px 14px;
+  border-left: 1px solid var(--ui-line); background: var(--ui-bg);
+}
+.side h2 { font-size: 15px; margin: 0 0 4px; }
+.side h3 { font-size: 12px; margin: 14px 0 4px; color: var(--ui-mute); text-transform: uppercase; letter-spacing: .04em; }
+.side .why { color: var(--ui-mute); font-size: 12px; }
+.side table { border-collapse: collapse; width: 100%; font-size: 12px; }
+.side td { padding: 2px 4px; border-bottom: 1px solid #ebebe6; vertical-align: top; }
+.side td:first-child { color: var(--ui-mute); white-space: nowrap; }
+.side .netlink { cursor: pointer; color: var(--net); }
+.side .netlink:hover { text-decoration: underline; }
+.side .warn { color: #a04000; font-size: 12px; }
+.tip {
+  position: absolute; pointer-events: none; background: rgba(20, 20, 20, .92); color: #fff;
+  padding: 6px 8px; border-radius: 5px; font-size: 12px; max-width: 280px; z-index: 5; white-space: pre-line;
+}
+@media (max-width: 760px) {
+  main { flex-direction: column; }
+  .side { width: auto; max-width: none; max-height: 34vh; border-left: 0; border-top: 1px solid var(--ui-line); }
+}
+
+/* ---------- schematic ink (paper stays white, like a textbook) ---------- */
+svg.sch text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; fill: var(--ink); }
+.sym, .blk { stroke: var(--ink); stroke-width: 1.6; fill: none; stroke-linecap: square; stroke-linejoin: miter; }
+.sym.chan { stroke-width: 3; stroke-linecap: butt; }
+.sym.gate { stroke-width: 1.8; stroke-linecap: butt; }
+.sym.plate { stroke-width: 2.2; stroke-linecap: butt; }
+.sym.arrow { fill: var(--ink); stroke-width: 0.8; }
+.blk { stroke-width: 1.6; fill: none; }
+polyline.blk, circle.blk { fill: #fff; }
+.blk-t { font-size: 13px; font-weight: 700; }
+.sum-t { font-size: 22px; }
+.pol-t { font-size: 12px; font-weight: 700; }
+.pin-t { font-size: 9px; fill: #333 !important; }
+.sym-t { font-size: 10px; }
+.rail-t { font-size: 10px; font-weight: 600; }
+.wire { stroke: var(--ink); stroke-width: 1.6; stroke-linecap: square; }
+.wire.diag { stroke-linecap: round; }
+.arrowhead { fill: var(--ink); stroke: none; }
+.dot { fill: var(--ink); }
+.hl.arrowhead { fill: var(--accent); }
+.pin { fill: transparent; stroke: none; }
+.devlbl { font-size: 9px; }
+.lbl-name { fill: #333; font-style: italic; }
+.lbl-wl, .lbl-val { fill: var(--wl); }
+.lbl-cell { fill: #777; }
+.netlabel { font-size: 10px; }
+.lbl-port { font-weight: 700; }
+.lbl-rail { font-weight: 700; }
+.lbl-net { fill: var(--net); font-style: italic; }
+.term-t { font-size: 10px; font-weight: 600; }
+.term.bylabel .term-t { fill: var(--net); font-style: italic; }
+.termc { fill: #fff; stroke: var(--ink); stroke-width: 1.2; }
+.hit { fill: transparent; stroke: none; }
+.symg.clickable { cursor: pointer; }
+.symg.clickable:hover .hit { fill: var(--blk-hover); }
+.symg.clickable:hover .blk { stroke: var(--accent); }
+
+/* toggles */
+body.hide-wl .lbl-wl { display: none; }
+body.hide-val .lbl-val { display: none; }
+body.hide-name .lbl-name { display: none; }
+body:not(.show-net) .lbl-net { display: none; }
+
+/* net highlight */
+.hl.wire { stroke: var(--accent); stroke-width: 2.4; }
+.hl.dot { fill: var(--accent); }
+.hl.netlabel, .hl .term-t { fill: var(--accent) !important; }
+.hl .termc { stroke: var(--accent); }
+.pin.hl { fill: var(--accent); }
+.symg.dev:hover .sym { stroke: var(--accent); }
+.symg.dev:hover .sym.arrow { fill: var(--accent); }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="crumbs" id="crumbs"></div>
+  <div class="tools">
+    <label><input type="checkbox" data-toggle="wl" checked> W/L·m</label>
+    <label><input type="checkbox" data-toggle="val" checked> R/C 값</label>
+    <label><input type="checkbox" data-toggle="name" checked> 소자 이름</label>
+    <label><input type="checkbox" data-toggle="net"> 넷 이름</label>
+    <button id="btn-up" title="상위 블록 (Esc)">↑ 상위</button>
+    <button id="btn-fit" title="화면 맞춤 (F)">⤢ 맞춤</button>
+    <select id="cell-jump" title="셀로 이동"></select>
+  </div>
+</header>
+<main>
+  <section class="canvas" id="canvas">
+    <div class="view" data-cell="INPUT_BUFFER_SYSTEM" hidden><svg class="sch" xmlns="http://www.w3.org/2000/svg" data-cell="INPUT_BUFFER_SYSTEM" viewBox="-270 -140 1070 450" data-bounds="-270,-140,800,310">
+<g class="layer-wires">
+<line class="wire" data-net="VBIAS_CTLE" x1="20" y1="-40" x2="20" y2="-20"/>
+<line class="wire" data-net="VBIAS_MAIN" x1="320" y1="-40" x2="320" y2="-20"/>
+<line class="wire" data-net="VBIAS_TAP" x1="390" y1="-40" x2="390" y2="-20"/>
+<line class="wire" data-net="VBIAS_DFF" x1="460" y1="-40" x2="460" y2="-20"/>
+<line class="wire" data-net="CTLE_OUTN" x1="100" y1="50" x2="230" y2="50"/>
+<line class="wire" data-net="CTLE_OUTP" x1="100" y1="30" x2="230" y2="30"/>
+<line class="wire" data-net="DOUTN" x1="550" y1="50" x2="680" y2="50"/>
+<line class="wire" data-net="DOUTP" x1="550" y1="30" x2="680" y2="30"/>
+<line class="wire" data-net="RX_INN" x1="-150" y1="50" x2="-20" y2="50"/>
+<line class="wire" data-net="RX_INP" x1="-150" y1="30" x2="-20" y2="30"/>
+<line class="wire" data-net="CLK" x1="350" y1="100" x2="350" y2="170"/>
+<line class="wire" data-net="CLKB" x1="430" y1="100" x2="430" y2="170"/>
+</g>
+<g class="layer-syms">
+<g class="symg blkg clickable" data-inst="X_CTLE" data-keep="-9,-9,89,89" data-ref="CTLE" data-hidden="VDD,VSS" data-body="0,0,80,80">
+<rect class="hit" x="-20" y="-20" width="120" height="109"/>
+<polyline class="blk" points="0,0 80,40 0,80 0,0"/>
+<line class="blk" x1="-20" y1="30" x2="0" y2="30"/>
+<polygon class="arrowhead" points="0,30 -8,26 -8,34"/>
+<text class="pol-t" x="7" y="33.5" text-anchor="middle">+</text>
+<line class="blk" x1="-20" y1="50" x2="0" y2="50"/>
+<polygon class="arrowhead" points="0,50 -8,46 -8,54"/>
+<text class="pol-t" x="7" y="53.5" text-anchor="middle">−</text>
+<line class="blk" x1="60" y1="30" x2="100" y2="30"/>
+<text class="pol-t" x="67" y="26" text-anchor="middle">+</text>
+<line class="blk" x1="60" y1="50" x2="100" y2="50"/>
+<text class="pol-t" x="67" y="61" text-anchor="middle">−</text>
+<line class="blk" x1="20" y1="10" x2="20" y2="-20"/>
+<text class="blk-t" x="28.8" y="44" text-anchor="middle">CTLE</text>
+<text class="devlbl" x="40" y="96" text-anchor="middle"><tspan class="lbl-name">X_CTLE</tspan><tspan class="lbl-name"> : </tspan><tspan class="lbl-cell">CTLE</tspan></text>
+</g>
+<g class="symg blkg clickable" data-inst="X_DFE" data-keep="241,-9,539,89" data-ref="DFE_1TAP" data-hidden="VDD,VSS" data-body="250,0,530,80">
+<rect class="hit" x="230" y="-20" width="320" height="120"/>
+<polyline class="blk" points="250,0 530,0 530,80 250,80 250,0"/>
+<line class="blk" x1="230" y1="30" x2="250" y2="30"/>
+<polygon class="arrowhead" points="250,30 242,26 242,34"/>
+<text class="pin-t" x="255" y="33.5" text-anchor="start">INP</text>
+<line class="blk" x1="230" y1="50" x2="250" y2="50"/>
+<polygon class="arrowhead" points="250,50 242,46 242,54"/>
+<text class="pin-t" x="255" y="53.5" text-anchor="start">INN</text>
+<line class="blk" x1="550" y1="30" x2="530" y2="30"/>
+<text class="pin-t" x="525" y="33.5" text-anchor="end">OUTP</text>
+<line class="blk" x1="550" y1="50" x2="530" y2="50"/>
+<text class="pin-t" x="525" y="53.5" text-anchor="end">OUTN</text>
+<line class="blk" x1="320" y1="-20" x2="320" y2="0"/>
+<text class="pin-t" x="320" y="12" text-anchor="middle">VBIAS_MAIN</text>
+<line class="blk" x1="390" y1="-20" x2="390" y2="0"/>
+<text class="pin-t" x="390" y="12" text-anchor="middle">VBIAS_TAP</text>
+<line class="blk" x1="460" y1="-20" x2="460" y2="0"/>
+<text class="pin-t" x="460" y="12" text-anchor="middle">VBIAS_DFF</text>
+<line class="blk" x1="350" y1="100" x2="350" y2="80"/>
+<polygon class="arrowhead" points="350,80 346,88 354,88"/>
+<text class="pin-t" x="350" y="74" text-anchor="middle">CLK</text>
+<line class="blk" x1="430" y1="100" x2="430" y2="80"/>
+<polygon class="arrowhead" points="430,80 426,88 434,88"/>
+<text class="pin-t" x="430" y="74" text-anchor="middle">CLKB</text>
+<text class="blk-t" x="390" y="45" text-anchor="middle">DFE</text>
+<text class="devlbl" x="536" y="94" text-anchor="start"><tspan class="lbl-name">X_DFE</tspan><tspan class="lbl-name"> : </tspan><tspan class="lbl-cell">DFE_1TAP</tspan></text>
+</g>
+</g>
+<g class="layer-rails">
+</g>
+<g class="layer-dots">
+</g>
+<g class="layer-labels">
+<g class="term port" data-net="RX_INP" data-ax="-150" data-ay="30">
+<text class="term-t" x="-157" y="33.5" text-anchor="end">RX_INP</text>
+</g>
+<g class="term port" data-net="RX_INN" data-ax="-150" data-ay="50">
+<text class="term-t" x="-157" y="53.5" text-anchor="end">RX_INN</text>
+</g>
+<g class="term port" data-net="CLK" data-ax="350" data-ay="170">
+<text class="term-t" x="350" y="186" text-anchor="middle">CLK</text>
+</g>
+<g class="term port" data-net="CLKB" data-ax="430" data-ay="170">
+<text class="term-t" x="430" y="186" text-anchor="middle">CLKB</text>
+</g>
+<g class="term port" data-net="DOUTP" data-ax="680" data-ay="30">
+<polygon class="arrowhead" points="684,30 675,26 675,34"/>
+<text class="term-t" x="691" y="33.5" text-anchor="start">DOUTP</text>
+</g>
+<g class="term port" data-net="DOUTN" data-ax="680" data-ay="50">
+<polygon class="arrowhead" points="684,50 675,46 675,54"/>
+<text class="term-t" x="691" y="53.5" text-anchor="start">DOUTN</text>
+</g>
+<g class="term port" data-net="VBIAS_CTLE" data-ax="20" data-ay="-40">
+<text class="term-t" x="23.5" y="-45" text-anchor="start" transform="rotate(-90 23.5 -45)" data-rot="1">VBIAS_CTLE</text>
+</g>
+<g class="term port" data-net="VBIAS_MAIN" data-ax="320" data-ay="-40">
+<text class="term-t" x="323.5" y="-45" text-anchor="start" transform="rotate(-90 323.5 -45)" data-rot="1">VBIAS_MAIN</text>
+</g>
+<g class="term port" data-net="VBIAS_TAP" data-ax="390" data-ay="-40">
+<text class="term-t" x="393.5" y="-45" text-anchor="start" transform="rotate(-90 393.5 -45)" data-rot="1">VBIAS_TAP</text>
+</g>
+<g class="term port" data-net="VBIAS_DFF" data-ax="460" data-ay="-40">
+<text class="term-t" x="463.5" y="-45" text-anchor="start" transform="rotate(-90 463.5 -45)" data-rot="1">VBIAS_DFF</text>
+</g>
+<text class="netlabel lbl-net" data-net="CTLE_OUTN" data-ax="160" data-ay="50" x="160" y="45" text-anchor="middle">CTLE_OUTN</text>
+<text class="netlabel lbl-net" data-net="CTLE_OUTP" data-ax="160" data-ay="30" x="160" y="25" text-anchor="middle">CTLE_OUTP</text>
+</g>
+<g class="layer-pins">
+<circle class="pin" data-inst="X_CTLE" data-pin="INP" data-net="RX_INP" cx="-20" cy="30" r="2"/>
+<circle class="pin" data-inst="X_CTLE" data-pin="INN" data-net="RX_INN" cx="-20" cy="50" r="2"/>
+<circle class="pin" data-inst="X_CTLE" data-pin="OUTP" data-net="CTLE_OUTP" cx="100" cy="30" r="2"/>
+<circle class="pin" data-inst="X_CTLE" data-pin="OUTN" data-net="CTLE_OUTN" cx="100" cy="50" r="2"/>
+<circle class="pin" data-inst="X_CTLE" data-pin="VBIAS" data-net="VBIAS_CTLE" cx="20" cy="-20" r="2"/>
+<circle class="pin" data-inst="X_DFE" data-pin="INP" data-net="CTLE_OUTP" cx="230" cy="30" r="2"/>
+<circle class="pin" data-inst="X_DFE" data-pin="INN" data-net="CTLE_OUTN" cx="230" cy="50" r="2"/>
+<circle class="pin" data-inst="X_DFE" data-pin="OUTP" data-net="DOUTP" cx="550" cy="30" r="2"/>
+<circle class="pin" data-inst="X_DFE" data-pin="OUTN" data-net="DOUTN" cx="550" cy="50" r="2"/>
+<circle class="pin" data-inst="X_DFE" data-pin="VBIAS_MAIN" data-net="VBIAS_MAIN" cx="320" cy="-20" r="2"/>
+<circle class="pin" data-inst="X_DFE" data-pin="VBIAS_TAP" data-net="VBIAS_TAP" cx="390" cy="-20" r="2"/>
+<circle class="pin" data-inst="X_DFE" data-pin="VBIAS_DFF" data-net="VBIAS_DFF" cx="460" cy="-20" r="2"/>
+<circle class="pin" data-inst="X_DFE" data-pin="CLK" data-net="CLK" cx="350" cy="100" r="2"/>
+<circle class="pin" data-inst="X_DFE" data-pin="CLKB" data-net="CLKB" cx="430" cy="100" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="RX_INP" data-net="RX_INP" cx="-150" cy="30" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="RX_INN" data-net="RX_INN" cx="-150" cy="50" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="CLK" data-net="CLK" cx="350" cy="170" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="CLKB" data-net="CLKB" cx="430" cy="170" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="DOUTP" data-net="DOUTP" cx="680" cy="30" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="DOUTN" data-net="DOUTN" cx="680" cy="50" r="2"/>
+</g>
+</svg></div><div class="view" data-cell="CTLE" hidden><svg class="sch" xmlns="http://www.w3.org/2000/svg" data-cell="CTLE" viewBox="-260 -70 520 500" data-bounds="-260,-70,260,430">
+<g class="layer-wires">
+<line class="wire" data-net="VSS" x1="110" y1="330" x2="110" y2="340"/>
+<line class="wire" data-net="VSS" x1="-110" y1="330" x2="-110" y2="340"/>
+<line class="wire" data-net="VDD" x1="-140" y1="0" x2="140" y2="0"/>
+<line class="wire" data-net="VDD" x1="-110" y1="0" x2="-110" y2="30"/>
+<line class="wire" data-net="VDD" x1="110" y1="0" x2="110" y2="30"/>
+<line class="wire" data-net="OUTP" x1="-110" y1="90" x2="-110" y2="150"/>
+<line class="wire" data-net="OUTN" x1="110" y1="90" x2="110" y2="150"/>
+<line class="wire" data-net="SP" x1="-110" y1="260" x2="-30" y2="260"/>
+<line class="wire" data-net="SP" x1="-110" y1="230" x2="-30" y2="230"/>
+<line class="wire" data-net="SP" x1="-110" y1="210" x2="-110" y2="270"/>
+<line class="wire" data-net="SN" x1="30" y1="260" x2="110" y2="260"/>
+<line class="wire" data-net="SN" x1="30" y1="230" x2="110" y2="230"/>
+<line class="wire" data-net="SN" x1="110" y1="210" x2="110" y2="270"/>
+<line class="wire" data-net="VBIAS" x1="-80" y1="300" x2="80" y2="300"/>
+</g>
+<g class="layer-syms">
+<g class="symg dev" data-inst="MBP" data-keep="-111,271,-95,329;-96,299,-81,301" data-type="nmos">
+<line class="sym" x1="-80" y1="300" x2="-95" y2="300"/>
+<line class="sym gate" x1="-95" y1="290" x2="-95" y2="310"/>
+<line class="sym chan" x1="-101" y1="288" x2="-101" y2="312"/>
+<line class="sym" x1="-101" y1="288" x2="-110" y2="288"/>
+<line class="sym" x1="-110" y1="288" x2="-110" y2="270"/>
+<line class="sym" x1="-101" y1="312" x2="-110" y2="312"/>
+<line class="sym" x1="-110" y1="312" x2="-110" y2="330"/>
+<polygon class="sym arrow" points="-109.4,312 -104.4,308.5 -104.4,315.5"/>
+<text class="devlbl" x="-116" y="288" text-anchor="end"><tspan class="lbl-name">MBP</tspan></text>
+<text class="devlbl" x="-116" y="301" text-anchor="end"><tspan class="lbl-wl">32µ/90n</tspan></text>
+<text class="devlbl" x="-116" y="313" text-anchor="end"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="M1" data-keep="-125,151,-109,209;-139,179,-124,181" data-type="nmos">
+<line class="sym" x1="-140" y1="180" x2="-125" y2="180"/>
+<line class="sym gate" x1="-125" y1="170" x2="-125" y2="190"/>
+<line class="sym chan" x1="-119" y1="168" x2="-119" y2="192"/>
+<line class="sym" x1="-119" y1="168" x2="-110" y2="168"/>
+<line class="sym" x1="-110" y1="168" x2="-110" y2="150"/>
+<line class="sym" x1="-119" y1="192" x2="-110" y2="192"/>
+<line class="sym" x1="-110" y1="192" x2="-110" y2="210"/>
+<polygon class="sym arrow" points="-110.6,192 -115.6,188.5 -115.6,195.5"/>
+<text class="devlbl" x="-104" y="168" text-anchor="start"><tspan class="lbl-name">M1</tspan></text>
+<text class="devlbl" x="-104" y="181" text-anchor="start"><tspan class="lbl-wl">16µ/45n</tspan></text>
+<text class="devlbl" x="-104" y="193" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="RLP" data-keep="-117,31,-103,89" data-type="res">
+<line class="sym" x1="-110" y1="30" x2="-110" y2="42"/>
+<polyline class="sym" points="-110,42 -104,45 -116,51 -104,57 -116,63 -104,69 -116,75 -110,78"/>
+<line class="sym" x1="-110" y1="78" x2="-110" y2="90"/>
+<text class="devlbl" x="-99" y="55" text-anchor="start"><tspan class="lbl-name">RLP</tspan></text>
+<text class="devlbl" x="-99" y="68" text-anchor="start"><tspan class="lbl-val">600Ω</tspan></text>
+</g>
+<g class="symg dev" data-inst="MBN" data-keep="95,271,111,329;81,299,96,301" data-type="nmos">
+<line class="sym" x1="80" y1="300" x2="95" y2="300"/>
+<line class="sym gate" x1="95" y1="290" x2="95" y2="310"/>
+<line class="sym chan" x1="101" y1="288" x2="101" y2="312"/>
+<line class="sym" x1="101" y1="288" x2="110" y2="288"/>
+<line class="sym" x1="110" y1="288" x2="110" y2="270"/>
+<line class="sym" x1="101" y1="312" x2="110" y2="312"/>
+<line class="sym" x1="110" y1="312" x2="110" y2="330"/>
+<polygon class="sym arrow" points="109.4,312 104.4,308.5 104.4,315.5"/>
+<text class="devlbl" x="116" y="288" text-anchor="start"><tspan class="lbl-name">MBN</tspan></text>
+<text class="devlbl" x="116" y="301" text-anchor="start"><tspan class="lbl-wl">32µ/90n</tspan></text>
+<text class="devlbl" x="116" y="313" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="M2" data-keep="109,151,125,209;124,179,139,181" data-type="nmos">
+<line class="sym" x1="140" y1="180" x2="125" y2="180"/>
+<line class="sym gate" x1="125" y1="170" x2="125" y2="190"/>
+<line class="sym chan" x1="119" y1="168" x2="119" y2="192"/>
+<line class="sym" x1="119" y1="168" x2="110" y2="168"/>
+<line class="sym" x1="110" y1="168" x2="110" y2="150"/>
+<line class="sym" x1="119" y1="192" x2="110" y2="192"/>
+<line class="sym" x1="110" y1="192" x2="110" y2="210"/>
+<polygon class="sym arrow" points="110.6,192 115.6,188.5 115.6,195.5"/>
+<text class="devlbl" x="104" y="168" text-anchor="end"><tspan class="lbl-name">M2</tspan></text>
+<text class="devlbl" x="104" y="181" text-anchor="end"><tspan class="lbl-wl">16µ/45n</tspan></text>
+<text class="devlbl" x="104" y="193" text-anchor="end"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="RLN" data-keep="103,31,117,89" data-type="res">
+<line class="sym" x1="110" y1="30" x2="110" y2="42"/>
+<polyline class="sym" points="110,42 116,45 104,51 116,57 104,63 116,69 104,75 110,78"/>
+<line class="sym" x1="110" y1="78" x2="110" y2="90"/>
+<text class="devlbl" x="121" y="55" text-anchor="start"><tspan class="lbl-name">RLN</tspan></text>
+<text class="devlbl" x="121" y="68" text-anchor="start"><tspan class="lbl-val">600Ω</tspan></text>
+</g>
+<g class="symg dev" data-inst="RS" data-keep="-29,223,29,237" data-type="res">
+<line class="sym" x1="-30" y1="230" x2="-18" y2="230"/>
+<polyline class="sym" points="-18,230 -15,224 -9,236 -3,224 3,236 9,224 15,236 18,230"/>
+<line class="sym" x1="18" y1="230" x2="30" y2="230"/>
+<text class="devlbl" x="0" y="218" text-anchor="middle"><tspan class="lbl-name">RS</tspan> <tspan class="lbl-val">1kΩ</tspan></text>
+</g>
+<g class="symg dev" data-inst="CS" data-keep="-29,249,29,271" data-type="cap">
+<line class="sym" x1="-30" y1="260" x2="-4" y2="260"/>
+<line class="sym plate" x1="-4" y1="270" x2="-4" y2="250"/>
+<line class="sym plate" x1="4" y1="270" x2="4" y2="250"/>
+<line class="sym" x1="4" y1="260" x2="30" y2="260"/>
+<text class="devlbl" x="0" y="281" text-anchor="middle"><tspan class="lbl-name">CS</tspan> <tspan class="lbl-val">150fF</tspan></text>
+</g>
+</g>
+<g class="layer-rails">
+<g class="rail" data-net="VSS" data-ax="-110" data-ay="340">
+<line class="sym" x1="-110" y1="340" x2="-110" y2="348"/>
+<line class="sym" x1="-119" y1="348" x2="-101" y2="348"/>
+<line class="sym" x1="-116" y1="352" x2="-104" y2="352"/>
+<line class="sym" x1="-113" y1="356" x2="-107" y2="356"/>
+</g>
+<g class="rail" data-net="VSS" data-ax="110" data-ay="340">
+<line class="sym" x1="110" y1="340" x2="110" y2="348"/>
+<line class="sym" x1="101" y1="348" x2="119" y2="348"/>
+<line class="sym" x1="104" y1="352" x2="116" y2="352"/>
+<line class="sym" x1="107" y1="356" x2="113" y2="356"/>
+</g>
+</g>
+<g class="layer-dots">
+<circle class="dot" data-net="VDD" cx="-110" cy="0" r="2.6"/>
+<circle class="dot" data-net="VDD" cx="110" cy="0" r="2.6"/>
+<circle class="dot" data-net="SP" cx="-110" cy="230" r="2.6"/>
+<circle class="dot" data-net="SP" cx="-110" cy="260" r="2.6"/>
+<circle class="dot" data-net="SN" cx="110" cy="230" r="2.6"/>
+<circle class="dot" data-net="SN" cx="110" cy="260" r="2.6"/>
+</g>
+<g class="layer-labels">
+<g class="term port" data-net="INP" data-ax="-140" data-ay="180">
+<text class="term-t" x="-147" y="183.5" text-anchor="end">INP</text>
+</g>
+<g class="term port" data-net="INN" data-ax="140" data-ay="180">
+<text class="term-t" x="147" y="183.5" text-anchor="start">INN</text>
+</g>
+<text class="netlabel lbl-rail" data-net="VDD" data-ax="0" data-ay="0" x="0" y="-7" text-anchor="middle">VDD</text>
+<text class="netlabel lbl-port" data-net="OUTP" data-ax="-110" data-ay="120" x="-105" y="123.5" text-anchor="start">OUTP</text>
+<text class="netlabel lbl-port" data-net="OUTN" data-ax="110" data-ay="120" x="115" y="123.5" text-anchor="start">OUTN</text>
+<text class="netlabel lbl-net" data-net="SP" data-ax="-70" data-ay="260" x="-70" y="255" text-anchor="middle">SP</text>
+<text class="netlabel lbl-net" data-net="SN" data-ax="70" data-ay="260" x="70" y="255" text-anchor="middle">SN</text>
+<text class="netlabel lbl-port" data-net="VBIAS" data-ax="0" data-ay="300" x="0" y="295" text-anchor="middle">VBIAS</text>
+</g>
+<g class="layer-pins">
+<circle class="pin" data-inst="MBP" data-pin="d" data-net="SP" cx="-110" cy="270" r="2"/>
+<circle class="pin" data-inst="MBP" data-pin="g" data-net="VBIAS" cx="-80" cy="300" r="2"/>
+<circle class="pin" data-inst="MBP" data-pin="s" data-net="VSS" cx="-110" cy="330" r="2"/>
+<circle class="pin" data-inst="M1" data-pin="d" data-net="OUTP" cx="-110" cy="150" r="2"/>
+<circle class="pin" data-inst="M1" data-pin="g" data-net="INP" cx="-140" cy="180" r="2"/>
+<circle class="pin" data-inst="M1" data-pin="s" data-net="SP" cx="-110" cy="210" r="2"/>
+<circle class="pin" data-inst="RLP" data-pin="p" data-net="VDD" cx="-110" cy="30" r="2"/>
+<circle class="pin" data-inst="RLP" data-pin="n" data-net="OUTP" cx="-110" cy="90" r="2"/>
+<circle class="pin" data-inst="MBN" data-pin="d" data-net="SN" cx="110" cy="270" r="2"/>
+<circle class="pin" data-inst="MBN" data-pin="g" data-net="VBIAS" cx="80" cy="300" r="2"/>
+<circle class="pin" data-inst="MBN" data-pin="s" data-net="VSS" cx="110" cy="330" r="2"/>
+<circle class="pin" data-inst="M2" data-pin="d" data-net="OUTN" cx="110" cy="150" r="2"/>
+<circle class="pin" data-inst="M2" data-pin="g" data-net="INN" cx="140" cy="180" r="2"/>
+<circle class="pin" data-inst="M2" data-pin="s" data-net="SN" cx="110" cy="210" r="2"/>
+<circle class="pin" data-inst="RLN" data-pin="p" data-net="VDD" cx="110" cy="30" r="2"/>
+<circle class="pin" data-inst="RLN" data-pin="n" data-net="OUTN" cx="110" cy="90" r="2"/>
+<circle class="pin" data-inst="RS" data-pin="p" data-net="SP" cx="-30" cy="230" r="2"/>
+<circle class="pin" data-inst="RS" data-pin="n" data-net="SN" cx="30" cy="230" r="2"/>
+<circle class="pin" data-inst="CS" data-pin="p" data-net="SP" cx="-30" cy="260" r="2"/>
+<circle class="pin" data-inst="CS" data-pin="n" data-net="SN" cx="30" cy="260" r="2"/>
+</g>
+</svg></div><div class="view" data-cell="DFE_1TAP" hidden><svg class="sch" xmlns="http://www.w3.org/2000/svg" data-cell="DFE_1TAP" viewBox="-260 -140 940 450" data-bounds="-260,-140,680,310">
+<g class="layer-wires">
+<line class="wire" data-net="VBIAS_MAIN" x1="30" y1="-30" x2="30" y2="-10"/>
+<line class="wire" data-net="VBIAS_TAP" x1="50" y1="-30" x2="50" y2="-10"/>
+<line class="wire" data-net="VBIAS_DFF" x1="330" y1="-40" x2="330" y2="-20"/>
+<line class="wire" data-net="INN" x1="-140" y1="50" x2="-10" y2="50"/>
+<line class="wire" data-net="INP" x1="-140" y1="30" x2="-10" y2="30"/>
+<line class="wire" data-net="SUMN" x1="90" y1="50" x2="230" y2="50"/>
+<line class="wire" data-net="SUMP" x1="90" y1="30" x2="230" y2="30"/>
+<line class="wire" data-net="OUTN" x1="430" y1="50" x2="560" y2="50"/>
+<line class="wire" data-net="OUTN" x1="50" y1="120" x2="440" y2="120"/>
+<line class="wire" data-net="OUTN" x1="440" y1="50" x2="440" y2="120"/>
+<line class="wire" data-net="OUTN" x1="50" y1="90" x2="50" y2="120"/>
+<line class="wire" data-net="OUTP" x1="30" y1="130" x2="450" y2="130"/>
+<line class="wire" data-net="OUTP" x1="430" y1="30" x2="560" y2="30"/>
+<line class="wire" data-net="OUTP" x1="450" y1="30" x2="450" y2="130"/>
+<line class="wire" data-net="OUTP" x1="30" y1="90" x2="30" y2="130"/>
+<line class="wire" data-net="CLK" x1="310" y1="100" x2="310" y2="170"/>
+<line class="wire" data-net="CLKB" x1="350" y1="100" x2="350" y2="170"/>
+</g>
+<g class="layer-syms">
+<g class="symg blkg clickable" data-inst="XAUTO0" data-keep="1,1,79,79" data-ref="DFE_1TAP__AUTO0" data-hidden="VDD,VSS" data-body="0,0,80,80">
+<rect class="hit" x="-10" y="-10" width="100" height="100"/>
+<circle class="blk" cx="40" cy="40" r="30"/>
+<text class="sum-t" x="40" y="47" text-anchor="middle">Σ</text>
+<line class="blk" x1="-10" y1="30" x2="11.72" y2="30"/>
+<polygon class="arrowhead" points="11.72,30 3.72,26 3.72,34"/>
+<line class="blk" x1="-10" y1="50" x2="11.72" y2="50"/>
+<polygon class="arrowhead" points="11.72,50 3.72,46 3.72,54"/>
+<line class="blk" x1="90" y1="30" x2="68.28" y2="30"/>
+<line class="blk" x1="90" y1="50" x2="68.28" y2="50"/>
+<line class="blk" x1="30" y1="11.72" x2="30" y2="-10"/>
+<line class="blk" x1="50" y1="11.72" x2="50" y2="-10"/>
+<line class="blk" x1="30" y1="68.28" x2="30" y2="90"/>
+<polygon class="arrowhead" points="30,68.28 26,76.28 34,76.28"/>
+<line class="blk" x1="50" y1="68.28" x2="50" y2="90"/>
+<polygon class="arrowhead" points="50,68.28 46,76.28 54,76.28"/>
+<text class="devlbl" x="86" y="94" text-anchor="start"><tspan class="lbl-name">(auto)</tspan><tspan class="lbl-name"> : </tspan><tspan class="lbl-cell">Summer</tspan></text>
+</g>
+<g class="symg blkg clickable" data-inst="X_DFF" data-keep="241,-9,419,89" data-ref="CML_DFF" data-hidden="VDD,VSS" data-body="250,0,410,80">
+<rect class="hit" x="230" y="-20" width="200" height="120"/>
+<polyline class="blk" points="250,0 410,0 410,80 250,80 250,0"/>
+<line class="blk" x1="230" y1="30" x2="250" y2="30"/>
+<polygon class="arrowhead" points="250,30 242,26 242,34"/>
+<text class="pin-t" x="255" y="33.5" text-anchor="start">DP</text>
+<line class="blk" x1="230" y1="50" x2="250" y2="50"/>
+<polygon class="arrowhead" points="250,50 242,46 242,54"/>
+<text class="pin-t" x="255" y="53.5" text-anchor="start">DN</text>
+<line class="blk" x1="430" y1="30" x2="410" y2="30"/>
+<text class="pin-t" x="405" y="33.5" text-anchor="end">QP</text>
+<line class="blk" x1="430" y1="50" x2="410" y2="50"/>
+<text class="pin-t" x="405" y="53.5" text-anchor="end">QN</text>
+<line class="blk" x1="330" y1="-20" x2="330" y2="0"/>
+<text class="pin-t" x="330" y="12" text-anchor="middle">VBIAS</text>
+<line class="blk" x1="310" y1="100" x2="310" y2="80"/>
+<polygon class="arrowhead" points="310,80 306,88 314,88"/>
+<polyline class="blk" points="304,80 310,71 316,80"/>
+<text class="pin-t" x="310" y="68" text-anchor="middle">CLK</text>
+<line class="blk" x1="350" y1="100" x2="350" y2="80"/>
+<polygon class="arrowhead" points="350,80 346,88 354,88"/>
+<polyline class="blk" points="344,80 350,71 356,80"/>
+<text class="pin-t" x="350" y="68" text-anchor="middle">CLKB</text>
+<text class="blk-t" x="330" y="45" text-anchor="middle">DFF</text>
+<text class="devlbl" x="416" y="-6" text-anchor="start"><tspan class="lbl-name">X_DFF</tspan><tspan class="lbl-name"> : </tspan><tspan class="lbl-cell">CML_DFF</tspan></text>
+</g>
+</g>
+<g class="layer-rails">
+</g>
+<g class="layer-dots">
+<circle class="dot" data-net="OUTN" cx="440" cy="50" r="2.6"/>
+<circle class="dot" data-net="OUTP" cx="450" cy="30" r="2.6"/>
+</g>
+<g class="layer-labels">
+<g class="term port" data-net="INP" data-ax="-140" data-ay="30">
+<text class="term-t" x="-147" y="33.5" text-anchor="end">INP</text>
+</g>
+<g class="term port" data-net="INN" data-ax="-140" data-ay="50">
+<text class="term-t" x="-147" y="53.5" text-anchor="end">INN</text>
+</g>
+<g class="term port" data-net="CLK" data-ax="310" data-ay="170">
+<text class="term-t" x="310" y="186" text-anchor="middle">CLK</text>
+</g>
+<g class="term port" data-net="CLKB" data-ax="350" data-ay="170">
+<text class="term-t" x="350" y="186" text-anchor="middle">CLKB</text>
+</g>
+<g class="term port" data-net="OUTP" data-ax="560" data-ay="30">
+<polygon class="arrowhead" points="564,30 555,26 555,34"/>
+<text class="term-t" x="571" y="33.5" text-anchor="start">OUTP</text>
+</g>
+<g class="term port" data-net="OUTN" data-ax="560" data-ay="50">
+<polygon class="arrowhead" points="564,50 555,46 555,54"/>
+<text class="term-t" x="571" y="53.5" text-anchor="start">OUTN</text>
+</g>
+<g class="term port" data-net="VBIAS_MAIN" data-ax="30" data-ay="-30">
+<text class="term-t" x="33.5" y="-35" text-anchor="start" transform="rotate(-90 33.5 -35)" data-rot="1">VBIAS_MAIN</text>
+</g>
+<g class="term port" data-net="VBIAS_TAP" data-ax="50" data-ay="-30">
+<text class="term-t" x="53.5" y="-35" text-anchor="start" transform="rotate(-90 53.5 -35)" data-rot="1">VBIAS_TAP</text>
+</g>
+<g class="term port" data-net="VBIAS_DFF" data-ax="330" data-ay="-40">
+<text class="term-t" x="333.5" y="-45" text-anchor="start" transform="rotate(-90 333.5 -45)" data-rot="1">VBIAS_DFF</text>
+</g>
+<text class="netlabel lbl-net" data-net="SUMN" data-ax="160" data-ay="50" x="160" y="45" text-anchor="middle">SUMN</text>
+<text class="netlabel lbl-net" data-net="SUMP" data-ax="160" data-ay="30" x="160" y="25" text-anchor="middle">SUMP</text>
+</g>
+<g class="layer-pins">
+<circle class="pin" data-inst="XAUTO0" data-pin="INP" data-net="INP" cx="-10" cy="30" r="2"/>
+<circle class="pin" data-inst="XAUTO0" data-pin="INN" data-net="INN" cx="-10" cy="50" r="2"/>
+<circle class="pin" data-inst="XAUTO0" data-pin="SUMP" data-net="SUMP" cx="90" cy="30" r="2"/>
+<circle class="pin" data-inst="XAUTO0" data-pin="SUMN" data-net="SUMN" cx="90" cy="50" r="2"/>
+<circle class="pin" data-inst="XAUTO0" data-pin="VBIAS_MAIN" data-net="VBIAS_MAIN" cx="30" cy="-10" r="2"/>
+<circle class="pin" data-inst="XAUTO0" data-pin="VBIAS_TAP" data-net="VBIAS_TAP" cx="50" cy="-10" r="2"/>
+<circle class="pin" data-inst="XAUTO0" data-pin="OUTP" data-net="OUTP" cx="30" cy="90" r="2"/>
+<circle class="pin" data-inst="XAUTO0" data-pin="OUTN" data-net="OUTN" cx="50" cy="90" r="2"/>
+<circle class="pin" data-inst="X_DFF" data-pin="DP" data-net="SUMP" cx="230" cy="30" r="2"/>
+<circle class="pin" data-inst="X_DFF" data-pin="DN" data-net="SUMN" cx="230" cy="50" r="2"/>
+<circle class="pin" data-inst="X_DFF" data-pin="QP" data-net="OUTP" cx="430" cy="30" r="2"/>
+<circle class="pin" data-inst="X_DFF" data-pin="QN" data-net="OUTN" cx="430" cy="50" r="2"/>
+<circle class="pin" data-inst="X_DFF" data-pin="VBIAS" data-net="VBIAS_DFF" cx="330" cy="-20" r="2"/>
+<circle class="pin" data-inst="X_DFF" data-pin="CLK" data-net="CLK" cx="310" cy="100" r="2"/>
+<circle class="pin" data-inst="X_DFF" data-pin="CLKB" data-net="CLKB" cx="350" cy="100" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="INP" data-net="INP" cx="-140" cy="30" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="INN" data-net="INN" cx="-140" cy="50" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="CLK" data-net="CLK" cx="310" cy="170" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="CLKB" data-net="CLKB" cx="350" cy="170" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="OUTP" data-net="OUTP" cx="560" cy="30" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="OUTN" data-net="OUTN" cx="560" cy="50" r="2"/>
+</g>
+</svg></div><div class="view" data-cell="DFE_1TAP__AUTO0" hidden><svg class="sch" xmlns="http://www.w3.org/2000/svg" data-cell="DFE_1TAP__AUTO0" viewBox="-210 -70 720 500" data-bounds="-210,-70,510,430">
+<g class="layer-wires">
+<line class="wire" data-net="VSS" x1="300" y1="330" x2="300" y2="340"/>
+<line class="wire" data-net="VSS" x1="0" y1="330" x2="0" y2="340"/>
+<line class="wire" data-net="VDD" x1="-90" y1="0" x2="90" y2="0"/>
+<line class="wire" data-net="VDD" x1="-60" y1="0" x2="-60" y2="30"/>
+<line class="wire" data-net="VDD" x1="60" y1="0" x2="60" y2="30"/>
+<line class="wire" data-net="SUMP" x1="-60" y1="120" x2="240" y2="120"/>
+<line class="wire" data-net="SUMP" x1="-60" y1="90" x2="-60" y2="150"/>
+<line class="wire" data-net="SUMP" x1="240" y1="120" x2="240" y2="150"/>
+<line class="wire" data-net="SUMN" x1="60" y1="100" x2="360" y2="100"/>
+<line class="wire" data-net="SUMN" x1="60" y1="90" x2="60" y2="150"/>
+<line class="wire" data-net="SUMN" x1="360" y1="100" x2="360" y2="150"/>
+<line class="wire" data-net="TAIL_M" x1="-60" y1="240" x2="60" y2="240"/>
+<line class="wire" data-net="TAIL_M" x1="60" y1="210" x2="60" y2="240"/>
+<line class="wire" data-net="TAIL_M" x1="0" y1="240" x2="0" y2="270"/>
+<line class="wire" data-net="TAIL_M" x1="-60" y1="210" x2="-60" y2="240"/>
+<line class="wire" data-net="TAIL_T1" x1="240" y1="240" x2="360" y2="240"/>
+<line class="wire" data-net="TAIL_T1" x1="240" y1="210" x2="240" y2="240"/>
+<line class="wire" data-net="TAIL_T1" x1="300" y1="240" x2="300" y2="270"/>
+<line class="wire" data-net="TAIL_T1" x1="360" y1="210" x2="360" y2="240"/>
+</g>
+<g class="layer-syms">
+<g class="symg dev" data-inst="MB_M" data-keep="-15,271,1,329;-29,299,-14,301" data-type="nmos">
+<line class="sym" x1="-30" y1="300" x2="-15" y2="300"/>
+<line class="sym gate" x1="-15" y1="290" x2="-15" y2="310"/>
+<line class="sym chan" x1="-9" y1="288" x2="-9" y2="312"/>
+<line class="sym" x1="-9" y1="288" x2="0" y2="288"/>
+<line class="sym" x1="0" y1="288" x2="0" y2="270"/>
+<line class="sym" x1="-9" y1="312" x2="0" y2="312"/>
+<line class="sym" x1="0" y1="312" x2="0" y2="330"/>
+<polygon class="sym arrow" points="-0.6,312 -5.6,308.5 -5.6,315.5"/>
+<text class="devlbl" x="6" y="288" text-anchor="start"><tspan class="lbl-name">MB_M</tspan></text>
+<text class="devlbl" x="6" y="301" text-anchor="start"><tspan class="lbl-wl">40µ/90n</tspan></text>
+<text class="devlbl" x="6" y="313" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="M1" data-keep="-75,151,-59,209;-89,179,-74,181" data-type="nmos">
+<line class="sym" x1="-90" y1="180" x2="-75" y2="180"/>
+<line class="sym gate" x1="-75" y1="170" x2="-75" y2="190"/>
+<line class="sym chan" x1="-69" y1="168" x2="-69" y2="192"/>
+<line class="sym" x1="-69" y1="168" x2="-60" y2="168"/>
+<line class="sym" x1="-60" y1="168" x2="-60" y2="150"/>
+<line class="sym" x1="-69" y1="192" x2="-60" y2="192"/>
+<line class="sym" x1="-60" y1="192" x2="-60" y2="210"/>
+<polygon class="sym arrow" points="-60.6,192 -65.6,188.5 -65.6,195.5"/>
+<text class="devlbl" x="-54" y="168" text-anchor="start"><tspan class="lbl-name">M1</tspan></text>
+<text class="devlbl" x="-54" y="181" text-anchor="start"><tspan class="lbl-wl">20µ/45n</tspan></text>
+<text class="devlbl" x="-54" y="193" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="RLP" data-keep="-67,31,-53,89" data-type="res">
+<line class="sym" x1="-60" y1="30" x2="-60" y2="42"/>
+<polyline class="sym" points="-60,42 -54,45 -66,51 -54,57 -66,63 -54,69 -66,75 -60,78"/>
+<line class="sym" x1="-60" y1="78" x2="-60" y2="90"/>
+<text class="devlbl" x="-49" y="55" text-anchor="start"><tspan class="lbl-name">RLP</tspan></text>
+<text class="devlbl" x="-49" y="68" text-anchor="start"><tspan class="lbl-val">500Ω</tspan></text>
+</g>
+<g class="symg dev" data-inst="M2" data-keep="59,151,75,209;74,179,89,181" data-type="nmos">
+<line class="sym" x1="90" y1="180" x2="75" y2="180"/>
+<line class="sym gate" x1="75" y1="170" x2="75" y2="190"/>
+<line class="sym chan" x1="69" y1="168" x2="69" y2="192"/>
+<line class="sym" x1="69" y1="168" x2="60" y2="168"/>
+<line class="sym" x1="60" y1="168" x2="60" y2="150"/>
+<line class="sym" x1="69" y1="192" x2="60" y2="192"/>
+<line class="sym" x1="60" y1="192" x2="60" y2="210"/>
+<polygon class="sym arrow" points="60.6,192 65.6,188.5 65.6,195.5"/>
+<text class="devlbl" x="54" y="168" text-anchor="end"><tspan class="lbl-name">M2</tspan></text>
+<text class="devlbl" x="54" y="181" text-anchor="end"><tspan class="lbl-wl">20µ/45n</tspan></text>
+<text class="devlbl" x="54" y="193" text-anchor="end"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="RLN" data-keep="53,31,67,89" data-type="res">
+<line class="sym" x1="60" y1="30" x2="60" y2="42"/>
+<polyline class="sym" points="60,42 66,45 54,51 66,57 54,63 66,69 54,75 60,78"/>
+<line class="sym" x1="60" y1="78" x2="60" y2="90"/>
+<text class="devlbl" x="71" y="55" text-anchor="start"><tspan class="lbl-name">RLN</tspan></text>
+<text class="devlbl" x="71" y="68" text-anchor="start"><tspan class="lbl-val">500Ω</tspan></text>
+</g>
+<g class="symg dev" data-inst="MB_T1" data-keep="285,271,301,329;271,299,286,301" data-type="nmos">
+<line class="sym" x1="270" y1="300" x2="285" y2="300"/>
+<line class="sym gate" x1="285" y1="290" x2="285" y2="310"/>
+<line class="sym chan" x1="291" y1="288" x2="291" y2="312"/>
+<line class="sym" x1="291" y1="288" x2="300" y2="288"/>
+<line class="sym" x1="300" y1="288" x2="300" y2="270"/>
+<line class="sym" x1="291" y1="312" x2="300" y2="312"/>
+<line class="sym" x1="300" y1="312" x2="300" y2="330"/>
+<polygon class="sym arrow" points="299.4,312 294.4,308.5 294.4,315.5"/>
+<text class="devlbl" x="306" y="288" text-anchor="start"><tspan class="lbl-name">MB_T1</tspan></text>
+<text class="devlbl" x="306" y="301" text-anchor="start"><tspan class="lbl-wl">16µ/90n</tspan></text>
+<text class="devlbl" x="306" y="313" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="M3" data-keep="225,151,241,209;211,179,226,181" data-type="nmos">
+<line class="sym" x1="210" y1="180" x2="225" y2="180"/>
+<line class="sym gate" x1="225" y1="170" x2="225" y2="190"/>
+<line class="sym chan" x1="231" y1="168" x2="231" y2="192"/>
+<line class="sym" x1="231" y1="168" x2="240" y2="168"/>
+<line class="sym" x1="240" y1="168" x2="240" y2="150"/>
+<line class="sym" x1="231" y1="192" x2="240" y2="192"/>
+<line class="sym" x1="240" y1="192" x2="240" y2="210"/>
+<polygon class="sym arrow" points="239.4,192 234.4,188.5 234.4,195.5"/>
+<text class="devlbl" x="246" y="168" text-anchor="start"><tspan class="lbl-name">M3</tspan></text>
+<text class="devlbl" x="246" y="181" text-anchor="start"><tspan class="lbl-wl">8µ/45n</tspan></text>
+<text class="devlbl" x="246" y="193" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="M4" data-keep="359,151,375,209;374,179,389,181" data-type="nmos">
+<line class="sym" x1="390" y1="180" x2="375" y2="180"/>
+<line class="sym gate" x1="375" y1="170" x2="375" y2="190"/>
+<line class="sym chan" x1="369" y1="168" x2="369" y2="192"/>
+<line class="sym" x1="369" y1="168" x2="360" y2="168"/>
+<line class="sym" x1="360" y1="168" x2="360" y2="150"/>
+<line class="sym" x1="369" y1="192" x2="360" y2="192"/>
+<line class="sym" x1="360" y1="192" x2="360" y2="210"/>
+<polygon class="sym arrow" points="360.6,192 365.6,188.5 365.6,195.5"/>
+<text class="devlbl" x="354" y="168" text-anchor="end"><tspan class="lbl-name">M4</tspan></text>
+<text class="devlbl" x="354" y="181" text-anchor="end"><tspan class="lbl-wl">8µ/45n</tspan></text>
+<text class="devlbl" x="354" y="193" text-anchor="end"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+</g>
+<g class="layer-rails">
+<g class="rail" data-net="VSS" data-ax="0" data-ay="340">
+<line class="sym" x1="0" y1="340" x2="0" y2="348"/>
+<line class="sym" x1="-9" y1="348" x2="9" y2="348"/>
+<line class="sym" x1="-6" y1="352" x2="6" y2="352"/>
+<line class="sym" x1="-3" y1="356" x2="3" y2="356"/>
+</g>
+<g class="rail" data-net="VSS" data-ax="300" data-ay="340">
+<line class="sym" x1="300" y1="340" x2="300" y2="348"/>
+<line class="sym" x1="291" y1="348" x2="309" y2="348"/>
+<line class="sym" x1="294" y1="352" x2="306" y2="352"/>
+<line class="sym" x1="297" y1="356" x2="303" y2="356"/>
+</g>
+</g>
+<g class="layer-dots">
+<circle class="dot" data-net="VDD" cx="-60" cy="0" r="2.6"/>
+<circle class="dot" data-net="VDD" cx="60" cy="0" r="2.6"/>
+<circle class="dot" data-net="SUMP" cx="-60" cy="120" r="2.6"/>
+<circle class="dot" data-net="SUMN" cx="60" cy="100" r="2.6"/>
+<circle class="dot" data-net="TAIL_M" cx="0" cy="240" r="2.6"/>
+<circle class="dot" data-net="TAIL_T1" cx="300" cy="240" r="2.6"/>
+</g>
+<g class="layer-labels">
+<g class="term port" data-net="VBIAS_MAIN" data-ax="-30" data-ay="300">
+<text class="term-t" x="-37" y="303.5" text-anchor="end">VBIAS_MAIN</text>
+</g>
+<g class="term port" data-net="INP" data-ax="-90" data-ay="180">
+<text class="term-t" x="-97" y="183.5" text-anchor="end">INP</text>
+</g>
+<g class="term port" data-net="INN" data-ax="90" data-ay="180">
+<text class="term-t" x="97" y="183.5" text-anchor="start">INN</text>
+</g>
+<g class="term port" data-net="VBIAS_TAP" data-ax="270" data-ay="300">
+<text class="term-t" x="263" y="303.5" text-anchor="end">VBIAS_TAP</text>
+</g>
+<g class="term port" data-net="OUTP" data-ax="210" data-ay="180">
+<text class="term-t" x="203" y="183.5" text-anchor="end">OUTP</text>
+</g>
+<g class="term port" data-net="OUTN" data-ax="390" data-ay="180">
+<text class="term-t" x="397" y="183.5" text-anchor="start">OUTN</text>
+</g>
+<text class="netlabel lbl-rail" data-net="VDD" data-ax="0" data-ay="0" x="0" y="-7" text-anchor="middle">VDD</text>
+<text class="netlabel lbl-net" data-net="TAIL_M" data-ax="0" data-ay="240" x="0" y="235" text-anchor="middle">TAIL_M</text>
+<text class="netlabel lbl-net" data-net="TAIL_T1" data-ax="300" data-ay="240" x="300" y="235" text-anchor="middle">TAIL_T1</text>
+<text class="netlabel lbl-port" data-net="SUMP" data-ax="90" data-ay="120" x="90" y="115" text-anchor="middle">SUMP</text>
+<text class="netlabel lbl-port" data-net="SUMN" data-ax="210" data-ay="100" x="210" y="95" text-anchor="middle">SUMN</text>
+</g>
+<g class="layer-pins">
+<circle class="pin" data-inst="MB_M" data-pin="d" data-net="TAIL_M" cx="0" cy="270" r="2"/>
+<circle class="pin" data-inst="MB_M" data-pin="g" data-net="VBIAS_MAIN" cx="-30" cy="300" r="2"/>
+<circle class="pin" data-inst="MB_M" data-pin="s" data-net="VSS" cx="0" cy="330" r="2"/>
+<circle class="pin" data-inst="M1" data-pin="d" data-net="SUMP" cx="-60" cy="150" r="2"/>
+<circle class="pin" data-inst="M1" data-pin="g" data-net="INP" cx="-90" cy="180" r="2"/>
+<circle class="pin" data-inst="M1" data-pin="s" data-net="TAIL_M" cx="-60" cy="210" r="2"/>
+<circle class="pin" data-inst="RLP" data-pin="p" data-net="VDD" cx="-60" cy="30" r="2"/>
+<circle class="pin" data-inst="RLP" data-pin="n" data-net="SUMP" cx="-60" cy="90" r="2"/>
+<circle class="pin" data-inst="M2" data-pin="d" data-net="SUMN" cx="60" cy="150" r="2"/>
+<circle class="pin" data-inst="M2" data-pin="g" data-net="INN" cx="90" cy="180" r="2"/>
+<circle class="pin" data-inst="M2" data-pin="s" data-net="TAIL_M" cx="60" cy="210" r="2"/>
+<circle class="pin" data-inst="RLN" data-pin="p" data-net="VDD" cx="60" cy="30" r="2"/>
+<circle class="pin" data-inst="RLN" data-pin="n" data-net="SUMN" cx="60" cy="90" r="2"/>
+<circle class="pin" data-inst="MB_T1" data-pin="d" data-net="TAIL_T1" cx="300" cy="270" r="2"/>
+<circle class="pin" data-inst="MB_T1" data-pin="g" data-net="VBIAS_TAP" cx="270" cy="300" r="2"/>
+<circle class="pin" data-inst="MB_T1" data-pin="s" data-net="VSS" cx="300" cy="330" r="2"/>
+<circle class="pin" data-inst="M3" data-pin="d" data-net="SUMP" cx="240" cy="150" r="2"/>
+<circle class="pin" data-inst="M3" data-pin="g" data-net="OUTP" cx="210" cy="180" r="2"/>
+<circle class="pin" data-inst="M3" data-pin="s" data-net="TAIL_T1" cx="240" cy="210" r="2"/>
+<circle class="pin" data-inst="M4" data-pin="d" data-net="SUMN" cx="360" cy="150" r="2"/>
+<circle class="pin" data-inst="M4" data-pin="g" data-net="OUTN" cx="390" cy="180" r="2"/>
+<circle class="pin" data-inst="M4" data-pin="s" data-net="TAIL_T1" cx="360" cy="210" r="2"/>
+</g>
+</svg></div><div class="view" data-cell="CML_DFF" hidden><svg class="sch" xmlns="http://www.w3.org/2000/svg" data-cell="CML_DFF" viewBox="-270 -140 1030 450" data-bounds="-270,-140,760,310">
+<g class="layer-wires">
+<line class="wire" data-net="VBIAS" x1="80" y1="-40" x2="80" y2="-20"/>
+<line class="wire" data-net="VBIAS" x1="410" y1="-40" x2="410" y2="-20"/>
+<line class="wire" data-net="DN" x1="-150" y1="50" x2="-20" y2="50"/>
+<line class="wire" data-net="DP" x1="-150" y1="30" x2="-20" y2="30"/>
+<line class="wire" data-net="MN" x1="180" y1="50" x2="310" y2="50"/>
+<line class="wire" data-net="MP" x1="180" y1="30" x2="310" y2="30"/>
+<line class="wire" data-net="QN" x1="510" y1="50" x2="640" y2="50"/>
+<line class="wire" data-net="QP" x1="510" y1="30" x2="640" y2="30"/>
+<line class="wire" data-net="CLK" x1="100" y1="110" x2="390" y2="110"/>
+<line class="wire" data-net="CLK" x1="100" y1="100" x2="100" y2="170"/>
+<line class="wire" data-net="CLK" x1="390" y1="100" x2="390" y2="110"/>
+<line class="wire" data-net="CLKB" x1="60" y1="120" x2="430" y2="120"/>
+<line class="wire" data-net="CLKB" x1="60" y1="100" x2="60" y2="170"/>
+<line class="wire" data-net="CLKB" x1="430" y1="100" x2="430" y2="120"/>
+</g>
+<g class="layer-syms">
+<g class="symg blkg clickable" data-inst="X_MASTER" data-keep="-9,-9,169,89" data-ref="CML_LATCH" data-hidden="VDD,VSS" data-body="0,0,160,80">
+<rect class="hit" x="-20" y="-20" width="200" height="120"/>
+<polyline class="blk" points="0,0 160,0 160,80 0,80 0,0"/>
+<line class="blk" x1="-20" y1="30" x2="0" y2="30"/>
+<polygon class="arrowhead" points="0,30 -8,26 -8,34"/>
+<text class="pin-t" x="5" y="33.5" text-anchor="start">DP</text>
+<line class="blk" x1="-20" y1="50" x2="0" y2="50"/>
+<polygon class="arrowhead" points="0,50 -8,46 -8,54"/>
+<text class="pin-t" x="5" y="53.5" text-anchor="start">DN</text>
+<line class="blk" x1="180" y1="30" x2="160" y2="30"/>
+<text class="pin-t" x="155" y="33.5" text-anchor="end">QP</text>
+<line class="blk" x1="180" y1="50" x2="160" y2="50"/>
+<text class="pin-t" x="155" y="53.5" text-anchor="end">QN</text>
+<line class="blk" x1="80" y1="-20" x2="80" y2="0"/>
+<text class="pin-t" x="80" y="12" text-anchor="middle">VBIAS</text>
+<line class="blk" x1="60" y1="100" x2="60" y2="80"/>
+<polygon class="arrowhead" points="60,80 56,88 64,88"/>
+<text class="pin-t" x="60" y="74" text-anchor="middle">CLK</text>
+<line class="blk" x1="100" y1="100" x2="100" y2="80"/>
+<polygon class="arrowhead" points="100,80 96,88 104,88"/>
+<text class="pin-t" x="100" y="74" text-anchor="middle">CLKB</text>
+<text class="blk-t" x="80" y="45" text-anchor="middle">LATCH</text>
+<text class="devlbl" x="166" y="94" text-anchor="start"><tspan class="lbl-name">X_MASTER</tspan><tspan class="lbl-name"> : </tspan><tspan class="lbl-cell">CML_LATCH</tspan></text>
+</g>
+<g class="symg blkg clickable" data-inst="X_SLAVE" data-keep="321,-9,499,89" data-ref="CML_LATCH" data-hidden="VDD,VSS" data-body="330,0,490,80">
+<rect class="hit" x="310" y="-20" width="200" height="120"/>
+<polyline class="blk" points="330,0 490,0 490,80 330,80 330,0"/>
+<line class="blk" x1="310" y1="30" x2="330" y2="30"/>
+<polygon class="arrowhead" points="330,30 322,26 322,34"/>
+<text class="pin-t" x="335" y="33.5" text-anchor="start">DP</text>
+<line class="blk" x1="310" y1="50" x2="330" y2="50"/>
+<polygon class="arrowhead" points="330,50 322,46 322,54"/>
+<text class="pin-t" x="335" y="53.5" text-anchor="start">DN</text>
+<line class="blk" x1="510" y1="30" x2="490" y2="30"/>
+<text class="pin-t" x="485" y="33.5" text-anchor="end">QP</text>
+<line class="blk" x1="510" y1="50" x2="490" y2="50"/>
+<text class="pin-t" x="485" y="53.5" text-anchor="end">QN</text>
+<line class="blk" x1="410" y1="-20" x2="410" y2="0"/>
+<text class="pin-t" x="410" y="12" text-anchor="middle">VBIAS</text>
+<line class="blk" x1="390" y1="100" x2="390" y2="80"/>
+<polygon class="arrowhead" points="390,80 386,88 394,88"/>
+<text class="pin-t" x="390" y="74" text-anchor="middle">CLK</text>
+<line class="blk" x1="430" y1="100" x2="430" y2="80"/>
+<polygon class="arrowhead" points="430,80 426,88 434,88"/>
+<text class="pin-t" x="430" y="74" text-anchor="middle">CLKB</text>
+<text class="blk-t" x="410" y="45" text-anchor="middle">LATCH</text>
+<text class="devlbl" x="496" y="94" text-anchor="start"><tspan class="lbl-name">X_SLAVE</tspan><tspan class="lbl-name"> : </tspan><tspan class="lbl-cell">CML_LATCH</tspan></text>
+</g>
+</g>
+<g class="layer-rails">
+</g>
+<g class="layer-dots">
+<circle class="dot" data-net="CLK" cx="100" cy="110" r="2.6"/>
+<circle class="dot" data-net="CLKB" cx="60" cy="120" r="2.6"/>
+</g>
+<g class="layer-labels">
+<g class="term port" data-net="DP" data-ax="-150" data-ay="30">
+<text class="term-t" x="-157" y="33.5" text-anchor="end">DP</text>
+</g>
+<g class="term port" data-net="DN" data-ax="-150" data-ay="50">
+<text class="term-t" x="-157" y="53.5" text-anchor="end">DN</text>
+</g>
+<g class="term port" data-net="CLK" data-ax="100" data-ay="170">
+<text class="term-t" x="100" y="186" text-anchor="middle">CLK</text>
+</g>
+<g class="term port" data-net="CLKB" data-ax="60" data-ay="170">
+<text class="term-t" x="60" y="186" text-anchor="middle">CLKB</text>
+</g>
+<g class="term port" data-net="QP" data-ax="640" data-ay="30">
+<polygon class="arrowhead" points="644,30 635,26 635,34"/>
+<text class="term-t" x="651" y="33.5" text-anchor="start">QP</text>
+</g>
+<g class="term port" data-net="QN" data-ax="640" data-ay="50">
+<polygon class="arrowhead" points="644,50 635,46 635,54"/>
+<text class="term-t" x="651" y="53.5" text-anchor="start">QN</text>
+</g>
+<g class="term port" data-net="VBIAS" data-ax="80" data-ay="-40">
+<text class="term-t" x="83.5" y="-45" text-anchor="start" transform="rotate(-90 83.5 -45)" data-rot="1">VBIAS</text>
+</g>
+<g class="term port" data-net="VBIAS" data-ax="410" data-ay="-40">
+<text class="term-t" x="413.5" y="-45" text-anchor="start" transform="rotate(-90 413.5 -45)" data-rot="1">VBIAS</text>
+</g>
+<text class="netlabel lbl-net" data-net="MN" data-ax="240" data-ay="50" x="240" y="45" text-anchor="middle">MN</text>
+<text class="netlabel lbl-net" data-net="MP" data-ax="240" data-ay="30" x="240" y="25" text-anchor="middle">MP</text>
+</g>
+<g class="layer-pins">
+<circle class="pin" data-inst="X_MASTER" data-pin="DP" data-net="DP" cx="-20" cy="30" r="2"/>
+<circle class="pin" data-inst="X_MASTER" data-pin="DN" data-net="DN" cx="-20" cy="50" r="2"/>
+<circle class="pin" data-inst="X_MASTER" data-pin="QP" data-net="MP" cx="180" cy="30" r="2"/>
+<circle class="pin" data-inst="X_MASTER" data-pin="QN" data-net="MN" cx="180" cy="50" r="2"/>
+<circle class="pin" data-inst="X_MASTER" data-pin="VBIAS" data-net="VBIAS" cx="80" cy="-20" r="2"/>
+<circle class="pin" data-inst="X_MASTER" data-pin="CLK" data-net="CLKB" cx="60" cy="100" r="2"/>
+<circle class="pin" data-inst="X_MASTER" data-pin="CLKB" data-net="CLK" cx="100" cy="100" r="2"/>
+<circle class="pin" data-inst="X_SLAVE" data-pin="DP" data-net="MP" cx="310" cy="30" r="2"/>
+<circle class="pin" data-inst="X_SLAVE" data-pin="DN" data-net="MN" cx="310" cy="50" r="2"/>
+<circle class="pin" data-inst="X_SLAVE" data-pin="QP" data-net="QP" cx="510" cy="30" r="2"/>
+<circle class="pin" data-inst="X_SLAVE" data-pin="QN" data-net="QN" cx="510" cy="50" r="2"/>
+<circle class="pin" data-inst="X_SLAVE" data-pin="VBIAS" data-net="VBIAS" cx="410" cy="-20" r="2"/>
+<circle class="pin" data-inst="X_SLAVE" data-pin="CLK" data-net="CLK" cx="390" cy="100" r="2"/>
+<circle class="pin" data-inst="X_SLAVE" data-pin="CLKB" data-net="CLKB" cx="430" cy="100" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="DP" data-net="DP" cx="-150" cy="30" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="DN" data-net="DN" cx="-150" cy="50" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="CLK" data-net="CLK" cx="100" cy="170" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="CLKB" data-net="CLKB" cx="60" cy="170" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="QP" data-net="QP" cx="640" cy="30" r="2"/>
+<circle class="pin" data-inst="PORT" data-pin="QN" data-net="QN" cx="640" cy="50" r="2"/>
+</g>
+</svg></div><div class="view" data-cell="CML_LATCH" hidden><svg class="sch" xmlns="http://www.w3.org/2000/svg" data-cell="CML_LATCH" viewBox="-330 -70 660 620" data-bounds="-330,-70,330,550">
+<g class="layer-wires">
+<line class="wire" data-net="VSS" x1="0" y1="450" x2="0" y2="460"/>
+<line class="wire" data-net="VDD" x1="-210" y1="0" x2="210" y2="0"/>
+<line class="wire" data-net="VDD" x1="180" y1="0" x2="180" y2="30"/>
+<line class="wire" data-net="VDD" x1="-180" y1="0" x2="-180" y2="30"/>
+<line class="wire" data-net="QP" x1="-180" y1="120" x2="-60" y2="120"/>
+<line class="wire" data-net="QP" x1="-60" y1="120" x2="-60" y2="150"/>
+<line class="wire" data-net="QP" x1="-180" y1="90" x2="-180" y2="150"/>
+<line class="wire" data-net="QN" x1="60" y1="120" x2="180" y2="120"/>
+<line class="wire" data-net="QN" x1="180" y1="90" x2="180" y2="150"/>
+<line class="wire" data-net="QN" x1="60" y1="120" x2="60" y2="150"/>
+<line class="wire" data-net="TAIL_T" x1="-180" y1="240" x2="180" y2="240"/>
+<line class="wire" data-net="TAIL_T" x1="-180" y1="210" x2="-180" y2="240"/>
+<line class="wire" data-net="TAIL_T" x1="180" y1="210" x2="180" y2="240"/>
+<line class="wire" data-net="TAIL_T" x1="-60" y1="240" x2="-60" y2="270"/>
+<line class="wire" data-net="TAIL_H" x1="-60" y1="220" x2="60" y2="220"/>
+<line class="wire" data-net="TAIL_H" x1="60" y1="210" x2="60" y2="270"/>
+<line class="wire" data-net="TAIL_H" x1="-60" y1="210" x2="-60" y2="220"/>
+<line class="wire" data-net="TAIL" x1="-60" y1="360" x2="60" y2="360"/>
+<line class="wire" data-net="TAIL" x1="60" y1="330" x2="60" y2="360"/>
+<line class="wire" data-net="TAIL" x1="0" y1="360" x2="0" y2="390"/>
+<line class="wire" data-net="TAIL" x1="-60" y1="330" x2="-60" y2="360"/>
+<line class="wire diag" data-net="QP" x1="-60" y1="140" x2="30" y2="180"/>
+<line class="wire diag" data-net="QN" x1="60" y1="140" x2="-30" y2="180"/>
+</g>
+<g class="layer-syms">
+<g class="symg dev" data-inst="MB" data-keep="-15,391,1,449;-29,419,-14,421" data-type="nmos">
+<line class="sym" x1="-30" y1="420" x2="-15" y2="420"/>
+<line class="sym gate" x1="-15" y1="410" x2="-15" y2="430"/>
+<line class="sym chan" x1="-9" y1="408" x2="-9" y2="432"/>
+<line class="sym" x1="-9" y1="408" x2="0" y2="408"/>
+<line class="sym" x1="0" y1="408" x2="0" y2="390"/>
+<line class="sym" x1="-9" y1="432" x2="0" y2="432"/>
+<line class="sym" x1="0" y1="432" x2="0" y2="450"/>
+<polygon class="sym arrow" points="-0.6,432 -5.6,428.5 -5.6,435.5"/>
+<text class="devlbl" x="6" y="408" text-anchor="start"><tspan class="lbl-name">MB</tspan></text>
+<text class="devlbl" x="6" y="421" text-anchor="start"><tspan class="lbl-wl">32µ/90n</tspan></text>
+<text class="devlbl" x="6" y="433" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="M5" data-keep="-75,271,-59,329;-89,299,-74,301" data-type="nmos">
+<line class="sym" x1="-90" y1="300" x2="-75" y2="300"/>
+<line class="sym gate" x1="-75" y1="290" x2="-75" y2="310"/>
+<line class="sym chan" x1="-69" y1="288" x2="-69" y2="312"/>
+<line class="sym" x1="-69" y1="288" x2="-60" y2="288"/>
+<line class="sym" x1="-60" y1="288" x2="-60" y2="270"/>
+<line class="sym" x1="-69" y1="312" x2="-60" y2="312"/>
+<line class="sym" x1="-60" y1="312" x2="-60" y2="330"/>
+<polygon class="sym arrow" points="-60.6,312 -65.6,308.5 -65.6,315.5"/>
+<text class="devlbl" x="-54" y="288" text-anchor="start"><tspan class="lbl-name">M5</tspan></text>
+<text class="devlbl" x="-54" y="301" text-anchor="start"><tspan class="lbl-wl">16µ/45n</tspan></text>
+<text class="devlbl" x="-54" y="313" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="M1" data-keep="-195,151,-179,209;-209,179,-194,181" data-type="nmos">
+<line class="sym" x1="-210" y1="180" x2="-195" y2="180"/>
+<line class="sym gate" x1="-195" y1="170" x2="-195" y2="190"/>
+<line class="sym chan" x1="-189" y1="168" x2="-189" y2="192"/>
+<line class="sym" x1="-189" y1="168" x2="-180" y2="168"/>
+<line class="sym" x1="-180" y1="168" x2="-180" y2="150"/>
+<line class="sym" x1="-189" y1="192" x2="-180" y2="192"/>
+<line class="sym" x1="-180" y1="192" x2="-180" y2="210"/>
+<polygon class="sym arrow" points="-180.6,192 -185.6,188.5 -185.6,195.5"/>
+<text class="devlbl" x="-174" y="168" text-anchor="start"><tspan class="lbl-name">M1</tspan></text>
+<text class="devlbl" x="-174" y="181" text-anchor="start"><tspan class="lbl-wl">12µ/45n</tspan></text>
+<text class="devlbl" x="-174" y="193" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="RLP" data-keep="-187,31,-173,89" data-type="res">
+<line class="sym" x1="-180" y1="30" x2="-180" y2="42"/>
+<polyline class="sym" points="-180,42 -174,45 -186,51 -174,57 -186,63 -174,69 -186,75 -180,78"/>
+<line class="sym" x1="-180" y1="78" x2="-180" y2="90"/>
+<text class="devlbl" x="-169" y="55" text-anchor="start"><tspan class="lbl-name">RLP</tspan></text>
+<text class="devlbl" x="-169" y="68" text-anchor="start"><tspan class="lbl-val">500Ω</tspan></text>
+</g>
+<g class="symg dev" data-inst="M2" data-keep="179,151,195,209;194,179,209,181" data-type="nmos">
+<line class="sym" x1="210" y1="180" x2="195" y2="180"/>
+<line class="sym gate" x1="195" y1="170" x2="195" y2="190"/>
+<line class="sym chan" x1="189" y1="168" x2="189" y2="192"/>
+<line class="sym" x1="189" y1="168" x2="180" y2="168"/>
+<line class="sym" x1="180" y1="168" x2="180" y2="150"/>
+<line class="sym" x1="189" y1="192" x2="180" y2="192"/>
+<line class="sym" x1="180" y1="192" x2="180" y2="210"/>
+<polygon class="sym arrow" points="180.6,192 185.6,188.5 185.6,195.5"/>
+<text class="devlbl" x="174" y="168" text-anchor="end"><tspan class="lbl-name">M2</tspan></text>
+<text class="devlbl" x="174" y="181" text-anchor="end"><tspan class="lbl-wl">12µ/45n</tspan></text>
+<text class="devlbl" x="174" y="193" text-anchor="end"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="RLN" data-keep="173,31,187,89" data-type="res">
+<line class="sym" x1="180" y1="30" x2="180" y2="42"/>
+<polyline class="sym" points="180,42 186,45 174,51 186,57 174,63 186,69 174,75 180,78"/>
+<line class="sym" x1="180" y1="78" x2="180" y2="90"/>
+<text class="devlbl" x="191" y="55" text-anchor="start"><tspan class="lbl-name">RLN</tspan></text>
+<text class="devlbl" x="191" y="68" text-anchor="start"><tspan class="lbl-val">500Ω</tspan></text>
+</g>
+<g class="symg dev" data-inst="M6" data-keep="59,271,75,329;74,299,89,301" data-type="nmos">
+<line class="sym" x1="90" y1="300" x2="75" y2="300"/>
+<line class="sym gate" x1="75" y1="290" x2="75" y2="310"/>
+<line class="sym chan" x1="69" y1="288" x2="69" y2="312"/>
+<line class="sym" x1="69" y1="288" x2="60" y2="288"/>
+<line class="sym" x1="60" y1="288" x2="60" y2="270"/>
+<line class="sym" x1="69" y1="312" x2="60" y2="312"/>
+<line class="sym" x1="60" y1="312" x2="60" y2="330"/>
+<polygon class="sym arrow" points="60.6,312 65.6,308.5 65.6,315.5"/>
+<text class="devlbl" x="54" y="288" text-anchor="end"><tspan class="lbl-name">M6</tspan></text>
+<text class="devlbl" x="54" y="301" text-anchor="end"><tspan class="lbl-wl">16µ/45n</tspan></text>
+<text class="devlbl" x="54" y="313" text-anchor="end"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="M3" data-keep="-61,151,-45,209;-46,179,-31,181" data-type="nmos">
+<line class="sym" x1="-30" y1="180" x2="-45" y2="180"/>
+<line class="sym gate" x1="-45" y1="170" x2="-45" y2="190"/>
+<line class="sym chan" x1="-51" y1="168" x2="-51" y2="192"/>
+<line class="sym" x1="-51" y1="168" x2="-60" y2="168"/>
+<line class="sym" x1="-60" y1="168" x2="-60" y2="150"/>
+<line class="sym" x1="-51" y1="192" x2="-60" y2="192"/>
+<line class="sym" x1="-60" y1="192" x2="-60" y2="210"/>
+<polygon class="sym arrow" points="-59.4,192 -54.4,188.5 -54.4,195.5"/>
+<text class="devlbl" x="-66" y="168" text-anchor="end"><tspan class="lbl-name">M3</tspan></text>
+<text class="devlbl" x="-66" y="181" text-anchor="end"><tspan class="lbl-wl">12µ/45n</tspan></text>
+<text class="devlbl" x="-66" y="193" text-anchor="end"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+<g class="symg dev" data-inst="M4" data-keep="45,151,61,209;31,179,46,181" data-type="nmos">
+<line class="sym" x1="30" y1="180" x2="45" y2="180"/>
+<line class="sym gate" x1="45" y1="170" x2="45" y2="190"/>
+<line class="sym chan" x1="51" y1="168" x2="51" y2="192"/>
+<line class="sym" x1="51" y1="168" x2="60" y2="168"/>
+<line class="sym" x1="60" y1="168" x2="60" y2="150"/>
+<line class="sym" x1="51" y1="192" x2="60" y2="192"/>
+<line class="sym" x1="60" y1="192" x2="60" y2="210"/>
+<polygon class="sym arrow" points="59.4,192 54.4,188.5 54.4,195.5"/>
+<text class="devlbl" x="66" y="168" text-anchor="start"><tspan class="lbl-name">M4</tspan></text>
+<text class="devlbl" x="66" y="181" text-anchor="start"><tspan class="lbl-wl">12µ/45n</tspan></text>
+<text class="devlbl" x="66" y="193" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
+</g>
+</g>
+<g class="layer-rails">
+<g class="rail" data-net="VSS" data-ax="0" data-ay="460">
+<line class="sym" x1="0" y1="460" x2="0" y2="468"/>
+<line class="sym" x1="-9" y1="468" x2="9" y2="468"/>
+<line class="sym" x1="-6" y1="472" x2="6" y2="472"/>
+<line class="sym" x1="-3" y1="476" x2="3" y2="476"/>
+</g>
+</g>
+<g class="layer-dots">
+<circle class="dot" data-net="VDD" cx="180" cy="0" r="2.6"/>
+<circle class="dot" data-net="VDD" cx="-180" cy="0" r="2.6"/>
+<circle class="dot" data-net="QP" cx="-180" cy="120" r="2.6"/>
+<circle class="dot" data-net="QN" cx="180" cy="120" r="2.6"/>
+<circle class="dot" data-net="TAIL_T" cx="-60" cy="240" r="2.6"/>
+<circle class="dot" data-net="TAIL_H" cx="60" cy="220" r="2.6"/>
+<circle class="dot" data-net="TAIL" cx="0" cy="360" r="2.6"/>
+<circle class="dot" data-net="QP" cx="-60" cy="140" r="2.6"/>
+<circle class="dot" data-net="QN" cx="60" cy="140" r="2.6"/>
+</g>
+<g class="layer-labels">
+<g class="term port" data-net="VBIAS" data-ax="-30" data-ay="420">
+<text class="term-t" x="-37" y="423.5" text-anchor="end">VBIAS</text>
+</g>
+<g class="term port" data-net="CLK" data-ax="-90" data-ay="300">
+<text class="term-t" x="-97" y="303.5" text-anchor="end">CLK</text>
+</g>
+<g class="term port" data-net="DP" data-ax="-210" data-ay="180">
+<text class="term-t" x="-217" y="183.5" text-anchor="end">DP</text>
+</g>
+<g class="term port" data-net="DN" data-ax="210" data-ay="180">
+<text class="term-t" x="217" y="183.5" text-anchor="start">DN</text>
+</g>
+<g class="term port" data-net="CLKB" data-ax="90" data-ay="300">
+<text class="term-t" x="97" y="303.5" text-anchor="start">CLKB</text>
+</g>
+<text class="netlabel lbl-rail" data-net="VDD" data-ax="0" data-ay="0" x="0" y="-7" text-anchor="middle">VDD</text>
+<text class="netlabel lbl-net" data-net="TAIL" data-ax="0" data-ay="360" x="0" y="355" text-anchor="middle">TAIL</text>
+<text class="netlabel lbl-port" data-net="QP" data-ax="-120" data-ay="120" x="-120" y="115" text-anchor="middle">QP</text>
+<text class="netlabel lbl-port" data-net="QN" data-ax="120" data-ay="120" x="120" y="115" text-anchor="middle">QN</text>
+<text class="netlabel lbl-net" data-net="TAIL_H" data-ax="0" data-ay="220" x="0" y="215" text-anchor="middle">TAIL_H</text>
+<text class="netlabel lbl-net" data-net="TAIL_T" data-ax="0" data-ay="240" x="0" y="235" text-anchor="middle">TAIL_T</text>
+</g>
+<g class="layer-pins">
+<circle class="pin" data-inst="MB" data-pin="d" data-net="TAIL" cx="0" cy="390" r="2"/>
+<circle class="pin" data-inst="MB" data-pin="g" data-net="VBIAS" cx="-30" cy="420" r="2"/>
+<circle class="pin" data-inst="MB" data-pin="s" data-net="VSS" cx="0" cy="450" r="2"/>
+<circle class="pin" data-inst="M5" data-pin="d" data-net="TAIL_T" cx="-60" cy="270" r="2"/>
+<circle class="pin" data-inst="M5" data-pin="g" data-net="CLK" cx="-90" cy="300" r="2"/>
+<circle class="pin" data-inst="M5" data-pin="s" data-net="TAIL" cx="-60" cy="330" r="2"/>
+<circle class="pin" data-inst="M1" data-pin="d" data-net="QP" cx="-180" cy="150" r="2"/>
+<circle class="pin" data-inst="M1" data-pin="g" data-net="DP" cx="-210" cy="180" r="2"/>
+<circle class="pin" data-inst="M1" data-pin="s" data-net="TAIL_T" cx="-180" cy="210" r="2"/>
+<circle class="pin" data-inst="RLP" data-pin="p" data-net="VDD" cx="-180" cy="30" r="2"/>
+<circle class="pin" data-inst="RLP" data-pin="n" data-net="QP" cx="-180" cy="90" r="2"/>
+<circle class="pin" data-inst="M2" data-pin="d" data-net="QN" cx="180" cy="150" r="2"/>
+<circle class="pin" data-inst="M2" data-pin="g" data-net="DN" cx="210" cy="180" r="2"/>
+<circle class="pin" data-inst="M2" data-pin="s" data-net="TAIL_T" cx="180" cy="210" r="2"/>
+<circle class="pin" data-inst="RLN" data-pin="p" data-net="VDD" cx="180" cy="30" r="2"/>
+<circle class="pin" data-inst="RLN" data-pin="n" data-net="QN" cx="180" cy="90" r="2"/>
+<circle class="pin" data-inst="M6" data-pin="d" data-net="TAIL_H" cx="60" cy="270" r="2"/>
+<circle class="pin" data-inst="M6" data-pin="g" data-net="CLKB" cx="90" cy="300" r="2"/>
+<circle class="pin" data-inst="M6" data-pin="s" data-net="TAIL" cx="60" cy="330" r="2"/>
+<circle class="pin" data-inst="M3" data-pin="d" data-net="QP" cx="-60" cy="150" r="2"/>
+<circle class="pin" data-inst="M3" data-pin="g" data-net="QN" cx="-30" cy="180" r="2"/>
+<circle class="pin" data-inst="M3" data-pin="s" data-net="TAIL_H" cx="-60" cy="210" r="2"/>
+<circle class="pin" data-inst="M4" data-pin="d" data-net="QN" cx="60" cy="150" r="2"/>
+<circle class="pin" data-inst="M4" data-pin="g" data-net="QP" cx="30" cy="180" r="2"/>
+<circle class="pin" data-inst="M4" data-pin="s" data-net="TAIL_H" cx="60" cy="210" r="2"/>
+</g>
+</svg></div>
+    <div class="tip" id="tip" hidden></div>
+  </section>
+  <aside class="side" id="side"></aside>
+</main>
+<script id="hsch-data" type="application/json">{"top": "INPUT_BUFFER_SYSTEM", "cells": {"INPUT_BUFFER_SYSTEM": {"display": "INPUT_BUFFER_SYSTEM", "label": "Buffer", "class": "buffer", "reason": "name 'INPUT_BUFFER_SYSTEM'", "auto": false, "ports": ["RX_INP", "RX_INN", "CLK", "CLKB", "DOUTP", "DOUTN", "VBIAS_CTLE", "VBIAS_MAIN", "VBIAS_TAP", "VBIAS_DFF", "VDD", "VSS"], "roles": {"RX_INP": "in", "RX_INN": "in", "CLK": "clk", "CLKB": "clk", "DOUTP": "out", "DOUTN": "out", "VBIAS_CTLE": "bias", "VBIAS_MAIN": "bias", "VBIAS_TAP": "bias", "VBIAS_DFF": "bias", "VDD": "power", "VSS": "ground"}, "insts": {"X_CTLE": {"type": "inst", "ref": "CTLE", "auto": false, "pins": {"INP": "RX_INP", "INN": "RX_INN", "OUTP": "CTLE_OUTP", "OUTN": "CTLE_OUTN", "VBIAS": "VBIAS_CTLE", "VDD": "VDD", "VSS": "VSS"}, "params": {}}, "X_DFE": {"type": "inst", "ref": "DFE_1TAP", "auto": false, "pins": {"INP": "CTLE_OUTP", "INN": "CTLE_OUTN", "CLK": "CLK", "CLKB": "CLKB", "OUTP": "DOUTP", "OUTN": "DOUTN", "VBIAS_MAIN": "VBIAS_MAIN", "VBIAS_TAP": "VBIAS_TAP", "VBIAS_DFF": "VBIAS_DFF", "VDD": "VDD", "VSS": "VSS"}, "params": {}}}, "warnings": [], "verify": {"ok": true, "errors": [], "lint": {"crossings": 0, "text_overlaps": 0, "warnings": []}}}, "CTLE": {"display": "CTLE", "label": "CTLE", "class": "ctle", "reason": "name 'CTLE'; source-degenerated pair (R/C between sources) with loads", "auto": false, "ports": ["INP", "INN", "OUTP", "OUTN", "VBIAS", "VDD", "VSS"], "roles": {"INP": "in", "INN": "in", "OUTP": "out", "OUTN": "out", "VBIAS": "bias", "VDD": "power", "VSS": "ground"}, "insts": {"RLP": {"type": "res", "ref": null, "auto": false, "pins": {"p": "VDD", "n": "OUTP"}, "params": {"r": "600"}}, "RLN": {"type": "res", "ref": null, "auto": false, "pins": {"p": "VDD", "n": "OUTN"}, "params": {"r": "600"}}, "M1": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "OUTP", "g": "INP", "s": "SP"}, "params": {"w": "16u", "l": "45n"}}, "M2": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "OUTN", "g": "INN", "s": "SN"}, "params": {"w": "16u", "l": "45n"}}, "RS": {"type": "res", "ref": null, "auto": false, "pins": {"p": "SP", "n": "SN"}, "params": {"r": "1000"}}, "CS": {"type": "cap", "ref": null, "auto": false, "pins": {"p": "SP", "n": "SN"}, "params": {"c": "150f"}}, "MBP": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "SP", "g": "VBIAS", "s": "VSS"}, "params": {"w": "32u", "l": "90n"}}, "MBN": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "SN", "g": "VBIAS", "s": "VSS"}, "params": {"w": "32u", "l": "90n"}}}, "warnings": [], "verify": {"ok": true, "errors": [], "lint": {"crossings": 0, "text_overlaps": 0, "warnings": []}}}, "DFE_1TAP": {"display": "DFE_1TAP", "label": "DFE", "class": "dfe", "reason": "name 'DFE_1TAP'", "auto": false, "ports": ["INP", "INN", "CLK", "CLKB", "OUTP", "OUTN", "VBIAS_MAIN", "VBIAS_TAP", "VBIAS_DFF", "VDD", "VSS"], "roles": {"INP": "in", "INN": "in", "CLK": "clk", "CLKB": "clk", "OUTP": "out", "OUTN": "out", "VBIAS_MAIN": "bias", "VBIAS_TAP": "bias", "VBIAS_DFF": "bias", "VDD": "power", "VSS": "ground"}, "insts": {"XAUTO0": {"type": "inst", "ref": "DFE_1TAP__AUTO0", "auto": true, "pins": {"INP": "INP", "INN": "INN", "OUTP": "OUTP", "OUTN": "OUTN", "VBIAS_MAIN": "VBIAS_MAIN", "VBIAS_TAP": "VBIAS_TAP", "VDD": "VDD", "VSS": "VSS", "SUMP": "SUMP", "SUMN": "SUMN"}, "params": {}}, "X_DFF": {"type": "inst", "ref": "CML_DFF", "auto": false, "pins": {"DP": "SUMP", "DN": "SUMN", "CLK": "CLK", "CLKB": "CLKB", "QP": "OUTP", "QN": "OUTN", "VBIAS": "VBIAS_DFF", "VDD": "VDD", "VSS": "VSS"}, "params": {}}}, "warnings": [], "verify": {"ok": true, "errors": [], "lint": {"crossings": 5, "text_overlaps": 0, "warnings": []}}}, "DFE_1TAP__AUTO0": {"display": "Summer (auto)", "label": "Summer", "class": "summer", "reason": "several diff pairs summing into the same drains", "auto": true, "ports": ["INP", "INN", "OUTP", "OUTN", "VBIAS_MAIN", "VBIAS_TAP", "VDD", "VSS", "SUMP", "SUMN"], "roles": {"INP": "in", "INN": "in", "OUTP": "in", "OUTN": "in", "VBIAS_MAIN": "bias", "VBIAS_TAP": "bias", "VDD": "power", "VSS": "ground", "SUMP": "out", "SUMN": "out"}, "insts": {"RLP": {"type": "res", "ref": null, "auto": false, "pins": {"p": "VDD", "n": "SUMP"}, "params": {"r": "500"}}, "RLN": {"type": "res", "ref": null, "auto": false, "pins": {"p": "VDD", "n": "SUMN"}, "params": {"r": "500"}}, "M1": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "SUMP", "g": "INP", "s": "TAIL_M"}, "params": {"w": "20u", "l": "45n"}}, "M2": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "SUMN", "g": "INN", "s": "TAIL_M"}, "params": {"w": "20u", "l": "45n"}}, "MB_M": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "TAIL_M", "g": "VBIAS_MAIN", "s": "VSS"}, "params": {"w": "40u", "l": "90n"}}, "M3": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "SUMP", "g": "OUTP", "s": "TAIL_T1"}, "params": {"w": "8u", "l": "45n"}}, "M4": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "SUMN", "g": "OUTN", "s": "TAIL_T1"}, "params": {"w": "8u", "l": "45n"}}, "MB_T1": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "TAIL_T1", "g": "VBIAS_TAP", "s": "VSS"}, "params": {"w": "16u", "l": "90n"}}}, "warnings": [], "verify": {"ok": true, "errors": [], "lint": {"crossings": 1, "text_overlaps": 0, "warnings": []}}}, "CML_DFF": {"display": "CML_DFF", "label": "D flip-flop", "class": "dff", "reason": "name 'CML_DFF'; two latches in series (master/slave)", "auto": false, "ports": ["DP", "DN", "CLK", "CLKB", "QP", "QN", "VBIAS", "VDD", "VSS"], "roles": {"DP": "in", "DN": "in", "CLK": "clk", "CLKB": "clk", "QP": "out", "QN": "out", "VBIAS": "bias", "VDD": "power", "VSS": "ground"}, "insts": {"X_MASTER": {"type": "inst", "ref": "CML_LATCH", "auto": false, "pins": {"DP": "DP", "DN": "DN", "CLK": "CLKB", "CLKB": "CLK", "QP": "MP", "QN": "MN", "VBIAS": "VBIAS", "VDD": "VDD", "VSS": "VSS"}, "params": {}}, "X_SLAVE": {"type": "inst", "ref": "CML_LATCH", "auto": false, "pins": {"DP": "MP", "DN": "MN", "CLK": "CLK", "CLKB": "CLKB", "QP": "QP", "QN": "QN", "VBIAS": "VBIAS", "VDD": "VDD", "VSS": "VSS"}, "params": {}}}, "warnings": [], "verify": {"ok": true, "errors": [], "lint": {"crossings": 1, "text_overlaps": 0, "warnings": []}}}, "CML_LATCH": {"display": "CML_LATCH", "label": "Latch", "class": "latch", "reason": "name 'CML_LATCH'; cross-coupled pair + steering pairs", "auto": false, "ports": ["DP", "DN", "CLK", "CLKB", "QP", "QN", "VBIAS", "VDD", "VSS"], "roles": {"DP": "in", "DN": "in", "CLK": "clk", "CLKB": "clk", "QP": "out", "QN": "out", "VBIAS": "bias", "VDD": "power", "VSS": "ground"}, "insts": {"RLP": {"type": "res", "ref": null, "auto": false, "pins": {"p": "VDD", "n": "QP"}, "params": {"r": "500"}}, "RLN": {"type": "res", "ref": null, "auto": false, "pins": {"p": "VDD", "n": "QN"}, "params": {"r": "500"}}, "M1": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "QP", "g": "DP", "s": "TAIL_T"}, "params": {"w": "12u", "l": "45n"}}, "M2": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "QN", "g": "DN", "s": "TAIL_T"}, "params": {"w": "12u", "l": "45n"}}, "M3": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "QP", "g": "QN", "s": "TAIL_H"}, "params": {"w": "12u", "l": "45n"}}, "M4": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "QN", "g": "QP", "s": "TAIL_H"}, "params": {"w": "12u", "l": "45n"}}, "M5": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "TAIL_T", "g": "CLK", "s": "TAIL"}, "params": {"w": "16u", "l": "45n"}}, "M6": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "TAIL_H", "g": "CLKB", "s": "TAIL"}, "params": {"w": "16u", "l": "45n"}}, "MB": {"type": "nmos", "ref": null, "auto": false, "pins": {"d": "TAIL", "g": "VBIAS", "s": "VSS"}, "params": {"w": "32u", "l": "90n"}}}, "warnings": [], "verify": {"ok": true, "errors": [], "lint": {"crossings": 2, "text_overlaps": 0, "warnings": []}}}}}</script>
+<script>(function () {
+  "use strict";
+  var DATA = JSON.parse(document.getElementById("hsch-data").textContent);
+  var canvas = document.getElementById("canvas");
+  var side = document.getElementById("side");
+  var tip = document.getElementById("tip");
+  var crumbs = document.getElementById("crumbs");
+  var stack = [];            // [{cell, inst}]
+  var views = {};
+  var viewBoxes = {};
+  var sticky = null;
+
+  Array.prototype.forEach.call(document.querySelectorAll(".view"), function (v) {
+    views[v.getAttribute("data-cell")] = v;
+  });
+
+  function store(k, v) { try { localStorage.setItem("hsch:" + k, v); } catch (e) {} }
+  function load(k) { try { return localStorage.getItem("hsch:" + k); } catch (e) { return null; } }
+
+  // ---------------------------------------------------------------- toggles
+  var TOGGLES = { wl: "hide-wl", val: "hide-val", name: "hide-name", net: "show-net" };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-toggle]"), function (cb) {
+    var key = cb.getAttribute("data-toggle");
+    var saved = load("t-" + key);
+    if (saved !== null) cb.checked = saved === "1";
+    function apply() {
+      var cls = TOGGLES[key];
+      var on = cb.checked;
+      if (cls.indexOf("hide-") === 0) document.body.classList.toggle(cls, !on);
+      else document.body.classList.toggle(cls, on);
+      store("t-" + key, on ? "1" : "0");
+    }
+    cb.addEventListener("change", apply);
+    apply();
+  });
+
+  // ---------------------------------------------------------------- navigation
+  function cellInfo(c) { return DATA.cells[c] || {}; }
+
+  function show(cell, push) {
+    if (!views[cell]) return;
+    Object.keys(views).forEach(function (k) { views[k].hidden = k !== cell; });
+    if (push === undefined) stack = [{ cell: cell, inst: null }];
+    sticky = null;
+    clearHL();
+    if (!viewBoxes[cell]) fit(cell);
+    renderCrumbs();
+    renderSide();
+    var sel = document.getElementById("cell-jump");
+    sel.value = cell;
+  }
+
+  function current() { return stack[stack.length - 1].cell; }
+
+  function descend(inst, ref) {
+    if (!views[ref]) return;
+    stack.push({ cell: ref, inst: inst });
+    show(ref, true);
+  }
+
+  function up() {
+    if (stack.length > 1) { stack.pop(); show(current(), true); }
+  }
+
+  function renderCrumbs() {
+    crumbs.innerHTML = "";
+    stack.forEach(function (s, i) {
+      if (i) { var sp = document.createElement("span"); sp.className = "sep"; sp.textContent = "›"; crumbs.appendChild(sp); }
+      var a = document.createElement("a");
+      var info = cellInfo(s.cell);
+      a.textContent = (s.inst ? s.inst + " : " : "") + (info.display || s.cell);
+      if (i === stack.length - 1) a.className = "cur";
+      else a.addEventListener("click", function () { stack = stack.slice(0, i + 1); show(s.cell, true); });
+      crumbs.appendChild(a);
+    });
+  }
+
+  // ---------------------------------------------------------------- side panel
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  function renderSide() {
+    var c = current();
+    var info = cellInfo(c);
+    var h = "<h2>" + esc(info.display || c) + "</h2>";
+    h += '<div class="why">' + esc(info.label || "") + (info.auto ? " · 자동 생성 블록" : "") + "</div>";
+    if (info.reason) h += '<div class="why">인식 근거: ' + esc(info.reason) + "</div>";
+    // port mapping from parent
+    if (stack.length > 1) {
+      var parent = stack[stack.length - 2].cell;
+      var inst = stack[stack.length - 1].inst;
+      var pi = (cellInfo(parent).insts || {})[inst];
+      if (pi) {
+        h += "<h3>포트 연결 (" + esc(inst) + " @ " + esc(parent) + ")</h3><table>";
+        Object.keys(pi.pins).forEach(function (p) {
+          h += "<tr><td>" + esc(p) + '</td><td><span class="netlink" data-net="' + esc(p) + '">' + esc(pi.pins[p]) + "</span></td></tr>";
+        });
+        h += "</table>";
+      }
+    }
+    if (info.ports && info.ports.length) {
+      h += "<h3>포트</h3><table>";
+      info.ports.forEach(function (p) {
+        h += '<tr><td>' + esc((info.roles || {})[p] || "") + '</td><td><span class="netlink" data-net="' + esc(p) + '">' + esc(p) + "</span></td></tr>";
+      });
+      h += "</table>";
+    }
+    var v = info.verify;
+    if (v) {
+      h += "<h3>검증</h3>";
+      h += "<div>" + (v.ok ? "✅ 연결 일치 (원본 netlist와 동일)" : "❌ 연결 불일치") + "</div>";
+      (v.errors || []).forEach(function (e) { h += '<div class="warn">' + esc(e) + "</div>"; });
+      if (v.lint) {
+        h += '<div class="why">교차 ' + v.lint.crossings + " · 경고 " + (v.lint.warnings || []).length + "</div>";
+        (v.lint.warnings || []).slice(0, 8).forEach(function (w) { h += '<div class="warn">' + esc(w) + "</div>"; });
+      }
+    }
+    (info.warnings || []).forEach(function (w) { h += '<div class="warn">' + esc(w) + "</div>"; });
+    h += '<h3>사용법</h3><div class="why">블록 클릭 → 내부 보기 · Esc → 상위 · 휠 → 확대/축소 · 드래그 → 이동 · 넷 클릭 → 강조 고정 · F → 화면 맞춤</div>';
+    side.innerHTML = h;
+    Array.prototype.forEach.call(side.querySelectorAll(".netlink"), function (el) {
+      el.addEventListener("mouseenter", function () { hl(el.getAttribute("data-net")); });
+      el.addEventListener("mouseleave", function () { if (!sticky) clearHL(); else hl(sticky); });
+    });
+  }
+
+  // ---------------------------------------------------------------- highlight
+  function svgOf(cell) { return views[cell].querySelector("svg"); }
+  function clearHL() {
+    Array.prototype.forEach.call(document.querySelectorAll(".hl"), function (e) { e.classList.remove("hl"); });
+  }
+  function hl(net) {
+    clearHL();
+    if (!net) return;
+    var s = svgOf(current());
+    Array.prototype.forEach.call(s.querySelectorAll('[data-net="' + (window.CSS && CSS.escape ? CSS.escape(net) : net) + '"]'), function (e) {
+      e.classList.add("hl");
+    });
+  }
+
+  // ---------------------------------------------------------------- tooltip
+  function devTip(cell, inst) {
+    var info = (cellInfo(cell).insts || {})[inst];
+    if (!info) return inst;
+    var t = inst + "  (" + info.type + ")";
+    var p = info.params || {};
+    var keys = ["w", "l", "m", "r", "c", "l"];
+    var shown = {};
+    keys.forEach(function (k) { if (p[k] !== undefined && !shown[k]) { t += "\n" + k.toUpperCase() + " = " + p[k]; shown[k] = 1; } });
+    if (info.ref) t += "\n→ " + (cellInfo(info.ref).display || info.ref) + "  (클릭해서 열기)";
+    Object.keys(info.pins).forEach(function (pn) { t += "\n" + pn + " : " + info.pins[pn]; });
+    return t;
+  }
+
+  canvas.addEventListener("mousemove", function (ev) {
+    var g = ev.target.closest ? ev.target.closest(".symg") : null;
+    var netEl = ev.target.closest ? ev.target.closest("[data-net]") : null;
+    var r = canvas.getBoundingClientRect();
+    if (g && !netEl) {
+      tip.textContent = devTip(current(), g.getAttribute("data-inst"));
+      tip.hidden = false;
+      tip.style.left = Math.min(ev.clientX - r.left + 14, r.width - 290) + "px";
+      tip.style.top = (ev.clientY - r.top + 14) + "px";
+    } else if (netEl) {
+      tip.textContent = "net: " + netEl.getAttribute("data-net");
+      tip.hidden = false;
+      tip.style.left = Math.min(ev.clientX - r.left + 14, r.width - 290) + "px";
+      tip.style.top = (ev.clientY - r.top + 14) + "px";
+      if (!sticky) hl(netEl.getAttribute("data-net"));
+    } else {
+      tip.hidden = true;
+      if (!sticky) clearHL();
+    }
+  });
+  canvas.addEventListener("mouseleave", function () { tip.hidden = true; if (!sticky) clearHL(); });
+
+  // ---------------------------------------------------------------- pan / zoom
+  function getVB(cell) { return viewBoxes[cell]; }
+  function setVB(cell, vb) {
+    viewBoxes[cell] = vb;
+    svgOf(cell).setAttribute("viewBox", vb.join(" "));
+  }
+  function fit(cell) {
+    var b = svgOf(cell).getAttribute("data-bounds").split(",").map(Number);
+    setVB(cell, [b[0], b[1], b[2] - b[0], b[3] - b[1]]);
+  }
+
+  var drag = null, moved = false;
+  canvas.addEventListener("wheel", function (ev) {
+    var s = svgOf(current());
+    if (!s.contains(ev.target) && ev.target !== s) return;
+    ev.preventDefault();
+    var vb = getVB(current()).slice();
+    var r = s.getBoundingClientRect();
+    var scale = Math.min(r.width / vb[2], r.height / vb[3]);
+    var ox = (r.width - vb[2] * scale) / 2, oy = (r.height - vb[3] * scale) / 2;
+    var mx = vb[0] + (ev.clientX - r.left - ox) / scale;
+    var my = vb[1] + (ev.clientY - r.top - oy) / scale;
+    var k = Math.exp(ev.deltaY * 0.0015);
+    vb[0] = mx - (mx - vb[0]) * k; vb[1] = my - (my - vb[1]) * k; vb[2] *= k; vb[3] *= k;
+    setVB(current(), vb);
+  }, { passive: false });
+
+  canvas.addEventListener("pointerdown", function (ev) {
+    if (ev.button !== 0) return;
+    drag = { x: ev.clientX, y: ev.clientY, vb: getVB(current()).slice() };
+    moved = false;
+  });
+  window.addEventListener("pointermove", function (ev) {
+    if (!drag) return;
+    var s = svgOf(current());
+    var r = s.getBoundingClientRect();
+    var vb = drag.vb;
+    var scale = Math.min(r.width / vb[2], r.height / vb[3]);
+    var dx = (ev.clientX - drag.x) / scale, dy = (ev.clientY - drag.y) / scale;
+    if (Math.abs(ev.clientX - drag.x) + Math.abs(ev.clientY - drag.y) > 4) { moved = true; s.classList.add("dragging"); }
+    if (moved) setVB(current(), [vb[0] - dx, vb[1] - dy, vb[2], vb[3]]);
+  });
+  window.addEventListener("pointerup", function () {
+    if (drag) svgOf(current()).classList.remove("dragging");
+    drag = null;
+  });
+
+  canvas.addEventListener("click", function (ev) {
+    if (moved) { moved = false; return; }
+    var g = ev.target.closest ? ev.target.closest(".symg.clickable") : null;
+    var netEl = ev.target.closest ? ev.target.closest("[data-net]") : null;
+    if (netEl && !g) {
+      var n = netEl.getAttribute("data-net");
+      sticky = sticky === n ? null : n;
+      if (sticky) hl(sticky); else clearHL();
+      return;
+    }
+    if (g) { descend(g.getAttribute("data-inst"), g.getAttribute("data-ref")); return; }
+    sticky = null; clearHL();
+  });
+  canvas.addEventListener("dblclick", function () { fit(current()); });
+
+  document.getElementById("btn-up").addEventListener("click", up);
+  document.getElementById("btn-fit").addEventListener("click", function () { fit(current()); });
+  document.addEventListener("keydown", function (ev) {
+    var tg = ev.target || {};
+    if ((tg.tagName === "INPUT" && tg.type !== "checkbox") || /select|textarea/i.test(tg.tagName || "")) return;
+    if (ev.key === "Escape" || ev.key === "Backspace") { up(); ev.preventDefault(); }
+    if (ev.key === "f" || ev.key === "F") fit(current());
+  });
+
+  var sel = document.getElementById("cell-jump");
+  Object.keys(views).forEach(function (c) {
+    var o = document.createElement("option");
+    o.value = c; o.textContent = cellInfo(c).display || c;
+    sel.appendChild(o);
+  });
+  sel.addEventListener("change", function () { show(sel.value); });
+
+  // public hook for scripted screenshots / tests
+  window.HSCH = {
+    show: function (cell) { show(cell); },
+    path: function (insts) {           // e.g. ["X_DFE","X_DFF","X_MASTER"]
+      show(DATA.top);
+      insts.forEach(function (i) {
+        var info = (cellInfo(current()).insts || {})[i];
+        if (info && info.ref) descend(i, info.ref);
+      });
+    },
+    cells: function () { return Object.keys(views); }
+  };
+  show(DATA.top);
+})();
+</script>
+</body>
+</html>

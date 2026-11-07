@@ -1,0 +1,71 @@
+{
+ "ok": true,
+ "views": {
+  "top_mixed": {
+   "ok": true,
+   "errors": [],
+   "lint": {
+    "crossings": 1,
+    "text_overlaps": 0,
+    "warnings": []
+   }
+  },
+  "ota5t": {
+   "ok": true,
+   "errors": [],
+   "lint": {
+    "crossings": 0,
+    "text_overlaps": 0,
+    "warnings": []
+   }
+  },
+  "inv": {
+   "ok": true,
+   "errors": [],
+   "lint": {
+    "crossings": 0,
+    "text_overlaps": 0,
+    "warnings": []
+   }
+  },
+  "nand2": {
+   "ok": true,
+   "errors": [],
+   "lint": {
+    "crossings": 0,
+    "text_overlaps": 0,
+    "warnings": []
+   }
+  }
+ },
+ "classes": {
+  "ota5t": {
+   "class": "amplifier",
+   "shape": "amp",
+   "title": "",
+   "label": "Amplifier",
+   "reason": "name 'ota5t'; differential pair; (topology suggests diff_buffer)"
+  },
+  "inv": {
+   "class": "inverter",
+   "shape": "inv",
+   "title": "",
+   "label": "Inverter",
+   "reason": "name 'inv'; CMOS inverter(s)"
+  },
+  "nand2": {
+   "class": "nand",
+   "shape": "nand",
+   "title": "",
+   "label": "NAND",
+   "reason": "name 'nand2'; series/parallel CMOS network (NAND)"
+  },
+  "top_mixed": {
+   "class": "generic",
+   "shape": "box",
+   "title": "top_mixed",
+   "label": "Block",
+   "reason": "no pattern"
+  }
+ }
+}

@@ -1,0 +1,115 @@
+:root {
+  --ink: #111;
+  --paper: #fff;
+  --ui-bg: #f6f6f4;
+  --ui-fg: #222;
+  --ui-mute: #6b6b6b;
+  --ui-line: #d9d9d4;
+  --accent: #d0451b;
+  --wl: #1d5fa8;
+  --val: #1d5fa8;
+  --net: #6b4f9e;
+  --blk-hover: #fff4e5;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--ui-bg); color: var(--ui-fg);
+  font: 13px/1.4 -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", Roboto, sans-serif;
+  display: flex; flex-direction: column;
+}
+.bar {
+  display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between;
+  padding: 8px 16px; border-bottom: 1px solid var(--ui-line); background: var(--ui-bg);
+}
+.crumbs { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-weight: 600; }
+.crumbs a { color: var(--ui-fg); text-decoration: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; }
+.crumbs a:hover { background: #e9e9e4; }
+.crumbs a.cur { color: var(--accent); cursor: default; }
+.crumbs .sep { color: var(--ui-mute); }
+.tools { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.tools label { display: inline-flex; gap: 4px; align-items: center; cursor: pointer; user-select: none; }
+.tools button, .tools select {
+  font: inherit; padding: 3px 9px; border: 1px solid var(--ui-line); border-radius: 5px;
+  background: #fff; color: var(--ui-fg); cursor: pointer;
+}
+.tools button:hover { border-color: #aaa; }
+main { flex: 1; display: flex; min-height: 0; }
+.canvas { flex: 1; position: relative; background: var(--paper); overflow: hidden; min-width: 0; }
+.view { position: absolute; inset: 0; }
+.view[hidden] { display: none; }
+svg.sch { width: 100%; height: 100%; display: block; cursor: grab; user-select: none; }
+svg.sch.dragging { cursor: grabbing; }
+.side {
+  width: 300px; max-width: 40vw; overflow: auto; padding: 12px 14px;
+  border-left: 1px solid var(--ui-line); background: var(--ui-bg);
+}
+.side h2 { font-size: 15px; margin: 0 0 4px; }
+.side h3 { font-size: 12px; margin: 14px 0 4px; color: var(--ui-mute); text-transform: uppercase; letter-spacing: .04em; }
+.side .why { color: var(--ui-mute); font-size: 12px; }
+.side table { border-collapse: collapse; width: 100%; font-size: 12px; }
+.side td { padding: 2px 4px; border-bottom: 1px solid #ebebe6; vertical-align: top; }
+.side td:first-child { color: var(--ui-mute); white-space: nowrap; }
+.side .netlink { cursor: pointer; color: var(--net); }
+.side .netlink:hover { text-decoration: underline; }
+.side .warn { color: #a04000; font-size: 12px; }
+.tip {
+  position: absolute; pointer-events: none; background: rgba(20, 20, 20, .92); color: #fff;
+  padding: 6px 8px; border-radius: 5px; font-size: 12px; max-width: 280px; z-index: 5; white-space: pre-line;
+}
+@media (max-width: 760px) {
+  main { flex-direction: column; }
+  .side { width: auto; max-width: none; max-height: 34vh; border-left: 0; border-top: 1px solid var(--ui-line); }
+}
+
+/* ---------- schematic ink (paper stays white, like a textbook) ---------- */
+svg.sch text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; fill: var(--ink); }
+.sym, .blk { stroke: var(--ink); stroke-width: 1.6; fill: none; stroke-linecap: square; stroke-linejoin: miter; }
+.sym.chan { stroke-width: 3; stroke-linecap: butt; }
+.sym.gate { stroke-width: 1.8; stroke-linecap: butt; }
+.sym.plate { stroke-width: 2.2; stroke-linecap: butt; }
+.sym.arrow { fill: var(--ink); stroke-width: 0.8; }
+.blk { stroke-width: 1.6; fill: none; }
+polyline.blk, circle.blk { fill: #fff; }
+.blk-t { font-size: 13px; font-weight: 700; }
+.sum-t { font-size: 22px; }
+.pol-t { font-size: 12px; font-weight: 700; }
+.pin-t { font-size: 9px; fill: #333 !important; }
+.sym-t { font-size: 10px; }
+.rail-t { font-size: 10px; font-weight: 600; }
+.wire { stroke: var(--ink); stroke-width: 1.6; stroke-linecap: square; }
+.wire.diag { stroke-linecap: round; }
+.arrowhead { fill: var(--ink); stroke: none; }
+.dot { fill: var(--ink); }
+.hl.arrowhead { fill: var(--accent); }
+.pin { fill: transparent; stroke: none; }
+.devlbl { font-size: 9px; }
+.lbl-name { fill: #333; font-style: italic; }
+.lbl-wl, .lbl-val { fill: var(--wl); }
+.lbl-cell { fill: #777; }
+.netlabel { font-size: 10px; }
+.lbl-port { font-weight: 700; }
+.lbl-rail { font-weight: 700; }
+.lbl-net { fill: var(--net); font-style: italic; }
+.term-t { font-size: 10px; font-weight: 600; }
+.term.bylabel .term-t { fill: var(--net); font-style: italic; }
+.termc { fill: #fff; stroke: var(--ink); stroke-width: 1.2; }
+.hit { fill: transparent; stroke: none; }
+.symg.clickable { cursor: pointer; }
+.symg.clickable:hover .hit { fill: var(--blk-hover); }
+.symg.clickable:hover .blk { stroke: var(--accent); }
+
+/* toggles */
+body.hide-wl .lbl-wl { display: none; }
+body.hide-val .lbl-val { display: none; }
+body.hide-name .lbl-name { display: none; }
+body:not(.show-net) .lbl-net { display: none; }
+
+/* net highlight */
+.hl.wire { stroke: var(--accent); stroke-width: 2.4; }
+.hl.dot { fill: var(--accent); }
+.hl.netlabel, .hl .term-t { fill: var(--accent) !important; }
+.hl .termc { stroke: var(--accent); }
+.pin.hl { fill: var(--accent); }
+.symg.dev:hover .sym { stroke: var(--accent); }
+.symg.dev:hover .sym.arrow { fill: var(--accent); }
