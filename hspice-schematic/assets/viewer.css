@@ -65,8 +65,8 @@ svg.sch.dragging { cursor: grabbing; }
 /* ---------- schematic ink (paper stays white, like a textbook) ---------- */
 svg.sch text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; fill: var(--ink); }
 .sym, .blk { stroke: var(--ink); stroke-width: 1.6; fill: none; stroke-linecap: square; stroke-linejoin: miter; }
-.sym.chan { stroke-width: 3; stroke-linecap: butt; }
-.sym.gate { stroke-width: 1.8; stroke-linecap: butt; }
+.sym.chan { stroke-width: 3.4; stroke-linecap: butt; }
+.sym.gate { stroke-width: 2; stroke-linecap: butt; }
 .sym.plate { stroke-width: 2.2; stroke-linecap: butt; }
 .sym.arrow { fill: var(--ink); stroke-width: 0.8; }
 .blk { stroke-width: 1.6; fill: none; }

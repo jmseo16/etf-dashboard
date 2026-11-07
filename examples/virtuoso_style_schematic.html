@@ -71,8 +71,8 @@ svg.sch.dragging { cursor: grabbing; }
 /* ---------- schematic ink (paper stays white, like a textbook) ---------- */
 svg.sch text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; fill: var(--ink); }
 .sym, .blk { stroke: var(--ink); stroke-width: 1.6; fill: none; stroke-linecap: square; stroke-linejoin: miter; }
-.sym.chan { stroke-width: 3; stroke-linecap: butt; }
-.sym.gate { stroke-width: 1.8; stroke-linecap: butt; }
+.sym.chan { stroke-width: 3.4; stroke-linecap: butt; }
+.sym.gate { stroke-width: 2; stroke-linecap: butt; }
 .sym.plate { stroke-width: 2.2; stroke-linecap: butt; }
 .sym.arrow { fill: var(--ink); stroke-width: 0.8; }
 .blk { stroke-width: 1.6; fill: none; }
@@ -291,67 +291,67 @@ body:not(.show-net) .lbl-net { display: none; }
 <line class="wire" data-net="tail" x1="-60" y1="210" x2="-60" y2="240"/>
 </g>
 <g class="layer-syms">
-<g class="symg dev" data-inst="mm5" data-keep="-15,271,1,329;-29,299,-14,301" data-type="nmos">
-<line class="sym" x1="-30" y1="300" x2="-15" y2="300"/>
-<line class="sym gate" x1="-15" y1="290" x2="-15" y2="310"/>
-<line class="sym chan" x1="-9" y1="288" x2="-9" y2="312"/>
-<line class="sym" x1="-9" y1="288" x2="0" y2="288"/>
-<line class="sym" x1="0" y1="288" x2="0" y2="270"/>
-<line class="sym" x1="-9" y1="312" x2="0" y2="312"/>
-<line class="sym" x1="0" y1="312" x2="0" y2="330"/>
-<polygon class="sym arrow" points="-0.6,312 -5.6,308.5 -5.6,315.5"/>
+<g class="symg dev" data-inst="mm5" data-keep="-21,271,1,329;-29,299,-20,301" data-type="nmos">
+<line class="sym" x1="-30" y1="300" x2="-20" y2="300"/>
+<line class="sym gate" x1="-20" y1="287" x2="-20" y2="313"/>
+<line class="sym chan" x1="-11" y1="285" x2="-11" y2="315"/>
+<line class="sym" x1="-11" y1="285" x2="0" y2="285"/>
+<line class="sym" x1="0" y1="285" x2="0" y2="270"/>
+<line class="sym" x1="-11" y1="315" x2="0" y2="315"/>
+<line class="sym" x1="0" y1="315" x2="0" y2="330"/>
+<polygon class="sym arrow" points="-0.6,315 -6.4,311 -6.4,319"/>
 <text class="devlbl" x="6" y="288" text-anchor="start"><tspan class="lbl-name">mm5</tspan></text>
 <text class="devlbl" x="6" y="301" text-anchor="start"><tspan class="lbl-wl">8µ/200n</tspan></text>
 <text class="devlbl" x="6" y="313" text-anchor="start"><tspan class="lbl-wl">m=2</tspan></text>
 </g>
-<g class="symg dev" data-inst="mm1" data-keep="-75,151,-59,209;-89,179,-74,181" data-type="nmos">
-<line class="sym" x1="-90" y1="180" x2="-75" y2="180"/>
-<line class="sym gate" x1="-75" y1="170" x2="-75" y2="190"/>
-<line class="sym chan" x1="-69" y1="168" x2="-69" y2="192"/>
-<line class="sym" x1="-69" y1="168" x2="-60" y2="168"/>
-<line class="sym" x1="-60" y1="168" x2="-60" y2="150"/>
-<line class="sym" x1="-69" y1="192" x2="-60" y2="192"/>
-<line class="sym" x1="-60" y1="192" x2="-60" y2="210"/>
-<polygon class="sym arrow" points="-60.6,192 -65.6,188.5 -65.6,195.5"/>
+<g class="symg dev" data-inst="mm1" data-keep="-81,151,-59,209;-89,179,-80,181" data-type="nmos">
+<line class="sym" x1="-90" y1="180" x2="-80" y2="180"/>
+<line class="sym gate" x1="-80" y1="167" x2="-80" y2="193"/>
+<line class="sym chan" x1="-71" y1="165" x2="-71" y2="195"/>
+<line class="sym" x1="-71" y1="165" x2="-60" y2="165"/>
+<line class="sym" x1="-60" y1="165" x2="-60" y2="150"/>
+<line class="sym" x1="-71" y1="195" x2="-60" y2="195"/>
+<line class="sym" x1="-60" y1="195" x2="-60" y2="210"/>
+<polygon class="sym arrow" points="-60.6,195 -66.4,191 -66.4,199"/>
 <text class="devlbl" x="-54" y="168" text-anchor="start"><tspan class="lbl-name">mm1</tspan></text>
 <text class="devlbl" x="-54" y="181" text-anchor="start"><tspan class="lbl-wl">4µ/100n</tspan></text>
 <text class="devlbl" x="-54" y="193" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
 </g>
-<g class="symg dev" data-inst="mm3" data-keep="-61,31,-45,89;-46,59,-31,61" data-type="pmos">
-<line class="sym" x1="-30" y1="60" x2="-45" y2="60"/>
-<line class="sym gate" x1="-45" y1="50" x2="-45" y2="70"/>
-<line class="sym chan" x1="-51" y1="48" x2="-51" y2="72"/>
-<line class="sym" x1="-51" y1="48" x2="-60" y2="48"/>
-<line class="sym" x1="-60" y1="48" x2="-60" y2="30"/>
-<line class="sym" x1="-51" y1="72" x2="-60" y2="72"/>
-<line class="sym" x1="-60" y1="72" x2="-60" y2="90"/>
-<polygon class="sym arrow" points="-51.5,48 -56.5,44.5 -56.5,51.5"/>
+<g class="symg dev" data-inst="mm3" data-keep="-61,31,-39,89;-40,59,-31,61" data-type="pmos">
+<line class="sym" x1="-30" y1="60" x2="-40" y2="60"/>
+<line class="sym gate" x1="-40" y1="47" x2="-40" y2="73"/>
+<line class="sym chan" x1="-49" y1="45" x2="-49" y2="75"/>
+<line class="sym" x1="-49" y1="45" x2="-60" y2="45"/>
+<line class="sym" x1="-60" y1="45" x2="-60" y2="30"/>
+<line class="sym" x1="-49" y1="75" x2="-60" y2="75"/>
+<line class="sym" x1="-60" y1="75" x2="-60" y2="90"/>
+<polygon class="sym arrow" points="-49.6,45 -55.4,41 -55.4,49"/>
 <text class="devlbl" x="-66" y="48" text-anchor="end"><tspan class="lbl-name">mm3</tspan></text>
 <text class="devlbl" x="-66" y="61" text-anchor="end"><tspan class="lbl-wl">2µ/100n</tspan></text>
 <text class="devlbl" x="-66" y="73" text-anchor="end"><tspan class="lbl-wl">m=1</tspan></text>
 </g>
-<g class="symg dev" data-inst="mm2" data-keep="59,151,75,209;74,179,89,181" data-type="nmos">
-<line class="sym" x1="90" y1="180" x2="75" y2="180"/>
-<line class="sym gate" x1="75" y1="170" x2="75" y2="190"/>
-<line class="sym chan" x1="69" y1="168" x2="69" y2="192"/>
-<line class="sym" x1="69" y1="168" x2="60" y2="168"/>
-<line class="sym" x1="60" y1="168" x2="60" y2="150"/>
-<line class="sym" x1="69" y1="192" x2="60" y2="192"/>
-<line class="sym" x1="60" y1="192" x2="60" y2="210"/>
-<polygon class="sym arrow" points="60.6,192 65.6,188.5 65.6,195.5"/>
+<g class="symg dev" data-inst="mm2" data-keep="59,151,81,209;80,179,89,181" data-type="nmos">
+<line class="sym" x1="90" y1="180" x2="80" y2="180"/>
+<line class="sym gate" x1="80" y1="167" x2="80" y2="193"/>
+<line class="sym chan" x1="71" y1="165" x2="71" y2="195"/>
+<line class="sym" x1="71" y1="165" x2="60" y2="165"/>
+<line class="sym" x1="60" y1="165" x2="60" y2="150"/>
+<line class="sym" x1="71" y1="195" x2="60" y2="195"/>
+<line class="sym" x1="60" y1="195" x2="60" y2="210"/>
+<polygon class="sym arrow" points="60.6,195 66.4,191 66.4,199"/>
 <text class="devlbl" x="54" y="168" text-anchor="end"><tspan class="lbl-name">mm2</tspan></text>
 <text class="devlbl" x="54" y="181" text-anchor="end"><tspan class="lbl-wl">4µ/100n</tspan></text>
 <text class="devlbl" x="54" y="193" text-anchor="end"><tspan class="lbl-wl">m=1</tspan></text>
 </g>
-<g class="symg dev" data-inst="mm4" data-keep="45,31,61,89;31,59,46,61" data-type="pmos">
-<line class="sym" x1="30" y1="60" x2="45" y2="60"/>
-<line class="sym gate" x1="45" y1="50" x2="45" y2="70"/>
-<line class="sym chan" x1="51" y1="48" x2="51" y2="72"/>
-<line class="sym" x1="51" y1="48" x2="60" y2="48"/>
-<line class="sym" x1="60" y1="48" x2="60" y2="30"/>
-<line class="sym" x1="51" y1="72" x2="60" y2="72"/>
-<line class="sym" x1="60" y1="72" x2="60" y2="90"/>
-<polygon class="sym arrow" points="51.5,48 56.5,44.5 56.5,51.5"/>
+<g class="symg dev" data-inst="mm4" data-keep="39,31,61,89;31,59,40,61" data-type="pmos">
+<line class="sym" x1="30" y1="60" x2="40" y2="60"/>
+<line class="sym gate" x1="40" y1="47" x2="40" y2="73"/>
+<line class="sym chan" x1="49" y1="45" x2="49" y2="75"/>
+<line class="sym" x1="49" y1="45" x2="60" y2="45"/>
+<line class="sym" x1="60" y1="45" x2="60" y2="30"/>
+<line class="sym" x1="49" y1="75" x2="60" y2="75"/>
+<line class="sym" x1="60" y1="75" x2="60" y2="90"/>
+<polygon class="sym arrow" points="49.6,45 55.4,41 55.4,49"/>
 <text class="devlbl" x="66" y="48" text-anchor="start"><tspan class="lbl-name">mm4</tspan></text>
 <text class="devlbl" x="66" y="61" text-anchor="start"><tspan class="lbl-wl">2µ/100n</tspan></text>
 <text class="devlbl" x="66" y="73" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
@@ -415,28 +415,28 @@ body:not(.show-net) .lbl-net { display: none; }
 <line class="wire" data-net="in" x1="-40" y1="60" x2="-40" y2="180"/>
 </g>
 <g class="layer-syms">
-<g class="symg dev" data-inst="mn0" data-keep="-15,151,1,209;-29,179,-14,181" data-type="nmos">
-<line class="sym" x1="-30" y1="180" x2="-15" y2="180"/>
-<line class="sym gate" x1="-15" y1="170" x2="-15" y2="190"/>
-<line class="sym chan" x1="-9" y1="168" x2="-9" y2="192"/>
-<line class="sym" x1="-9" y1="168" x2="0" y2="168"/>
-<line class="sym" x1="0" y1="168" x2="0" y2="150"/>
-<line class="sym" x1="-9" y1="192" x2="0" y2="192"/>
-<line class="sym" x1="0" y1="192" x2="0" y2="210"/>
-<polygon class="sym arrow" points="-0.6,192 -5.6,188.5 -5.6,195.5"/>
+<g class="symg dev" data-inst="mn0" data-keep="-21,151,1,209;-29,179,-20,181" data-type="nmos">
+<line class="sym" x1="-30" y1="180" x2="-20" y2="180"/>
+<line class="sym gate" x1="-20" y1="167" x2="-20" y2="193"/>
+<line class="sym chan" x1="-11" y1="165" x2="-11" y2="195"/>
+<line class="sym" x1="-11" y1="165" x2="0" y2="165"/>
+<line class="sym" x1="0" y1="165" x2="0" y2="150"/>
+<line class="sym" x1="-11" y1="195" x2="0" y2="195"/>
+<line class="sym" x1="0" y1="195" x2="0" y2="210"/>
+<polygon class="sym arrow" points="-0.6,195 -6.4,191 -6.4,199"/>
 <text class="devlbl" x="6" y="168" text-anchor="start"><tspan class="lbl-name">mn0</tspan></text>
 <text class="devlbl" x="6" y="181" text-anchor="start"><tspan class="lbl-wl">1µ/45n</tspan></text>
 <text class="devlbl" x="6" y="193" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
 </g>
-<g class="symg dev" data-inst="mp0" data-keep="-15,31,1,89;-29,59,-14,61" data-type="pmos">
-<line class="sym" x1="-30" y1="60" x2="-15" y2="60"/>
-<line class="sym gate" x1="-15" y1="50" x2="-15" y2="70"/>
-<line class="sym chan" x1="-9" y1="48" x2="-9" y2="72"/>
-<line class="sym" x1="-9" y1="48" x2="0" y2="48"/>
-<line class="sym" x1="0" y1="48" x2="0" y2="30"/>
-<line class="sym" x1="-9" y1="72" x2="0" y2="72"/>
-<line class="sym" x1="0" y1="72" x2="0" y2="90"/>
-<polygon class="sym arrow" points="-8.5,48 -3.5,44.5 -3.5,51.5"/>
+<g class="symg dev" data-inst="mp0" data-keep="-21,31,1,89;-29,59,-20,61" data-type="pmos">
+<line class="sym" x1="-30" y1="60" x2="-20" y2="60"/>
+<line class="sym gate" x1="-20" y1="47" x2="-20" y2="73"/>
+<line class="sym chan" x1="-11" y1="45" x2="-11" y2="75"/>
+<line class="sym" x1="-11" y1="45" x2="0" y2="45"/>
+<line class="sym" x1="0" y1="45" x2="0" y2="30"/>
+<line class="sym" x1="-11" y1="75" x2="0" y2="75"/>
+<line class="sym" x1="0" y1="75" x2="0" y2="90"/>
+<polygon class="sym arrow" points="-10.4,45 -4.6,41 -4.6,49"/>
 <text class="devlbl" x="6" y="48" text-anchor="start"><tspan class="lbl-name">mp0</tspan></text>
 <text class="devlbl" x="6" y="61" text-anchor="start"><tspan class="lbl-wl">2µ/45n</tspan></text>
 <text class="devlbl" x="6" y="73" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
@@ -482,54 +482,54 @@ body:not(.show-net) .lbl-net { display: none; }
 <line class="wire" data-net="A" x1="-100" y1="60" x2="-100" y2="180"/>
 </g>
 <g class="layer-syms">
-<g class="symg dev" data-inst="MN2" data-keep="-15,271,1,329;-29,299,-14,301" data-type="nmos">
-<line class="sym" x1="-30" y1="300" x2="-15" y2="300"/>
-<line class="sym gate" x1="-15" y1="290" x2="-15" y2="310"/>
-<line class="sym chan" x1="-9" y1="288" x2="-9" y2="312"/>
-<line class="sym" x1="-9" y1="288" x2="0" y2="288"/>
-<line class="sym" x1="0" y1="288" x2="0" y2="270"/>
-<line class="sym" x1="-9" y1="312" x2="0" y2="312"/>
-<line class="sym" x1="0" y1="312" x2="0" y2="330"/>
-<polygon class="sym arrow" points="-0.6,312 -5.6,308.5 -5.6,315.5"/>
+<g class="symg dev" data-inst="MN2" data-keep="-21,271,1,329;-29,299,-20,301" data-type="nmos">
+<line class="sym" x1="-30" y1="300" x2="-20" y2="300"/>
+<line class="sym gate" x1="-20" y1="287" x2="-20" y2="313"/>
+<line class="sym chan" x1="-11" y1="285" x2="-11" y2="315"/>
+<line class="sym" x1="-11" y1="285" x2="0" y2="285"/>
+<line class="sym" x1="0" y1="285" x2="0" y2="270"/>
+<line class="sym" x1="-11" y1="315" x2="0" y2="315"/>
+<line class="sym" x1="0" y1="315" x2="0" y2="330"/>
+<polygon class="sym arrow" points="-0.6,315 -6.4,311 -6.4,319"/>
 <text class="devlbl" x="6" y="288" text-anchor="start"><tspan class="lbl-name">MN2</tspan></text>
 <text class="devlbl" x="6" y="301" text-anchor="start"><tspan class="lbl-wl">1µ/45n</tspan></text>
 <text class="devlbl" x="6" y="313" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
 </g>
-<g class="symg dev" data-inst="MN1" data-keep="-15,151,1,209;-29,179,-14,181" data-type="nmos">
-<line class="sym" x1="-30" y1="180" x2="-15" y2="180"/>
-<line class="sym gate" x1="-15" y1="170" x2="-15" y2="190"/>
-<line class="sym chan" x1="-9" y1="168" x2="-9" y2="192"/>
-<line class="sym" x1="-9" y1="168" x2="0" y2="168"/>
-<line class="sym" x1="0" y1="168" x2="0" y2="150"/>
-<line class="sym" x1="-9" y1="192" x2="0" y2="192"/>
-<line class="sym" x1="0" y1="192" x2="0" y2="210"/>
-<polygon class="sym arrow" points="-0.6,192 -5.6,188.5 -5.6,195.5"/>
+<g class="symg dev" data-inst="MN1" data-keep="-21,151,1,209;-29,179,-20,181" data-type="nmos">
+<line class="sym" x1="-30" y1="180" x2="-20" y2="180"/>
+<line class="sym gate" x1="-20" y1="167" x2="-20" y2="193"/>
+<line class="sym chan" x1="-11" y1="165" x2="-11" y2="195"/>
+<line class="sym" x1="-11" y1="165" x2="0" y2="165"/>
+<line class="sym" x1="0" y1="165" x2="0" y2="150"/>
+<line class="sym" x1="-11" y1="195" x2="0" y2="195"/>
+<line class="sym" x1="0" y1="195" x2="0" y2="210"/>
+<polygon class="sym arrow" points="-0.6,195 -6.4,191 -6.4,199"/>
 <text class="devlbl" x="6" y="168" text-anchor="start"><tspan class="lbl-name">MN1</tspan></text>
 <text class="devlbl" x="6" y="181" text-anchor="start"><tspan class="lbl-wl">1µ/45n</tspan></text>
 <text class="devlbl" x="6" y="193" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
 </g>
-<g class="symg dev" data-inst="MP1" data-keep="-75,31,-59,89;-89,59,-74,61" data-type="pmos">
-<line class="sym" x1="-90" y1="60" x2="-75" y2="60"/>
-<line class="sym gate" x1="-75" y1="50" x2="-75" y2="70"/>
-<line class="sym chan" x1="-69" y1="48" x2="-69" y2="72"/>
-<line class="sym" x1="-69" y1="48" x2="-60" y2="48"/>
-<line class="sym" x1="-60" y1="48" x2="-60" y2="30"/>
-<line class="sym" x1="-69" y1="72" x2="-60" y2="72"/>
-<line class="sym" x1="-60" y1="72" x2="-60" y2="90"/>
-<polygon class="sym arrow" points="-68.5,48 -63.5,44.5 -63.5,51.5"/>
+<g class="symg dev" data-inst="MP1" data-keep="-81,31,-59,89;-89,59,-80,61" data-type="pmos">
+<line class="sym" x1="-90" y1="60" x2="-80" y2="60"/>
+<line class="sym gate" x1="-80" y1="47" x2="-80" y2="73"/>
+<line class="sym chan" x1="-71" y1="45" x2="-71" y2="75"/>
+<line class="sym" x1="-71" y1="45" x2="-60" y2="45"/>
+<line class="sym" x1="-60" y1="45" x2="-60" y2="30"/>
+<line class="sym" x1="-71" y1="75" x2="-60" y2="75"/>
+<line class="sym" x1="-60" y1="75" x2="-60" y2="90"/>
+<polygon class="sym arrow" points="-70.4,45 -64.6,41 -64.6,49"/>
 <text class="devlbl" x="-54" y="48" text-anchor="start"><tspan class="lbl-name">MP1</tspan></text>
 <text class="devlbl" x="-54" y="61" text-anchor="start"><tspan class="lbl-wl">1µ/45n</tspan></text>
 <text class="devlbl" x="-54" y="73" text-anchor="start"><tspan class="lbl-wl">m=1</tspan></text>
 </g>
-<g class="symg dev" data-inst="MP2" data-keep="59,31,75,89;74,59,89,61" data-type="pmos">
-<line class="sym" x1="90" y1="60" x2="75" y2="60"/>
-<line class="sym gate" x1="75" y1="50" x2="75" y2="70"/>
-<line class="sym chan" x1="69" y1="48" x2="69" y2="72"/>
-<line class="sym" x1="69" y1="48" x2="60" y2="48"/>
-<line class="sym" x1="60" y1="48" x2="60" y2="30"/>
-<line class="sym" x1="69" y1="72" x2="60" y2="72"/>
-<line class="sym" x1="60" y1="72" x2="60" y2="90"/>
-<polygon class="sym arrow" points="68.5,48 63.5,44.5 63.5,51.5"/>
+<g class="symg dev" data-inst="MP2" data-keep="59,31,81,89;80,59,89,61" data-type="pmos">
+<line class="sym" x1="90" y1="60" x2="80" y2="60"/>
+<line class="sym gate" x1="80" y1="47" x2="80" y2="73"/>
+<line class="sym chan" x1="71" y1="45" x2="71" y2="75"/>
+<line class="sym" x1="71" y1="45" x2="60" y2="45"/>
+<line class="sym" x1="60" y1="45" x2="60" y2="30"/>
+<line class="sym" x1="71" y1="75" x2="60" y2="75"/>
+<line class="sym" x1="60" y1="75" x2="60" y2="90"/>
+<polygon class="sym arrow" points="70.4,45 64.6,41 64.6,49"/>
 <text class="devlbl" x="54" y="48" text-anchor="end"><tspan class="lbl-name">MP2</tspan></text>
 <text class="devlbl" x="54" y="61" text-anchor="end"><tspan class="lbl-wl">1µ/45n</tspan></text>
 <text class="devlbl" x="54" y="73" text-anchor="end"><tspan class="lbl-wl">m=1</tspan></text>
@@ -625,6 +625,7 @@ body:not(.show-net) .lbl-net { display: none; }
     if (push === undefined) stack = [{ cell: cell, inst: null }];
     sticky = null;
     clearHL();
+    hideTip();   // a tooltip must never survive a change of view
     if (!viewBoxes[cell]) fit(cell);
     renderCrumbs();
     renderSide();
@@ -753,7 +754,8 @@ body:not(.show-net) .lbl-net { display: none; }
       if (!sticky) clearHL();
     }
   });
-  canvas.addEventListener("mouseleave", function () { tip.hidden = true; if (!sticky) clearHL(); });
+  function hideTip() { tip.hidden = true; tip.textContent = ""; }
+  canvas.addEventListener("mouseleave", function () { hideTip(); if (!sticky) clearHL(); });
 
   // ---------------------------------------------------------------- pan / zoom
   function getVB(cell) { return viewBoxes[cell]; }
@@ -777,12 +779,14 @@ body:not(.show-net) .lbl-net { display: none; }
     var ox = (r.width - vb[2] * scale) / 2, oy = (r.height - vb[3] * scale) / 2;
     var mx = vb[0] + (ev.clientX - r.left - ox) / scale;
     var my = vb[1] + (ev.clientY - r.top - oy) / scale;
+    hideTip();
     var k = Math.exp(ev.deltaY * 0.0015);
     vb[0] = mx - (mx - vb[0]) * k; vb[1] = my - (my - vb[1]) * k; vb[2] *= k; vb[3] *= k;
     setVB(current(), vb);
   }, { passive: false });
 
   canvas.addEventListener("pointerdown", function (ev) {
+    if (ev.pointerType !== "mouse") hideTip();
     if (ev.button !== 0) return;
     drag = { x: ev.clientX, y: ev.clientY, vb: getVB(current()).slice() };
     moved = false;
@@ -812,7 +816,7 @@ body:not(.show-net) .lbl-net { display: none; }
       if (sticky) hl(sticky); else clearHL();
       return;
     }
-    if (g) { descend(g.getAttribute("data-inst"), g.getAttribute("data-ref")); return; }
+    if (g) { hideTip(); descend(g.getAttribute("data-inst"), g.getAttribute("data-ref")); return; }
     sticky = null; clearHL();
   });
   canvas.addEventListener("dblclick", function () { fit(current()); });

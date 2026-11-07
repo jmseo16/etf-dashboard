@@ -28,9 +28,10 @@ marked **[lint]** are checked by `verify.py`.
 6. **Degeneration** [auto] – passives between the two source nodes of a pair are drawn
    horizontally between the columns, R above C, with dots at the four junctions.
 7. **MOSFET symbol** [auto] – 3-terminal; thick channel line that ends exactly at the
-   drain/source stubs; gate plate separated by a gap; arrow on the source stub pointing
-   away from the channel (NMOS) / into the channel (PMOS); drain and source leave
-   vertically.
+   drain/source stubs; gate plate separated from the channel by a clearly visible
+   gate-oxide gap (Razavi proportions: body 21 px wide × 30 px tall, oxide gap 9 px on a
+   10 px grid); arrow on the source stub pointing away from the channel (NMOS) / into the
+   channel (PMOS); drain and source leave vertically.
 8. **Rails** [auto] – VDD is one horizontal rail with the name centred above it; every
    ground connection gets its own ground symbol.
 9. **Pin names** [auto] – single-pin inputs (IN, IN̄, H1, CLK, VBIAS) are plain text at

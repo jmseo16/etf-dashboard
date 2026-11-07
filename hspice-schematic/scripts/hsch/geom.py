@@ -113,24 +113,25 @@ def transform(sym, xf):
 def mos(typ, name, wl_text, m_text):
     """3-terminal MOSFET, Razavi style: arrow on the source
     (NMOS pointing out of the channel, PMOS pointing in)."""
-    # Reference-figure style: the thick channel ends exactly at the drain/source stubs,
-    # gate plate slightly shorter and separated by a gap, arrow on the source stub.
+    # Reference-figure (Razavi) style: the thick channel ends exactly at the drain/source
+    # stubs; a wide gate-oxide gap (9 px) separates it from the gate plate; the body is
+    # 21 px wide and 30 px tall; arrow on the source stub.
     pr = [
-        ("line", -30, 0, -15, 0, "sym"),            # gate lead
-        ("line", -15, -10, -15, 10, "sym gate"),    # gate plate
-        ("line", -9, -12, -9, 12, "sym chan"),      # channel (thick)
-        ("line", -9, -12, 0, -12, "sym"),           # upper stub
-        ("line", 0, -12, 0, -30, "sym"),
-        ("line", -9, 12, 0, 12, "sym"),             # lower stub
-        ("line", 0, 12, 0, 30, "sym"),
+        ("line", -30, 0, -20, 0, "sym"),            # gate lead
+        ("line", -20, -13, -20, 13, "sym gate"),    # gate plate
+        ("line", -11, -15, -11, 15, "sym chan"),    # channel (thick)
+        ("line", -11, -15, 0, -15, "sym"),          # upper stub
+        ("line", 0, -15, 0, -30, "sym"),
+        ("line", -11, 15, 0, 15, "sym"),            # lower stub
+        ("line", 0, 15, 0, 30, "sym"),
     ]
     if typ == "pmos":
         # source on top, arrow pointing into the channel
-        pr.append(("poly", [(-8.5, -12), (-3.5, -15.5), (-3.5, -8.5)], "sym arrow"))
+        pr.append(("poly", [(-10.4, -15), (-4.6, -19), (-4.6, -11)], "sym arrow"))
         pins = {"s": (0, -30, "U"), "g": (-30, 0, "L"), "d": (0, 30, "D")}
     else:
         # arrow pointing away from the channel, towards the source lead
-        pr.append(("poly", [(-0.6, 12), (-5.6, 8.5), (-5.6, 15.5)], "sym arrow"))
+        pr.append(("poly", [(-0.6, 15), (-6.4, 11), (-6.4, 19)], "sym arrow"))
         pins = {"d": (0, -30, "U"), "g": (-30, 0, "L"), "s": (0, 30, "D")}
     labels = [
         (6, -12, [(name, "lbl-name")], "start"),
@@ -138,7 +139,7 @@ def mos(typ, name, wl_text, m_text):
         (6, 13, [(m_text, "lbl-wl")], "start"),
     ]
     return {"prims": pr, "pins": pins,
-            "keepout": [(-15, -29, 1, 29), (-29, -1, -14, 1)],
+            "keepout": [(-21, -29, 1, 29), (-29, -1, -20, 1)],
             "labels": labels,
             "meta": {"label_w": max(len(name), len(wl_text), len(m_text)) * 5.6 + 8}}
 

@@ -43,6 +43,7 @@
     if (push === undefined) stack = [{ cell: cell, inst: null }];
     sticky = null;
     clearHL();
+    hideTip();   // a tooltip must never survive a change of view
     if (!viewBoxes[cell]) fit(cell);
     renderCrumbs();
     renderSide();
@@ -171,7 +172,8 @@
       if (!sticky) clearHL();
     }
   });
-  canvas.addEventListener("mouseleave", function () { tip.hidden = true; if (!sticky) clearHL(); });
+  function hideTip() { tip.hidden = true; tip.textContent = ""; }
+  canvas.addEventListener("mouseleave", function () { hideTip(); if (!sticky) clearHL(); });
 
   // ---------------------------------------------------------------- pan / zoom
   function getVB(cell) { return viewBoxes[cell]; }
@@ -195,12 +197,14 @@
     var ox = (r.width - vb[2] * scale) / 2, oy = (r.height - vb[3] * scale) / 2;
     var mx = vb[0] + (ev.clientX - r.left - ox) / scale;
     var my = vb[1] + (ev.clientY - r.top - oy) / scale;
+    hideTip();
     var k = Math.exp(ev.deltaY * 0.0015);
     vb[0] = mx - (mx - vb[0]) * k; vb[1] = my - (my - vb[1]) * k; vb[2] *= k; vb[3] *= k;
     setVB(current(), vb);
   }, { passive: false });
 
   canvas.addEventListener("pointerdown", function (ev) {
+    if (ev.pointerType !== "mouse") hideTip();
     if (ev.button !== 0) return;
     drag = { x: ev.clientX, y: ev.clientY, vb: getVB(current()).slice() };
     moved = false;
@@ -230,7 +234,7 @@
       if (sticky) hl(sticky); else clearHL();
       return;
     }
-    if (g) { descend(g.getAttribute("data-inst"), g.getAttribute("data-ref")); return; }
+    if (g) { hideTip(); descend(g.getAttribute("data-inst"), g.getAttribute("data-ref")); return; }
     sticky = null; clearHL();
   });
   canvas.addEventListener("dblclick", function () { fit(current()); });
