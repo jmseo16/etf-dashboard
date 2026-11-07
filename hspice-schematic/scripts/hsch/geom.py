@@ -9,7 +9,6 @@ A symbol instance is a dict:
   labels  : [('text', x, y, [(txt, cls)...], anchor)]   annotation text (toggle-able)
   bbox    : (x0,y0,x1,y1)
 """
-from __future__ import annotations
 
 import math
 

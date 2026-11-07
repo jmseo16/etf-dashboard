@@ -30,6 +30,23 @@ description: HSPICE / Virtuoso netlist를 받아 Razavi 교과서 스타일의 �
 ### 방법 B — 명세로부터 구현
 §2의 파일 구조대로 모듈을 만들고 §3~§13을 구현한 뒤 §14로 검증한다. 막히면 §15(겪었던 버그)를 먼저 본다.
 
+### 리눅스 설치 (확인된 환경)
+- **필수**: Python **3.6 이상** + `python-pptx` (의존: lxml, Pillow, XlsxWriter). 그 외는 표준 라이브러리만 쓴다.
+  - 실제로 돌려 본 조합 (전부 단위 테스트 OK, 6개 뷰 PASS, 결과 그림 동일): Python 3.8 + python-pptx 0.6.21 / 0.6.23 / 1.0.2, Python 3.11·3.12·3.13 + python-pptx 1.0.2. 3.6·3.7은 정적 분석(vermin)으로 문법 호환 확인.
+  - Python 3.6/3.7(RHEL/CentOS 7 기본)은 python-pptx 0.6.x가 설치된다 (1.0은 3.8 이상). 코드는 둘 다 지원.
+- **인터넷이 막힌 서버(오프라인 설치)**: 인터넷 되는 PC에서 대상 서버의 Python 버전에 맞춰 받은 뒤 옮긴다.
+  ```bash
+  # 인터넷 되는 PC (예: 대상 서버가 Python 3.6, x86_64 리눅스)
+  pip download python-pptx -d wheels --python-version 3.6 --only-binary=:all: \
+      --platform manylinux2014_x86_64 --implementation cp
+  # 대상 서버
+  pip install --user --no-index --find-links wheels python-pptx
+  python3 -c "import pptx; print(pptx.__version__)"
+  ```
+  (3.6용으로 받으면 python_pptx-0.6.23, lxml-5.4.0, Pillow-8.4.0, XlsxWriter-3.2.2가 받아진다.)
+- **결과 보기**: HTML은 리눅스의 Firefox/Chrome으로 바로 열린다(인터넷 불필요). PPTX는 LibreOffice Impress로 열리고, 윈도우 PowerPoint에서 수정한다.
+- **선택(검증 도구)**: `screenshot.js`, `ui_selftest.js`는 Node.js 18+ 와 Playwright(Chromium)가 필요하다. 서버에 없으면 이 두 단계만 건너뛰고, 빌드 콘솔의 `CONNECTIVITY: ALL VIEWS MATCH NETLIST`, lint 0, `python3 -m unittest discover -s tests`로 검증한다. PPTX를 그림으로 확인하려면 `soffice`(LibreOffice)와 `pdftoppm`(poppler-utils).
+
 ### 사용 (구현이 끝난 뒤 매번)
 ```bash
 python3 scripts/build.py NETLIST.sp -o OUT.html --report OUT_report.json   # OUT.html + OUT.pptx 생성

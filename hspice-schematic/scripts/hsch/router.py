@@ -10,7 +10,6 @@ Rules that keep the drawing electrically unambiguous:
   * no 4-way junctions.
 All coordinates handed to the router are in pixels and must lie on the grid.
 """
-from __future__ import annotations
 
 import heapq
 

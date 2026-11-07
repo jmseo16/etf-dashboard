@@ -14,7 +14,6 @@ Placement idea
   * passives between two nets of the same rank (source degeneration) are drawn
     horizontally between the columns.
 """
-from __future__ import annotations
 
 from .analyze import diff_partner, is_ground, is_supply, pin_map
 from .geom import (VPIN_LEN, Xf, capacitor, eng, generic_box, ground_glyph, inductor, mos, resistor,

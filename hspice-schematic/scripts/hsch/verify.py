@@ -11,7 +11,6 @@
 2. Visual lint: crossings, T-junctions without dots, 4-way junctions, wires through
    symbols, overlapping labels, PMOS-above-NMOS, rails top/bottom.
 """
-from __future__ import annotations
 
 import json
 import re

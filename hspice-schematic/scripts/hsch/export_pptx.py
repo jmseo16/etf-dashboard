@@ -8,7 +8,6 @@ Everything is a native PowerPoint shape, so the drawing can be edited in PowerPo
   * clicking a block in slide-show mode jumps to the slide of its cell, and each lower
     level has a "▲ parent" link back - the same drill-down as the HTML viewer
 """
-from __future__ import annotations
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor

@@ -11,6 +11,10 @@ netlist before it is handed over. Next to it an editable PowerPoint (`OUT.pptx`,
 downloadable from the viewer's ⬇ PPT button): one slide per cell, every wire a line, every
 device / block / pin a named group, every label a text box, blocks link to their slides.
 
+## Requirements
+Linux / macOS / Windows. Python 3.6+ with `python-pptx` (0.6.x on Python 3.6/3.7, 1.0.x on 3.8+); nothing
+else at build time. Node.js 18+ with Playwright (Chromium) only for `screenshot.js` / `ui_selftest.js`.
+
 ## Workflow
 
 1. **Save the netlist** to a file (keep the user's text exactly; do not "fix" it).

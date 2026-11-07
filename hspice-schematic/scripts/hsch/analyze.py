@@ -4,7 +4,6 @@
   * automatic block extraction for cells that mix primitives and subckt instances
   * topology recognition -> block class + symbol
 """
-from __future__ import annotations
 
 import copy
 import re

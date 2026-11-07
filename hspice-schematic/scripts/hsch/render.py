@@ -1,5 +1,4 @@
 """Scene -> single self-contained HTML file (inline SVG + vanilla JS viewer)."""
-from __future__ import annotations
 
 import html
 import json

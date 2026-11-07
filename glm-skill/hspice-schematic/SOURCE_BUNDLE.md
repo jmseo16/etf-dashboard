@@ -35,19 +35,19 @@ sys.exit(1 if bad else 0)
 
 ## 파일 목록
 
-- `hspice-schematic/SKILL.md` (85 lines)
+- `hspice-schematic/SKILL.md` (89 lines)
 - `hspice-schematic/references/style_rules.md` (60 lines)
 - `hspice-schematic/scripts/build.py` (137 lines)
 - `hspice-schematic/scripts/hsch/__init__.py` (0 lines)
-- `hspice-schematic/scripts/hsch/parser.py` (336 lines)
-- `hspice-schematic/scripts/hsch/analyze.py` (405 lines)
-- `hspice-schematic/scripts/hsch/geom.py` (472 lines)
-- `hspice-schematic/scripts/hsch/router.py` (356 lines)
-- `hspice-schematic/scripts/hsch/layout_leaf.py` (1114 lines)
-- `hspice-schematic/scripts/hsch/layout_block.py` (492 lines)
-- `hspice-schematic/scripts/hsch/render.py` (178 lines)
-- `hspice-schematic/scripts/hsch/verify.py` (431 lines)
-- `hspice-schematic/scripts/hsch/export_pptx.py` (266 lines)
+- `hspice-schematic/scripts/hsch/parser.py` (335 lines)
+- `hspice-schematic/scripts/hsch/analyze.py` (404 lines)
+- `hspice-schematic/scripts/hsch/geom.py` (471 lines)
+- `hspice-schematic/scripts/hsch/router.py` (355 lines)
+- `hspice-schematic/scripts/hsch/layout_leaf.py` (1113 lines)
+- `hspice-schematic/scripts/hsch/layout_block.py` (491 lines)
+- `hspice-schematic/scripts/hsch/render.py` (177 lines)
+- `hspice-schematic/scripts/hsch/verify.py` (430 lines)
+- `hspice-schematic/scripts/hsch/export_pptx.py` (265 lines)
 - `hspice-schematic/scripts/screenshot.js` (33 lines)
 - `hspice-schematic/scripts/ui_selftest.js` (274 lines)
 - `hspice-schematic/assets/viewer.css` (120 lines)
@@ -59,7 +59,7 @@ sys.exit(1 if bad else 0)
 ## 파일 내용
 
 ### FILE: hspice-schematic/SKILL.md
-<!-- sha256=86d9905ee21811526e49a88684984d45411aea2a464840038f89bcb35ed6fca8 newline=1 -->
+<!-- sha256=2859e9a9cd855f5cdfb1139435c425e4788a4942a964d74d2a7ef5948f3e01cc newline=1 -->
 ````markdown
 ---
 name: hspice-schematic
@@ -73,6 +73,10 @@ any block to open the level below, down to transistors. Every drawing is checked
 netlist before it is handed over. Next to it an editable PowerPoint (`OUT.pptx`, also
 downloadable from the viewer's ⬇ PPT button): one slide per cell, every wire a line, every
 device / block / pin a named group, every label a text box, blocks link to their slides.
+
+## Requirements
+Linux / macOS / Windows. Python 3.6+ with `python-pptx` (0.6.x on Python 3.6/3.7, 1.0.x on 3.8+); nothing
+else at build time. Node.js 18+ with Playwright (Chromium) only for `screenshot.js` / `ui_selftest.js`.
 
 ## Workflow
 
@@ -362,7 +366,7 @@ if __name__ == "__main__":
 ````
 
 ### FILE: hspice-schematic/scripts/hsch/parser.py
-<!-- sha256=fb3fb65e552e83019aaf941efc5670488ebadd60e12e7de8736c3ac7748dc910 newline=1 -->
+<!-- sha256=72bd174f7a4e3ac3a2a13177b3b1c1971074349f6d70664c04bb369fbb774ef9 newline=1 -->
 ````python
 """HSPICE netlist parser -> hierarchical IR (plain dicts, JSON-serialisable).
 
@@ -387,7 +391,6 @@ IR layout:
   "warnings": [...]
 }
 """
-from __future__ import annotations
 
 import os
 import re
@@ -703,7 +706,7 @@ def _parse_element(toks, cell, nl, mos_type_map, lineno):
 ````
 
 ### FILE: hspice-schematic/scripts/hsch/analyze.py
-<!-- sha256=5b1cdffb65e96baa812fc3c5c3d983b8f497ab97a4c66e2ff7be6bc184455fd5 newline=1 -->
+<!-- sha256=613651b71c16ed45c49ee78dd9ac0cb4ab7154e256eae3fbb3e4e2061c65f911 newline=1 -->
 ````python
 """Circuit analysis on the parsed IR:
   * supply / ground net detection
@@ -711,7 +714,6 @@ def _parse_element(toks, cell, nl, mos_type_map, lineno):
   * automatic block extraction for cells that mix primitives and subckt instances
   * topology recognition -> block class + symbol
 """
-from __future__ import annotations
 
 import copy
 import re
@@ -1113,7 +1115,7 @@ def classify_all(ir, overrides=None):
 ````
 
 ### FILE: hspice-schematic/scripts/hsch/geom.py
-<!-- sha256=c31fdd221aa28e4c1066195c9a7843e44653945f49d21e1137a7567a74ead8bc newline=1 -->
+<!-- sha256=4032d8920101e5d36654f615b4416d7abb757d4444f642ace29ad627de15058e newline=1 -->
 ````python
 """Symbol library. Every symbol is built in local coordinates (grid = 10 px) and then
 transformed (mirror / rotate / translate) into absolute coordinates.
@@ -1126,7 +1128,6 @@ A symbol instance is a dict:
   labels  : [('text', x, y, [(txt, cls)...], anchor)]   annotation text (toggle-able)
   bbox    : (x0,y0,x1,y1)
 """
-from __future__ import annotations
 
 import math
 
@@ -1590,7 +1591,7 @@ def _spread(n, center, pitch):
 ````
 
 ### FILE: hspice-schematic/scripts/hsch/router.py
-<!-- sha256=57636c8eef5aab19776452b3e7c604c1c65bd37f5a3455c237812d8de20ab157 newline=1 -->
+<!-- sha256=c2db8128050bbe13312fc0e0e1304b8d0bf9bbb07ea7d5fe5810a5383708289b newline=1 -->
 ````python
 """Grid maze router (A*) for orthogonal schematic wiring.
 
@@ -1604,7 +1605,6 @@ Rules that keep the drawing electrically unambiguous:
   * no 4-way junctions.
 All coordinates handed to the router are in pixels and must lie on the grid.
 """
-from __future__ import annotations
 
 import heapq
 
@@ -1951,7 +1951,7 @@ def _dedup(cells):
 ````
 
 ### FILE: hspice-schematic/scripts/hsch/layout_leaf.py
-<!-- sha256=1ae1c57851d4c47cfecd5ea26a06c7943ae532d1ac6c6be07ba36c8fcad266b4 newline=1 -->
+<!-- sha256=920d0a4308e06914d306ec8b7af6b04e2f6fab84a41412cf79c0e17774b78214 newline=1 -->
 ````python
 """Transistor-level placement + routing (Razavi textbook style).
 
@@ -1969,7 +1969,6 @@ Placement idea
   * passives between two nets of the same rank (source degeneration) are drawn
     horizontally between the columns.
 """
-from __future__ import annotations
 
 from .analyze import diff_partner, is_ground, is_supply, pin_map
 from .geom import (VPIN_LEN, Xf, capacitor, eng, generic_box, ground_glyph, inductor, mos, resistor,
@@ -3070,7 +3069,7 @@ def _ov(a, b):
 ````
 
 ### FILE: hspice-schematic/scripts/hsch/layout_block.py
-<!-- sha256=0025b38f5b4a22ec17b4374deda220977250b265e9a17609162c4a5512830377 newline=1 -->
+<!-- sha256=7a96828f6729abdcd4a7c2e1c54212a05190f479e1b3ee2aa6aea6cc1691bd36 newline=1 -->
 ````python
 """Block-level placement + routing.
 
@@ -3081,7 +3080,6 @@ def _ov(a, b):
   * columns follow signal flow (longest path over data edges, feedback edges
     removed by DFS), blocks are aligned so the main data wires are straight.
 """
-from __future__ import annotations
 
 from .analyze import diff_partner, is_ground, is_supply, BIAS_RE
 from .geom import Xf, block_symbol, ground_glyph, transform, vdd_glyph
@@ -3567,10 +3565,9 @@ def _spread(P):
 ````
 
 ### FILE: hspice-schematic/scripts/hsch/render.py
-<!-- sha256=80765cc47157a3cdd7dea7ac791453e7d293820f7c16c1ebf7aa5c5b906257d8 newline=1 -->
+<!-- sha256=7ef7433290203a379f9d7acd9d34567f3e181f26dd9038c4238c9cbad537626b newline=1 -->
 ````python
 """Scene -> single self-contained HTML file (inline SVG + vanilla JS viewer)."""
-from __future__ import annotations
 
 import html
 import json
@@ -3750,7 +3747,7 @@ def render_html(scenes, info, title, out_path, pptx_path=None):
 ````
 
 ### FILE: hspice-schematic/scripts/hsch/verify.py
-<!-- sha256=8a81ad0b4a7a5534b736024a61d54408efbf1be54d06d0737c6a0fb5a1e1ea0c newline=1 -->
+<!-- sha256=eee2c24bd7c14669ace04ae557b8a12fae2cb6f93273d0f2ef51656c278bf500 newline=1 -->
 ````python
 """Verify a rendered schematic against the netlist.
 
@@ -3765,7 +3762,6 @@ def render_html(scenes, info, title, out_path, pptx_path=None):
 2. Visual lint: crossings, T-junctions without dots, 4-way junctions, wires through
    symbols, overlapping labels, PMOS-above-NMOS, rails top/bottom.
 """
-from __future__ import annotations
 
 import json
 import re
@@ -4186,7 +4182,7 @@ def summarize(report):
 ````
 
 ### FILE: hspice-schematic/scripts/hsch/export_pptx.py
-<!-- sha256=4b9f4f9fcf32a79968be124a41c881c8c99b89335b5f84411eb3d579ea78a46f newline=1 -->
+<!-- sha256=f356062ed8eedbabc0e0108accc37d3f6c8bd210b58d87239387d0789b0d2fb3 newline=1 -->
 ````python
 """Scene -> editable PowerPoint (.pptx).
 
@@ -4198,7 +4194,6 @@ Everything is a native PowerPoint shape, so the drawing can be edited in PowerPo
   * clicking a block in slide-show mode jumps to the slide of its cell, and each lower
     level has a "▲ parent" link back - the same drill-down as the HTML viewer
 """
-from __future__ import annotations
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor

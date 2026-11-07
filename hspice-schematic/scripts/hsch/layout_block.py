@@ -7,7 +7,6 @@
   * columns follow signal flow (longest path over data edges, feedback edges
     removed by DFS), blocks are aligned so the main data wires are straight.
 """
-from __future__ import annotations
 
 from .analyze import diff_partner, is_ground, is_supply, BIAS_RE
 from .geom import Xf, block_symbol, ground_glyph, transform, vdd_glyph
