@@ -48,6 +48,7 @@ def reachable(ir, top):
 
 def build(netlist, out, annotations=None, top=None, ir_json=None, report_path=None, quiet=False,
           pptx=None):
+    os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)   # output folder may not exist yet
     ann = {}
     if annotations:
         with open(annotations, encoding="utf-8") as f:
