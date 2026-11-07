@@ -134,7 +134,8 @@
     if (info.ports && info.ports.length) {
       h += "<h3>포트</h3><table>";
       info.ports.forEach(function (p) {
-        h += '<tr><td>' + esc((info.roles || {})[p] || "") + '</td><td><span class="netlink" data-net="' + esc(p) + '">' + esc(p) + "</span></td></tr>";
+        var role = (info.roles || {})[p] || "";
+        h += '<tr><td>' + esc(ROLE_KO[role] || role) + '</td><td><span class="netlink" data-net="' + esc(p) + '">' + esc(p) + "</span></td></tr>";
       });
       h += "</table>";
     }
@@ -172,10 +173,14 @@
   }
 
   // ---------------------------------------------------------------- tooltip
+  var TYPE_KO = { nmos: "NMOS", pmos: "PMOS", res: "저항", cap: "커패시터", ind: "인덕터",
+                  vsrc: "전압원", isrc: "전류원", inst: "블록", diode: "다이오드", bjt: "BJT" };
+  var ROLE_KO = { "in": "입력", out: "출력", clk: "클럭", bias: "바이어스", power: "전원",
+                  ground: "접지", inout: "입출력" };
   function devTip(cell, inst) {
     var info = (cellInfo(cell).insts || {})[inst];
     if (!info) return inst;
-    var t = inst + "  (" + info.type + ")";
+    var t = inst + "  (" + (TYPE_KO[info.type] || info.type) + ")";
     var p = info.params || {};
     var keys = ["w", "l", "m", "r", "c", "l"];
     var shown = {};
@@ -191,7 +196,7 @@
     var r = canvas.getBoundingClientRect();
     var text = null;
     if (g && !netEl) text = devTip(current(), g.getAttribute("data-inst"));
-    else if (netEl) text = "net: " + netEl.getAttribute("data-net");
+    else if (netEl) text = "넷: " + netEl.getAttribute("data-net");
     if (!text) { hideTip(); return null; }
     tip.textContent = text;
     tip.hidden = false;

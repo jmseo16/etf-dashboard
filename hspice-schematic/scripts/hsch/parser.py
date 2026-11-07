@@ -167,7 +167,7 @@ def parse_text(text, base_dir=".", mos_type_map=None):
                 pos, params = _split_params(toks[1:])
                 pos = [p for p in pos if p.lower() not in ("params:", "param:")]
                 if not pos:
-                    nl.warnings.append(f"line {lineno}: .SUBCKT without name")
+                    nl.warnings.append(f"{lineno}번째 줄: 이름 없는 .SUBCKT")
                     continue
                 name = pos[0]
                 cur = nl.new_cell(name, [], params)
@@ -195,14 +195,14 @@ def parse_text(text, base_dir=".", mos_type_map=None):
                 continue
             ref = _find_cell(nl, d["ref"])
             if ref is None:
-                nl.warnings.append(f"{cell['name']}/{d['name']}: unknown subckt '{d['ref']}' (treated as black box)")
+                nl.warnings.append(f"{cell['name']}/{d['name']}: 정의되지 않은 subckt '{d['ref']}' (빈 블록으로 처리)")
                 d["pins"] = [[f"p{i+1}", n] for i, (_, n) in enumerate(d["pins"])]
                 continue
             d["ref"] = ref["name"]
             nets = [n for _, n in d["pins"]]
             if len(nets) != len(ref["ports"]):
                 nl.warnings.append(
-                    f"{cell['name']}/{d['name']}: {len(nets)} nodes but {ref['name']} has {len(ref['ports'])} ports")
+                    f"{cell['name']}/{d['name']}: 노드 {len(nets)}개, {ref['name']} 포트는 {len(ref['ports'])}개")
             d["pins"] = [[ref["ports"][i] if i < len(ref["ports"]) else f"p{i+1}", n] for i, n in enumerate(nets)]
 
     instantiated = {d["ref"] for c in nl.cells.values() for d in c["devices"] if d["kind"] == "X"}
@@ -234,7 +234,7 @@ def _expand_includes(lines, base_dir, nl, depth=0):
                 lines[i:i + 1] = sub
                 i += len(sub)
                 continue
-            nl.warnings.append(f"line {lineno}: include '{path}' not found (ignored)")
+            nl.warnings.append(f"{lineno}번째 줄: include 파일 '{path}' 없음 (무시)")
         i += 1
 
 
@@ -264,7 +264,7 @@ def _mos_type(model, nl, mos_type_map):
         return "pmos"
     if _NMOS_HINT.search(model):
         return "nmos"
-    nl.warnings.append(f"model '{model}': cannot tell NMOS/PMOS, assuming nmos (add it to the type map)")
+    nl.warnings.append(f"모델 '{model}': NMOS/PMOS 구분 불가, NMOS로 가정 (mos_types에 지정하세요)")
     return "nmos"
 
 
@@ -330,7 +330,7 @@ def _parse_element(toks, cell, nl, mos_type_map, lineno):
             ref = pos[-1]
             return dev("X", "inst", [(f"p{i+1}", n) for i, n in enumerate(pos[:-1])], ref=ref)
     except (ValueError, IndexError) as e:
-        nl.warnings.append(f"line {lineno}: cannot parse '{name}': {e}")
+        nl.warnings.append(f"{lineno}번째 줄: '{name}' 해석 실패: {e}")
         return None
-    nl.warnings.append(f"line {lineno}: unsupported element '{name}' (ignored)")
+    nl.warnings.append(f"{lineno}번째 줄: 지원하지 않는 소자 '{name}' (무시)")
     return None

@@ -43,29 +43,29 @@
    "class": "amplifier",
    "shape": "amp",
    "title": "",
-   "label": "Amplifier",
-   "reason": "name 'ota5t'; differential pair; (topology suggests diff_buffer)"
+   "label": "증폭기",
+   "reason": "셀 이름 'ota5t'; 차동쌍; (구조상으로는 diff_buffer)"
   },
   "inv": {
    "class": "inverter",
    "shape": "inv",
    "title": "",
-   "label": "Inverter",
-   "reason": "name 'inv'; CMOS inverter(s)"
+   "label": "인버터",
+   "reason": "셀 이름 'inv'; CMOS 인버터"
   },
   "nand2": {
    "class": "nand",
    "shape": "nand",
    "title": "",
    "label": "NAND",
-   "reason": "name 'nand2'; series/parallel CMOS network (NAND)"
+   "reason": "셀 이름 'nand2'; 직렬/병렬 CMOS 구조 (NAND)"
   },
   "top_mixed": {
    "class": "generic",
    "shape": "box",
    "title": "top_mixed",
-   "label": "Block",
-   "reason": "no pattern"
+   "label": "블록",
+   "reason": "알려진 구조 없음"
   }
  }
 }
