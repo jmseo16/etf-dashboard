@@ -7,7 +7,9 @@ description: Draw an interactive, textbook-style (Razavi) schematic from an HSPI
 
 Produces one self-contained HTML file (works offline): a block diagram of the top cell; click
 any block to open the level below, down to transistors. Every drawing is checked against the
-netlist before it is handed over.
+netlist before it is handed over. Next to it an editable PowerPoint (`OUT.pptx`, also
+downloadable from the viewer's ⬇ PPT button): one slide per cell, every wire a line, every
+device / block / pin a named group, every label a text box, blocks link to their slides.
 
 ## Workflow
 
@@ -36,6 +38,8 @@ netlist before it is handed over.
    pinch, thumb taps) and asserts the drawing stays put / on screen, toggles only change
    labels, navigation lands on the right cell, no tooltip is left behind, no JS errors.
    Must end with `0 failed`.
+   To check the PowerPoint visually: `soffice --headless --convert-to pdf OUT.pptx` then
+   `pdftoppm -r 70 -png OUT.pdf slide`.
 6. **Fix recognition if needed** with an annotations file and rebuild with
    `--annotations ann.json`:
    ```json
@@ -74,6 +78,7 @@ netlist before it is handed over.
 - `scripts/hsch/layout_block.py` – block-level placement
 - `scripts/hsch/router.py` – grid maze router (no overlaps, crossings only straight through)
 - `scripts/hsch/render.py`, `assets/viewer.*` – HTML/SVG + viewer
+- `scripts/hsch/export_pptx.py` – editable PowerPoint export
 - `scripts/hsch/verify.py` – connectivity extraction from the drawing + visual lint
 - `scripts/screenshot.js` – PNG per view for visual review
 - `scripts/ui_selftest.js` – automated test of every viewer control (desktop + phone)

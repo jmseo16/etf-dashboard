@@ -130,6 +130,51 @@ class TestEndToEnd(unittest.TestCase):
         mb = [p["x"] for p in scenes["CML_LATCH"]["pins"] if p["inst"] == "MB" and p["pin"] == "d"][0]
         self.assertEqual(mb, axes.pop())
 
+    def test_pptx_editable_and_navigable(self):
+        from pptx import Presentation
+        from pptx.shapes.group import GroupShape
+        from pptx.util import Inches
+        _, _, scenes, html = self.out["ibs"]
+        prs = Presentation(os.path.splitext(html)[0] + ".pptx")
+        slides = list(prs.slides)
+        self.assertEqual(len(slides), len(scenes))
+
+        def walk(shapes):
+            for sh in shapes:
+                yield sh
+                if isinstance(sh, GroupShape):
+                    yield from walk(sh.shapes)
+
+        title_of = {sl.slide_id: cell for sl, cell in zip(slides, scenes)}   # slide order == view order
+        for sl, cell in zip(slides, scenes):
+            sc = scenes[cell]
+            shapes = list(walk(sl.shapes))
+            texts = {sh.text_frame.text for sh in shapes if sh.has_text_frame}
+            for p in sc["ports"]:
+                self.assertIn(p, texts, f"{cell}: port {p} missing as editable text")
+            nets = [sh for sh in sl.shapes if isinstance(sh, GroupShape) and sh.name.startswith("net ")]
+            n_lines = sum(1 for g in nets for sh in g.shapes if sh.shape_type == 9 or "Connector" in sh.name)
+            self.assertEqual(n_lines, len(sc["wires"]), f"{cell}: wire count")
+            for sh in shapes:
+                if sh.name.startswith("open "):
+                    ref = sh.name[5:]
+                    tgt = sh.click_action.target_slide
+                    self.assertIsNotNone(tgt, f"{cell}: {sh.name} has no jump")
+                    self.assertEqual(title_of[tgt.slide_id], ref)
+            for sh in sl.shapes:
+                self.assertGreaterEqual(sh.left, 0)
+                self.assertGreaterEqual(sh.top, 0)
+                self.assertLessEqual(sh.left + sh.width, prs.slide_width + Inches(0.05), f"{cell}: {sh.name} off slide")
+                self.assertLessEqual(sh.top + sh.height, prs.slide_height + Inches(0.05), f"{cell}: {sh.name} off slide")
+
+    def test_every_port_has_a_virtuoso_pin(self):
+        for name in ("ibs", "virt"):
+            _, _, scenes, _ = self.out[name]
+            for cell, sc in scenes.items():
+                pins = {t["net"] for t in sc["terminals"] if t.get("vpin")}
+                for p in sc["ports"]:
+                    self.assertIn(p, pins, f"{name}/{cell}: port {p} has no pin glyph")
+
     def test_toggles_and_offline(self):
         with open(self.out["ibs"][3], encoding="utf-8") as f:
             html = f.read()

@@ -368,6 +368,20 @@
   canvas.addEventListener("dblclick", function () { fit(current()); });
 
   onTap(document.getElementById("btn-up"), function () { up(); });
+  var pptBtn = document.getElementById("btn-ppt");
+  if (pptBtn) onTap(pptBtn, function () {
+    var el = document.getElementById("hsch-pptx");
+    var bin = atob(el.textContent.trim());
+    var arr = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    var blob = new Blob([arr], { type: "application/vnd.openxmlformats-officedocument.presentationml.presentation" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = el.getAttribute("data-name") || "schematic.pptx";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  });
   onTap(document.getElementById("btn-fit"), function () { fit(current()); });
   document.addEventListener("keydown", function (ev) {
     var tg = ev.target || {};

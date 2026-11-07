@@ -11,7 +11,8 @@ from __future__ import annotations
 
 from .analyze import diff_partner, is_ground, is_supply, BIAS_RE
 from .geom import Xf, block_symbol, ground_glyph, transform, vdd_glyph
-from .layout_leaf import CHAR, _device_symbol, _rename_pins, _snap, _terminal, _wire_label
+from .layout_leaf import (CHAR, OPP, _device_symbol, _register_vpin, _rename_pins, _snap, _terminal,
+                          _vpin, _wire_label, fit_bounds)
 from .router import Router
 from .verify import FONT, _ov, _seg_hits_rect, text_box
 
@@ -311,26 +312,66 @@ def layout_block(cell, ir, roles, classes):
                         "labels": t["labels"], "bbox": t["bbox"], "keepout": t["keepout"],
                         "params": d["params"]})
 
+    def pin_kind(n):
+        r = prole.get(n, "inout")
+        return "out" if r == "out" else ("io" if r in ("inout", "power", "ground") else "in")
+
+    # Virtuoso-style pins: inputs left, outputs right, clocks below
     for (pn, px, py, dr) in port_pins:
         R.add_pin(pn, px, py, dr)
         route_pins.setdefault(pn, []).append((px, py, dr))
         pin_list.append({"inst": "PORT", "pin": pn, "x": px, "y": py, "dir": dr, "net": pn})
-        tm = _terminal(pn, px, py, {"R": "L", "L": "R", "U": "D", "D": "U"}[dr], True)
-        tm["plain"] = True
-        if prole.get(pn) == "out":
-            tm["arrow"] = "R" if dr == "L" else "L"
-            tm["tx"] += 4 if dr == "L" else -4
+        tm = _vpin(pn, px, py, dr, pin_kind(pn))
+        _register_vpin(R, tm)
         terminals.append(tm)
+
+    # supplies are hidden on block symbols; the cell's own VDD / VSS pins sit top-left /
+    # bottom-left, each tied to its rail symbol
+    sup_ports = [p for p in ports if prole.get(p) in ("power", "ground")]
+    if sup_ports and all_t:
+        xp = _snap(bx0 - PORT_DX)
+        ytop = _snap(min(t["bbox"][1] for t in all_t) - 60)
+        ybot = _snap(max([t["bbox"][3] for t in all_t] + [p[2] for p in port_pins]) + 50)
+        k_top = k_bot = 0
+        for pn in sup_ports:
+            is_p = prole.get(pn) == "power"
+            py = ytop - 30 * k_top if is_p else ybot + 30 * k_bot
+            if is_p:
+                k_top += 1
+            else:
+                k_bot += 1
+            R.add_fixed_wire(pn, [(xp, py), (xp + 20, py)])
+            if is_p:
+                glyph = [g for g in vdd_glyph(xp + 20, py, pn) if g[0] != "text"]
+                R.block_rect(xp + 10, py - 10, xp + 30, py - 1)
+            else:
+                glyph = ground_glyph(xp + 20, py)
+                R.block_rect(xp + 10, py + 1, xp + 30, py + 18)
+            rails_out.append({"net": pn, "kind": "vdd" if is_p else "gnd", "x": xp + 20, "y": py,
+                              "prims": glyph, "named": False})
+            tm = _vpin(pn, xp, py, "R", "io")
+            _register_vpin(R, tm)
+            terminals.append(tm)
+            pin_list.append({"inst": "PORT", "pin": pn, "x": xp, "y": py, "dir": "R", "net": pn})
 
     # bias / label-only nets: short stub + name
     for n in list(route_pins):
         if not is_label_net(n):
             continue
+        first = n in ports
         for (px, py, dr) in route_pins[n]:
             dx, dy = {"U": (0, -20), "D": (0, 20), "L": (-20, 0), "R": (20, 0)}[dr]
             pts = [(px, py), (px + dx, py + dy)]
             R.add_fixed_wire(n, pts)
-            tm = _terminal(n, px + dx, py + dy, dr, n in ports)
+            if first:
+                # the port itself: one Virtuoso pin; further taps carry the name only
+                first = False
+                tm = _vpin(n, px + dx, py + dy, OPP[dr], pin_kind(n))
+                _register_vpin(R, tm)
+                terminals.append(tm)
+                pin_list.append({"inst": "PORT", "pin": n, "x": px + dx, "y": py + dy, "dir": OPP[dr], "net": n})
+                continue
+            tm = _terminal(n, px + dx, py + dy, dr, False)
             tm["plain"] = True
             if dr in "UD":
                 tm["rot"] = True
@@ -380,13 +421,15 @@ def layout_block(cell, ir, roles, classes):
         for (x, y) in R.junctions(n):
             dots.append({"net": n, "x": x, "y": y})
     _place_instance_labels(symbols, wires, terminals, labels)
-    return {
+    sc = {
         "cell": cell["name"], "kind": "block", "title": cell["name"],
         "symbols": symbols, "pins": pin_list, "wires": wires, "dots": dots,
         "labels": [l for l in labels if l], "rails": rails_out, "terminals": terminals,
         "warnings": warnings, "ports": ports, "bounds": bounds,
         "meta": {"layers": layer, "feedback": sorted(f"{a}.{b}" for a, b in fb)},
     }
+    sc["bounds"] = fit_bounds(sc)
+    return sc
 
 
 def _text_boxes_of(symbols, terminals, labels):

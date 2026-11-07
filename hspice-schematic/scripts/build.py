@@ -2,7 +2,8 @@
 """HSPICE netlist -> interactive schematic HTML (+ verification report).
 
 usage: build.py NETLIST [-o out.html] [--annotations ann.json] [--top CELL]
-                [--ir-json ir.json] [--report report.json]
+                [--ir-json ir.json] [--report report.json] [--pptx out.pptx]
+writes OUT.html (interactive viewer) and OUT.pptx (editable PowerPoint, one slide per cell)
 
 annotations.json (optional, written by Claude or the user to fix recognition):
 {
@@ -19,6 +20,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from hsch.analyze import classify_all, extract_auto_blocks, flatten, port_roles  # noqa: E402
+from hsch.export_pptx import export_pptx  # noqa: E402
 from hsch.layout_block import layout_block  # noqa: E402
 from hsch.layout_leaf import layout_leaf  # noqa: E402
 from hsch.parser import parse_file  # noqa: E402
@@ -44,7 +46,8 @@ def reachable(ir, top):
     return order
 
 
-def build(netlist, out, annotations=None, top=None, ir_json=None, report_path=None, quiet=False):
+def build(netlist, out, annotations=None, top=None, ir_json=None, report_path=None, quiet=False,
+          pptx=None):
     ann = {}
     if annotations:
         with open(annotations, encoding="utf-8") as f:
@@ -89,7 +92,11 @@ def build(netlist, out, annotations=None, top=None, ir_json=None, report_path=No
     report = verify_html(out, ir, roles)
     for c, r in report.items():
         info["cells"][c]["verify"] = r
-    render_html(scenes, info, title, out)   # same drawing, now with results embedded
+    pptx_path = os.path.splitext(out)[0] + ".pptx" if pptx is None else pptx
+    if pptx_path:
+        export_pptx(scenes, info, cells, pptx_path)
+    # same drawing, now with verification results (and the editable .pptx) embedded
+    render_html(scenes, info, title, out, pptx_path=pptx_path)
     text, ok = summarize(report)
     if ir0["warnings"]:
         text = "PARSER WARNINGS:\n  " + "\n  ".join(ir0["warnings"]) + "\n" + text
@@ -105,6 +112,8 @@ def build(netlist, out, annotations=None, top=None, ir_json=None, report_path=No
         for c in cells:
             print(f"  {c:28s} -> {classes[c]['class']:12s} ({classes[c]['reason']})")
         print(f"wrote {out}")
+        if pptx_path:
+            print(f"wrote {pptx_path}  (editable PowerPoint: one slide per cell)")
     return ok, report, scenes
 
 
@@ -116,9 +125,10 @@ def main():
     ap.add_argument("--top")
     ap.add_argument("--ir-json")
     ap.add_argument("--report")
+    ap.add_argument("--pptx", help="editable PowerPoint output (default: next to the HTML; '' to skip)")
     a = ap.parse_args()
     out = a.out or os.path.splitext(a.netlist)[0] + "_schematic.html"
-    ok, _, _ = build(a.netlist, out, a.annotations, a.top, a.ir_json, a.report)
+    ok, _, _ = build(a.netlist, out, a.annotations, a.top, a.ir_json, a.report, pptx=a.pptx)
     sys.exit(0 if ok else 1)
 
 

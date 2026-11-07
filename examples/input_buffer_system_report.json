@@ -32,7 +32,7 @@
    "ok": true,
    "errors": [],
    "lint": {
-    "crossings": 1,
+    "crossings": 2,
     "text_overlaps": 0,
     "warnings": []
    }

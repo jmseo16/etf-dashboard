@@ -32,10 +32,16 @@ marked **[lint]** are checked by `verify.py`.
    gate-oxide gap (Razavi proportions: body 21 px wide × 30 px tall, oxide gap 9 px on a
    10 px grid); arrow on the source stub pointing away from the channel (NMOS) / into the
    channel (PMOS); drain and source leave vertically.
-8. **Rails** [auto] – VDD is one horizontal rail with the name centred above it; every
-   ground connection gets its own ground symbol.
-9. **Pin names** [auto] – single-pin inputs (IN, IN̄, H1, CLK, VBIAS) are plain text at
-   the end of the gate lead, no terminal circle.
+8. **Rails** [auto] – VDD is one horizontal rail; every ground connection gets its own
+   ground symbol. When VDD / VSS are ports of the cell they get an inout pin (rule 9):
+   VDD at the left end of the rail, VSS bottom-left tied to its own ground symbol.
+9. **Ports = Virtuoso schematic pins** [auto][test] – every port of the cell is drawn as a
+   red Virtuoso pin with its name: input = pentagon pointing into the circuit, output =
+   pentagon pointing out, inout = hexagon. Single-gate inputs (IN, CLK, VBIAS) sit right
+   at the end of the gate lead; routed outputs leave on their own half of a symmetric
+   cell (QP left, QN right) or on the right otherwise; a self-symmetric input shared by a
+   mirrored pair (CTLE VBIAS) enters from below on the axis; at block level inputs are
+   left, outputs right, clocks below, bias pins on the stub above the block.
 10. **Junctions** [auto][lint] – a dot at every T junction, never a 4-way junction,
     crossings without dots only.
 11. **Annotations** [auto] – device name, W/L and m next to the device on the side

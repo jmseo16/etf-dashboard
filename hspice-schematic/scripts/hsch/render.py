@@ -5,6 +5,8 @@ import html
 import json
 import os
 
+from .geom import vpin_shape
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(os.path.dirname(HERE), "..", "assets")
 
@@ -93,6 +95,9 @@ def scene_svg(sc):
     for t in sc["terminals"]:
         cls = "term port" if t["port"] else ("term bylabel" if t.get("by_label") else "term")
         out.append(f'<g class="{cls}" data-net="{_e(t["net"])}" data-ax="{_f(t["x"])}" data-ay="{_f(t["y"])}">')
+        if t.get("vpin"):
+            pts = vpin_shape(t["vpin"], t["x"], t["y"], t["vdir"])
+            out.append(f'<polygon class="vpin vpin-{t["vpin"]}" points="' + " ".join(f"{_f(a)},{_f(b)}" for a, b in pts) + '"/>')
         if (t["port"] or t.get("portsym")) and not t.get("plain"):
             out.append(f'<circle class="termc" cx="{_f(t["x"])}" cy="{_f(t["y"])}" r="3.2"/>')
         if t.get("arrow"):
@@ -116,7 +121,7 @@ def scene_svg(sc):
     return "\n".join(out)
 
 
-def render_html(scenes, info, title, out_path):
+def render_html(scenes, info, title, out_path, pptx_path=None):
     with open(os.path.join(ASSETS, "viewer.css"), encoding="utf-8") as f:
         css = f.read()
     with open(os.path.join(ASSETS, "viewer.js"), encoding="utf-8") as f:
@@ -125,6 +130,15 @@ def render_html(scenes, info, title, out_path):
     for cell, sc in scenes.items():
         views.append(f'<div class="view" data-cell="{_e(cell)}" hidden>{scene_svg(sc)}</div>')
     data = json.dumps(info, ensure_ascii=False).replace("</", "<\\/")
+    ppt_btn, ppt_blob = "", ""
+    if pptx_path and os.path.exists(pptx_path):
+        import base64
+        with open(pptx_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode("ascii")
+        name = os.path.basename(pptx_path)
+        ppt_btn = '<button id="btn-ppt" title="PowerPoint에서 수정 가능한 파일 (셀마다 슬라이드 1장)">⬇ PPT</button>'
+        ppt_blob = f'<script id="hsch-pptx" type="application/octet-stream" data-name="{_e(name)}">{b64}</script>'
+
     page = f"""<!doctype html>
 <html lang="ko">
 <head>
@@ -143,6 +157,7 @@ def render_html(scenes, info, title, out_path):
     <label><input type="checkbox" data-toggle="net"> 넷 이름</label>
     <button id="btn-up" title="상위 블록 (Esc)">↑ 상위</button>
     <button id="btn-fit" title="화면 맞춤 (F)">⤢ 맞춤</button>
+    {ppt_btn}
     <select id="cell-jump" title="셀로 이동"></select>
   </div>
 </header>
@@ -154,6 +169,7 @@ def render_html(scenes, info, title, out_path):
   <aside class="side" id="side"></aside>
 </main>
 <script id="hsch-data" type="application/json">{data}</script>
+{ppt_blob}
 <script>{js}</script>
 </body>
 </html>"""

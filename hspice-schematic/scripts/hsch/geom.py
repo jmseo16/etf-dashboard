@@ -214,6 +214,33 @@ def generic_box(name, pin_names, title=None):
 # --------------------------------------------------------------------------
 # rail / port glyphs
 # --------------------------------------------------------------------------
+VPIN_LEN = 20
+_VPIN_LOCAL = {
+    # attach point at (0, 0); the circuit lies towards +x; the body extends to -x
+    "in": [(0, 0), (-7, -5), (-20, -5), (-20, 5), (-7, 5)],      # points into the circuit
+    "out": [(0, -5), (-13, -5), (-20, 0), (-13, 5), (0, 5)],     # points out of the circuit
+    "io": [(0, 0), (-5, -5), (-15, -5), (-20, 0), (-15, 5), (-5, 5)],
+}
+_VDIR = {"R": (1, 0), "L": (-1, 0), "U": (0, -1), "D": (0, 1)}
+
+
+def vpin_shape(kind, x, y, d):
+    """Virtuoso schematic pin glyph. (x, y) is where the wire attaches, d is the direction
+    from the pin towards the circuit."""
+    dx, dy = _VDIR[d]
+    px, py = -dy, dx
+    return [(x + lx * dx + ly * px, y + lx * dy + ly * py) for lx, ly in _VPIN_LOCAL[kind]]
+
+
+def vpin_body_rect(x, y, d):
+    """keep-out rectangle of the glyph body (excludes the attach point)."""
+    pts = [(x + lx * _VDIR[d][0], y + lx * _VDIR[d][1]) for lx in (-6, -20)]
+    xs, ys = [p[0] for p in pts], [p[1] for p in pts]
+    if d in "LR":
+        return (min(xs), y - 6, max(xs), y + 6)
+    return (x - 6, min(ys), x + 6, max(ys))
+
+
 def ground_glyph(x, y):
     """Ground symbol hanging below (x, y)."""
     return [("line", x, y, x, y + 8, "sym"), ("line", x - 9, y + 8, x + 9, y + 8, "sym"),

@@ -96,6 +96,9 @@ polyline.blk, circle.blk { fill: #fff; }
 .term-t { font-size: 10px; font-weight: 600; }
 .term.bylabel .term-t { fill: var(--net); font-style: italic; }
 .termc { fill: #fff; stroke: var(--ink); stroke-width: 1.2; }
+/* Virtuoso schematic pins: red pentagon (in / out) or hexagon (inout) */
+.vpin { fill: #e8261c; stroke: #8c0d07; stroke-width: 0.9; stroke-linejoin: miter; }
+.hl .vpin { fill: var(--accent); }
 .hit { fill: transparent; stroke: none; }
 .symg.clickable { cursor: pointer; }
 .symg.clickable:hover .hit { fill: var(--blk-hover); }

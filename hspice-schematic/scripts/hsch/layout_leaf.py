@@ -17,8 +17,8 @@ Placement idea
 from __future__ import annotations
 
 from .analyze import diff_partner, is_ground, is_supply, pin_map
-from .geom import (Xf, capacitor, eng, generic_box, ground_glyph, inductor, mos, resistor, source,
-                   transform, vdd_glyph)
+from .geom import (VPIN_LEN, Xf, capacitor, eng, generic_box, ground_glyph, inductor, mos, resistor,
+                   source, transform, vdd_glyph, vpin_body_rect)
 from .parser import parse_value
 from .router import Router
 
@@ -341,7 +341,7 @@ def layout_leaf(cell, roles, title=None):
             g = pm[d["name"]]["g"]
             gate_side = 40
             if pin_count.get(g, 0) == 1 and not is_supply(g) and not is_ground(g):
-                gate_side += _r10(len(g) * CHAR + 14)
+                gate_side += _r10(len(g) * CHAR + 14 + VPIN_LEN)
             else:
                 gate_side += 10
             label_side = max(lw, 20)
@@ -451,7 +451,7 @@ def layout_leaf(cell, roles, title=None):
         xr += 140
 
     return _route_and_emit(cell, ports, roles, placed, pm, sup, gnd, supplies, grounds, pin_count,
-                           title, y_of(top) if sup else None, h, sigma, xpairs)
+                           title, y_of(top) if sup else None, h, sigma, xpairs, sym_mode)
 
 
 def _size(d):
@@ -641,7 +641,7 @@ def _symmetry(devs, pm, ports, nets, rails):
 # routing + scene
 # ---------------------------------------------------------------------------
 def _route_and_emit(cell, ports, roles, placed, pm, sup, gnd, supplies, grounds, pin_count,
-                    title, y_rail, h, sigma, xpairs=()):
+                    title, y_rail, h, sigma, xpairs=(), meta_sym=False):
     xs, ys = [], []
     for _, t, _ in placed:
         x0, y0, x1, y1 = t["bbox"]
@@ -699,10 +699,16 @@ def _route_and_emit(cell, ports, roles, placed, pm, sup, gnd, supplies, grounds,
             pts = [(x0, y_rail), (x1, y_rail)]
             R.add_fixed_wire(sup, pts)
             wires_fixed.setdefault(sup, []).append(pts)
-            xc = _snap((x0 + x1) / 2.0)
-            labels.append({"net": sup, "text": sup, "x": xc, "y": y_rail - 7, "ax": xc, "ay": y_rail,
-                           "anchor": "middle", "cls": "lbl-rail"})
-            R.soft_rect(xc - len(sup) * 4, y_rail - 18, xc + len(sup) * 4, y_rail - 4, 40)
+            if sup in ports:
+                tm = _vpin(sup, x0, y_rail, "R", "io")
+                _register_vpin(R, tm)
+                terminals.append(tm)
+                pin_list.append({"inst": "PORT", "pin": sup, "x": x0, "y": y_rail, "dir": "R", "net": sup})
+            else:
+                xc = _snap((x0 + x1) / 2.0)
+                labels.append({"net": sup, "text": sup, "x": xc, "y": y_rail - 7, "ax": xc, "ay": y_rail,
+                               "anchor": "middle", "cls": "lbl-rail"})
+                R.soft_rect(xc - len(sup) * 4, y_rail - 18, xc + len(sup) * 4, y_rail - 4, 40)
             failed = R.route_net(sup, [(x, y, dr) for (x, y, dr, _, _) in sp])
             for fx, fy in failed:
                 warnings.append(f"{sup}: could not reach rail from ({fx},{fy}); using local symbol")
@@ -816,18 +822,113 @@ def _route_and_emit(cell, ports, roles, placed, pm, sup, gnd, supplies, grounds,
         P = net_pins[n]
         return (max(p[0] for p in P) - min(p[0] for p in P)) + (max(p[1] for p in P) - min(p[1] for p in P))
 
+    # ---- Virtuoso-style pins for every port of the cell ----
+    def pin_kind(n):
+        r = roles.get(n, "inout")
+        return "out" if r == "out" else ("io" if r == "inout" else "in")
+
+    port_plan = {}
+    for net in ports:
+        if net in supplies or net in grounds or not net_pins.get(net):
+            continue
+        P = net_pins[net]
+        if len(P) == 1 and not R.tree.get(net):
+            x, y, dr, inst, pname = P[0]
+            tm = _vpin(net, x, y, OPP[dr], pin_kind(net))
+            _register_vpin(R, tm)
+            terminals.append(tm)
+            pin_list.append({"inst": "PORT", "pin": net, "x": x, "y": y, "dir": OPP[dr], "net": net})
+            port_plan[net] = "single"
+        elif (len(P) >= 2 and not R.tree.get(net) and bbox_size(net) > 240
+              and all(pm[p[3]].get("g") == net and p[4] == "g" for p in P)):
+            # rule 9b: an input that only drives far-apart gates (NAND/NOR inputs): one pin,
+            # the other gates carry the same name
+            for i, (x, y, dr, inst, pname) in enumerate(P):
+                if i == 0:
+                    tm = _vpin(net, x, y, OPP[dr], pin_kind(net))
+                    _register_vpin(R, tm)
+                    pin_list.append({"inst": "PORT", "pin": net, "x": x, "y": y, "dir": OPP[dr], "net": net})
+                else:
+                    tm = _terminal(net, x, y, dr, False)
+                    tm["plain"] = True
+                terminals.append(tm)
+            port_plan[net] = "gates"
+    # drawing extents (symbols, their annotations, pin tags placed so far)
+    ex0, ex1 = [], []
+    for sy_ in symbols:
+        ex0.append(sy_["bbox"][0]); ex1.append(sy_["bbox"][2])
+        for (lx, ly, parts, anc) in sy_["labels"]:
+            w = len("".join(t for t, _ in parts)) * CHAR
+            lx0 = lx if anc == "start" else (lx - w if anc == "end" else lx - w / 2)
+            ex0.append(lx0); ex1.append(lx0 + w)
+    for tm in terminals:
+        w = len(tm["net"]) * CHAR + VPIN_LEN
+        ex0.append(tm["x"] - (w + 8 if tm.get("vdir") == "R" else 0))
+        ex1.append(tm["x"] + (w + 8 if tm.get("vdir") == "L" else 0))
+    left_edge = _snap(min(ex0 + [0]) - 30)
+    right_edge = _snap(max(ex1 + [0]) + 30)
+    used_y = {"L": set(), "R": set()}
+    sym_axis = 0 if meta_sym else None
+    for net in ports:
+        if net in port_plan or net in supplies or net in grounds or not net_pins.get(net):
+            continue
+        P = net_pins[net]
+        mx = sum(p[0] for p in P) / len(P)
+        kind = pin_kind(net)
+        on_axis = sym_axis is not None and abs(mx - sym_axis) <= 1
+        if sym_axis is not None and not on_axis:
+            side = "L" if mx < sym_axis else "R"
+        elif on_axis and kind == "in":
+            side = "B"     # self-symmetric input (shared bias of a mirrored pair): from below, on the axis
+        else:
+            side = "L" if kind == "in" else "R"
+        y_net = (top_rank - h[net]) * RP if net in h else _snap(sum(p[1] for p in P) / len(P))
+        if side == "B":
+            px = _snap(sym_axis)
+            py = _snap(max([sy_["bbox"][3] for sy_ in symbols] + [r["y"] + 18 for r in rails_out]) + 30)
+            d = "U"
+        else:
+            # attach where a straight lead from the edge meets a plain vertical stretch of the
+            # net: outermost first, then nearest the node, upper before lower (keeps mirrors equal)
+            cands = []
+            for c in R.tree.get(net, ()):
+                own = R.wire.get(c, {})
+                if own.get(net) != {"v"} or len(own) != 1 or R._deg(net, c) != 2:
+                    continue
+                cands.append(((c[0] if side == "L" else -c[0]), abs(c[1] * R.g - y_net), c[1], c[1] * R.g))
+            cands.sort()
+            free = [c for c in cands if all(abs(c[3] - u) >= 20 for u in used_y[side])]
+            py = free[0][3] if free else (cands[0][3] if cands else y_net)
+            while any(abs(py - u) < 20 for u in used_y[side]):
+                py += 20
+            used_y[side].add(py)
+            px = left_edge if side == "L" else right_edge
+            d = "R" if side == "L" else "L"
+        tm = _vpin(net, px, py, d, kind)
+        _register_vpin(R, tm)
+        terminals.append(tm)
+        R.add_pin(net, px, py, d)
+        net_pins[net].append((px, py, d, "PORT", net))
+        pin_list.append({"inst": "PORT", "pin": net, "x": px, "y": py, "dir": d, "net": net})
+        port_plan[net] = "route"
+    # VSS: inout pin at the bottom-left tied to its own ground symbol
+    if gnd and gnd in ports and net_pins.get(gnd):
+        yg = _snap(max(r["y"] for r in rails_out if r["net"] == gnd) if any(r["net"] == gnd for r in rails_out) else 0)
+        px, py = left_edge, yg
+        R.add_fixed_wire(gnd, [(px, py), (px + 20, py)])
+        R.block_rect(px + 10, py + 1, px + 30, py + 18)
+        rails_out.append({"net": gnd, "kind": "gnd", "x": px + 20, "y": py, "prims": ground_glyph(px + 20, py),
+                          "named": False})
+        tm = _vpin(gnd, px, py, "R", "io")
+        _register_vpin(R, tm)
+        terminals.append(tm)
+        pin_list.append({"inst": "PORT", "pin": gnd, "x": px, "y": py, "dir": "R", "net": gnd})
+
     # channel nets (ranked) first, then gate-only nets; small first
     sig_nets.sort(key=lambda n: (n not in h, bbox_size(n)))
     for net in sig_nets:
         P = net_pins[net]
-        # rule 9b: an input that only drives gates far apart (e.g. NAND/NOR inputs) is
-        # named at every gate instead of being wired around the whole cell
-        if (len(P) >= 2 and net in ports and not R.tree.get(net)
-                and all(pm[p[3]].get("g") == net and p[4] == "g" for p in P) and bbox_size(net) > 240):
-            for (x, y, dr, inst, pname) in P:
-                tm = _terminal(net, x, y, dr, True)
-                tm["plain"] = True
-                terminals.append(tm)
+        if port_plan.get(net) in ("single", "gates"):
             continue
         if len(P) == 1:
             x, y, dr, inst, pname = P[0]
@@ -852,6 +953,8 @@ def _route_and_emit(cell, ports, roles, placed, pm, sup, gnd, supplies, grounds,
     for net in sig_nets:
         if not R.edges.get(net):
             continue
+        if net in ports and port_plan.get(net) == "route":
+            continue       # named by its Virtuoso pin
         cls = "lbl-port" if net in ports else "lbl-net"
         lab = _wire_label(R, net, cls, others=labels, symbols=symbols)
         if lab:
@@ -867,13 +970,80 @@ def _route_and_emit(cell, ports, roles, placed, pm, sup, gnd, supplies, grounds,
     wires += diags
     dots += extra_dots
 
-    return {
+    sc = {
         "cell": cell["name"], "kind": "leaf", "title": title or cell["name"],
         "symbols": symbols, "pins": pin_list, "wires": wires, "dots": dots,
         "labels": labels, "rails": rails_out, "terminals": terminals,
         "warnings": warnings, "ports": ports, "bounds": bounds,
         "meta": {"ranks": h, "sigma": sigma["dev"]},
     }
+    sc["bounds"] = fit_bounds(sc)
+    return sc
+
+
+OPP = {"L": "R", "R": "L", "U": "D", "D": "U"}
+
+
+def _vpin(net, x, y, d, kind):
+    """Virtuoso-style pin whose wire attaches at (x, y); d = direction towards the circuit."""
+    gap = VPIN_LEN + 5
+    t = {"net": net, "x": x, "y": y, "vpin": kind, "vdir": d, "port": True, "plain": True}
+    if d == "R":
+        t.update(tx=x - gap, ty=y + 3.5, anchor="end")
+    elif d == "L":
+        t.update(tx=x + gap, ty=y + 3.5, anchor="start")
+    elif d == "D":                       # body above the attach point, name further up
+        t.update(tx=x + 3.5, ty=y - gap, anchor="start", rot=True)
+    else:                                # body below, name further down
+        t.update(tx=x + 3.5, ty=y + gap, anchor="end", rot=True)
+    return t
+
+
+def _register_vpin(R, t):
+    R.block_rect(*vpin_body_rect(t["x"], t["y"], t["vdir"]))
+    w = len(t["net"]) * CHAR
+    if t["vdir"] == "R":
+        R.soft_rect(t["tx"] - w, t["ty"] - 9, t["tx"], t["ty"] + 2, 40)
+    elif t["vdir"] == "L":
+        R.soft_rect(t["tx"], t["ty"] - 9, t["tx"] + w, t["ty"] + 2, 40)
+    elif t["vdir"] == "D":
+        R.soft_rect(t["tx"] - 9, t["ty"] - w, t["tx"] + 2, t["ty"], 40)
+    else:
+        R.soft_rect(t["tx"] - 9, t["ty"], t["tx"] + 2, t["ty"] + w, 40)
+
+
+def fit_bounds(sc, margin=36):
+    xs, ys = [], []
+    for s_ in sc["symbols"]:
+        xs += [s_["bbox"][0], s_["bbox"][2]]
+        ys += [s_["bbox"][1], s_["bbox"][3]]
+        for (lx, ly, parts, anc) in s_["labels"]:
+            w = len("".join(t for t, _ in parts)) * CHAR
+            lx0 = lx if anc == "start" else (lx - w if anc == "end" else lx - w / 2)
+            xs += [lx0, lx0 + w]
+            ys += [ly - 10, ly + 3]
+    for w in sc["wires"]:
+        xs += [w["x1"], w["x2"]]
+        ys += [w["y1"], w["y2"]]
+    for r in sc["rails"]:
+        xs += [r["x"] - 12, r["x"] + 12]
+        ys += [r["y"] - 24, r["y"] + 18]
+    for t in sc["terminals"]:
+        w = len(t["net"]) * 6.2
+        if t.get("rot"):
+            xs += [t["tx"] - 10, t["tx"] + 2]
+            ys += [t["ty"] - w, t["ty"] + w]
+        else:
+            x0 = t["tx"] if t["anchor"] == "start" else (t["tx"] - w if t["anchor"] == "end" else t["tx"] - w / 2)
+            xs += [x0, x0 + w, t["x"]]
+            ys += [t["ty"] - 10, t["ty"] + 3, t["y"]]
+    for l in sc["labels"]:
+        w = len(l["text"]) * 6.2
+        xs += [l["x"] - w, l["x"] + w]
+        ys += [l["y"] - 10, l["y"] + 3]
+    if not xs:
+        return sc["bounds"]
+    return (min(xs) - margin, min(ys) - margin, max(xs) + margin, max(ys) + margin)
 
 
 def _terminal(net, x, y, dr, is_port, by_label=False):

@@ -160,6 +160,15 @@ async function desktop(b) {
   const link = p.locator("#side .netlink").first();
   if (await link.count()) { await link.hover(); check("desktop: side-panel net hover highlights", (await probe(p)).hl > 0); }
 
+  // PPT download button
+  if (await p.$("#btn-ppt")) {
+    const [dl] = await Promise.all([p.waitForEvent("download", { timeout: 5000 }), p.click("#btn-ppt")]);
+    const fp = await dl.path();
+    const buf = require("fs").readFileSync(fp);
+    check("desktop: ⬇ PPT downloads a .pptx", dl.suggestedFilename().endsWith(".pptx") && buf.length > 10000 &&
+          buf[0] === 0x50 && buf[1] === 0x4b, `${dl.suggestedFilename()} ${buf.length} bytes`);
+    check("desktop: PPT button keeps the drawing in place", (await probe(p)).vis > 0.9);
+  }
   // persistence + resize
   await p.click('[data-toggle="wl"]');
   await p.reload();
