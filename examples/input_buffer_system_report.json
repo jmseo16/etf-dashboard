@@ -62,42 +62,42 @@
    "shape": "amp",
    "title": "CTLE",
    "label": "CTLE",
-   "reason": "셀 이름 'CTLE'; 소스 사이 R/C degeneration 차동쌍 + 부하"
+   "reason": "name 'CTLE'; source-degenerated pair (R/C between sources) with loads"
   },
   "CML_LATCH": {
    "class": "latch",
    "shape": "latch",
    "title": "LATCH",
-   "label": "래치",
-   "reason": "셀 이름 'CML_LATCH'; cross-coupled 쌍 + 전류 스티어링 쌍"
+   "label": "Latch",
+   "reason": "name 'CML_LATCH'; cross-coupled pair + steering pairs"
   },
   "CML_DFF": {
    "class": "dff",
    "shape": "dff",
    "title": "DFF",
-   "label": "D 플립플롭",
-   "reason": "셀 이름 'CML_DFF'; 래치 두 개 직렬 (master/slave)"
+   "label": "D flip-flop",
+   "reason": "name 'CML_DFF'; two latches in series (master/slave)"
   },
   "DFE_1TAP": {
    "class": "dfe",
    "shape": "box",
    "title": "DFE",
    "label": "DFE",
-   "reason": "셀 이름 'DFE_1TAP'"
+   "reason": "name 'DFE_1TAP'"
   },
   "INPUT_BUFFER_SYSTEM": {
    "class": "buffer",
    "shape": "amp",
    "title": "",
-   "label": "버퍼",
-   "reason": "셀 이름 'INPUT_BUFFER_SYSTEM'"
+   "label": "Buffer",
+   "reason": "name 'INPUT_BUFFER_SYSTEM'"
   },
   "DFE_1TAP__AUTO0": {
    "class": "summer",
    "shape": "sum",
    "title": "",
-   "label": "합산기",
-   "reason": "여러 차동쌍이 같은 드레인으로 합산"
+   "label": "Summer",
+   "reason": "several diff pairs summing into the same drains"
   }
  }
 }

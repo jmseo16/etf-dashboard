@@ -711,7 +711,7 @@ def _route_and_emit(cell, ports, roles, placed, pm, sup, gnd, supplies, grounds,
                 R.soft_rect(xc - len(sup) * 4, y_rail - 18, xc + len(sup) * 4, y_rail - 4, 40)
             failed = R.route_net(sup, [(x, y, dr) for (x, y, dr, _, _) in sp])
             for fx, fy in failed:
-                warnings.append(f"{sup}: ({fx},{fy})에서 전원선까지 배선 불가 - 전원 기호로 대체")
+                warnings.append(f"{sup}: could not reach rail from ({fx},{fy}); using local symbol")
                 rails_out.append({"net": sup, "kind": "vdd", "x": fx, "y": fy, "prims": vdd_glyph(fx, fy, sup)})
         else:
             for (x, y, dr, _, _) in sp:
@@ -944,7 +944,7 @@ def _route_and_emit(cell, ports, roles, placed, pm, sup, gnd, supplies, grounds,
         failed = R.route_net(net, [(x, y, dr) for (x, y, dr, _, _) in P])
         for fx, fy in failed:
             dr = next(p[2] for p in P if p[0] == fx and p[1] == fy)
-            warnings.append(f"{net}: ({fx},{fy}) 핀은 배선 불가 - 이름표로 연결")
+            warnings.append(f"{net}: unroutable pin at ({fx},{fy}) - connected by name label")
             terminals.append(_terminal(net, fx, fy, dr, False, by_label=True))
         if failed:
             labels.append(_wire_label(R, net, "lbl-port", force=True))
@@ -1014,12 +1014,11 @@ def _register_vpin(R, t):
 
 def fit_bounds(sc, margin=36):
     xs, ys = [], []
-    from .verify import text_width
     for s_ in sc["symbols"]:
         xs += [s_["bbox"][0], s_["bbox"][2]]
         ys += [s_["bbox"][1], s_["bbox"][3]]
         for (lx, ly, parts, anc) in s_["labels"]:
-            w = text_width("".join(t for t, _ in parts), 9.6)
+            w = len("".join(t for t, _ in parts)) * CHAR
             lx0 = lx if anc == "start" else (lx - w if anc == "end" else lx - w / 2)
             xs += [lx0, lx0 + w]
             ys += [ly - 10, ly + 3]

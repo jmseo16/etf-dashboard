@@ -25,13 +25,8 @@ FONT = {"devlbl": 9, "netlabel": 10, "term-t": 10, "pin-t": 9, "blk-t": 13, "sum
         "pol-t": 12, "rail-t": 10, "sym-t": 10}
 
 
-def text_width(txt, size, latin=0.58):
-    """estimated rendered width: Hangul / CJK glyphs are about 1 em wide"""
-    return sum((1.0 if ord(ch) >= 0x1100 else latin) for ch in txt) * size
-
-
 def text_box(txt, x, y, anchor, size, rot=False):
-    w = text_width(txt, size)
+    w = len(txt) * size * 0.58
     if rot:  # rotate(-90) about (x, y): text runs upward for anchor=start
         y0 = y - w if anchor == "start" else (y if anchor == "end" else y - w / 2)
         return (x - size * 0.8, y0, x + size * 0.2, y0 + w)
@@ -219,7 +214,7 @@ def extract(view):
         ends, inter = junction_info[(x, y)]
         touched = [("w", i) for i in ends + inter] + by_pt.get((x, y), [])
         if not touched:
-            dangling.append(f"이름표 '{name}' ({x:g},{y:g})이(가) 아무것에도 닿지 않음")
+            dangling.append(f"{kind} '{name}' at ({x:g},{y:g}) touches nothing")
         for t in touched:
             uf.u(key, t)
     groups = {}
@@ -244,7 +239,7 @@ def check_view(view, cell, roles):
                 continue
             if p in hidden.get(d["name"], set()):
                 if not (is_supply(n) or is_ground(n)):
-                    errors.append(f"{d['name']}.{p}: 숨긴 핀인데 넷 {n}은 전원이 아님")
+                    errors.append(f"{d['name']}.{p}: hidden pin but net {n} is not a supply")
                 continue
             ir_pin_net[(d["name"], p)] = n
     for (inst, pin) in groups:
@@ -253,10 +248,10 @@ def check_view(view, cell, roles):
     drawn = set(groups)
     for k in ir_pin_net:
         if k not in drawn:
-            errors.append(f"핀 {k[0]}.{k[1]}이(가) 그려지지 않음")
+            errors.append(f"pin {k[0]}.{k[1]} not drawn")
     for k in drawn:
         if k not in ir_pin_net:
-            errors.append(f"그려진 핀 {k[0]}.{k[1]}이(가) netlist에 없음")
+            errors.append(f"drawn pin {k[0]}.{k[1]} does not exist in netlist")
     net_groups, group_nets = {}, {}
     for k, n in ir_pin_net.items():
         if k not in groups:
@@ -269,15 +264,15 @@ def check_view(view, cell, roles):
             parts = []
             for g in gs:
                 parts.append("{" + ", ".join(sorted(f"{i}.{p}" for (i, p), gg in groups.items() if gg == g and ir_pin_net.get((i, p)) == n)) + "}")
-            errors.append(f"끊김(OPEN): 넷 {n}이(가) {len(gs)}조각으로 그려짐: " + " | ".join(parts))
+            errors.append(f"OPEN: net {n} drawn as {len(gs)} pieces: " + " | ".join(parts))
     for g, ns in group_nets.items():
         if len(ns) > 1:
-            errors.append(f"단락(SHORT): 넷 {', '.join(sorted(ns))}이(가) 그림에서 이어져 있음")
+            errors.append(f"SHORT: nets {', '.join(sorted(ns))} are connected in the drawing")
     for g, labelset in info["names"].items():
         ns = group_nets.get(g, set())
         for lab in labelset:
             if ns and lab not in ns:
-                errors.append(f"이름표 '{lab}'이(가) 넷 {', '.join(sorted(ns))} 위에 있음")
+                errors.append(f"label '{lab}' sits on net {', '.join(sorted(ns))}")
     # every port must be visible (pin tag, port symbol, label or rail)
     seen_names = set().union(*info["names"].values()) if info["names"] else set()
     for p in cell["ports"]:
@@ -292,7 +287,7 @@ def check_view(view, cell, roles):
         if not any(n == p for n in net_groups):
             if hidden_only:
                 continue
-        errors.append(f"포트 {p}이(가) 그림 어디에도 없음")
+        errors.append(f"port {p} is not named anywhere in the drawing")
 
     # ---------------- lint ----------------
     W = view["wires"]
@@ -306,19 +301,19 @@ def check_view(view, cell, roles):
         pins_here = sum(1 for _, _, px, py in view["pins"] if px == x and py == y)
         branches = len(ends) + 2 * len(inter) + pins_here
         if branches >= 4 and (len(inter) >= 2 or len(ends) + pins_here >= 4 or (inter and len(ends) + pins_here >= 2)):
-            lint.append(f"({x:g},{y:g})에 4방향 접점")
+            lint.append(f"4-way junction at ({x:g},{y:g})")
         if branches == 3 and (x, y) not in dots:
-            lint.append(f"({x:g},{y:g}) T 접점에 점 없음")
+            lint.append(f"T-junction without dot at ({x:g},{y:g})")
     for (x, y) in dots:
         ends, inter = info["junctions"].get((x, y), ([], []))
         pins_here = sum(1 for _, _, px, py in view["pins"] if px == x and py == y)
         if len(ends) + 2 * len(inter) + pins_here < 3:
-            lint.append(f"({x:g},{y:g})의 점이 접점이 아님")
+            lint.append(f"dot at ({x:g},{y:g}) is not on a junction")
     for s in view["symbols"]:
         for (x0, y0, x1, y1) in s["keep"]:
             for w in W:
                 if _seg_hits_rect(w, (x0 + 1, y0 + 1, x1 - 1, y1 - 1)):
-                    lint.append(f"배선이 {s['inst']}을(를) 관통")
+                    lint.append(f"wire passes through {s['inst']}")
                     break
     lint += [f"pin {p} lands on the middle of a wire" for p in info["pin_on_interior"]]
     T = view["texts"]
@@ -327,18 +322,18 @@ def check_view(view, cell, roles):
         for j in range(i + 1, len(T)):
             if _ov(_shrink(T[i]["box"]), _shrink(T[j]["box"])):
                 over += 1
-                lint.append(f"글씨 겹침: '{T[i]['txt']}' / '{T[j]['txt']}'")
+                lint.append(f"text overlap: '{T[i]['txt']}' / '{T[j]['txt']}'")
     for t in T:
         b = _shrink(t["box"], 1.5)
         for w in W:
             if _seg_hits_rect(w, b):
                 over += 1
-                lint.append(f"글씨 '{t['txt']}'이(가) 배선과 겹침")
+                lint.append(f"text '{t['txt']}' overlaps a wire")
                 break
         for sg in view.get("symsegs", []):
             if _seg_hits_rect(sg[:4], b):
                 over += 1
-                lint.append(f"글씨 '{t['txt']}'이(가) {view['symbols'][sg[4]]['inst']} 그림과 겹침")
+                lint.append(f"text '{t['txt']}' overlaps the drawing of {view['symbols'][sg[4]]['inst']}")
                 break
         for k, s_ in enumerate(view["symbols"]):
             body = s_.get("body")
@@ -349,7 +344,7 @@ def check_view(view, cell, roles):
                 continue
             if _ov(b, body):
                 over += 1
-                lint.append(f"글씨 '{t['txt']}'이(가) 심볼 {s_['inst']}과(와) 겹침")
+                lint.append(f"text '{t['txt']}' overlaps symbol {s_['inst']}")
     # rule 1: sigma-matched pairs must be drawn as mirror images
     from .layout_leaf import _symmetry
     from .analyze import pin_map as _pm
@@ -371,13 +366,13 @@ def check_view(view, cell, roles):
             ya = sorted(y for _, y in pa.values())
             yb = sorted(y for _, y in pb.values())
             if ya != yb:
-                lint.append(f"쌍 {a}/{b}의 높이가 다름")
+                lint.append(f"pair {a}/{b} not at the same height")
                 continue
             if "g" in pa and "g" in pb:
                 ca = [x for p, (x, _) in pa.items() if p != "g"][0]
                 cb = [x for p, (x, _) in pb.items() if p != "g"][0]
                 if abs((pa["g"][0] - ca) + (pb["g"][0] - cb)) > 0.5:
-                    lint.append(f"쌍 {a}/{b}이(가) 대칭으로 그려지지 않음")
+                    lint.append(f"pair {a}/{b} is not drawn as a mirror image")
     # textbook conventions
     ys = {"pmos": [], "nmos": []}
     for d in cell["devices"]:
@@ -386,7 +381,7 @@ def check_view(view, cell, roles):
             if pts:
                 ys[d["type"]].append(sum(p[3] for p in pts) / len(pts))
     if ys["pmos"] and ys["nmos"] and min(ys["pmos"]) > max(ys["nmos"]):
-        lint.append("PMOS가 NMOS보다 아래에 그려짐")
+        lint.append("PMOS devices are drawn below NMOS devices")
     return {"ok": not errors, "errors": errors,
             "lint": {"crossings": crossings, "text_overlaps": over, "warnings": lint}}
 

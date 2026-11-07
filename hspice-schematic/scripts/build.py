@@ -71,7 +71,7 @@ def build(netlist, out, annotations=None, top=None, ir_json=None, report_path=No
         cell = ir["cells"][c]
         cl = classes[c]
         is_block = any(d["kind"] == "X" for d in cell["devices"])
-        display = f"{cl['label']} (자동)" if cell.get("auto") else c
+        display = f"{cl['label']} (auto)" if cell.get("auto") else c
         sc = layout_block(cell, ir, roles, classes) if is_block else layout_leaf(cell, roles[c], display)
         scenes[c] = sc
         insts = {}

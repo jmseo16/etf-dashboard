@@ -17,7 +17,6 @@ from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Emu, Inches, Pt
 
 from .geom import vpin_shape
-from .verify import text_width
 
 INK = RGBColor(0x11, 0x11, 0x11)
 BLUE = RGBColor(0x1D, 0x5F, 0xA8)
@@ -113,7 +112,8 @@ def _text(shapes, m, x, y, runs, anchor="start", rot=False, name=None):
     if not runs:
         return None
     size = max(TEXT_STYLE.get(c, (10,))[0] for _, c in runs)
-    w = sum(text_width(t, size, 0.62) for t, _ in runs) + 4
+    n = sum(len(t) for t, _ in runs)
+    w = n * size * 0.62 + 4
     h = size * 1.35
     if rot:   # rotate(-90): text runs upwards from (x, y) for anchor=start
         cx = x - size * 0.3
@@ -140,8 +140,6 @@ def _text(shapes, m, x, y, runs, anchor="start", rot=False, name=None):
         r.font.bold = bold
         r.font.italic = italic
         r.font.color.rgb = color
-        if any(ord(ch) >= 0x1100 for ch in t):
-            _east_asian(r, "Malgun Gothic")
     if rot:
         tb.rotation = 270
     if name:
@@ -154,16 +152,6 @@ def _transparent(shape):
     clr = shape.fill._xPr.find(qn("a:solidFill")).find(qn("a:srgbClr"))
     a = clr.makeelement(qn("a:alpha"), {"val": "0"})
     clr.append(a)
-
-
-def _east_asian(run, face):
-    from pptx.oxml.ns import qn
-    rpr = run._r.get_or_add_rPr()
-    ea = rpr.find(qn("a:ea"))
-    if ea is None:
-        ea = rpr.makeelement(qn("a:ea"), {})
-        rpr.append(ea)
-    ea.set("typeface", face)
 
 
 def _prims(shapes, m, prims):
@@ -206,10 +194,9 @@ def export_pptx(scenes, info, order, out_path, title=None, show_net_names=False)
         r.text = ci.get("display", c)
         r.font.size, r.font.bold, r.font.name = Pt(20), True, "Arial"
         r = tp.add_run()
-        r.text = "   " + ci.get("label", "") + ("  ·  연결 검증 완료 (netlist와 일치)" if ci.get("verify", {}).get("ok") else "")
+        r.text = "   " + ci.get("label", "") + ("  ·  connectivity verified" if ci.get("verify", {}).get("ok") else "")
         r.font.size, r.font.name = Pt(11), "Arial"
         r.font.color.rgb = GREY
-        _east_asian(r, "Malgun Gothic")
         if c in parent_of:
             pc, pinst = parent_of[c]
             up = slide.shapes.add_textbox(Inches(10.4), Inches(0.22), Inches(2.6), Inches(0.35))
@@ -273,8 +260,7 @@ def export_pptx(scenes, info, order, out_path, title=None, show_net_names=False)
                 continue     # same default as the viewer ("넷 이름" off)
             _text(slide.shapes, m, l["x"], l["y"], [(l["text"], l["cls"])], l["anchor"], name=f"label {l['net']}")
         notes = slide.notes_slide.notes_text_frame
-        notes.text = (f"{c}: {ci.get('label', '')}\n인식 근거: {ci.get('reason', '')}\n"
-                      f"포트: {', '.join(ci.get('ports', []))}\n"
-                      f"블록을 클릭하면(슬라이드 쇼) 그 블록의 슬라이드로 이동합니다.")
+        notes.text = (f"{c}: {ci.get('label', '')}. Recognised because: {ci.get('reason', '')}.\n"
+                      f"Ports: {', '.join(ci.get('ports', []))}")
     prs.save(out_path)
     return out_path

@@ -328,9 +328,9 @@ CLASS_SYMBOL = {
 }
 
 CLASS_TITLE = {
-    "ctle": "CTLE", "buffer": "버퍼", "diff_buffer": "차동 버퍼", "amplifier": "증폭기",
-    "comparator": "비교기", "inverter": "인버터", "summer": "합산기", "latch": "래치",
-    "dff": "D 플립플롭", "mux": "MUX", "dfe": "DFE", "generic": "블록",
+    "ctle": "CTLE", "buffer": "Buffer", "diff_buffer": "Diff. buffer", "amplifier": "Amplifier",
+    "comparator": "Comparator", "inverter": "Inverter", "summer": "Summer", "latch": "Latch",
+    "dff": "D flip-flop", "mux": "MUX", "dfe": "DFE", "generic": "Block",
     "nand": "NAND", "and": "AND", "nor": "NOR", "or": "OR", "xor": "XOR",
 }
 
@@ -347,17 +347,17 @@ def classify(ir, cname, cache=None):
         for rx, c in NAME_HINTS:
             if rx.search(cname):
                 cls = c
-                reason.append(f"셀 이름 '{cname}'")
+                reason.append(f"name '{cname}'")
                 break
     topo = None
     if not insts:
         f = features(cell)
         if f["cross_coupled"] and (f["clock_pairs"] or f["diff_pairs"]):
             topo = "latch"
-            reason.append("cross-coupled 쌍 + 전류 스티어링 쌍")
+            reason.append("cross-coupled pair + steering pairs")
         elif f["degen"] and f["diff_pairs"] == [] and f["res_loads"]:
             topo = "ctle"
-            reason.append("소스 사이 R/C degeneration 차동쌍 + 부하")
+            reason.append("source-degenerated pair (R/C between sources) with loads")
         elif len(f["diff_pairs"]) >= 2:
             drains = {}
             pm = {d["name"]: pin_map(d) for d in cell["devices"]}
@@ -366,29 +366,29 @@ def classify(ir, cname, cache=None):
                 drains[key] = drains.get(key, 0) + 1
             if max(drains.values()) >= 2:
                 topo = "summer"
-                reason.append("여러 차동쌍이 같은 드레인으로 합산")
+                reason.append("several diff pairs summing into the same drains")
         if topo is None:
             topo = _gate_topology(cell)
             if topo:
-                reason.append(f"직렬/병렬 CMOS 구조 ({topo.upper()})")
+                reason.append(f"series/parallel CMOS network ({topo.upper()})")
         if topo is None and f["diff_pairs"]:
             topo = "diff_buffer"
-            reason.append("차동쌍")
+            reason.append("differential pair")
         if topo is None and f["inverters"]:
             topo = "inverter" if len(f["inverters"]) == 1 else "buffer"
-            reason.append("CMOS 인버터")
+            reason.append("CMOS inverter(s)")
     else:
         subs = [classify(ir, d["ref"], cache)["class"] for d in insts if d["ref"] in ir["cells"]]
         if len(subs) == 2 and all(s == "latch" for s in subs):
             topo = "dff"
-            reason.append("래치 두 개 직렬 (master/slave)")
+            reason.append("two latches in series (master/slave)")
     if cls is None:
         cls = topo or "generic"
     elif topo and topo != cls:
-        reason.append(f"(구조상으로는 {topo})")
+        reason.append(f"(topology suggests {topo})")
     shape, title = CLASS_SYMBOL.get(cls, ("box", None))
     res = {"class": cls, "shape": shape, "title": title if title is not None else cname,
-           "label": CLASS_TITLE.get(cls, cls), "reason": "; ".join(reason) or "알려진 구조 없음"}
+           "label": CLASS_TITLE.get(cls, cls), "reason": "; ".join(reason) or "no pattern"}
     cache[cname] = res
     return res
 

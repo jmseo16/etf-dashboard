@@ -192,7 +192,7 @@ class TestEndToEnd(unittest.TestCase):
         v["wires"] = v["wires"][1:]   # delete a wire
         r = check_view(v, ir["cells"]["CTLE"], {})
         self.assertFalse(r["ok"])
-        self.assertTrue(any("OPEN" in e or "닿지 않음" in e for e in r["errors"]), r["errors"])
+        self.assertTrue(any("OPEN" in e or "touches nothing" in e for e in r["errors"]), r["errors"])
 
     def test_verifier_detects_short(self):
         ir = extract_auto_blocks(parse_file(IBS))
@@ -213,7 +213,7 @@ class TestEndToEnd(unittest.TestCase):
         v["texts"].append({"txt": "X", "box": text_box("XXXX", (w[0] + w[2]) / 2, w[1] + 3, "middle", 10),
                            "kind": "netlabel", "sym": None})
         r = check_view(v, ir["cells"]["INPUT_BUFFER_SYSTEM"], {})
-        self.assertTrue(any("배선과 겹침" in x for x in r["lint"]["warnings"]))
+        self.assertTrue(any("overlaps a wire" in x for x in r["lint"]["warnings"]))
 
 
 if __name__ == "__main__":

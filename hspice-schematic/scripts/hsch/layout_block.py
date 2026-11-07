@@ -277,7 +277,7 @@ def layout_block(cell, ir, roles, classes):
             pin_list.append({"inst": d["name"], "pin": p, "x": px, "y": py, "dir": dr, "net": n})
             route_pins.setdefault(n, []).append((px, py, dr))
         cls = classes.get(d["ref"], {})
-        inst_label = d["name"] if not d.get("auto") else "(자동)"
+        inst_label = d["name"] if not d.get("auto") else "(auto)"
         sub_label = d["ref"] if not d.get("auto") else cls.get("label", "")
         parts = [(inst_label, "lbl-name"), (" : ", "lbl-name"), (sub_label, "lbl-cell")]
         bx, by = pos[d["name"]]
@@ -403,7 +403,7 @@ def layout_block(cell, ir, roles, classes):
         failed = R.route_net(n, P)
         for fx, fy in failed:
             dr = next(p[2] for p in P if p[0] == fx and p[1] == fy)
-            warnings.append(f"{n}: ({fx},{fy}) 핀은 배선 불가 - 이름표로 연결")
+            warnings.append(f"{n}: unroutable pin at ({fx},{fy}) - connected by name label")
             terminals.append(_terminal(n, fx, fy, dr, False, by_label=True))
         if failed:
             labels.append(_wire_label(R, n, "lbl-port", force=True))
