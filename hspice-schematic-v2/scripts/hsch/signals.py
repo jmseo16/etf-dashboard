@@ -293,3 +293,53 @@ def compress(names):
     for t, ns in fam.items():
         out.append(bus_name(ns) if len(ns) > 1 and "#" in t else ", ".join(ns))
     return ", ".join(out)
+
+
+# ---------------------------------------------------------------------------
+# bus helpers used by the display transformation
+# ---------------------------------------------------------------------------
+_BUS = re.compile(r"<([^<>]+)>")
+
+
+def is_bus(name):
+    return bool(_BUS.search(name)) or (name.startswith("{") and name.endswith("}"))
+
+
+def expand_bus(name):
+    """'W<1:4>_<0:3>' -> W1_0, W1_1, ..., W4_3 (first index outermost);
+    'B<0,2,5>' -> B0, B2, B5 ; '{a,b}' -> a, b ; plain name -> [name]"""
+    if name.startswith("{") and name.endswith("}"):
+        return name[1:-1].split(",")
+    parts = _BUS.split(name)
+    if len(parts) == 1:
+        return [name]
+    out = [""]
+    for i, part in enumerate(parts):
+        if i % 2 == 0:
+            out = [o + part for o in out]
+            continue
+        if ":" in part:
+            a, b = (int(x) for x in part.split(":"))
+            vals = list(range(a, b + 1)) if a <= b else list(range(a, b - 1, -1))
+        else:
+            vals = [int(x) for x in part.split(",")]
+        out = [o + str(v) for o in out for v in vals]
+    return out
+
+
+def port_buses(cell, cls):
+    """families of option / bias ports that are shown as ONE bus pin on the block
+    symbol (W1_0..W4_3 -> W<1:4>_<0:3>). returns [(bus, [members in bus order])]"""
+    fam = {}
+    for p in cell["ports"]:
+        if cls.get(p) in ("ctrl", "bias") and _DIG.search(p) and not is_rail(p):
+            fam.setdefault(_tpl(p), []).append(p)
+    out = []
+    for t, mem in fam.items():
+        if len(mem) < 2:
+            continue
+        b = bus_name(mem)
+        if b.startswith("{"):
+            continue
+        out.append((b, expand_bus(b)))
+    return out

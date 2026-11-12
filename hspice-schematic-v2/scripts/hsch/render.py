@@ -5,6 +5,7 @@ import json
 import os
 
 from .geom import vpin_shape
+from .signals import expand_bus, is_bus
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(os.path.dirname(HERE), "..", "assets")
@@ -45,14 +46,56 @@ def _path_d(prims_path, ox=0, oy=0):
     return prims_path
 
 
+def net_style(sc, net):
+    """extra CSS classes of a net: bus / clk (thick lines) and sig-ctrl / sig-bias (toggles)"""
+    k = sc.get("netcls", {}).get(net)
+    out = []
+    if is_bus(net):
+        out.append("bus")
+    if k == "clk":
+        out.append("clk")
+    if k in ("ctrl", "bias"):
+        out.append("sig-" + k)
+    return (" " + " ".join(out)) if out else ""
+
+
+def bus_ticks(sc):
+    """one width mark per bus net on its longest segment: (net, x1,y1,x2,y2, tx,ty, anchor, width)"""
+    best = {}
+    for w in sc["wires"]:
+        if not is_bus(w["net"]) or w.get("diag"):
+            continue
+        L = abs(w["x2"] - w["x1"]) + abs(w["y2"] - w["y1"])
+        if L >= 40 and L > best.get(w["net"], (0,))[0]:
+            best[w["net"]] = (L, w)
+    out = []
+    for net, (L, w) in best.items():
+        width = len(expand_bus(net))
+        if w["y1"] == w["y2"]:
+            x = int(round((min(w["x1"], w["x2"]) + 0.3 * L) / 10.0)) * 10 + 5
+            y = w["y1"]
+            out.append((net, x - 4, y + 5, x + 4, y - 5, x + 6, y + 13, "start", width))
+        else:
+            x = w["x1"]
+            y = int(round((min(w["y1"], w["y2"]) + 0.3 * L) / 10.0)) * 10 + 5
+            out.append((net, x - 5, y + 4, x + 5, y - 4, x - 7, y + 4, "end", width))
+    return out
+
+
 def scene_svg(sc):
     x0, y0, x1, y1 = sc["bounds"]
     out = [f'<svg class="sch" xmlns="http://www.w3.org/2000/svg" data-cell="{_e(sc["cell"])}" '
            f'viewBox="{_f(x0)} {_f(y0)} {_f(x1 - x0)} {_f(y1 - y0)}" data-bounds="{_f(x0)},{_f(y0)},{_f(x1)},{_f(y1)}">']
     out.append('<g class="layer-wires">')
     for w in sc["wires"]:
-        out.append(f'<line class="wire{" diag" if w.get("diag") else ""}" data-net="{_e(w["net"])}" x1="{_f(w["x1"])}" y1="{_f(w["y1"])}" '
+        out.append(f'<line class="wire{" diag" if w.get("diag") else ""}{net_style(sc, w["net"])}" data-net="{_e(w["net"])}" x1="{_f(w["x1"])}" y1="{_f(w["y1"])}" '
                    f'x2="{_f(w["x2"])}" y2="{_f(w["y2"])}"/>')
+    out.append("</g>")
+    out.append('<g class="layer-bus">')
+    for (net, ax, ay, bx, by, tx, ty, anc, width) in bus_ticks(sc):
+        out.append(f'<g class="bustick{net_style(sc, net)}" data-net="{_e(net)}">'
+                   f'<line x1="{_f(ax)}" y1="{_f(ay)}" x2="{_f(bx)}" y2="{_f(by)}"/>'
+                   f'<text class="bus-w" x="{_f(tx)}" y="{_f(ty)}" text-anchor="{anc}">{width}</text></g>')
     out.append("</g>")
     out.append('<g class="layer-syms">')
     for s in sc["symbols"]:
@@ -88,11 +131,12 @@ def scene_svg(sc):
     out.append("</g>")
     out.append('<g class="layer-dots">')
     for d in sc["dots"]:
-        out.append(f'<circle class="dot" data-net="{_e(d["net"])}" cx="{_f(d["x"])}" cy="{_f(d["y"])}" r="2.6"/>')
+        out.append(f'<circle class="dot{net_style(sc, d["net"])}" data-net="{_e(d["net"])}" cx="{_f(d["x"])}" cy="{_f(d["y"])}" r="2.6"/>')
     out.append("</g>")
     out.append('<g class="layer-labels">')
     for t in sc["terminals"]:
         cls = "term port" if t["port"] else ("term bylabel" if t.get("by_label") else "term")
+        cls += net_style(sc, t["net"]).replace(" bus", "").replace(" clk", "")
         out.append(f'<g class="{cls}" data-net="{_e(t["net"])}" data-ax="{_f(t["x"])}" data-ay="{_f(t["y"])}">')
         if t.get("vpin"):
             pts = vpin_shape(t["vpin"], t["x"], t["y"], t["vdir"])
@@ -108,7 +152,7 @@ def scene_svg(sc):
         out.append(f'<text class="term-t" x="{_f(t["tx"])}" y="{_f(t["ty"])}" text-anchor="{t["anchor"]}"{rot}>{_e(t["net"])}</text>')
         out.append("</g>")
     for l in sc["labels"]:
-        out.append(f'<text class="netlabel {l["cls"]}" data-net="{_e(l["net"])}" data-ax="{_f(l["ax"])}" '
+        out.append(f'<text class="netlabel {l["cls"]}{net_style(sc, l["net"]).replace(" bus", "").replace(" clk", "")}" data-net="{_e(l["net"])}" data-ax="{_f(l["ax"])}" '
                    f'data-ay="{_f(l["ay"])}" x="{_f(l["x"])}" y="{_f(l["y"])}" text-anchor="{l["anchor"]}">{_e(l["text"])}</text>')
     out.append("</g>")
     out.append('<g class="layer-pins">')
@@ -154,6 +198,8 @@ def render_html(scenes, info, title, out_path, pptx_path=None):
     <label><input type="checkbox" data-toggle="val" checked> R/C 값</label>
     <label><input type="checkbox" data-toggle="name" checked> 소자 이름</label>
     <label><input type="checkbox" data-toggle="net"> 넷 이름</label>
+    <label><input type="checkbox" data-toggle="ctrl" checked> 옵션·제어</label>
+    <label><input type="checkbox" data-toggle="bias" checked> 바이어스</label>
     <button id="btn-up" title="상위 블록 (Esc)">↑ 상위</button>
     <button id="btn-fit" title="화면 맞춤 (F)">⤢ 맞춤</button>
     {ppt_btn}

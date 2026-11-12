@@ -45,7 +45,8 @@
   }
 
   // ---------------------------------------------------------------- toggles
-  var TOGGLES = { wl: "hide-wl", val: "hide-val", name: "hide-name", net: "show-net" };
+  var TOGGLES = { wl: "hide-wl", val: "hide-val", name: "hide-name", net: "show-net",
+                  ctrl: "hide-ctrl", bias: "hide-bias" };
   Array.prototype.forEach.call(document.querySelectorAll("[data-toggle]"), function (cb) {
     var key = cb.getAttribute("data-toggle");
     var saved = load("t-" + key);

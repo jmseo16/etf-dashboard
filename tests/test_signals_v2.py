@@ -77,6 +77,45 @@ class TestSignalsV2(unittest.TestCase):
         self.assertEqual(self.merges("HALF_RATE_DFE_SLICE"), {})     # X_DFF2 -> X_DFF3 is a shift chain
         self.assertEqual(self.merges("CLK_DIST_TREE"), {})
 
+    def test_expand_check_catches_errors(self):
+        sys.path.insert(0, V2)
+        for m in [k for k in sys.modules if k == "hsch" or k.startswith("hsch.")]:
+            del sys.modules[m]
+        collapse = importlib.import_module("hsch.collapse")
+        sig = importlib.import_module("hsch.signals")
+        vir, vcls, pb, _ = collapse.build_view_ir(self.ir, sig.classify_signals(self.ir))
+        for c in self.ir["cells"]:
+            self.assertEqual(collapse.expand_check(vir["cells"][c], self.ir["cells"][c], pb), [], c)
+        import copy
+        bad = copy.deepcopy(vir["cells"]["VGA_STAGE"])
+        d = next(x for x in bad["devices"] if x["name"] == "MS_G<0:3>")
+        d["pins"] = [[p, ("B_G<3:0>" if p == "s" else n)] for p, n in d["pins"]]   # reversed bus order
+        errs = collapse.expand_check(bad, self.ir["cells"]["VGA_STAGE"], pb)
+        self.assertTrue(any("MS_G0" in e for e in errs), errs)
+        for m in [k for k in sys.modules if k == "hsch" or k.startswith("hsch.")]:
+            del sys.modules[m]
+
+    def test_v2_build_rx_afe_end_to_end(self):
+        import json
+        import subprocess
+        import tempfile
+        out = tempfile.mkdtemp()
+        r = subprocess.run([sys.executable, os.path.join(V2, "build.py"), NET, "-o", os.path.join(out, "rx.html"),
+                            "--report", os.path.join(out, "rx.json")], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout[-2000:])
+        with open(os.path.join(out, "rx.json")) as f:
+            rep = json.load(f)
+        self.assertTrue(rep["ok"])
+        self.assertEqual(len(rep["views"]), 21)
+        for cell, v in rep["views"].items():
+            self.assertTrue(v["ok"] and v["expand_ok"], (cell, v["errors"]))
+        with open(os.path.join(out, "rx.html"), encoding="utf-8") as f:
+            html = f.read()
+        self.assertIn('data-toggle="ctrl"', html)
+        self.assertIn("MS_G&lt;0:3&gt;", html)            # merged device drawn once
+        self.assertIn('class="wire bus', html)               # bus nets thick
+        self.assertIn('class="wire clk', html)               # clocks thick
+
     def test_bus_names(self):
         b = signals.bus_name
         self.assertEqual(b(["T_G0", "T_G1", "T_G2", "T_G3"]), "T_G<0:3>")

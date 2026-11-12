@@ -38,7 +38,8 @@ async function probe(p) {
 const near = (a, b, tol = 2) => Math.abs(a - b) <= tol;
 const sameVB = (a, b) => a.vb.every((x, i) => near(x, b.vb[i], 0.01));
 const fitted = (s) => near(s.vb[0], s.bounds[0], 0.01) && near(s.vb[2], s.bounds[2] - s.bounds[0], 0.01);
-const TOG = { wl: ".lbl-wl", val: ".lbl-val", name: ".lbl-name", net: ".lbl-net" };
+const TOG = { wl: ".lbl-wl", val: ".lbl-val", name: ".lbl-name", net: ".lbl-net",
+              ctrl: ".sig-ctrl", bias: ".sig-bias" };
 
 async function toggleChecks(p, label, tapFn) {
   for (const [t, sel] of Object.entries(TOG)) {

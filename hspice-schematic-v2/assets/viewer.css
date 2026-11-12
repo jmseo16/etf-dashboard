@@ -81,6 +81,14 @@ polyline.blk, circle.blk { fill: #fff; }
 .rail-t { font-size: 10px; font-weight: 600; }
 .wire { stroke: var(--ink); stroke-width: 1.6; stroke-linecap: square; }
 .wire.diag { stroke-linecap: round; }
+/* v2: clocks and buses are thick; a bus also carries a width mark and its name */
+.wire.clk { stroke-width: 2.8; }
+.wire.bus { stroke-width: 3.4; }
+.bustick line { stroke: var(--ink); stroke-width: 1.3; }
+.bus-w { font-size: 9px; font-weight: 600; }
+.lbl-bus { font-weight: 600; }
+body.hide-ctrl .sig-ctrl { display: none; }
+body.hide-bias .sig-bias { display: none; }
 .arrowhead { fill: var(--ink); stroke: none; }
 .dot { fill: var(--ink); }
 .hl.arrowhead { fill: var(--accent); }
@@ -112,6 +120,7 @@ body:not(.show-net) .lbl-net { display: none; }
 
 /* net highlight */
 .hl.wire { stroke: var(--accent); stroke-width: 2.4; }
+.hl.wire.bus, .hl.wire.clk { stroke-width: 3.6; }
 .hl.dot { fill: var(--accent); }
 .hl.netlabel, .hl .term-t { fill: var(--accent) !important; }
 .hl .termc { stroke: var(--accent); }

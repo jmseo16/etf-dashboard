@@ -13,6 +13,7 @@ from .geom import Xf, block_symbol, ground_glyph, transform, vdd_glyph
 from .layout_leaf import (CHAR, OPP, _device_symbol, _register_vpin, _rename_pins, _snap, _terminal,
                           _vpin, _wire_label, fit_bounds)
 from .router import Router
+from .signals import is_bus
 from .verify import FONT, _ov, _seg_hits_rect, text_box
 
 LAYER_GAP = 170
@@ -20,7 +21,8 @@ STACK_GAP = 90
 PORT_DX = 130
 
 
-def layout_block(cell, ir, roles, classes):
+def layout_block(cell, ir, roles, classes, netcls=None):
+    netcls = netcls or {}
     insts = [d for d in cell["devices"] if d["kind"] == "X"]
     ports = cell["ports"]
     prole = roles[cell["name"]]
@@ -38,6 +40,8 @@ def layout_block(cell, ir, roles, classes):
     def is_label_net(n):
         if is_supply(n) or is_ground(n):
             return False
+        if netcls.get(n) in ("ctrl", "bias"):
+            return True          # v2: option / bias nets are name labels only, never wires
         pins = net_pins.get(n, [])
         if n in ports and prole.get(n) == "bias":
             return True
@@ -405,11 +409,15 @@ def layout_block(cell, ir, roles, classes):
             warnings.append(f"{n}: unroutable pin at ({fx},{fy}) - connected by name label")
             terminals.append(_terminal(n, fx, fy, dr, False, by_label=True))
         if failed:
-            labels.append(_wire_label(R, n, "lbl-port", force=True))
+            lab = _wire_label(R, n, "lbl-port", force=True)
+            if lab:
+                labels.append(lab)
+            elif (P[0][0], P[0][1]) not in failed:
+                terminals.append(_terminal(n, P[0][0], P[0][1], P[0][2], False, by_label=True))
 
     for n in order:
         if len(route_pins[n]) >= 2 and n not in ports:
-            lab = _wire_label(R, n, "lbl-net", others=labels, symbols=symbols)
+            lab = _wire_label(R, n, "lbl-bus" if is_bus(n) else "lbl-net", others=labels, symbols=symbols)
             if lab:
                 labels.append(lab)
 

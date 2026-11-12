@@ -20,6 +20,7 @@ from .geom import (VPIN_LEN, Xf, capacitor, eng, generic_box, ground_glyph, indu
                    source, transform, vdd_glyph, vpin_body_rect)
 from .parser import parse_value
 from .router import Router
+from .signals import is_bus
 
 RP = 120     # vertical pitch between net ranks
 GAP = 20     # minimum horizontal clearance between columns
@@ -38,7 +39,31 @@ def _snap(v):
 # ---------------------------------------------------------------------------
 # text helpers
 # ---------------------------------------------------------------------------
+def _list_eng(vals, unit=""):
+    """[4e-6, 8e-6, 16e-6] -> '4,8,16µ' (common suffix) else '4µ,8n'"""
+    txt = [eng(v) for v in vals]
+    suf = {t.lstrip("-0123456789.") for t in txt}
+    if len(suf) == 1:
+        s0 = suf.pop()
+        return ",".join(t[: len(t) - len(s0)] if s0 else t for t in txt) + s0 + unit
+    return ",".join(t + unit for t in txt)
+
+
 def wl_text(d):
+    mg = d.get("merged")
+    if mg and d["kind"] == "M":
+        ps = mg["params"]
+        ws = [parse_value(q.get("w")) for q in ps]
+        ls = [parse_value(q.get("l")) for q in ps]
+        ms = [parse_value(q.get("m", q.get("mult", "1"))) for q in ps]
+        n = len(ps)
+        if None in ws or None in ls:
+            return f"×{n}", ""
+        line2 = f"×{n} W={_list_eng(ws)}"
+        line3 = f"L={eng(ls[0])}" if len(set(ls)) == 1 else f"L={_list_eng(ls)}"
+        if any(m not in (None, 1.0) for m in ms):
+            line3 += " m=" + ",".join(eng(m) for m in ms)
+        return line2, line3
     p = d["params"]
     w, l = parse_value(p.get("w")), parse_value(p.get("l"))
     wl = f"{eng(w)}/{eng(l)}" if (w is not None and l is not None) else f"{p.get('w', '?')}/{p.get('l', '?')}"
@@ -48,6 +73,13 @@ def wl_text(d):
 
 
 def val_text(d):
+    mg = d.get("merged")
+    if mg and d["kind"] in "RCL":
+        key = {"R": "r", "C": "c", "L": "l"}[d["kind"]]
+        unit = {"R": "Ω", "C": "F", "L": "H"}[d["kind"]]
+        vals = [parse_value(q.get(key)) for q in mg["params"]]
+        if None not in vals:
+            return f"×{len(vals)} " + _list_eng(vals, unit)
     p = d["params"]
     key = {"R": "r", "C": "c", "L": "l"}.get(d["kind"])
     raw = p.get(key) if key else p.get("value")
@@ -73,7 +105,7 @@ class Node:
         self.mirror = False
 
 
-def layout_leaf(cell, roles, title=None):
+def layout_leaf(cell, roles, title=None, netcls=None):
     devs = [d for d in cell["devices"]]
     ports = cell["ports"]
     pm = {d["name"]: pin_map(d) for d in devs}
@@ -265,7 +297,8 @@ def layout_leaf(cell, roles, title=None):
         A, B = pm[a], pm[b]
         if "g" not in A or "g" not in B:
             return False
-        return A["g"] == B["g"] or (A["g"] == B.get("d") and B["g"] == A.get("d"))
+        shared = A["g"] == B["g"] and not is_supply(A["g"]) and not is_ground(A["g"])   # rail-tied gates are not a mirror
+        return shared or (A["g"] == B.get("d") and B["g"] == A.get("d"))
 
     pairs = []          # (left_node, right_node)
     paired = set()
@@ -339,7 +372,10 @@ def layout_leaf(cell, roles, title=None):
         if d["kind"] == "M":
             g = pm[d["name"]]["g"]
             gate_side = 40
-            if pin_count.get(g, 0) == 1 and not is_supply(g) and not is_ground(g):
+            gate_only_port = g in ports and all(
+                dd["kind"] == "M" and pp == "g" for dd in devs for pp, nn in dd["pins"] if nn == g)
+            # a pin tag sits at this gate (single-pin input, or an input named at every gate)
+            if (pin_count.get(g, 0) == 1 or gate_only_port) and not is_supply(g) and not is_ground(g):
                 gate_side += _r10(len(g) * CHAR + 14 + VPIN_LEN)
             else:
                 gate_side += 10
@@ -392,6 +428,18 @@ def layout_leaf(cell, roles, title=None):
               and pm[a.dev["name"]]["g"] == pm[b.dev["name"]].get("d")
               and pm[b.dev["name"]]["g"] == pm[a.dev["name"]].get("d")]
 
+    # ---- two devices may never share a place (pass gates, nets with no rank) ----
+    by_band = {}
+    for n in flat:
+        by_band.setdefault(n.band, []).append(n)
+    for band, lst in by_band.items():
+        lst.sort(key=lambda n: (n.x, n.order))
+        right = None
+        for n in lst:
+            if right is not None and n.x - n.lext < right:      # real overlap only
+                n.x = _snap(right + GAP + n.lext + 5)
+            right = n.x + n.rext if right is None else max(right, n.x + n.rext)
+
     # ---------------- y positions ----------------
     def y_of(rank):
         return (top - rank) * RP
@@ -419,10 +467,27 @@ def layout_leaf(cell, roles, title=None):
         for net in vert[n.dev["name"]][:2]:
             anchor.setdefault(net, []).append(n.x)
     stack = {}
+    side_of = {}
+    # a vertical device also owns the wire corridor above / below it (its stubs)
+    occupied = [(t["bbox"][0], t["bbox"][1] - 30, t["bbox"][2], t["bbox"][3] + 30) for _, t, _ in placed]
+    x_free = max([n.x + n.rext for n in flat] + [0]) + 100
     for d in horiz:
         a, b = pm[d["name"]]["p"], pm[d["name"]]["n"]
-        xa = sum(anchor.get(a, [0])) / len(anchor.get(a, [0]))
-        xb = sum(anchor.get(b, [0])) / len(anchor.get(b, [0]))
+        mean = lambda net: sum(anchor[net]) / len(anchor[net])
+        if a in anchor and b in anchor:
+            xa, xb = mean(a), mean(b)
+        elif a in anchor or b in anchor:
+            # one end is a free (port-only) net: sit beside the anchored column; a
+            # differential partner goes to the opposite side (termination R_P | R_N)
+            fixed = a if a in anchor else b
+            partner = sigma["dev"].get(d["name"])
+            side = -side_of[partner] if partner in side_of else -1
+            side_of[d["name"]] = side
+            xk = mean(fixed)
+            xa, xb = (xk, xk + side * 120) if fixed == a else (xk + side * 120, xk)
+        else:
+            xa, xb = x_free, x_free + 60
+            x_free += 160
         key = frozenset((a, b))
         k = stack.get(key, 0)
         stack[key] = k + 1
@@ -435,8 +500,15 @@ def layout_leaf(cell, roles, title=None):
         left_is_a = xa <= xb
         sym = _device_symbol(d)
         # rot=3 puts pin 'p' on the left, rot=1 on the right
-        xf = Xf(xc, y, rot=3 if left_is_a else 1)
-        t = transform(sym, xf)
+        t = transform(sym, Xf(xc, y, rot=3 if left_is_a else 1))
+        for step in (0, 40, -40, 80, -80, 120, -120):          # never on top of another device
+            t = transform(sym, Xf(xc, y + step, rot=3 if left_is_a else 1))
+            bb = t["bbox"]
+            if not any(not (bb[2] + 20 < o[0] or o[2] + 20 < bb[0] or bb[3] + 5 < o[1] or o[3] + 5 < bb[1])
+                       for o in occupied):
+                y += step
+                break
+        occupied.append(t["bbox"])
         nm = d["name"]
         ly = y - 12 if k % 2 == 0 else y + 21
         t["labels"] = [(xc, ly, [(nm, "lbl-name"), (" ", ""), (val_text(d), "lbl-val")], "middle")]
@@ -471,7 +543,8 @@ def _place_symmetric(flat, pairs, axis, vert, sigma, pm, pin_count, horiz, h):
             return 0
         b = partner[name].dev["name"]
         A, B = pm[name], pm[b]
-        if A["g"] == B["g"] or (A["g"] == B.get("d") and B["g"] == A.get("d")):
+        shared = A["g"] == B["g"] and not is_supply(A["g"]) and not is_ground(A["g"])
+        if shared or (A["g"] == B.get("d") and B["g"] == A.get("d")):
             return 2
         if pin_count.get(A["g"], 0) == 1:
             return -1
@@ -946,7 +1019,14 @@ def _route_and_emit(cell, ports, roles, placed, pm, sup, gnd, supplies, grounds,
             warnings.append(f"{net}: unroutable pin at ({fx},{fy}) - connected by name label")
             terminals.append(_terminal(net, fx, fy, dr, False, by_label=True))
         if failed:
-            labels.append(_wire_label(R, net, "lbl-port", force=True))
+            lab = _wire_label(R, net, "lbl-port", force=True)
+            if lab:
+                labels.append(lab)
+            else:
+                # nothing was drawn for this net: name the pin the tree started from too
+                sx, sy, sdr = P[0][0], P[0][1], P[0][2]
+                if (sx, sy) not in failed:
+                    terminals.append(_terminal(net, sx, sy, sdr, False, by_label=True))
 
     # ---- labels for routed nets ----
     for net in sig_nets:
@@ -954,7 +1034,7 @@ def _route_and_emit(cell, ports, roles, placed, pm, sup, gnd, supplies, grounds,
             continue
         if net in ports and port_plan.get(net) == "route":
             continue       # named by its Virtuoso pin
-        cls = "lbl-port" if net in ports else "lbl-net"
+        cls = "lbl-port" if net in ports else ("lbl-bus" if is_bus(net) else "lbl-net")
         lab = _wire_label(R, net, cls, others=labels, symbols=symbols)
         if lab:
             labels.append(lab)
