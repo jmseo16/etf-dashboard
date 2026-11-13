@@ -1,0 +1,152 @@
+{
+ "hs_inputs": [
+  "RX_INP",
+  "RX_INN"
+ ],
+ "clock_inputs": [
+  "CLK_INP",
+  "CLK_INN"
+ ],
+ "hs_outputs": [
+  "DOUT_EVEN_P",
+  "DOUT_EVEN_N",
+  "DOUT_ODD_P",
+  "DOUT_ODD_N"
+ ],
+ "important_controls": [
+  "W1_0",
+  "W1_1",
+  "W1_2",
+  "W1_3",
+  "W2_0",
+  "W2_1",
+  "W2_2",
+  "W2_3",
+  "W3_0",
+  "W3_1",
+  "W3_2",
+  "W3_3",
+  "W4_0",
+  "W4_1",
+  "W4_2",
+  "W4_3"
+ ],
+ "show_bias": [],
+ "hide": [],
+ "block_roles": {
+  "BIAS_GEN": "bias",
+  "CML_LATCH": "latch",
+  "INV": "inverter",
+  "CLK_DIST_TREE": "composite",
+  "CTLE_STAGE": "ctle",
+  "VGA_STAGE": "vga",
+  "IDAC_4BIT": "dac",
+  "DFE_SUMMER": "summer",
+  "NAND2": "static_cmos_gate",
+  "SR_LATCH": "cross_coupled_gates",
+  "STRONGARM_SLICER": "composite",
+  "CML_DFF": "dff",
+  "HALF_RATE_DFE_SLICE": "composite",
+  "RX_AFE_TOP": "composite"
+ },
+ "_sources": {
+  "hs_inputs": "user answer (given)",
+  "others": "automatic structural analysis + assumed answers below"
+ },
+ "_important_control_buses": {
+  "W<1:4>_<0:3>": {
+   "bits": [
+    "W1_0",
+    "W1_1",
+    "W1_2",
+    "W1_3",
+    "W2_0",
+    "W2_1",
+    "W2_2",
+    "W2_3",
+    "W3_0",
+    "W3_1",
+    "W3_2",
+    "W3_3",
+    "W4_0",
+    "W4_1",
+    "W4_2",
+    "W4_3"
+   ],
+   "function": "DFE tap 1-4 coefficients (IDAC_4BIT switches -> tap-pair tail current)"
+  }
+ },
+ "_general_controls": [
+  "C0",
+  "C1",
+  "C2",
+  "R0",
+  "R1",
+  "R2",
+  "G0",
+  "G1",
+  "G2",
+  "G3"
+ ],
+ "_bias": [
+  "IREF",
+  "VBN",
+  "VBP",
+  "VCM_RX"
+ ],
+ "_power": [
+  "VDD",
+  "VSS"
+ ],
+ "_questions_and_assumed_answers": [
+  {
+   "id": "Q1",
+   "item": "C0, C1, C2 (CTLE_STAGE)",
+   "question": "이름(C*)은 커패시터 뱅크 제어처럼 보이지만, 구조상 스위치 MC*P/MC*N은 SP-C*_MID-SN 직렬 경로(저항 경로)이고 C*_CAP은 SP-SN에 항상 연결된 고정 C입니다. 구조대로 그릴까요? (예: 가변 R + 고정 C / 아니오: 가변 C로)",
+   "assumed": "예 — 구조를 따름. C0..C2 스위치는 가변 R 묶음에 포함, C_DEG_BASE+C0_CAP+C1_CAP+C2_CAP은 고정 C 하나(합계 330f)로 그림. C0..C2는 일반 제어(그리지 않음).",
+   "confidence": "low (이름-구조 불일치)"
+  },
+  {
+   "id": "Q2",
+   "item": "X_DIV_M / X_DIV_S in CLK_DIST_TREE",
+   "question": "인스턴스 이름은 ÷2 분주기(DIV)이지만 구조상 귀환 루프가 없습니다 (master의 D 입력 = 자기 클럭 B1N/B1P, slave 출력은 어디로도 되돌아가지 않음). 구조대로 \"LATCH 2개 직렬\"로 그릴까요? (예 / ÷2로 그림 / netlist 오류)",
+   "assumed": "예 — 구조대로 LATCH 박스 2개와 실제 연결을 그림. ÷2 기호는 쓰지 않음. netlist 오류 가능성을 보고서에 남김.",
+   "confidence": "low (이름-구조 불일치, 사전의 ÷2 = latch 루프와 불일치)"
+  },
+  {
+   "id": "Q3",
+   "item": "M_TIE_P/M_TIE_P2, M_TIE_N/M_TIE_N2",
+   "question": "전달 게이트(NMOS 게이트=VSS, PMOS 게이트=VDD)라 항상 꺼져 있습니다. 그러면 O_DOUTP/N(= X_DFE_EVEN의 탭1 귀환 입력 T1_FB)은 떠 있습니다. 의도된 것입니까? (의도됨 / 연결(항상 ON)이어야 함)",
+   "assumed": "끊긴 것으로 처리(계획서 §3.2): TG는 열린 스위치 기호 + \"(off)\". O_DOUTP/N은 구동이 없지만 X_DFE_EVEN의 고속 핀(T1_FB)에 붙어 있어 고속 데이터로 그리고 이름표로 끝냄.",
+   "confidence": "low (구조상 항상 OFF)"
+  },
+  {
+   "id": "Q4",
+   "item": "STRONGARM_SLICER: M11",
+   "question": "STRONGARM_SLICER에 거울 짝이 없는 소자가 있습니다 (M11: PMOS, S=VDD, D=DP, G=DN; 반대쪽 D=DN, G=DP 소자 없음). 차동 회로가 비대칭이 됩니다. 의도된 것입니까? (의도됨 / netlist 오류)",
+   "assumed": "그대로 그림 (정확성 > 대칭, 계획서 §5.2-7). M11은 연결된 노드(DP) 쪽 바깥에 두고, 게이트(DN)는 이름표로 연결, \"비대칭\" 표시.",
+   "confidence": "low (대칭 위반이 netlist에 있음)"
+  },
+  {
+   "id": "Q5",
+   "item": "NAND2 (static_cmos_gate), SR_LATCH (cross_coupled_gates)",
+   "question": "블록 역할 사전에 없는 구조입니다 (정적 CMOS 게이트, 교차 결합 게이트 = SR latch). 박스(셀 이름)로 그릴까요? (예 / 역할 지정)",
+   "assumed": "예 — 사전 규칙대로 박스(셀 이름) + 보이는 핀. 유닛 레벨은 소자 그대로.",
+   "confidence": "low (사전에 없음)"
+  },
+  {
+   "id": "Q6",
+   "item": "top: CLKQ, CLKQB; CLK_DIST_TREE: CLKI_BUF, CLKIB_BUF, CLKQ_BUF, CLKQB_BUF; STRONGARM_SLICER: QPB, QNB",
+   "question": "추적상 고속 넷이지만 아무 곳에도 연결되지 않은(부하 없는) 출력입니다. 그릴까요? (그림 / 생략)",
+   "assumed": "그림 — 분류가 고속이므로 §6.3(생략은 분류대로만)에 따라 생략하지 않고, 끝에 넷 이름표만 둔 짧은 선으로 표시.",
+   "confidence": "low (계획서에 규칙 없음)"
+  },
+  {
+   "id": "Q7",
+   "item": "W<1:4>_<0:3>",
+   "question": "중요 제어 16비트(W1_0..W4_3)를 \"DFE 탭 계수\" 기능 하나의 버스로 묶을까요, 탭별 4비트 버스 4개로 나눌까요? (16b 1개 / 4b×4)",
+   "assumed": "16b 버스 1개 (W<1:4>_<0:3>) — §4.4 \"기능별 버스 하나\"를 \"DFE 탭 계수\" 기능으로 해석.",
+   "confidence": "low (계획서 해석)"
+  }
+ ]
+}

@@ -2,6 +2,7 @@
 
 > 스킬 이름: **넷리스트 기반 high speed IO 개념도 그리기** (폴더/식별자: `netlist-hsio-concept-diagram`)
 > 상태: 계획서 확정 (스킬화 전). `hspice-schematic`(v1), `hspice-schematic-v2`에서 검증된 방법을 바탕으로 한다.
+> 구현 가이드: 같은 폴더의 `SKILL.md` (수치·템플릿·기준 결과 `reference/rx_afe/`). 규칙이 다르면 이 계획서가 이긴다.
 > 이 문서는 **특정 netlist에 맞춘 규칙을 쓰지 않는다.** 예시(RX AFE)는 부록에만 둔다.
 
 ---
