@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 S="$(cd "$(dirname "$0")/.." && pwd)"
+mkdir -p $S/out/screenshots
 cd $S/work
 python3 analyze.py ../rx_afe_top.sp RX_AFE_TOP . RX_INP RX_INN > /dev/null
 python3 classify_report.py . ../out ../rx_afe_top.sp > /dev/null

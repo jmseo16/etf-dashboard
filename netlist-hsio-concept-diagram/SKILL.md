@@ -14,12 +14,16 @@ description: 넷리스트 기반 high speed IO 개념도 그리기. HSPICE/Virtu
 |---|---|---|
 | `SKILL.md` (이 문서) | 구현 절차, 수치, 기준 결과, 체크리스트 | 수치·모양의 기준 |
 | `DRAWING_PLAN.md` | 사용자와 확정한 **규칙과 결정 전부** (§10 결정 기록) | **규칙의 원본** — 이 문서와 다르면 계획서가 이긴다 |
-| `Q2_layout_options.png` | 여러 차동쌍 배치 그림. **B(쌍별 대칭, 나란히)가 채택안** | 계획서 §5.2-2 |
+| `Q2_layout_options.png` / `.html` | 여러 차동쌍 배치 그림 (같은 그림, html은 브라우저로 연다). **B(쌍별 대칭, 나란히)가 채택안** | 계획서 §5.2-2 |
 | `reference/rx_afe/rx_afe_top.sp` | 기준 netlist (RX AFE) | |
 | `reference/rx_afe/out/` | 기준 결과: `concept.html`, `concept.pptx`, `classification.md`, `annotations.json`, `verify_report.json`, `screenshots/` 17장 | **결과 모습의 기준** |
 | `reference/rx_afe/work/` | 기준 결과를 만든 코드 (`run_all.sh`로 재실행) | 심볼·렌더·검증 코드는 재사용 가능, 배치 좌표는 RX AFE 전용 |
+| `reference/rx_afe/expected/` | 기대 결과 중 텍스트 파일 (분류 표, annotations, 검증 결과) — `run_all.sh` 결과와 대조용 | |
+| `SOURCE_BUNDLE.md` | **텍스트만 전달할 수 있을 때**: 위 텍스트 파일 전부 + 복원 스크립트 + SHA-256. 복원 후 `run_all.sh`로 그림 파일을 다시 만든다 | |
 
 읽는 순서: `DRAWING_PLAN.md` 전체 → 이 문서 §1~§3 → 기준 스크린샷 17장 → 이 문서 나머지.
+
+**텍스트 파일만 받았다면** (`SKILL.md`, `DRAWING_PLAN.md`, `SOURCE_BUNDLE.md`): `SOURCE_BUNDLE.md` 맨 위의 복원 방법대로 폴더를 복원하고 `run_all.sh`를 실행해 기준 HTML·PPTX·스크린샷을 만든 뒤 시작한다. 스크린샷이 없으면 "기준 스크린샷"은 `reference/rx_afe/out/concept.html`을 브라우저로 열어 화면별로 본다.
 
 **주의 — 기준 코드의 성격**: `work/layouts.py`는 RX AFE의 각 화면을 **분석 결과(소자 역할)를 받아 템플릿 좌표로 손 배치**한 코드다. 템플릿 함수(`view_ctle`, `view_multipair`, `view_cml_latch`, `view_strongarm` …)는 역할만 맞으면 다른 netlist에도 쓸 수 있지만, 블록 화면(`view_top`, `view_slice`, `view_clk`)은 이 netlist 구조를 가정한다. 새 netlist에서는 §7의 일반 절차로 블록 화면을 만들어야 한다. `scene.py`(심볼), `render_html.py`, `make_pptx.py`, `verify.py`, `measure.js`는 그대로 재사용해도 된다.
 
