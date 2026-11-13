@@ -1,0 +1,81 @@
+{
+ "hs_inputs": [
+  "RX_INP",
+  "RX_INN"
+ ],
+ "clock_inputs": [
+  "CLK_INP",
+  "CLK_INN"
+ ],
+ "hs_outputs": [
+  "DOUT_EVEN_P",
+  "DOUT_EVEN_N",
+  "DOUT_ODD_P",
+  "DOUT_ODD_N"
+ ],
+ "important_controls": [
+  "W<1:4>_<0:3>"
+ ],
+ "show_bias": [],
+ "hide": [],
+ "block_roles": {
+  "CTLE_STAGE": "ctle",
+  "VGA_STAGE": "vga",
+  "DFE_SUMMER": "summer",
+  "STRONGARM_SLICER": "strongarm",
+  "CML_LATCH": "cml_latch",
+  "CML_DFF": "dff",
+  "IDAC_4BIT": "idac",
+  "BIAS_GEN": "bias",
+  "INV": "cmos_buffer",
+  "HALF_RATE_DFE_SLICE": "unknown_box",
+  "CLK_DIST_TREE": "unknown_box",
+  "SR_LATCH": "unknown_box",
+  "NAND2": "unknown_box"
+ },
+ "_assumed_answers": {
+  "Q1": {
+   "item": "M_TIE_P/M_TIE_P2, M_TIE_N/M_TIE_N2 (DOUT_ODD_P/N ↔ O_DOUTP/N)",
+   "question": "전달 게이트의 NMOS 게이트=VSS, PMOS 게이트=VDD 라 구조상 항상 OFF입니다. O_DOUTP/N을 DFE 탭1 피드백(고속 데이터)으로 볼까요? (예·그림은 TG 그대로 / 아니오·O_DOUT는 구동 없음 / netlist 오류)",
+   "assumed_answer": "예 — O_DOUTP/N = 고속 데이터(부록 A와 일치). 그림은 netlist 그대로 TG 기호로 그리고 \"항상 OFF\" 경고를 붙임 (선으로 단락시키지 않음).",
+   "answered_by": "assumed (no user available)"
+  },
+  "Q2": {
+   "item": "CTLE_STAGE 의 C<0:2> 와 C0_CAP..C2_CAP",
+   "question": "이름은 C 뱅크지만 C0_CAP..C2_CAP는 SP–SN에 직접(항상) 연결되고, C<0:2>는 SP–SN 사이 직렬 MOS 쌍(MC*P–MC*N)만 켭니다. 어떻게 그릴까요? (구조대로 가변 R + 고정 C / 이름대로 가변 C)",
+   "assumed_answer": "구조대로 — R_S(가변) = R_DEG_BASE∥MR<0:2>∥MC<0:2>P-N, C_S(고정) = C_DEG_BASE∥C<0:2>_CAP. C<0:2>는 어느 쪽이든 일반 제어(숨김).",
+   "answered_by": "assumed (no user available)"
+  },
+  "Q3": {
+   "item": "STRONGARM_SLICER M11 (PMOS, D=DP, G=DN, S=VDD)",
+   "question": "짝(D=DN, G=DP)이 없는 비대칭 소자입니다. (의도된 비대칭·그대로 그림 / netlist 누락)",
+   "assumed_answer": "그대로 그림(정확성 우선). 대칭 축 밖 P쪽에 두고 비대칭 예외로 표시.",
+   "answered_by": "assumed (no user available)"
+  },
+  "Q4": {
+   "item": "CLK_DIST_TREE X_DIV_M / X_DIV_S",
+   "question": "이름은 분주기(DIV)지만 출력→입력 피드백 루프가 없고 X_DIV_M의 데이터 입력이 클럭 B1N/B1P입니다. 블록 종류는? (CML latch 2개 / ÷2 분주기 / I/Q 생성)",
+   "assumed_answer": "CML latch 2개로 그림(구조 우선). CLKI/CLKIB/CLKQ/CLKQB 는 모두 고속 클럭.",
+   "answered_by": "assumed (no user available)"
+  },
+  "Q5": {
+   "item": "사전에 없는 블록: HALF_RATE_DFE_SLICE, CLK_DIST_TREE, SR_LATCH, NAND2",
+   "question": "박스(셀 이름) + 보이는 핀만으로 그려도 됩니까? (예 / 역할 지정)",
+   "assumed_answer": "예 — 박스로 그림. 하위 블록은 사전대로(Σ, StrongARM, LATCH, DFF, BUF, INV).",
+   "answered_by": "assumed (no user available)"
+  },
+  "Q6": {
+   "item": "부하 없는 고속 넷: CLKQ/CLKQB(최상위), CLKI_BUF 등 INV 체인 출력, QPB/QNB",
+   "question": "추적상 고속 넷이지만 아무 데도 연결되지 않습니다. (그림·이름표로 끝냄 / 생략)",
+   "assumed_answer": "그림 — 생략은 분류(숨김)대로만 허용(§6-3)이라 짧은 선 + 이름표로 끝냄.",
+   "answered_by": "assumed (no user available)"
+  }
+ },
+ "_overrides": {
+  "CTLE_STAGE.degeneration": "variable_R + fixed_C (Q2)",
+  "CLK_DIST_TREE.X_DIV_M,X_DIV_S": "cml_latch, not divider (Q4)",
+  "RX_AFE_TOP.M_TIE_*": "tgate drawn as-is, flagged always-off (Q1)"
+ },
+ "_netlist": "rx_afe_top.sp",
+ "_top": "RX_AFE_TOP"
+}

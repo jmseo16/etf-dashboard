@@ -1,0 +1,721 @@
+{
+ "summary": {
+  "netlist": "rx_afe_top.sp",
+  "views": 15,
+  "all_connectivity_pass": true,
+  "all_quality_zero": true,
+  "structural_crossings_total": 28,
+  "mobile_check_390px": {
+   "docW": 390,
+   "winW": 390
+  },
+  "method": {
+   "connectivity": "geometry re-read (wire polylines, pin points, junctions, port/label/rail names) compared with the netlist; merged devices expanded slice-wise; concept symbols compared by bundle outer nets; bundle-internal nets must not appear outside",
+   "text_overlap": "python estimate (monospace 0.6em) + browser getBBox (text_overlap_browser)",
+   "crossings": "every proper crossing must be declared structural with a reason by the layout template; undeclared ones are counted as avoidable_crossing"
+  }
+ },
+ "views": [
+  {
+   "view": "RX_AFE_TOP",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 10,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [
+    {
+     "at": [
+      740.0,
+      185.0
+     ],
+     "nets": [
+      "VGA_P",
+      "W"
+     ],
+     "why": "W bus to the lower slice crosses the main data pair"
+    },
+    {
+     "at": [
+      700.0,
+      215.0
+     ],
+     "nets": [
+      "VGA_N",
+      "VGA_P"
+     ],
+     "why": "differential pair fork (VGA → even / odd slice)"
+    },
+    {
+     "at": [
+      740.0,
+      215.0
+     ],
+     "nets": [
+      "VGA_N",
+      "W"
+     ],
+     "why": "W bus to the lower slice crosses the main data pair"
+    },
+    {
+     "at": [
+      710.0,
+      615.0
+     ],
+     "nets": [
+      "VGA_P",
+      "CLKI"
+     ],
+     "why": "clock to the upper slice must cross the lower slice data input pair"
+    },
+    {
+     "at": [
+      730.0,
+      615.0
+     ],
+     "nets": [
+      "VGA_P",
+      "CLKIB"
+     ],
+     "why": "clock to the upper slice must cross the lower slice data input pair"
+    },
+    {
+     "at": [
+      710.0,
+      645.0
+     ],
+     "nets": [
+      "VGA_N",
+      "CLKI"
+     ],
+     "why": "clock to the upper slice must cross the lower slice data input pair"
+    },
+    {
+     "at": [
+      730.0,
+      645.0
+     ],
+     "nets": [
+      "VGA_N",
+      "CLKIB"
+     ],
+     "why": "clock to the upper slice must cross the lower slice data input pair"
+    },
+    {
+     "at": [
+      740.0,
+      470.0
+     ],
+     "nets": [
+      "W",
+      "CLKI"
+     ],
+     "why": "W bus branch and clock to the upper slice both enter the gap between slices"
+    },
+    {
+     "at": [
+      740.0,
+      490.0
+     ],
+     "nets": [
+      "W",
+      "CLKIB"
+     ],
+     "why": "W bus branch and clock to the upper slice both enter the gap between slices"
+    },
+    {
+     "at": [
+      710.0,
+      745.0
+     ],
+     "nets": [
+      "CLKI",
+      "CLKIB"
+     ],
+     "why": "two clock wires each branch up (even) and down (odd)"
+    }
+   ],
+   "loop_wires_exempt_from_twist": [
+    "T3_OUTN",
+    "T3_OUTP",
+    "T2_OUTN",
+    "T2_OUTP",
+    "T3_OUTN",
+    "T3_OUTP",
+    "T2_OUTN",
+    "T2_OUTP"
+   ],
+   "quality_details": {},
+   "screenshot": "screenshots/RX_AFE_TOP.png"
+  },
+  {
+   "view": "CLK_DIST_TREE",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 4,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [
+    {
+     "at": [
+      380.0,
+      215.0
+     ],
+     "nets": [
+      "B1N",
+      "B1P"
+     ],
+     "why": "differential pair fork (B1P/B1N → data pins and clock pins)"
+    },
+    {
+     "at": [
+      490.0,
+      310.0
+     ],
+     "nets": [
+      "B1N",
+      "B1P"
+     ],
+     "why": "B1P/B1N drive both CLK and CLKB of the two latches → nested rails"
+    },
+    {
+     "at": [
+      640.0,
+      185.0
+     ],
+     "nets": [
+      "CLKI",
+      "CLKIB"
+     ],
+     "why": "differential pair fork (CLKI/CLKIB → ports and X_DIV_S)"
+    },
+    {
+     "at": [
+      860.0,
+      215.0
+     ],
+     "nets": [
+      "CLKQB",
+      "CLKQ"
+     ],
+     "why": "differential pair fork (CLKQ/CLKQB → ports and buffer chains)"
+    }
+   ],
+   "loop_wires_exempt_from_twist": [],
+   "quality_details": {},
+   "screenshot": "screenshots/CLK_DIST_TREE.png"
+  },
+  {
+   "view": "HALF_RATE_DFE_SLICE",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 4,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [
+    {
+     "at": [
+      770.0,
+      185.0
+     ],
+     "nets": [
+      "D_OUTP",
+      "D_OUTN"
+     ],
+     "why": "differential pair fork (D_OUT → port and DFF2)"
+    },
+    {
+     "at": [
+      950.0,
+      185.0
+     ],
+     "nets": [
+      "T2_OUTP",
+      "T2_OUTN"
+     ],
+     "why": "differential pair fork (T2_OUT → port and DFF3)"
+    },
+    {
+     "at": [
+      1010.0,
+      310.0
+     ],
+     "nets": [
+      "CLK",
+      "CLKB"
+     ],
+     "why": "interleaved CLK/CLKB pins of latch/DFF row"
+    },
+    {
+     "at": [
+      830.0,
+      310.0
+     ],
+     "nets": [
+      "CLK",
+      "CLKB"
+     ],
+     "why": "interleaved CLK/CLKB pins of latch/DFF row"
+    }
+   ],
+   "loop_wires_exempt_from_twist": [],
+   "quality_details": {},
+   "screenshot": "screenshots/HALF_RATE_DFE_SLICE.png"
+  },
+  {
+   "view": "CML_DFF",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 1,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [
+    {
+     "at": [
+      320.0,
+      320.0
+     ],
+     "nets": [
+      "CLK",
+      "CLKB"
+     ],
+     "why": "master latch clock pins swapped → nested CLK/CLKB rails"
+    }
+   ],
+   "loop_wires_exempt_from_twist": [],
+   "quality_details": {},
+   "screenshot": "screenshots/CML_DFF.png"
+  },
+  {
+   "view": "SR_LATCH",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 1,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [
+    {
+     "at": [
+      150.0,
+      220.0
+     ],
+     "nets": [
+      "Q",
+      "QB"
+     ],
+     "why": "cross-coupled NAND (Q→X2.B, QB→X1.B)"
+    }
+   ],
+   "loop_wires_exempt_from_twist": [],
+   "quality_details": {},
+   "screenshot": "screenshots/SR_LATCH.png"
+  },
+  {
+   "view": "CTLE_STAGE",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 0,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [],
+   "loop_wires_exempt_from_twist": [],
+   "quality_details": {},
+   "screenshot": "screenshots/CTLE_STAGE.png"
+  },
+  {
+   "view": "VGA_STAGE",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 2,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [
+    {
+     "at": [
+      380.0,
+      190.0
+     ],
+     "nets": [
+      "OUTN",
+      "OUTP"
+     ],
+     "why": "option B: OUTP bus crosses main-pair N drain line"
+    },
+    {
+     "at": [
+      880.0,
+      190.0
+     ],
+     "nets": [
+      "OUTP",
+      "OUTN"
+     ],
+     "why": "option B: OUTP bus crosses extra-pair N drain line"
+    }
+   ],
+   "loop_wires_exempt_from_twist": [],
+   "quality_details": {},
+   "screenshot": "screenshots/VGA_STAGE.png"
+  },
+  {
+   "view": "DFE_SUMMER",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 2,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [
+    {
+     "at": [
+      380.0,
+      190.0
+     ],
+     "nets": [
+      "OUTN",
+      "OUTP"
+     ],
+     "why": "option B: OUTP bus crosses main-pair N drain line"
+    },
+    {
+     "at": [
+      880.0,
+      190.0
+     ],
+     "nets": [
+      "OUTP",
+      "OUTN"
+     ],
+     "why": "option B: OUTP bus crosses extra-pair N drain line"
+    }
+   ],
+   "loop_wires_exempt_from_twist": [],
+   "quality_details": {},
+   "screenshot": "screenshots/DFE_SUMMER.png"
+  },
+  {
+   "view": "STRONGARM_SLICER",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 2,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [
+    {
+     "at": [
+      460.0,
+      123.3
+     ],
+     "nets": [
+      "OUTN",
+      "OUTP"
+     ],
+     "why": "cross-coupled X (PMOS)"
+    },
+    {
+     "at": [
+      460.0,
+      276.7
+     ],
+     "nets": [
+      "OUTN",
+      "OUTP"
+     ],
+     "why": "cross-coupled X (NMOS)"
+    }
+   ],
+   "loop_wires_exempt_from_twist": [],
+   "quality_details": {},
+   "screenshot": "screenshots/STRONGARM_SLICER.png"
+  },
+  {
+   "view": "CML_LATCH",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 2,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [
+    {
+     "at": [
+      400.0,
+      205.7
+     ],
+     "nets": [
+      "QN",
+      "QP"
+     ],
+     "why": "cross-coupled X"
+    },
+    {
+     "at": [
+      480.0,
+      310.0
+     ],
+     "nets": [
+      "TAIL_T",
+      "TAIL_H"
+     ],
+     "why": "latch template: input pair outside / cross-coupled inside (TAIL_H must cross TAIL_T)"
+    }
+   ],
+   "loop_wires_exempt_from_twist": [],
+   "quality_details": {},
+   "screenshot": "screenshots/CML_LATCH.png"
+  },
+  {
+   "view": "CLK_BUF",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 0,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [],
+   "loop_wires_exempt_from_twist": [],
+   "quality_details": {},
+   "screenshot": "screenshots/CLK_BUF.png"
+  },
+  {
+   "view": "RX_TERM",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 0,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [],
+   "loop_wires_exempt_from_twist": [],
+   "quality_details": {},
+   "screenshot": "screenshots/RX_TERM.png"
+  },
+  {
+   "view": "RX_TG",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 0,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [],
+   "loop_wires_exempt_from_twist": [],
+   "quality_details": {},
+   "screenshot": "screenshots/RX_TG.png"
+  },
+  {
+   "view": "INV",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 0,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [],
+   "loop_wires_exempt_from_twist": [],
+   "quality_details": {},
+   "screenshot": "screenshots/INV.png"
+  },
+  {
+   "view": "NAND2",
+   "connectivity": "PASS",
+   "connectivity_errors": [],
+   "warnings": [],
+   "quality_counts": {
+    "text_overlap": 0,
+    "text_on_wire_or_symbol": 0,
+    "wire_through_symbol": 0,
+    "twist": 0,
+    "short_jog": 0,
+    "close_junction": 0,
+    "missing_dot": 0,
+    "stray_dot": 0,
+    "avoidable_crossing": 0,
+    "structural_crossing": 0,
+    "symmetry": 0,
+    "text_overlap_browser": 0
+   },
+   "quality_zero": true,
+   "structural_crossings": [],
+   "loop_wires_exempt_from_twist": [],
+   "quality_details": {},
+   "screenshot": "screenshots/NAND2.png"
+  }
+ ]
+}

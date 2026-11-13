@@ -1,0 +1,565 @@
+{
+ "summary": {
+  "views": 17,
+  "connectivity_pass": 17,
+  "quality_pass": 17
+ },
+ "views": [
+  {
+   "view": "b_top",
+   "cell": "RX_AFE_TOP",
+   "level": "block",
+   "title": "RX_AFE_TOP — 블록 레벨 (최상위)",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 29,
+    "drawn_pins": 62
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 1
+   },
+   "quality_details": {
+    "structural_crossings": [
+     {
+      "at": [
+       780.0,
+       170.0
+      ],
+      "reason": "differential pair split to a block below: P branch must cross N line once"
+     }
+    ]
+   },
+   "quality_pass": true
+  },
+  {
+   "view": "b_slice",
+   "cell": "HALF_RATE_DFE_SLICE",
+   "level": "block",
+   "title": "HALF_RATE_DFE_SLICE — 블록 레벨",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 23,
+    "drawn_pins": 36
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0
+   },
+   "quality_details": {},
+   "quality_pass": true
+  },
+  {
+   "view": "b_clk",
+   "cell": "CLK_DIST_TREE",
+   "level": "block",
+   "title": "CLK_DIST_TREE — 블록 레벨",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 16,
+    "drawn_pins": 34
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 1
+   },
+   "quality_details": {
+    "structural_crossings": [
+     {
+      "at": [
+       390.0,
+       210.0
+      ],
+      "reason": "netlist connects BUF P output to latch N input (swap)"
+     }
+    ]
+   },
+   "quality_pass": true
+  },
+  {
+   "view": "u_rxterm",
+   "cell": "RX_AFE_TOP",
+   "level": "unit",
+   "title": "RX_AFE_TOP — unit level (입력 종단 + ESD, 소자 그대로)",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 5,
+    "drawn_pins": 18
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0
+   },
+   "quality_details": {},
+   "quality_pass": true
+  },
+  {
+   "view": "u_tg",
+   "cell": "RX_AFE_TOP",
+   "level": "unit",
+   "title": "RX_AFE_TOP — unit level (전달 게이트 M_TIE, 게이트가 VSS/VDD에 묶여 항상 OFF)",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 6,
+    "drawn_pins": 12
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0
+   },
+   "quality_details": {},
+   "quality_pass": true
+  },
+  {
+   "view": "u_ctle",
+   "cell": "CTLE_STAGE",
+   "level": "unit",
+   "title": "CTLE_STAGE — unit level (CTLE, 대칭)",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 12,
+    "drawn_pins": 32
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0
+   },
+   "quality_details": {},
+   "quality_pass": true
+  },
+  {
+   "view": "u_vga",
+   "cell": "VGA_STAGE",
+   "level": "unit",
+   "title": "VGA_STAGE — unit level (VGA, 쌍별 대칭 나란히: 그림 B)",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 10,
+    "drawn_pins": 23
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 2
+   },
+   "quality_details": {
+    "structural_crossings": [
+     {
+      "at": [
+       400.0,
+       230.0
+      ],
+      "reason": "figure B: P output bus crosses the main pair N drain column"
+     },
+     {
+      "at": [
+       800.0,
+       230.0
+      ],
+      "reason": "figure B: P output exit crosses the extra pair N drain column"
+     }
+    ]
+   },
+   "quality_pass": true
+  },
+  {
+   "view": "u_summer",
+   "cell": "DFE_SUMMER",
+   "level": "unit",
+   "title": "DFE_SUMMER — unit level (DFE summer Σ, 쌍별 대칭 나란히: 그림 B)",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 13,
+    "drawn_pins": 24
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 2
+   },
+   "quality_details": {
+    "structural_crossings": [
+     {
+      "at": [
+       400.0,
+       230.0
+      ],
+      "reason": "figure B: P output bus crosses the main pair N drain column"
+     },
+     {
+      "at": [
+       900.0,
+       230.0
+      ],
+      "reason": "figure B: P output exit crosses the extra pair N drain column"
+     }
+    ]
+   },
+   "quality_pass": true
+  },
+  {
+   "view": "b_sa",
+   "cell": "STRONGARM_SLICER",
+   "level": "block",
+   "title": "STRONGARM_SLICER — 블록 레벨",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 9,
+    "drawn_pins": 13
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0
+   },
+   "quality_details": {},
+   "quality_pass": true
+  },
+  {
+   "view": "u_strongarm",
+   "cell": "STRONGARM_SLICER",
+   "level": "unit",
+   "title": "STRONGARM_SLICER — unit level (StrongARM core, 대칭)",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 10,
+    "drawn_pins": 36
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 3
+   },
+   "quality_details": {
+    "structural_crossings": [
+     {
+      "at": [
+       370.0,
+       220.0
+      ],
+      "reason": "cross-coupled: node wire crosses inverter gate tie"
+     },
+     {
+      "at": [
+       450.0,
+       220.0
+      ],
+      "reason": "cross-coupled: node wire crosses inverter gate tie"
+     },
+     {
+      "at": [
+       410.0,
+       235.0
+      ],
+      "reason": "cross-coupled X"
+     }
+    ]
+   },
+   "quality_pass": true
+  },
+  {
+   "view": "b_sr",
+   "cell": "SR_LATCH",
+   "level": "block",
+   "title": "SR_LATCH — 블록 레벨 (교차 결합 게이트; 사전에 없음 → 박스)",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 4,
+    "drawn_pins": 6
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 1
+   },
+   "quality_details": {
+    "structural_crossings": [
+     {
+      "at": [
+       305.0,
+       230.0
+      ],
+      "reason": "cross-coupled X"
+     }
+    ]
+   },
+   "quality_pass": true
+  },
+  {
+   "view": "u_nand",
+   "cell": "NAND2",
+   "level": "unit",
+   "title": "NAND2 — unit level (정적 CMOS 게이트, 사전에 없음 → 소자 그대로)",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 6,
+    "drawn_pins": 12
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0
+   },
+   "quality_details": {},
+   "quality_pass": true
+  },
+  {
+   "view": "u_inv",
+   "cell": "INV",
+   "level": "unit",
+   "title": "INV — unit level (CMOS 인버터 / 버퍼)",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 4,
+    "drawn_pins": 6
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0
+   },
+   "quality_details": {},
+   "quality_pass": true
+  },
+  {
+   "view": "u_latch",
+   "cell": "CML_LATCH",
+   "level": "unit",
+   "title": "CML_LATCH — unit level (CML latch, 대칭)",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 12,
+    "drawn_pins": 27
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 2
+   },
+   "quality_details": {
+    "structural_crossings": [
+     {
+      "at": [
+       380.0,
+       282.5
+      ],
+      "reason": "cross-coupled X"
+     },
+     {
+      "at": [
+       430.0,
+       400.0
+      ],
+      "reason": "steering into inner (cross-coupled) tail crosses the outer (input) tail (topologically unavoidable)"
+     }
+    ]
+   },
+   "quality_pass": true
+  },
+  {
+   "view": "b_dff",
+   "cell": "CML_DFF",
+   "level": "block",
+   "title": "CML_DFF — 블록 레벨 (master-slave)",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 8,
+    "drawn_pins": 12
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0
+   },
+   "quality_details": {},
+   "quality_pass": true
+  },
+  {
+   "view": "u_clkterm",
+   "cell": "CLK_DIST_TREE",
+   "level": "unit",
+   "title": "CLK_DIST_TREE — unit level (클럭 입력 종단, 소자 그대로)",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 4,
+    "drawn_pins": 6
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0
+   },
+   "quality_details": {},
+   "quality_pass": true
+  },
+  {
+   "view": "u_clkbuf",
+   "cell": "CLK_DIST_TREE",
+   "level": "unit",
+   "title": "CLK_DIST_TREE — unit level (CML 클럭 버퍼, 대칭)",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 8,
+    "drawn_pins": 15
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0
+   },
+   "quality_details": {},
+   "quality_pass": true
+  }
+ ],
+ "html_checks": {
+  "single_file_offline": true,
+  "click_navigation": "#b_top -> #u_rxterm",
+  "wl_toggle_hides_size_text": true,
+  "desktop_horizontal_overflow_px": 0,
+  "mobile_390px_views_with_page_overflow": 0,
+  "pptx_embedded_for_download": true
+ },
+ "pptx_checks": {
+  "slides": 18,
+  "view_slides": 17,
+  "click_links_to_child_or_parent_slides": 52,
+  "slides_with_omitted_list_in_notes": 17,
+  "rendered_via": "LibreOffice -> PDF -> PNG (work/pptcheck), inspected visually"
+ },
+ "checker_self_test": {
+  "mutations": [
+   "wrong net label",
+   "missing junction dot",
+   "swapped port names",
+   "wire end moved off pin",
+   "rerouted wire to wrong pin",
+   "device dropped from symbol"
+  ],
+  "all_detected": true
+ }
+}
