@@ -4,9 +4,9 @@ import math
 
 BLACK = '#111'
 GRAY = '#777'
-CLK_W = 3.2
+CLK_W = 1.6
 DATA_W = 1.6
-BUS_W = 3.2
+BUS_W = 1.6
 SYM_W = 1.6
 
 
@@ -75,7 +75,7 @@ class View:
     def port(self, name, x, y, d='right', io='in', cls='data', label_side=None):
         """Virtuoso pin glyph. (x,y) = attach point (wire end). d = direction the glyph points."""
         L, H = 18, 10
-        w = 2.2 if cls in ('clock', 'bus') else 1.4
+        w = 1.4
         if d == 'right':
             pts = [(x - L, y - H / 2), (x - 6, y - H / 2), (x, y), (x - 6, y + H / 2), (x - L, y + H / 2)]
             if io == 'out':

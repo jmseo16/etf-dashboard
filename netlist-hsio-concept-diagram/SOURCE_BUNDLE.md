@@ -39,8 +39,8 @@ sys.exit(1 if bad else 0)
 
 | 경로 | 바이트 | SHA-256 |
 |---|---|---|
-| `SKILL.md` | 40174 | `7007aadda370…` |
-| `DRAWING_PLAN.md` | 35409 | `fde764f25d14…` |
+| `SKILL.md` | 40188 | `dc559e4ac656…` |
+| `DRAWING_PLAN.md` | 35543 | `84d9d882f3bd…` |
 | `Q2_layout_options.html` | 19337 | `3d7d75fe4b09…` |
 | `reference/rx_afe/rx_afe_top.sp` | 7988 | `9b001491856b…` |
 | `reference/rx_afe/.gitignore` | 108 | `b3ef110f1924…` |
@@ -48,7 +48,7 @@ sys.exit(1 if bad else 0)
 | `reference/rx_afe/work/netlist.py` | 5199 | `c08c72b5de85…` |
 | `reference/rx_afe/work/analyze.py` | 38083 | `46eff9bb9907…` |
 | `reference/rx_afe/work/classify_report.py` | 11766 | `3e76611caf9d…` |
-| `reference/rx_afe/work/scene.py` | 23148 | `516ef95d8449…` |
+| `reference/rx_afe/work/scene.py` | 23112 | `6d495d826614…` |
 | `reference/rx_afe/work/layouts.py` | 80670 | `052bea369732…` |
 | `reference/rx_afe/work/render_html.py` | 8998 | `7be17cdfcfc7…` |
 | `reference/rx_afe/work/make_pptx.py` | 7869 | `48e47eeaf53d…` |
@@ -61,7 +61,7 @@ sys.exit(1 if bad else 0)
 ## 파일
 
 ### FILE: SKILL.md
-<!-- sha256=7007aadda37052f26dffffd0f0fd2486f8f091f94bd3b720a4662522e419d648 newline=1 -->
+<!-- sha256=dc559e4ac656c7a5cb6e7afd467a266d6ef8f5f3d37b3baa073953a24cf86fd5 newline=1 -->
 ````markdown
 ---
 name: netlist-hsio-concept-diagram
@@ -264,7 +264,7 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 |---|---|
 | 기본 잉크 | `#111` / 회색 이름표 `#777` / 크기 글자 `#555` / 인스턴스 이름 `#444` / 비대칭 주석 `#a33` |
 | 페이지 | 배경 `#fafaf8`, 그림 카드 `#fff` 테두리 `#ddd` 둥근 8px, 강조색 `#1d5fbf` |
-| 선 굵기 | 데이터 선 1.6, **클럭 3.2, 버스 3.2**, 심볼 1.6, MOS 채널 2.6, 게이트판 2.0, C판 2.4, 접점 점 반지름 3.2 |
+| 선 굵기 | **모든 배선 1.6 (데이터·클럭·버스 같음)**, 포트 핀 테두리 1.4, 심볼 1.6, MOS 채널 2.6, 게이트판 2.0, C판 2.4, 접점 점 반지름 3.2 |
 | 글꼴 | `"Liberation Sans", Arial, "Noto Sans KR", "WenQuanYi Zen Hei", sans-serif`, `dominant-baseline: central` |
 | 글자 크기 | 소자 이름 11 기울임 / W/L·값 10 `#555` / 넷 이름표 11 / 포트 이름 12 굵게 / 레일 이름 12 굵게 / VDD 기호 10 / 블록 제목 13 굵게(삼각형 12) / 블록 핀 이름 9 `#555` / 인스턴스 이름 10 기울임 `#444` / 회색 게이트 이름표 10 `#777` / 범례 제목 11 굵게, 줄 10 `#444` / 버스 비트 수 10 |
 
@@ -276,12 +276,12 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 - **저항**: 리드 ±(20~30), 지그재그 6마디 진폭 6. 가로형도 같은 방식. 글자 오른쪽 x+12.
 - **커패시터**: 리드 ±(4~30), 판 길이 24(±12) 간격 8, 판 굵기 2.4.
 - **가변 표시**(가변 R/C): 사선 (x−15, y+15)→(x+14, y−14) 굵기 1.3 + 화살촉 (x+16, y−16), (x+7, y−13), (x+13, y−7).
-- **가변 전류원**: 리드 ±(16~30), 원 r16, 안쪽 아래 화살표 (x, y−9)→(x, y+6) + 촉 (x, y+10),(x±4, y+3), 사선 (x−20, y+20)→(x+18, y−18) + 촉 (x+21, y−21),(x+11, y−18),(x+18, y−11). 중요 제어 버스 핀: 원 옆에서 가로로 24px, 굵기 3.2.
+- **가변 전류원**: 리드 ±(16~30), 원 r16, 안쪽 아래 화살표 (x, y−9)→(x, y+6) + 촉 (x, y+10),(x±4, y+3), 사선 (x−20, y+20)→(x+18, y−18) + 촉 (x+21, y−21),(x+11, y−18),(x+18, y−11). 중요 제어 버스 핀: 원 옆에서 가로로 24px.
 - **열린 스위치**(항상 꺼진 전달 게이트): 리드 ±(12~30), 끝점 원 r2.5 흰 채움, 날 (x, y+12)→(x+13, y−9) 굵기 1.8, 글자 "TG" 11 굵게 + 소자 이름과 "(off)" 9.
 - **종단·ESD 표시**(입력선 위): 선에서 12px 아래(또는 위)부터 지그재그 5마디 진폭 5, 끝에 열린 원 r3 (공통모드 쪽 = 숨긴 넷이라 이름표 없음), 글자 "R_T 50Ω"(값은 netlist), "ESD" 굵게 9.
 - **접지**: (x,y)→(x,y+8), 가로 ±10 (1.8), ±6 (1.6), ±2 (1.4) 간격 4.
 - **VDD 국소 기호**: (x,y)→(x,y−8), 가로 ±10, 글자 "VDD" (x, y−17) 10. **VDD 레일**: 가로선 + 왼쪽 끝에 "VDD" 12 굵게.
-- **포트 핀**(Virtuoso 오각형): 길이 18, 높이 10, 흰 채움, 테두리 1.4(클럭·버스 2.2). 입력은 회로 쪽을 가리키고 출력은 바깥을 가리킴. 이름 12 굵게, 바깥쪽 4px.
+- **포트 핀**(Virtuoso 오각형): 길이 18, 높이 10, 흰 채움, 테두리 1.4. 입력은 회로 쪽을 가리키고 출력은 바깥을 가리킴. 이름 12 굵게, 바깥쪽 4px.
 - **넷 이름표**: 선 위의 앵커점 + 글자(기본 앵커 +4, −8). **이름표 연결의 짧은 선**: 블록 레벨 40~46px, 유닛 레벨 24px. 가로선이면 글자는 선 가운데 위(−8), 세로선이면 끝.
 - **회색 게이트 이름표**(숨긴 넷의 게이트): 게이트 핀 끝에서 3px, 10 `#777`, 선·핀 없음.
 - **버스 표시**: 사선 (x−7, y+7)→(x+7, y−7) 1.4 + 비트 수 글자.
@@ -426,7 +426,7 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 | u_clkbuf | CLK_DIST_TREE | 유닛 (CML 클럭 버퍼) | 760×560 | | 0 |
 
 ### 11.4 화면별로 반드시 같아야 하는 것
-- **b_top**: 한 줄 주 경로 RX_INP/N → [종단·ESD 표시] → CTLE(X_CTLE1) → CTLE(X_CTLE2) → VGA → X_DFE_EVEN(위 박스). X_DFE_ODD는 그 아래 같은 열, **주 입력은 VGA_P/VGA_N 이름표**. 두 슬라이스의 피드백·탭 입력(왼쪽)과 탭 출력(오른쪽)은 전부 이름표. W 버스 포트는 위 슬라이스 위에서 선(16 표시), 아래 슬라이스는 `W<1:4>_<0:3>` 이름표. 클럭: 클럭 트리 박스는 왼쪽 아래, CLK_INP/N 포트에서 굵은 선, 출력 CLKI/CLKIB/CLKQ/CLKQB는 짧은 선 + 이름표, 슬라이스 클럭 핀(아래)도 이름표 (X_DFE_ODD는 CLKIB, CLKI 순 — netlist대로 뒤바뀜). DOUT_ODD_P/N 오른쪽에 열린 스위치 두 개와 O_DOUTP/N 이름표. 숨긴 포트 28개는 그리지 않음.
+- **b_top**: 한 줄 주 경로 RX_INP/N → [종단·ESD 표시] → CTLE(X_CTLE1) → CTLE(X_CTLE2) → VGA → X_DFE_EVEN(위 박스). X_DFE_ODD는 그 아래 같은 열, **주 입력은 VGA_P/VGA_N 이름표**. 두 슬라이스의 피드백·탭 입력(왼쪽)과 탭 출력(오른쪽)은 전부 이름표. W 버스 포트는 위 슬라이스 위에서 선(16 표시), 아래 슬라이스는 `W<1:4>_<0:3>` 이름표. 클럭: 클럭 트리 박스는 왼쪽 아래, CLK_INP/N 포트에서 선, 출력 CLKI/CLKIB/CLKQ/CLKQB는 짧은 선 + 이름표, 슬라이스 클럭 핀(아래)도 이름표 (X_DFE_ODD는 CLKIB, CLKI 순 — netlist대로 뒤바뀜). DOUT_ODD_P/N 오른쪽에 열린 스위치 두 개와 O_DOUTP/N 이름표. 숨긴 포트 28개는 그리지 않음.
 - **b_slice**: Σ(X_SUM, 왼쪽, W 버스 위에서, 탭 입력 T1_FB…T4는 아래쪽 핀에서 왼쪽 포트로) → SA 삼각형(클럭 표시) → LATCH → DFF → DFF → 오른쪽 출력. D_OUTP/N, T2_OUTP/N은 사슬의 갈림 모서리에서 위/아래 포트. CLK는 아래 줄기 선, **CLKB는 블록마다 이름표**.
 - **b_clk**: CLK_INP/N → 종단 표시 → BUF 삼각형(자동 가상 블록) → B1P/B1N 이름표 → LATCH(X_DIV_M, 데이터 입력에 B1N/B1P **이름표**, 클럭 핀 B1P/B1N 이름표) → LATCH(X_DIV_S) → CLKI/CLKIB/CLKQ/CLKQB 포트. 인버터 체인 4개는 갈림 모서리 위아래로, 끝은 `*_BUF` 이름표.
 - **b_sa**: StrongARM 코어 삼각형(자동 가상 블록, 클럭 아래) → SR_LATCH 박스 → QP/QN 포트, 인버터 2개(QPB/QNB 이름표).
@@ -443,7 +443,7 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 - [ ] 모든 화면 연결 검증 PASS, 품질 수치 0, 교차는 허용 목록 그대로.
 - [ ] 블록 화면에 숨김 넷의 선·핀·포트·이름표가 하나도 없다. 생략 목록에는 전부 있다.
 - [ ] 미사용 출력은 짧은 선 + 이름표로 남아 있다.
-- [ ] 차동 유닛은 대칭(짝 없는 소자만 예외, 주석 있음). 클럭·버스는 굵은 선, 버스는 비트 수 표시.
+- [ ] 차동 유닛은 대칭(짝 없는 소자만 예외, 주석 있음). 모든 배선은 같은 굵기(1.6), 버스는 사선 + 비트 수 표시.
 - [ ] 스크린샷을 직접 봤다. PPTX를 그림으로 변환해 봤다. HTML은 외부 리소스 없이 열린다.
 - [ ] RX AFE로 돌리면 §11과 같다.
 
@@ -468,7 +468,7 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 ````
 
 ### FILE: DRAWING_PLAN.md
-<!-- sha256=fde764f25d1492f9ea97e34586e6fd8f445213963752afec69a4c379898a77c7 newline=1 -->
+<!-- sha256=84d9d882f3bdbe464a43c21ad237b62dbce1b4a41f4549a7c14d0cbf14e87d57 newline=1 -->
 ````markdown
 # 넷리스트 기반 High-Speed IO 개념도 그리기 — 도면 계획서 (일반판)
 
@@ -526,7 +526,7 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 | 트랜지스터 | Razavi 모양, 3단자, W/L·m 표시(토글), nf·모델명 숨김 |
 | 포트 | Virtuoso 핀 — 보여주는 신호의 포트만 |
 | 차동 신호 | P/N 두 선 |
-| 클럭 · 버스 | 굵은 선 (버스는 비트 수 표시 + 이름) |
+| 선 굵기 | **모든 배선 같은 굵기(1.6px)** — 데이터·클럭·버스 구분 없음. 버스는 사선 + 비트 수 + 이름으로 표시 (사용자 결정, 1회차 후) |
 | 이름표 연결 | 블록도에서 선으로 그리면 교차·우회가 생기는 넷은 같은 이름의 이름표로 연결 (§4-8) |
 | 차동 증폭기 | 무조건 대칭, 신호선 꼬임 금지, 노드 최소 |
 | 품질 | 글씨 겹침 0, 모바일 동작, PPT 내려받기 |
@@ -586,7 +586,7 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 | 분류 | 일반 정의 | 그림 |
 |---|---|---|
 | 고속 데이터 | 데이터 입력에서 추적으로 도달 (출력·피드백 포함) | 선 |
-| 고속 클럭 | 클럭 입력에서 추적으로 도달 | 굵은 선 |
+| 고속 클럭 | 클럭 입력에서 추적으로 도달 | 선 (데이터와 같은 굵기) |
 | **중요 제어** | **다른 고속 신호(또는 다른 클럭 위상)를 고속 노드에 얼마나·어떤 것을 섞을지 정하는 제어** — 예: DFE·FFE 탭 계수, 위상 보간기 가중치 | 버스 1개 |
 | 일반 제어 | 한 경로의 파라미터만 조절 — 이득, 피킹 R/C, 대역폭, 종단·오프셋·바이어스 트림, 동작 모드 | 그리지 않음 |
 | 바이어스 | 꼬리 전류원·캐스코드 게이트, 다이오드 노드, 기준 전류, 공통모드 | 그리지 않음 |
@@ -2649,7 +2649,7 @@ print('\n'.join(L[:12]))
 ````
 
 ### FILE: reference/rx_afe/work/scene.py
-<!-- sha256=516ef95d8449e597f7910a959450acf580354e0dc1f3bc48194ac0a966a6a90e newline=1 -->
+<!-- sha256=6d495d8266147526abd4ecc88d7684837273f7880bed05631adb22ee7effb374 newline=1 -->
 ````python
 """Scene model: every view = drawing primitives + semantic objects (symbols with pins, wires, dots, labels, ports).
 Renderers (HTML/PPTX) only use 'draw' primitives + hotspots; the checker only uses semantic objects + geometry."""
@@ -2657,9 +2657,9 @@ import math
 
 BLACK = '#111'
 GRAY = '#777'
-CLK_W = 3.2
+CLK_W = 1.6
 DATA_W = 1.6
-BUS_W = 3.2
+BUS_W = 1.6
 SYM_W = 1.6
 
 
@@ -2728,7 +2728,7 @@ class View:
     def port(self, name, x, y, d='right', io='in', cls='data', label_side=None):
         """Virtuoso pin glyph. (x,y) = attach point (wire end). d = direction the glyph points."""
         L, H = 18, 10
-        w = 2.2 if cls in ('clock', 'bus') else 1.4
+        w = 1.4
         if d == 'right':
             pts = [(x - L, y - H / 2), (x - 6, y - H / 2), (x, y), (x - 6, y + H / 2), (x - L, y + H / 2)]
             if io == 'out':
