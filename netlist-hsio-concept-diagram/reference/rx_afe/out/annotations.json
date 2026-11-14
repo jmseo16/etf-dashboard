@@ -54,7 +54,7 @@
   "others": "automatic structural analysis + assumed answers below"
  },
  "_important_control_buses": {
-  "W<1:4>_<0:3>": {
+  "W<4:1>_<3:0>": {
    "bits": [
     "W1_0",
     "W1_1",
@@ -143,9 +143,9 @@
   },
   {
    "id": "Q7",
-   "item": "W<1:4>_<0:3>",
+   "item": "W<4:1>_<3:0>",
    "question": "중요 제어 16비트(W1_0..W4_3)를 \"DFE 탭 계수\" 기능 하나의 버스로 묶을까요, 탭별 4비트 버스 4개로 나눌까요? (16b 1개 / 4b×4)",
-   "assumed": "16b 버스 1개 (W<1:4>_<0:3>) — §4.4 \"기능별 버스 하나\"를 \"DFE 탭 계수\" 기능으로 해석.",
+   "assumed": "16b 버스 1개 (W<4:1>_<3:0>) — §4.4 \"기능별 버스 하나\"를 \"DFE 탭 계수\" 기능으로 해석.",
    "confidence": "low (계획서 해석)"
   }
  ]

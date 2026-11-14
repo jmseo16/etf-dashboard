@@ -39,29 +39,29 @@ sys.exit(1 if bad else 0)
 
 | 경로 | 바이트 | SHA-256 |
 |---|---|---|
-| `SKILL.md` | 40188 | `dc559e4ac656…` |
-| `DRAWING_PLAN.md` | 35543 | `84d9d882f3bd…` |
+| `SKILL.md` | 40188 | `2da808581f23…` |
+| `DRAWING_PLAN.md` | 40405 | `194100961135…` |
 | `Q2_layout_options.html` | 19337 | `3d7d75fe4b09…` |
 | `reference/rx_afe/rx_afe_top.sp` | 7988 | `9b001491856b…` |
 | `reference/rx_afe/.gitignore` | 108 | `b3ef110f1924…` |
 | `reference/rx_afe/work/run_all.sh` | 620 | `96d8e6ea3d3b…` |
 | `reference/rx_afe/work/netlist.py` | 5199 | `c08c72b5de85…` |
 | `reference/rx_afe/work/analyze.py` | 38083 | `46eff9bb9907…` |
-| `reference/rx_afe/work/classify_report.py` | 11766 | `3e76611caf9d…` |
+| `reference/rx_afe/work/classify_report.py` | 11766 | `4b6521d30c16…` |
 | `reference/rx_afe/work/scene.py` | 23112 | `6d495d826614…` |
-| `reference/rx_afe/work/layouts.py` | 80670 | `052bea369732…` |
+| `reference/rx_afe/work/layouts.py` | 80670 | `70dd702f2bb6…` |
 | `reference/rx_afe/work/render_html.py` | 8998 | `7be17cdfcfc7…` |
 | `reference/rx_afe/work/make_pptx.py` | 7869 | `48e47eeaf53d…` |
 | `reference/rx_afe/work/measure.js` | 2328 | `0fa8be3455b0…` |
-| `reference/rx_afe/work/verify.py` | 25551 | `88f3a8d108a3…` |
-| `reference/rx_afe/expected/classification.md` | 19201 | `5d5b46a50130…` |
-| `reference/rx_afe/expected/annotations.json` | 5270 | `38fb77915db3…` |
+| `reference/rx_afe/work/verify.py` | 25805 | `ae5d15694419…` |
+| `reference/rx_afe/expected/classification.md` | 19201 | `a9dd4e98774c…` |
+| `reference/rx_afe/expected/annotations.json` | 5270 | `85f106f3be52…` |
 | `reference/rx_afe/expected/verify_report.json` | 11138 | `4eab2aecc442…` |
 
 ## 파일
 
 ### FILE: SKILL.md
-<!-- sha256=dc559e4ac656c7a5cb6e7afd467a266d6ef8f5f3d37b3baa073953a24cf86fd5 newline=1 -->
+<!-- sha256=2da808581f23a702bde80e1e01bec49352f560f98ac756c7bc7a74d2f30243ba newline=1 -->
 ````markdown
 ---
 name: netlist-hsio-concept-diagram
@@ -157,7 +157,7 @@ python3 -c "import json;print(json.load(open('reference/rx_afe/out/verify_report
 
 ### 4.4 소자 역할 판정 (이 순서로, 먼저 맞은 것이 이긴다)
 계획서 §3.1의 표를 구현한다. 순서가 중요하다.
-1. **반복 단위 합치기 후보**: 이름의 숫자만 다르고 연결 구조가 같은 소자 묶음 (`MS_G0..3` → `MS_G<0:3>`), 같은 두 넷 사이 병렬 수동소자.
+1. **반복 단위 합치기 후보**: 이름의 숫자만 다르고 연결 구조가 같은 소자 묶음 (`MS_G0..3` → `MS_G<3:0>`), 같은 두 넷 사이 병렬 수동소자.
 2. **정적 CMOS 게이트**: 같은 입력 넷을 게이트로 받는 NMOS·PMOS가 같은 출력 넷을 구동 (인버터·NAND·NOR). 리셋·꼬리보다 먼저.
 3. **전달 게이트**: 같은 두 넷 사이 NMOS+PMOS. 게이트가 켜는 전원(NMOS→전원, PMOS→접지)이면 항상 켜짐, 끄는 전원(NMOS→접지, PMOS→전원)이면 **항상 꺼짐**.
 4. **다이오드·미러**: 게이트 = 드레인.
@@ -202,7 +202,7 @@ python3 -c "import json;print(json.load(open('reference/rx_afe/out/verify_report
 - **일반 제어**: 한 경로의 파라미터만 조절 — 이득 단(같은 입력의 추가 쌍), degeneration R/C 뱅크, 대역폭, 트림, 모드.
 - **바이어스**: 꼬리·캐스코드 게이트, 다이오드 노드, 기준 전류, **공통모드 노드**(종단 중점 포함).
 - **전원**: 4.3.
-- 같은 기능의 중요 제어 비트는 버스 하나로 묶는다 (n차원 이름: `W1_0..W4_3` → `W<1:4>_<0:3>`, 16비트).
+- 같은 기능의 중요 제어 비트는 버스 하나로 묶는다 (n차원 이름: `W1_0..W4_3` → `W<4:1>_<3:0>`, 16비트).
 
 ### 4.8 셀 단위 분류
 셀 로컬 넷 분류 = 인스턴스 합집합. 그릴 때 하나만 고를 때의 우선순위: 데이터 > 클럭 > 중요 제어 > 일반 제어 > 바이어스 > 전원. **한 곳에서라도 보이는 핀은 그 셀의 모든 화면에서 보인다.**
@@ -216,7 +216,7 @@ python3 -c "import json;print(json.load(open('reference/rx_afe/out/verify_report
 - 스위치 R 뱅크, 두 노드 사이 저항으로 쓰는 스위치 MOS 묶음 → **가변 저항**. 고정 R이 병렬이면 하나로 합침.
 - 스위치 C 뱅크 → **가변 커패시터**. 스위치 없이 항상 붙은 C들은 **고정 C 하나**로 합침.
 - 전류 DAC(스위치 + 전류원 반복), 스위치로 켜는 꼬리 → **가변 전류원**. 중요 제어가 들어가면 버스 핀을 단다.
-- 같은 역할 반복 소자(이득 단 쌍 ×4) → 하나로 `M_G<0:3>_P`, 크기는 전부 나열.
+- 같은 역할 반복 소자(이득 단 쌍 ×4) → 하나로 `M_G<3:0>_P`, 크기는 전부 나열.
 - 기호가 대신하는 소자 목록은 화면 아래 "묶음·병합" 범례에 적는다.
 
 ### 4.11 확신도와 질문
@@ -227,7 +227,7 @@ python3 -c "import json;print(json.load(open('reference/rx_afe/out/verify_report
 고속 데이터 입력 : RX_INP, RX_INN            (확신 높음)
 클럭 입력        : CLK_INP, CLK_INN          (확신 높음)
 고속 출력        : DOUT_EVEN_P, DOUT_EVEN_N, DOUT_ODD_P, DOUT_ODD_N
-중요 제어 (버스) : W<1:4>_<0:3> (16b) — DFE 탭1~4 계수   (확신 높음)
+중요 제어 (버스) : W<4:1>_<3:0> (16b) — DFE 탭1~4 계수   (확신 높음)
 생략             : 제어 10개 (C0-2, R0-2, G0-3), 바이어스 4개 (IREF, VBN, VBP, VCM_RX), 블록 1개 (BIAS_GEN)
 질문             : Q1 … (확신 낮은 것만)
 ```
@@ -294,8 +294,8 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 
 ### 6.5 글자 형식
 - MOS 크기: `16u/45n` (SI 접두어, 계획서 §11.5-6), m≠1이면 ` ×2`. nf·모델명은 쓰지 않는다.
-- 합친 소자: 이름 `M_G<0:3>_P`, 크기 두 줄 `W 4u,8u,16u,32u` / `L 45n`.
-- 개념 기호 이름: `R_S (가변)`, `C_S`, `I_G<0:3>`, `X_DAC<1:4>`.
+- 합친 소자: 이름 `M_G<3:0>_P`, 크기 두 줄 `W 4u,8u,16u,32u` / `L 45n`.
+- 개념 기호 이름: `R_S (가변)`, `C_S`, `I_G<3:0>`, `X_DAC<4:1>`.
 - 화면 아래 범례 "묶음·병합 (bundles / merged)": 기호마다 대신한 소자와 크기 전부.
 - 비대칭 주석: 화면 아래 `#a33` 10: `비대칭: M11: PMOS S=VDD, D=DP, G=DN — 거울 짝 없음 (netlist 비대칭, Q4)`.
 
@@ -331,7 +331,7 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 | 템플릿 | 기준 함수 | 배치 (위 → 아래) | 허용 교차 |
 |---|---|---|---|
 | **CTLE** (단일 쌍) | `view_ctle` | VDD → 부하(PMOS + active inductor NMOS·R, 축 대칭) → 출력 노드 (OUTP 왼쪽 끝, OUTN 오른쪽 끝) → 입력쌍 → 두 소스 사이 **가로 가변 R_S(위), 고정 C_S(아래)** → 꼬리 둘(각자 접지) | 0 |
-| **여러 쌍(VGA·Summer·Driver)** — 그림 B | `view_multipair` | 주 쌍 축 A1=330 (소자 x = A1∓70), 추가 쌍 축 A2=700(VGA)/800(Summer) (x = A2∓100). y: 레일 70, 부하 140(주 쌍 위만), **N 버스 200(위)·P 버스 230(아래)**, 쌍 300, 꼬리/가변 전류원 아래. 출력은 두 버스 **오른쪽 끝 모서리**에서 포트. 추가 쌍 게이트는 이름표(VGA: INP/INN, Summer: 탭 버스 포트 `T<1:4>P/N`). 추가 쌍 꼬리 = 가변 전류원(Summer는 W 버스 핀) | **쌍마다 1** (N 드레인이 P 버스를 지나는 곳) → 2 |
+| **여러 쌍(VGA·Summer·Driver)** — 그림 B | `view_multipair` | 주 쌍 축 A1=330 (소자 x = A1∓70), 추가 쌍 축 A2=700(VGA)/800(Summer) (x = A2∓100). y: 레일 70, 부하 140(주 쌍 위만), **N 버스 200(위)·P 버스 230(아래)**, 쌍 300, 꼬리/가변 전류원 아래. 출력은 두 버스 **오른쪽 끝 모서리**에서 포트. 추가 쌍 게이트는 이름표(VGA: INP/INN, Summer: 탭 버스 포트 `T<4:1>P/N`). 추가 쌍 꼬리 = 가변 전류원(Summer는 W 버스 핀) | **쌍마다 1** (N 드레인이 P 버스를 지나는 곳) → 2 |
 | **CML latch** | `view_cml_latch` | 축 AX=380. 바깥 열(입력쌍) x=200/560, 안쪽 열(cross-coupled) x=320/440. VDD → 부하(안쪽 열) → 출력 y=200 (QP 왼쪽 끝, QN 오른쪽 끝) → 입력쌍(바깥)·cross-coupled(안쪽, 가운데 X) → 두 꼬리 노드 → 클럭 스티어링 쌍(거울) → 꼬리(축 위) | X 1 + 스티어링 1 = 2 |
 | **StrongARM** | `view_strongarm` | 축 AX=410, 안쪽 열 L/R=330/490. VDD → 리셋 PMOS(바깥, x=230/590)·cross-coupled PMOS(안쪽) y=130 → 출력 노드 y=180(OUTP/OUTN 이름표 바깥) → cross-coupled NMOS y=260 → DP/DN 리셋 y=310 → 입력쌍 y=430 → 클럭 꼬리 y=540(축). **cross-coupled 쌍마다 X 하나**(PMOS X: 출력 노드 y=200 → 반대 PMOS 게이트, NMOS X: y=220 → 반대 NMOS 게이트). 게이트끼리 잇는 세로선(tie)은 쓰지 않는다 | 2 |
 | **CML 버퍼** | `view_cml_buffer` | CTLE와 같은 순서, degeneration 없음, 꼬리 하나(축 위) | 0 |
@@ -387,7 +387,7 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 | 고속 데이터 출력 | DOUT_EVEN_P/N, DOUT_ODD_P/N |
 | 고속 데이터 내부 | CTLE1_P/N, CTLE2_P/N, VGA_P/N, E_T2P/N, E_T3P/N, O_T2P/N, O_T3P/N, O_DOUTP/N |
 | 고속 클럭 | CLK_INP/N → (B1P/B1N) → CLKI, CLKIB, CLKQ, CLKQB |
-| 중요 제어 | `W<1:4>_<0:3>` 16비트 버스 1개 — DFE 탭 1~4 계수 |
+| 중요 제어 | `W<4:1>_<3:0>` 16비트 버스 1개 — DFE 탭 1~4 계수 |
 | 숨김 일반 제어 | C0–C2, R0–R2 (CTLE), G0–G3 (VGA) |
 | 숨김 바이어스 | IREF, VBN, VBP, VCM_RX (종단 공통모드) |
 | 생략 블록 | X_BIAS (BIAS_GEN) |
@@ -426,7 +426,7 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 | u_clkbuf | CLK_DIST_TREE | 유닛 (CML 클럭 버퍼) | 760×560 | | 0 |
 
 ### 11.4 화면별로 반드시 같아야 하는 것
-- **b_top**: 한 줄 주 경로 RX_INP/N → [종단·ESD 표시] → CTLE(X_CTLE1) → CTLE(X_CTLE2) → VGA → X_DFE_EVEN(위 박스). X_DFE_ODD는 그 아래 같은 열, **주 입력은 VGA_P/VGA_N 이름표**. 두 슬라이스의 피드백·탭 입력(왼쪽)과 탭 출력(오른쪽)은 전부 이름표. W 버스 포트는 위 슬라이스 위에서 선(16 표시), 아래 슬라이스는 `W<1:4>_<0:3>` 이름표. 클럭: 클럭 트리 박스는 왼쪽 아래, CLK_INP/N 포트에서 선, 출력 CLKI/CLKIB/CLKQ/CLKQB는 짧은 선 + 이름표, 슬라이스 클럭 핀(아래)도 이름표 (X_DFE_ODD는 CLKIB, CLKI 순 — netlist대로 뒤바뀜). DOUT_ODD_P/N 오른쪽에 열린 스위치 두 개와 O_DOUTP/N 이름표. 숨긴 포트 28개는 그리지 않음.
+- **b_top**: 한 줄 주 경로 RX_INP/N → [종단·ESD 표시] → CTLE(X_CTLE1) → CTLE(X_CTLE2) → VGA → X_DFE_EVEN(위 박스). X_DFE_ODD는 그 아래 같은 열, **주 입력은 VGA_P/VGA_N 이름표**. 두 슬라이스의 피드백·탭 입력(왼쪽)과 탭 출력(오른쪽)은 전부 이름표. W 버스 포트는 위 슬라이스 위에서 선(16 표시), 아래 슬라이스는 `W<4:1>_<3:0>` 이름표. 클럭: 클럭 트리 박스는 왼쪽 아래, CLK_INP/N 포트에서 선, 출력 CLKI/CLKIB/CLKQ/CLKQB는 짧은 선 + 이름표, 슬라이스 클럭 핀(아래)도 이름표 (X_DFE_ODD는 CLKIB, CLKI 순 — netlist대로 뒤바뀜). DOUT_ODD_P/N 오른쪽에 열린 스위치 두 개와 O_DOUTP/N 이름표. 숨긴 포트 28개는 그리지 않음.
 - **b_slice**: Σ(X_SUM, 왼쪽, W 버스 위에서, 탭 입력 T1_FB…T4는 아래쪽 핀에서 왼쪽 포트로) → SA 삼각형(클럭 표시) → LATCH → DFF → DFF → 오른쪽 출력. D_OUTP/N, T2_OUTP/N은 사슬의 갈림 모서리에서 위/아래 포트. CLK는 아래 줄기 선, **CLKB는 블록마다 이름표**.
 - **b_clk**: CLK_INP/N → 종단 표시 → BUF 삼각형(자동 가상 블록) → B1P/B1N 이름표 → LATCH(X_DIV_M, 데이터 입력에 B1N/B1P **이름표**, 클럭 핀 B1P/B1N 이름표) → LATCH(X_DIV_S) → CLKI/CLKIB/CLKQ/CLKQB 포트. 인버터 체인 4개는 갈림 모서리 위아래로, 끝은 `*_BUF` 이름표.
 - **b_sa**: StrongARM 코어 삼각형(자동 가상 블록, 클럭 아래) → SR_LATCH 박스 → QP/QN 포트, 인버터 2개(QPB/QNB 이름표).
@@ -468,12 +468,12 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 ````
 
 ### FILE: DRAWING_PLAN.md
-<!-- sha256=84d9d882f3bdbe464a43c21ad237b62dbce1b4a41f4549a7c14d0cbf14e87d57 newline=1 -->
+<!-- sha256=19410096113537e879d76323e421e334f3bca9b6c90cec10812451aeac44e7c1 newline=1 -->
 ````markdown
 # 넷리스트 기반 High-Speed IO 개념도 그리기 — 도면 계획서 (일반판)
 
 > 스킬 이름: **넷리스트 기반 high speed IO 개념도 그리기** (폴더/식별자: `netlist-hsio-concept-diagram`)
-> 상태: **명세서 v2** (루프 1회차 반영, §11이 앞 절보다 우선). `hspice-schematic`(v1), `hspice-schematic-v2`에서 검증된 방법을 바탕으로 한다.
+> 상태: **명세서 v3** (루프 1회차 반영 §11, 형식 계약·체크리스트·검증 루프 §12 — §11·§12가 앞 절보다 우선). `hspice-schematic`(v1), `hspice-schematic-v2`에서 검증된 방법을 바탕으로 한다.
 > 구현 가이드: 같은 폴더의 `SKILL.md` (수치·템플릿·기준 결과 `reference/rx_afe/`). 규칙이 다르면 이 계획서가 이긴다.
 > 이 문서는 **특정 netlist에 맞춘 규칙을 쓰지 않는다.** 예시(RX AFE)는 부록에만 둔다.
 
@@ -522,7 +522,7 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 | 생략 표시 | 생략한 넷·블록은 사이드 패널과 PPT 메모의 "생략 목록"에만. **화면에 다시 켜는 토글은 두지 않음** |
 | 고속 신호와 무관한 블록 | 생략 (예: 바이어스 발생기) |
 | 조절 소자 | **개념 기호**로 그림: 스위치 R/C 뱅크 → 가변 R/C, 전류 DAC·스위치 전류원 → 가변 전류원 |
-| 같은 역할 소자 | 하나로 합쳐 `M<0:3>`, 크기는 전부 나열 |
+| 같은 역할 소자 | 하나로 합쳐 `M<3:0>`, 크기는 전부 나열 |
 | 트랜지스터 | Razavi 모양, 3단자, W/L·m 표시(토글), nf·모델명 숨김 |
 | 포트 | Virtuoso 핀 — 보여주는 신호의 포트만 |
 | 차동 신호 | P/N 두 선 |
@@ -732,7 +732,7 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
    고속 데이터 입력 : RX_INP, RX_INN            (확신 높음)
    클럭 입력        : CLK_INP, CLK_INN          (확신 높음)
    고속 출력        : DOUT_EVEN_P/N, DOUT_ODD_P/N
-   중요 제어 (버스) : W<1:4>_<0:3> — DFE 탭 계수 (확신 높음)
+   중요 제어 (버스) : W<4:1>_<3:0> — DFE 탭 계수 (확신 높음)
    생략             : 제어 10개, 바이어스 3개, 블록 1개 (BIAS_GEN)
    질문             : (없음)
    ```
@@ -830,9 +830,9 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 ### 11.5 그리기 — 배치·이름표·크기
 1. **짝 없는 이름표 예외** (§4-8, §6-2 보강): ① 미사용 출력, ② 화면 경계를 넘는 넷(유닛 화면·가상 블록 화면에서 부모로 나가는 넷). 경계 넷은 **화면 밖 연결 기호**(작은 오각 화살표 + 이름)로 그려 일반 이름표와 구분한다.
 2. **미사용 보조 출력**: 재사용 셀의 쓰지 않는 상보 출력(qb 등)은 핀만 남기고 이름표를 붙이지 않는다. 생략 목록에 "미사용 보조 출력"으로.
-3. **반복 인스턴스 합치기**: 같은 셀이 같은 연결 패턴으로 여러 번(드라이버 세그먼트, DCC 다리) → 블록 하나 `xi<0:4>` + 배수(m=1,2,4,8,16) 표기 + 범례. 사슬로 이어진 인버터들은 버퍼 블록 하나.
+3. **반복 인스턴스 합치기**: 같은 셀이 같은 연결 패턴으로 여러 번(드라이버 세그먼트, DCC 다리) → 블록 하나 `xi<4:0>` + 배수(m=1,2,4,8,16) 표기 + 범례. 사슬로 이어진 인버터들은 버퍼 블록 하나.
 4. **같은 가상 블록이 여럿이면 화면 하나**, 핀 이름은 일반 이름(in/out), 인스턴스별 넷은 범례 표.
-5. **유닛 화면 크기 상한**: 소자 20개 또는 폭 1400px를 넘으면 반복 다리를 합치거나(개념 기호) 화면을 나눈다. 폰 폭에서 글자가 6px보다 작으면 실패.
+5. **유닛 화면 크기 상한**: 그린 기호가 20개를 넘으면 이 순서로 줄인다 — ① 같은 역할 반복을 하나로 합침(`M<3:0>`), ② 묶음을 개념 기호로 바꿈(가변 R/C/전류원, 게이트 로직은 NAND/NOR 기호), ③ 그래도 넘으면 기능 단위로 화면을 나눔(예: 게이트 로직 / 출력단), 나눈 화면 사이는 화면 밖 연결 기호. 폰에서 읽힐 필요는 없다.
 6. **크기 표기**: SI 접두어로 `600n/30n`, `16u/45n` (원래 문자열은 툴팁). §6.5의 "netlist 표기 그대로"를 대체한다.
 7. **버스 이름표**: 이름에 `<a:b>`가 들어 있으면 비트 수 표시 생략, 아니면 사선 + 비트 수.
 8. **접점**: 한 점에 선분 3개까지(4방향 금지). 서로 다른 넷의 선 끝이 같은 직선 위에 있으면 40px 이상 떨어뜨린다.
@@ -849,6 +849,64 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 ### 11.7 테스트 모음 (최소)
 기준 RX AFE와 **다른** netlist로만 일반성을 판정한다: ① Rx 변형(넷·셀 이름 섞기, 구조 일부 변경), ② Tx(SST + FFE), ③ DCC. 기준 결과를 그대로 재현하는 실행은 일반성 증거로 세지 않는다.
 
+
+## 12. 산출물 형식 계약과 검증 루프 (루프 1회차 후 사용자 결정)
+
+### 12.1 공통 형식
+1. **선 굵기**: 모든 배선 1.6px (데이터·클럭·버스 같음). 버스는 사선 + 비트 수 + 이름으로 구분.
+2. **버스 이름은 `<MSB:LSB>`**: `W<4:1>_<3:0>`, `M_G<3:0>_P`, `din<3:0>`. 2차원도 각 차원 MSB 먼저.
+3. **파일**: `out/` 아래 `concept.html`, `concept.pptx`, `classification.md`, `annotations.json`, `verify_report.json`(summary `{views, connectivity_pass, quality_pass}` + 화면별 결과), `screenshots/<화면id>.png`.
+4. **화면 id**: 블록 `b_<셀 짧은 이름>`, 유닛 `u_<셀 짧은 이름>`(가상 블록은 `u_<부모>_<역할>`). 제목 `<셀> — 블록 레벨` / `<셀> — unit level (<역할>)`.
+5. **사이드 패널 순서**: 이 화면 → 생략 목록 → 주석 → 분류 요약 → 질문(가정한 답) → 모든 화면.
+
+### 12.2 체크리스트 (AGENT 3이 회로마다 채움)
+항목마다 **통과 / 불통과 / 해당 없음** + 근거(캡처 또는 netlist 줄) + 불통과면 원인(**그린 쪽** / **명세서**). ★ 항목이 하나라도 불통과면 그 회로는 불합격.
+
+| # | 항목 |
+|---|---|
+| **A. 형식** | |
+| A1 ★ | §12.1-3 파일이 모두 있음 |
+| A2 | HTML 한 파일, 외부 연결 없음, 블록 클릭→하위, ▲위로, W/L 토글, PPT 내려받기 동작 |
+| A3 | 화면 id·제목·사이드 패널 순서가 §12.1 형식 |
+| A4 | PPTX: 요약 1장 + 화면마다 1장, 슬라이드 링크, 메모에 생략 목록 |
+| **B. 분류** | |
+| B1 ★ | 분류 확인 표 있음. 질문은 템플릿 문장, 확신 낮은 것만, 규칙이 있는 것은 묻지 않음 |
+| B2 ★ | 고속 입력·클럭 입력을 구조로 판정 (이름 의존 없음) |
+| B3 | 중요/일반 제어 구분이 §11.3대로 |
+| B4 | 바이어스·전원 숨김, 고속과 무관한 블록은 생략 목록에 |
+| B5 | 느린 신호(RC 저역통과 뒤)는 점선 |
+| **C. 블록 레벨** | |
+| C1 ★ | 숨긴 넷의 선·핀·포트·이름표 없음 |
+| C2 ★ | 교차 0. 교차·우회가 생기는 곳은 이름표 |
+| C3 | 이름표는 짝이 있음 (예외: 미사용 출력, 화면 경계) |
+| C4 | 왼→오 흐름, 클럭 아래, 버스 위, 주 경로 한 줄 |
+| C5 | 블록 기호가 사전대로, 반전 블록에 동그라미 |
+| C6 | 반복 블록은 하나로 합치고 배수 표기 |
+| **D. 유닛 레벨** | |
+| D1 ★ | 차동은 축 대칭 (짝 없는 소자만 예외: 바깥 + 주석) |
+| D2 | 여러 쌍은 그림 B (쌍별 대칭, 출력 오른쪽 모서리) |
+| D3 | 개념 기호가 묶음을 정확히 대신함 |
+| D4 | 그린 기호 20개 이하 (넘으면 합치기 → 개념 기호 → 화면 나누기 순서, §11.5-5) |
+| D5 | 크기 SI 표기, W/L·m 표시, nf·모델명 없음 |
+| **E. 선·품질** | |
+| E1 ★ | 연결 재검증 통과 + AGENT 3이 최상위와 화면 3개 이상을 손으로 대조 |
+| E2 | 글씨 겹침 0, 소자 관통 0 |
+| E3 | 꼬임 0, 20px 미만 꺾임 0, 20px 미만 접점 0, 4방향 접점 0 |
+| E4 | 허용 목록 밖 교차 0 |
+| E5 | 모든 배선 같은 굵기, 버스 이름 `<MSB:LSB>` |
+| E6 | 생략 목록과 그린 것이 일치 |
+| **F. 목적** | |
+| F1 ★ | 그림만 보고 고속 신호 흐름과 회로의 동작 원리(무엇을 조절하는지)가 설명됨 |
+
+### 12.3 검증 루프
+- **안쪽 루프 (AGENT 2 ↔ AGENT 3, 회로마다)**: 원인이 "그린 쪽"인 불통과 항목을 근거·캡처와 함께 AGENT 2에게 돌려보내 고치게 하고 AGENT 3이 다시 채운다. **최대 3번**. 3번 안에 못 고치면 명세서 문제로 넘긴다.
+- **바깥 루프 (오케스트레이터)**: 원인이 "명세서"인 항목과 안쪽 루프에서 못 고친 항목으로 명세서를 고친다. 세 회로가 모두 ★ 통과하고 명세서 원인 항목이 없을 때만 승인. 다음 회차는 사용자 승인 후.
+
+### 12.4 고속과 무관한 블록 (ODT 로직, 보정 FSM, 레지스터 등)
+- 고속 넷과 연결이 없는 블록 → 생략, 생략 목록에 "블록 (셀) — 고속 신호와 무관".
+- 고속 노드에 직접 붙는 부분(ODT 종단 다리, 보정 DAC가 바꾸는 저항·전류)은 그 자리의 **개념 기호**로 그린다 (예: ODT → 입출력선 위 가변 종단 R). 그 코드는 §11.3 분류를 따른다(종단·임피던스 보정 = 일반 제어 → 숨김).
+- 그 코드를 만드는 로직(ODT 디코더, 보정 FSM)은 생략한다. 단 중요 제어를 만드는 디코더는 DEC 박스(§11.3-3).
+
 ---
 
 ## 부록 A. 예시 — RX AFE (사용자 확인 완료)
@@ -859,8 +917,8 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 | 고속 데이터 출력 | DOUT_EVEN_P/N, DOUT_ODD_P/N |
 | 고속 데이터 내부 | CTLE1_P/N, CTLE2_P/N, VGA_P/N, E_T2/E_T3, O_T2/O_T3, O_DOUTP/N (DFE 피드백, 꺼진 전달 게이트 뒤라 **미구동** — §11.2-4) |
 | 고속 클럭 | CLK_INP/N → CLKI, CLKIB, CLKQ, CLKQB |
-| 중요 제어 (버스) | W<1:4>_<0:3> (DFE 탭 계수) |
-| 숨김 (일반 제어) | C<0:2>, R<0:2> (CTLE), G<0:3> (VGA) |
+| 중요 제어 (버스) | W<4:1>_<3:0> (DFE 탭 계수) |
+| 숨김 (일반 제어) | C<2:0>, R<2:0> (CTLE), G<3:0> (VGA) |
 | 숨김 (바이어스) | IREF, VBN, VBP, VCM_RX (종단 공통모드) |
 | 생략 블록 | BIAS_GEN |
 | 최상위 포트 | 37개 → 9개 (데이터 입력 2, 클럭 입력 2, 출력 4, W 버스 1) |
@@ -2455,7 +2513,7 @@ if __name__ == '__main__':
 ````
 
 ### FILE: reference/rx_afe/work/classify_report.py
-<!-- sha256=3e76611caf9d83fe40da84f893c6feee2e61e98f57f6f296bf68e2d444914f15 newline=1 -->
+<!-- sha256=4b6521d30c1648c8fcc482725e49222872dd02e83ea5d871b4d8ecbed6b5652b newline=1 -->
 ````python
 """Plan section 8 step 2: classification confirmation table + questions -> annotations.json, classification.md"""
 import json, sys, re, collections
@@ -2488,7 +2546,7 @@ power = [p for p in tp if 'power' in cls(p)]
 
 
 def bus_name(names):
-    # group names like W1_0..W4_3 into W<1:4>_<0:3> (structure: same switch type, same function)
+    # group names like W1_0..W4_3 into W<4:1>_<3:0> (structure: same switch type, same function)
     pat = collections.defaultdict(list)
     for n in names:
         m = re.match(r'^(\D*?)(\d+)_(\d+)$', n)
@@ -2497,7 +2555,7 @@ def bus_name(names):
     out = []
     for k, v in pat.items():
         a = sorted({x for x, _ in v}); b = sorted({y for _, y in v})
-        out.append('%s<%d:%d>_<%d:%d>' % (k, a[0], a[-1], b[0], b[-1]))
+        out.append('%s<%d:%d>_<%d:%d>' % (k, a[-1], a[0], b[-1], b[0]))
     return out
 
 
@@ -2560,7 +2618,7 @@ Q.append({'id': 'Q6', 'item': 'top: %s; CLK_DIST_TREE: CLKI_BUF, CLKIB_BUF, CLKQ
           'confidence': 'low (계획서에 규칙 없음)'})
 Q.append({'id': 'Q7', 'item': ', '.join(imp_bus),
           'question': '중요 제어 16비트(W1_0..W4_3)를 "DFE 탭 계수" 기능 하나의 버스로 묶을까요, 탭별 4비트 버스 4개로 나눌까요? (16b 1개 / 4b×4)',
-          'assumed': '16b 버스 1개 (W<1:4>_<0:3>) — §4.4 "기능별 버스 하나"를 "DFE 탭 계수" 기능으로 해석.',
+          'assumed': '16b 버스 1개 (W<4:1>_<3:0>) — §4.4 "기능별 버스 하나"를 "DFE 탭 계수" 기능으로 해석.',
           'confidence': 'low (계획서 해석)'})
 
 ann = {
@@ -3077,7 +3135,7 @@ def sorted_box(x0, y0, x1, y1):
 ````
 
 ### FILE: reference/rx_afe/work/layouts.py
-<!-- sha256=052bea3697322d6100822036add067a52667a19ffe83e68493ee46abc3afe66b newline=1 -->
+<!-- sha256=70dd702f2bb6e639cc14bc8f47346f6da46818535b79e5eafa94911878a24ae1 newline=1 -->
 ````python
 """Step 3 (plan sections 4, 5): concept-diagram views. Writes scenes.json
 Every template takes element names from the structural analysis (roles), not from the netlist text."""
@@ -3438,11 +3496,11 @@ def view_multipair(cell, vid, kind):
             return gs[0]
         m = [re.match(r'^(\D*)(\d+)(\D*)$', g) for g in gs]
         idx = [int(x.group(2)) for x in m]
-        return '%s<%d:%d>%s' % (m[0].group(1), min(idx), max(idx), m[0].group(3))
+        return '%s<%d:%d>%s' % (m[0].group(1), max(idx), min(idx), m[0].group(3))
     def mname(devs):
         m = [re.match(r'^(.*?)(\d+)(.*)$', d) for d in devs]
         idx = [int(x.group(2)) for x in m]
-        return '%s<%d:%d>%s' % (m[0].group(1), min(idx), max(idx), m[0].group(3))
+        return '%s<%d:%d>%s' % (m[0].group(1), max(idx), min(idx), m[0].group(3))
     for side, devs, x in ((-1, exP, xPe), (1, exN, xNe)):
         t_, b_, g_ = mosT(cell, devs)
         mm = mos(V, 'merged_' + devs[0], x, yM, 'n', 'left' if side < 0 else 'right', mname(devs), wl(cell, devs), t_, b_, g_,
@@ -3489,10 +3547,10 @@ def view_multipair(cell, vid, kind):
         dac_cell = el(cell, allmem[0])['cell']
         ctrl = sorted({p for m in allmem for p, nn in el(cell, m)['pins'].items() if 'important_control' in CN[cell].get(nn, [])})
         busnets = [nn for m in allmem for p, nn in el(cell, m)['pins'].items() if 'important_control' in CN[cell].get(nn, [])]
-        bn = 'W<1:4>_<0:3>'
+        bn = 'W<4:1>_<3:0>'
         g = re.match(r'^(\D+)(\d+)_(\d+)$', busnets[0])
         ii = sorted({int(re.match(r'^\D+(\d+)_', x).group(1)) for x in busnets}); jj = sorted({int(re.match(r'^\D+\d+_(\d+)$', x).group(1)) for x in busnets})
-        bn = '%s<%d:%d>_<%d:%d>' % (g.group(1), ii[0], ii[-1], jj[0], jj[-1])
+        bn = '%s<%d:%d>_<%d:%d>' % (g.group(1), ii[-1], ii[0], jj[-1], jj[0])
         vs = visrc(V, 'ISRC', A2, yM + 110, name=mname(allmem), size='', top=[sum(topT, [])] if False else topT, bot=botT,
                    bus=[[(m, p)] for m in allmem for p, nn in el(cell, m)['pins'].items() if 'important_control' in CN[cell].get(nn, [])],
                    bus_side='right', members=allmem, label_side='left')
@@ -4006,7 +4064,7 @@ def view_top(cell):
         sym = box(V, si, bx, y0, bw, h, scell, si, left=[(p, y, inst_terms(si, p), 'data') for p, y in lefts],
                   right=[(p, y, inst_terms(si, p), 'data') for p, y in rights],
                   bottom=[(clocks[0], bx + 60, inst_terms(si, clocks[0]), 'clock'), (clocks[1], bx + 120, inst_terms(si, clocks[1]), 'clock')],
-                  top=[('W<1:4>_<0:3>', bx + 200, [[(si, p)] for p in bus], 'bus')], link='b_slice', members=[si])
+                  top=[('W<4:1>_<3:0>', bx + 200, [[(si, p)] for p in bus], 'bus')], link='b_slice', members=[si])
         pinpos[si] = {p['name']: p for p in sym['pins']}
         pinpos[si]['_h'] = h
     # VGA -> slices (P branch crosses N line once)
@@ -4033,12 +4091,12 @@ def view_top(cell):
             V.wire([(pp['x'], pp['y']), (1300, pp['y'])], cls='data')
             V.port(e['pins'][p], 1300, pp['y'], d='right', io='out')
     # important control bus: one trunk from the top into the first slice; second slice by label
-    bnm = 'W<1:4>_<0:3>'
-    wp = pinpos[s0]['W<1:4>_<0:3>']
+    bnm = 'W<4:1>_<3:0>'
+    wp = pinpos[s0]['W<4:1>_<3:0>']
     V.wire([(wp['x'], 50), (wp['x'], wp['y'])], cls='bus')
     V.port(bnm, wp['x'], 50, d='down', io='in', cls='bus', label_side='right')
     busslash(V, wp['x'], 78, len(bus))
-    wp1 = pinpos[s1]['W<1:4>_<0:3>']
+    wp1 = pinpos[s1]['W<4:1>_<3:0>']
     stub_label(V, wp1, bnm, 'up', cls='bus', L=20, side='right')
     # TG (always-off) between the odd slice output and O_DOUT
     tg = [g for g in groups if g['role'] == 'tg']
@@ -4109,7 +4167,7 @@ def view_slice(cell):
     sym = box(V, summ, sx, sy, sw, sh, 'Σ', summ, left=[(main_in[0], 200, inst_terms(summ, main_in[0]), 'data'), (main_in[1], 220, inst_terms(summ, main_in[1]), 'data')],
               right=[(souts[0], 200, inst_terms(summ, souts[0]), 'data'), (souts[1], 220, inst_terms(summ, souts[1]), 'data')],
               bottom=[(p, sx + 30 + 20 * k, inst_terms(summ, p), 'data') for k, p in enumerate(taps)],
-              top=[('W<1:4>_<0:3>', sx + 100, [[(summ, p)] for p in bus], 'bus')], link='u_summer', members=[summ], big=True, sub=se['cell'])
+              top=[('W<4:1>_<3:0>', sx + 100, [[(summ, p)] for p in bus], 'bus')], link='u_summer', members=[summ], big=True, sub=se['cell'])
     pp = {p['name']: p for p in sym['pins']}
     # main inputs
     for k, p in enumerate(main_in):
@@ -4121,9 +4179,9 @@ def view_slice(cell):
         V.wire([(110, y), (pp[p]['x'], y), (pp[p]['x'], pp[p]['y'])], cls='data')
         V.port(se['pins'][p], 110, y, d='right', io='in')
     # W bus
-    wp = pp['W<1:4>_<0:3>']
+    wp = pp['W<4:1>_<3:0>']
     V.wire([(wp['x'], 80), (wp['x'], wp['y'])], cls='bus')
-    V.port('W<1:4>_<0:3>', wp['x'], 80, d='down', io='in', cls='bus', label_side='right')
+    V.port('W<4:1>_<3:0>', wp['x'], 80, d='down', io='in', cls='bus', label_side='right')
     busslash(V, wp['x'], 105, len(bus))
     # slicer
     sl = [i for i in insts if rl[i] == 'composite' and insts[i]['pins'].get(cells[insts[i]['cell']]['ports'][0]) == se['pins'][souts[0]]][0]
@@ -4857,7 +4915,7 @@ const fs = require('fs');
 ````
 
 ### FILE: reference/rx_afe/work/verify.py
-<!-- sha256=88f3a8d108a30c48bcb2128eb90378275a649e88347f554bf7f27ad431a9fc2d newline=1 -->
+<!-- sha256=ae5d156944190a0b14c93abd372ebddab7a265ed3f6623ce1804e2ef3ce2896c newline=1 -->
 ````python
 """Plan section 6: verification.
 Re-reads connectivity ONLY from drawn geometry (wire polylines, pin coordinates, junction dots, labels/ports/power
@@ -5142,7 +5200,11 @@ def check_view(v):
         if len(vecs) > 1:
             mismatch.append({'net_pins': ['%s.%s' % (pins[i][0]['id'], pins[i][1]['name']) for i in idxs], 'netlist': sorted(map(list, vecs))})
         for n in nm:
-            ev = collapse(expand(n))
+            ex = expand(n)
+            rg = [(int(x), int(y)) for x, y in re.findall(r'<(\d+):(\d+)>', n)]
+            if rg and all(x > y for x, y in rg):
+                ex = ex[::-1]          # names are written <MSB:LSB>; slice vectors are listed LSB first
+            ev = collapse(ex)
             for vv in vecs:
                 if ev != vv:
                     mismatch.append({'name': n, 'pins': ['%s.%s' % (pins[i][0]['id'], pins[i][1]['name']) for i in idxs], 'netlist': list(vv)})
@@ -5457,7 +5519,7 @@ print(summary)
 ````
 
 ### FILE: reference/rx_afe/expected/classification.md
-<!-- sha256=5d5b46a50130fde6e16758332419e2c297ff9ebdf16dde9c15083de014a00ec5 newline=1 -->
+<!-- sha256=a9dd4e98774c6d1a250d3a6b6963cba785f023410bbf089a2c26a45fcead9973 newline=1 -->
 ````markdown
 # 분류 확인 표 — RX_AFE_TOP
 
@@ -5465,9 +5527,9 @@ print(summary)
 고속 데이터 입력 : RX_INP, RX_INN                           (확신 높음 — 사용자 지정, 구조 일치: CTLE 입력쌍 게이트 + 종단/ESD 패드)
 클럭 입력        : CLK_INP, CLK_INN                         (확신 높음 — 구조: latch 클럭 스티어링·StrongARM 꼬리/리셋 게이트까지 도달, 이름 일치)
 고속 출력        : DOUT_EVEN_P, DOUT_EVEN_N, DOUT_ODD_P, DOUT_ODD_N
-중요 제어 (버스) : W<1:4>_<0:3> (16b) — DFE 탭1~4 계수 (IDAC 스위치 → 탭 쌍 꼬리 전류, 탭 입력 = 귀환 데이터, summer 출력에서 합산)  (확신 높음; 묶음 방식은 Q7)
+중요 제어 (버스) : W<4:1>_<3:0> (16b) — DFE 탭1~4 계수 (IDAC 스위치 → 탭 쌍 꼬리 전류, 탭 입력 = 귀환 데이터, summer 출력에서 합산)  (확신 높음; 묶음 방식은 Q7)
 생략             : 제어 10개 (C0, C1, C2, R0, R1, R2, G0, G1, G2, G3), 바이어스 4개 (IREF, VBN, VBP, VCM_RX), 전원 2개 (VDD, VSS), 블록 1개 (X_BIAS (BIAS_GEN: bias))
-질문             : Q1 C0, C1, C2 (CTLE_STAGE) / Q2 X_DIV_M / X_DIV_S in CLK_DIST_TREE / Q3 M_TIE_P/M_TIE_P2, M_TIE_N/M_TIE_N2 / Q4 STRONGARM_SLICER: M11 / Q5 NAND2 (static_cmos_gate), SR_LATCH (cross_coupled_gates) / Q6 top: CLKQ, CLKQB; CLK_DIST_TREE: CLKI_BUF, CLKIB_BUF, CLKQ_BUF, CLKQB_BUF; STRONGARM_SLICER: QPB, QNB / Q7 W<1:4>_<0:3>
+질문             : Q1 C0, C1, C2 (CTLE_STAGE) / Q2 X_DIV_M / X_DIV_S in CLK_DIST_TREE / Q3 M_TIE_P/M_TIE_P2, M_TIE_N/M_TIE_N2 / Q4 STRONGARM_SLICER: M11 / Q5 NAND2 (static_cmos_gate), SR_LATCH (cross_coupled_gates) / Q6 top: CLKQ, CLKQB; CLK_DIST_TREE: CLKI_BUF, CLKIB_BUF, CLKQ_BUF, CLKQB_BUF; STRONGARM_SLICER: QPB, QNB / Q7 W<4:1>_<3:0>
 ```
 
 ## 질문과 가정한 답 (실행 중 답할 사람이 없어 가장 그럴듯한 답을 선택하여 annotations.json에 저장)
@@ -5490,9 +5552,9 @@ print(summary)
 - **Q6** `top: CLKQ, CLKQB; CLK_DIST_TREE: CLKI_BUF, CLKIB_BUF, CLKQ_BUF, CLKQB_BUF; STRONGARM_SLICER: QPB, QNB` — 추적상 고속 넷이지만 아무 곳에도 연결되지 않은(부하 없는) 출력입니다. 그릴까요? (그림 / 생략)
   - 확신: low (계획서에 규칙 없음)
   - 가정한 답: 그림 — 분류가 고속이므로 §6.3(생략은 분류대로만)에 따라 생략하지 않고, 끝에 넷 이름표만 둔 짧은 선으로 표시.
-- **Q7** `W<1:4>_<0:3>` — 중요 제어 16비트(W1_0..W4_3)를 "DFE 탭 계수" 기능 하나의 버스로 묶을까요, 탭별 4비트 버스 4개로 나눌까요? (16b 1개 / 4b×4)
+- **Q7** `W<4:1>_<3:0>` — 중요 제어 16비트(W1_0..W4_3)를 "DFE 탭 계수" 기능 하나의 버스로 묶을까요, 탭별 4비트 버스 4개로 나눌까요? (16b 1개 / 4b×4)
   - 확신: low (계획서 해석)
-  - 가정한 답: 16b 버스 1개 (W<1:4>_<0:3>) — §4.4 "기능별 버스 하나"를 "DFE 탭 계수" 기능으로 해석.
+  - 가정한 답: 16b 버스 1개 (W<4:1>_<3:0>) — §4.4 "기능별 버스 하나"를 "DFE 탭 계수" 기능으로 해석.
 
 ## 최상위 포트 분류
 
@@ -5620,7 +5682,7 @@ print(summary)
 ````
 
 ### FILE: reference/rx_afe/expected/annotations.json
-<!-- sha256=38fb77915db3a6cd6255561558ded839515ad2da5e77f758ed4a1c64f88c4ea1 newline=0 -->
+<!-- sha256=85f106f3be52e255c6f015a8d9e95b54c11a368845c26e3fd3fab8203e1259bc newline=0 -->
 ````json
 {
  "hs_inputs": [
@@ -5678,7 +5740,7 @@ print(summary)
   "others": "automatic structural analysis + assumed answers below"
  },
  "_important_control_buses": {
-  "W<1:4>_<0:3>": {
+  "W<4:1>_<3:0>": {
    "bits": [
     "W1_0",
     "W1_1",
@@ -5767,9 +5829,9 @@ print(summary)
   },
   {
    "id": "Q7",
-   "item": "W<1:4>_<0:3>",
+   "item": "W<4:1>_<3:0>",
    "question": "중요 제어 16비트(W1_0..W4_3)를 \"DFE 탭 계수\" 기능 하나의 버스로 묶을까요, 탭별 4비트 버스 4개로 나눌까요? (16b 1개 / 4b×4)",
-   "assumed": "16b 버스 1개 (W<1:4>_<0:3>) — §4.4 \"기능별 버스 하나\"를 \"DFE 탭 계수\" 기능으로 해석.",
+   "assumed": "16b 버스 1개 (W<4:1>_<3:0>) — §4.4 \"기능별 버스 하나\"를 \"DFE 탭 계수\" 기능으로 해석.",
    "confidence": "low (계획서 해석)"
   }
  ]

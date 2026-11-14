@@ -29,7 +29,7 @@ power = [p for p in tp if 'power' in cls(p)]
 
 
 def bus_name(names):
-    # group names like W1_0..W4_3 into W<1:4>_<0:3> (structure: same switch type, same function)
+    # group names like W1_0..W4_3 into W<4:1>_<3:0> (structure: same switch type, same function)
     pat = collections.defaultdict(list)
     for n in names:
         m = re.match(r'^(\D*?)(\d+)_(\d+)$', n)
@@ -38,7 +38,7 @@ def bus_name(names):
     out = []
     for k, v in pat.items():
         a = sorted({x for x, _ in v}); b = sorted({y for _, y in v})
-        out.append('%s<%d:%d>_<%d:%d>' % (k, a[0], a[-1], b[0], b[-1]))
+        out.append('%s<%d:%d>_<%d:%d>' % (k, a[-1], a[0], b[-1], b[0]))
     return out
 
 
@@ -101,7 +101,7 @@ Q.append({'id': 'Q6', 'item': 'top: %s; CLK_DIST_TREE: CLKI_BUF, CLKIB_BUF, CLKQ
           'confidence': 'low (계획서에 규칙 없음)'})
 Q.append({'id': 'Q7', 'item': ', '.join(imp_bus),
           'question': '중요 제어 16비트(W1_0..W4_3)를 "DFE 탭 계수" 기능 하나의 버스로 묶을까요, 탭별 4비트 버스 4개로 나눌까요? (16b 1개 / 4b×4)',
-          'assumed': '16b 버스 1개 (W<1:4>_<0:3>) — §4.4 "기능별 버스 하나"를 "DFE 탭 계수" 기능으로 해석.',
+          'assumed': '16b 버스 1개 (W<4:1>_<3:0>) — §4.4 "기능별 버스 하나"를 "DFE 탭 계수" 기능으로 해석.',
           'confidence': 'low (계획서 해석)'})
 
 ann = {

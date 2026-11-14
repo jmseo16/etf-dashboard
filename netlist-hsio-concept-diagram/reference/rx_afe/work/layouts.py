@@ -357,11 +357,11 @@ def view_multipair(cell, vid, kind):
             return gs[0]
         m = [re.match(r'^(\D*)(\d+)(\D*)$', g) for g in gs]
         idx = [int(x.group(2)) for x in m]
-        return '%s<%d:%d>%s' % (m[0].group(1), min(idx), max(idx), m[0].group(3))
+        return '%s<%d:%d>%s' % (m[0].group(1), max(idx), min(idx), m[0].group(3))
     def mname(devs):
         m = [re.match(r'^(.*?)(\d+)(.*)$', d) for d in devs]
         idx = [int(x.group(2)) for x in m]
-        return '%s<%d:%d>%s' % (m[0].group(1), min(idx), max(idx), m[0].group(3))
+        return '%s<%d:%d>%s' % (m[0].group(1), max(idx), min(idx), m[0].group(3))
     for side, devs, x in ((-1, exP, xPe), (1, exN, xNe)):
         t_, b_, g_ = mosT(cell, devs)
         mm = mos(V, 'merged_' + devs[0], x, yM, 'n', 'left' if side < 0 else 'right', mname(devs), wl(cell, devs), t_, b_, g_,
@@ -408,10 +408,10 @@ def view_multipair(cell, vid, kind):
         dac_cell = el(cell, allmem[0])['cell']
         ctrl = sorted({p for m in allmem for p, nn in el(cell, m)['pins'].items() if 'important_control' in CN[cell].get(nn, [])})
         busnets = [nn for m in allmem for p, nn in el(cell, m)['pins'].items() if 'important_control' in CN[cell].get(nn, [])]
-        bn = 'W<1:4>_<0:3>'
+        bn = 'W<4:1>_<3:0>'
         g = re.match(r'^(\D+)(\d+)_(\d+)$', busnets[0])
         ii = sorted({int(re.match(r'^\D+(\d+)_', x).group(1)) for x in busnets}); jj = sorted({int(re.match(r'^\D+\d+_(\d+)$', x).group(1)) for x in busnets})
-        bn = '%s<%d:%d>_<%d:%d>' % (g.group(1), ii[0], ii[-1], jj[0], jj[-1])
+        bn = '%s<%d:%d>_<%d:%d>' % (g.group(1), ii[-1], ii[0], jj[-1], jj[0])
         vs = visrc(V, 'ISRC', A2, yM + 110, name=mname(allmem), size='', top=[sum(topT, [])] if False else topT, bot=botT,
                    bus=[[(m, p)] for m in allmem for p, nn in el(cell, m)['pins'].items() if 'important_control' in CN[cell].get(nn, [])],
                    bus_side='right', members=allmem, label_side='left')
@@ -925,7 +925,7 @@ def view_top(cell):
         sym = box(V, si, bx, y0, bw, h, scell, si, left=[(p, y, inst_terms(si, p), 'data') for p, y in lefts],
                   right=[(p, y, inst_terms(si, p), 'data') for p, y in rights],
                   bottom=[(clocks[0], bx + 60, inst_terms(si, clocks[0]), 'clock'), (clocks[1], bx + 120, inst_terms(si, clocks[1]), 'clock')],
-                  top=[('W<1:4>_<0:3>', bx + 200, [[(si, p)] for p in bus], 'bus')], link='b_slice', members=[si])
+                  top=[('W<4:1>_<3:0>', bx + 200, [[(si, p)] for p in bus], 'bus')], link='b_slice', members=[si])
         pinpos[si] = {p['name']: p for p in sym['pins']}
         pinpos[si]['_h'] = h
     # VGA -> slices (P branch crosses N line once)
@@ -952,12 +952,12 @@ def view_top(cell):
             V.wire([(pp['x'], pp['y']), (1300, pp['y'])], cls='data')
             V.port(e['pins'][p], 1300, pp['y'], d='right', io='out')
     # important control bus: one trunk from the top into the first slice; second slice by label
-    bnm = 'W<1:4>_<0:3>'
-    wp = pinpos[s0]['W<1:4>_<0:3>']
+    bnm = 'W<4:1>_<3:0>'
+    wp = pinpos[s0]['W<4:1>_<3:0>']
     V.wire([(wp['x'], 50), (wp['x'], wp['y'])], cls='bus')
     V.port(bnm, wp['x'], 50, d='down', io='in', cls='bus', label_side='right')
     busslash(V, wp['x'], 78, len(bus))
-    wp1 = pinpos[s1]['W<1:4>_<0:3>']
+    wp1 = pinpos[s1]['W<4:1>_<3:0>']
     stub_label(V, wp1, bnm, 'up', cls='bus', L=20, side='right')
     # TG (always-off) between the odd slice output and O_DOUT
     tg = [g for g in groups if g['role'] == 'tg']
@@ -1028,7 +1028,7 @@ def view_slice(cell):
     sym = box(V, summ, sx, sy, sw, sh, 'Σ', summ, left=[(main_in[0], 200, inst_terms(summ, main_in[0]), 'data'), (main_in[1], 220, inst_terms(summ, main_in[1]), 'data')],
               right=[(souts[0], 200, inst_terms(summ, souts[0]), 'data'), (souts[1], 220, inst_terms(summ, souts[1]), 'data')],
               bottom=[(p, sx + 30 + 20 * k, inst_terms(summ, p), 'data') for k, p in enumerate(taps)],
-              top=[('W<1:4>_<0:3>', sx + 100, [[(summ, p)] for p in bus], 'bus')], link='u_summer', members=[summ], big=True, sub=se['cell'])
+              top=[('W<4:1>_<3:0>', sx + 100, [[(summ, p)] for p in bus], 'bus')], link='u_summer', members=[summ], big=True, sub=se['cell'])
     pp = {p['name']: p for p in sym['pins']}
     # main inputs
     for k, p in enumerate(main_in):
@@ -1040,9 +1040,9 @@ def view_slice(cell):
         V.wire([(110, y), (pp[p]['x'], y), (pp[p]['x'], pp[p]['y'])], cls='data')
         V.port(se['pins'][p], 110, y, d='right', io='in')
     # W bus
-    wp = pp['W<1:4>_<0:3>']
+    wp = pp['W<4:1>_<3:0>']
     V.wire([(wp['x'], 80), (wp['x'], wp['y'])], cls='bus')
-    V.port('W<1:4>_<0:3>', wp['x'], 80, d='down', io='in', cls='bus', label_side='right')
+    V.port('W<4:1>_<3:0>', wp['x'], 80, d='down', io='in', cls='bus', label_side='right')
     busslash(V, wp['x'], 105, len(bus))
     # slicer
     sl = [i for i in insts if rl[i] == 'composite' and insts[i]['pins'].get(cells[insts[i]['cell']]['ports'][0]) == se['pins'][souts[0]]][0]

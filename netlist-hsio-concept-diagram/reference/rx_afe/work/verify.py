@@ -281,7 +281,11 @@ def check_view(v):
         if len(vecs) > 1:
             mismatch.append({'net_pins': ['%s.%s' % (pins[i][0]['id'], pins[i][1]['name']) for i in idxs], 'netlist': sorted(map(list, vecs))})
         for n in nm:
-            ev = collapse(expand(n))
+            ex = expand(n)
+            rg = [(int(x), int(y)) for x, y in re.findall(r'<(\d+):(\d+)>', n)]
+            if rg and all(x > y for x, y in rg):
+                ex = ex[::-1]          # names are written <MSB:LSB>; slice vectors are listed LSB first
+            ev = collapse(ex)
             for vv in vecs:
                 if ev != vv:
                     mismatch.append({'name': n, 'pins': ['%s.%s' % (pins[i][0]['id'], pins[i][1]['name']) for i in idxs], 'netlist': list(vv)})

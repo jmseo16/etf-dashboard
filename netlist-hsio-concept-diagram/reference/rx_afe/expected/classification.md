@@ -4,9 +4,9 @@
 고속 데이터 입력 : RX_INP, RX_INN                           (확신 높음 — 사용자 지정, 구조 일치: CTLE 입력쌍 게이트 + 종단/ESD 패드)
 클럭 입력        : CLK_INP, CLK_INN                         (확신 높음 — 구조: latch 클럭 스티어링·StrongARM 꼬리/리셋 게이트까지 도달, 이름 일치)
 고속 출력        : DOUT_EVEN_P, DOUT_EVEN_N, DOUT_ODD_P, DOUT_ODD_N
-중요 제어 (버스) : W<1:4>_<0:3> (16b) — DFE 탭1~4 계수 (IDAC 스위치 → 탭 쌍 꼬리 전류, 탭 입력 = 귀환 데이터, summer 출력에서 합산)  (확신 높음; 묶음 방식은 Q7)
+중요 제어 (버스) : W<4:1>_<3:0> (16b) — DFE 탭1~4 계수 (IDAC 스위치 → 탭 쌍 꼬리 전류, 탭 입력 = 귀환 데이터, summer 출력에서 합산)  (확신 높음; 묶음 방식은 Q7)
 생략             : 제어 10개 (C0, C1, C2, R0, R1, R2, G0, G1, G2, G3), 바이어스 4개 (IREF, VBN, VBP, VCM_RX), 전원 2개 (VDD, VSS), 블록 1개 (X_BIAS (BIAS_GEN: bias))
-질문             : Q1 C0, C1, C2 (CTLE_STAGE) / Q2 X_DIV_M / X_DIV_S in CLK_DIST_TREE / Q3 M_TIE_P/M_TIE_P2, M_TIE_N/M_TIE_N2 / Q4 STRONGARM_SLICER: M11 / Q5 NAND2 (static_cmos_gate), SR_LATCH (cross_coupled_gates) / Q6 top: CLKQ, CLKQB; CLK_DIST_TREE: CLKI_BUF, CLKIB_BUF, CLKQ_BUF, CLKQB_BUF; STRONGARM_SLICER: QPB, QNB / Q7 W<1:4>_<0:3>
+질문             : Q1 C0, C1, C2 (CTLE_STAGE) / Q2 X_DIV_M / X_DIV_S in CLK_DIST_TREE / Q3 M_TIE_P/M_TIE_P2, M_TIE_N/M_TIE_N2 / Q4 STRONGARM_SLICER: M11 / Q5 NAND2 (static_cmos_gate), SR_LATCH (cross_coupled_gates) / Q6 top: CLKQ, CLKQB; CLK_DIST_TREE: CLKI_BUF, CLKIB_BUF, CLKQ_BUF, CLKQB_BUF; STRONGARM_SLICER: QPB, QNB / Q7 W<4:1>_<3:0>
 ```
 
 ## 질문과 가정한 답 (실행 중 답할 사람이 없어 가장 그럴듯한 답을 선택하여 annotations.json에 저장)
@@ -29,9 +29,9 @@
 - **Q6** `top: CLKQ, CLKQB; CLK_DIST_TREE: CLKI_BUF, CLKIB_BUF, CLKQ_BUF, CLKQB_BUF; STRONGARM_SLICER: QPB, QNB` — 추적상 고속 넷이지만 아무 곳에도 연결되지 않은(부하 없는) 출력입니다. 그릴까요? (그림 / 생략)
   - 확신: low (계획서에 규칙 없음)
   - 가정한 답: 그림 — 분류가 고속이므로 §6.3(생략은 분류대로만)에 따라 생략하지 않고, 끝에 넷 이름표만 둔 짧은 선으로 표시.
-- **Q7** `W<1:4>_<0:3>` — 중요 제어 16비트(W1_0..W4_3)를 "DFE 탭 계수" 기능 하나의 버스로 묶을까요, 탭별 4비트 버스 4개로 나눌까요? (16b 1개 / 4b×4)
+- **Q7** `W<4:1>_<3:0>` — 중요 제어 16비트(W1_0..W4_3)를 "DFE 탭 계수" 기능 하나의 버스로 묶을까요, 탭별 4비트 버스 4개로 나눌까요? (16b 1개 / 4b×4)
   - 확신: low (계획서 해석)
-  - 가정한 답: 16b 버스 1개 (W<1:4>_<0:3>) — §4.4 "기능별 버스 하나"를 "DFE 탭 계수" 기능으로 해석.
+  - 가정한 답: 16b 버스 1개 (W<4:1>_<3:0>) — §4.4 "기능별 버스 하나"를 "DFE 탭 계수" 기능으로 해석.
 
 ## 최상위 포트 분류
 
