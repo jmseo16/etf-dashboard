@@ -49,12 +49,12 @@ FILES = [
 ]
 LANG = {".py": "python", ".js": "javascript", ".md": "markdown", ".sp": "spice", ".sh": "bash",
         ".json": "json", ".html": "html"}
-FENCE = "````"
+FENCE = "`" * 5  # built, so this file never contains the fence itself
 
 RESTORE = r'''import hashlib, os, re, sys
 src = open(sys.argv[1], encoding="utf-8").read()
 dest = sys.argv[2] if len(sys.argv) > 2 else "netlist-hsio-concept-diagram"
-pat = re.compile(r"^### FILE: (\S+)\n<!-- sha256=([0-9a-f]{64}) newline=([01]) -->\n````\w*\n(.*?)\n````$", re.S | re.M)
+pat = re.compile(r"^### FILE: (\S+)\n<!-- sha256=([0-9a-f]{64}) newline=([01]) -->\n`{5}\w*\n(.*?)\n`{5}$", re.S | re.M)
 n = bad = 0
 for path, sha, nl, body in pat.findall(src):
     data = body + ("\n" if nl == "1" else "")
