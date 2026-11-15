@@ -10,12 +10,13 @@
    "cell": "RX_AFE_TOP",
    "level": "block",
    "title": "RX_AFE_TOP — 블록 레벨 (최상위)",
+   "scene_sha": "ae6d93472091bfa9352e1d006df5490559926ee4680ff3d0efcdad0c5d30533a",
    "connectivity": {
     "pass": true,
     "error_count": 0,
     "errors": {},
-    "drawn_nets": 29,
-    "drawn_pins": 62
+    "drawn_nets": 30,
+    "drawn_pins": 63
    },
    "quality_counts": {
     "text_overlap": 0,
@@ -25,16 +26,23 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "b_slice",
    "cell": "HALF_RATE_DFE_SLICE",
    "level": "block",
    "title": "HALF_RATE_DFE_SLICE — 블록 레벨",
+   "scene_sha": "54c5af376d1e1c30a023a91a59b63d710c98100a67882bdeda8c1cb29d0443c9",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -50,16 +58,23 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "b_clk",
    "cell": "CLK_DIST_TREE",
    "level": "block",
    "title": "CLK_DIST_TREE — 블록 레벨",
+   "scene_sha": "237c3d82b8b4e864796d1d5eb5b476b85e22507938beebbb6f289afc1da985b1",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -75,16 +90,23 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
-   "view": "u_rxterm",
+   "view": "u_top_term",
    "cell": "RX_AFE_TOP",
    "level": "unit",
    "title": "RX_AFE_TOP — unit level (입력 종단 + ESD, 소자 그대로)",
+   "scene_sha": "e12b89ba6817cb4962af84c3a4bc6a85642c1d52dee95d71e4ef507666d23d7a",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -100,16 +122,23 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
-   "view": "u_tg",
+   "view": "u_top_tg",
    "cell": "RX_AFE_TOP",
    "level": "unit",
    "title": "RX_AFE_TOP — unit level (전달 게이트 M_TIE, 게이트가 VSS/VDD에 묶여 항상 OFF)",
+   "scene_sha": "61cc336bfd7d9da2c9bec1f591d8d199a34a12b43dbfe317d6cd924d1379e905",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -125,16 +154,23 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "u_ctle",
    "cell": "CTLE_STAGE",
    "level": "unit",
    "title": "CTLE_STAGE — unit level (CTLE, 대칭)",
+   "scene_sha": "cb4a085bc76092fc94840c9dc14fa1e22030293a6c17110236418a9e0810c85d",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -150,22 +186,29 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "u_vga",
    "cell": "VGA_STAGE",
    "level": "unit",
    "title": "VGA_STAGE — unit level (VGA, 쌍별 대칭 나란히: 그림 B)",
+   "scene_sha": "651b18801d5c978eabfbe9c4cde4ceded77a235a104125c4229b827e17a28dd5",
    "connectivity": {
     "pass": true,
     "error_count": 0,
     "errors": {},
-    "drawn_nets": 10,
-    "drawn_pins": 23
+    "drawn_nets": 11,
+    "drawn_pins": 24
    },
    "quality_counts": {
     "text_overlap": 0,
@@ -175,7 +218,11 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 2
+    "structural_crossings_allowed": 2,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {
     "structural_crossings": [
@@ -195,13 +242,16 @@
      }
     ]
    },
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "u_summer",
    "cell": "DFE_SUMMER",
    "level": "unit",
    "title": "DFE_SUMMER — unit level (DFE summer Σ, 쌍별 대칭 나란히: 그림 B)",
+   "scene_sha": "08288370106dff46cb516432f53ba5df4c7c3aacd9dac93258dfd78b90659c7c",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -217,7 +267,11 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 2
+    "structural_crossings_allowed": 2,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {
     "structural_crossings": [
@@ -237,13 +291,16 @@
      }
     ]
    },
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "b_sa",
    "cell": "STRONGARM_SLICER",
    "level": "block",
    "title": "STRONGARM_SLICER — 블록 레벨",
+   "scene_sha": "0456ae1b9b2fbd296e3fa235b10857fd4a07a9dccb82201ca9a43f45602642da",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -259,16 +316,23 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
-   "view": "u_strongarm",
+   "view": "u_sa_strongarm",
    "cell": "STRONGARM_SLICER",
    "level": "unit",
    "title": "STRONGARM_SLICER — unit level (StrongARM core, 대칭)",
+   "scene_sha": "3d0c3530645c3b63e07c500b390d28d4e5722af922454363499096cafc3ed37c",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -284,7 +348,11 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 2
+    "structural_crossings_allowed": 2,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {
     "structural_crossings": [
@@ -304,13 +372,16 @@
      }
     ]
    },
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "b_sr",
    "cell": "SR_LATCH",
    "level": "block",
-   "title": "SR_LATCH — 블록 레벨 (교차 결합 게이트; 사전에 없음 → 박스)",
+   "title": "SR_LATCH — 블록 레벨 (교차 결합 NAND2)",
+   "scene_sha": "5a7148d9473a1865a610f6113087a03320280bc369f0fd63e4f8b188283c285f",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -326,16 +397,23 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "u_nand",
    "cell": "NAND2",
    "level": "unit",
-   "title": "NAND2 — unit level (정적 CMOS 게이트, 사전에 없음 → 소자 그대로)",
+   "title": "NAND2 — unit level (정적 CMOS NAND)",
+   "scene_sha": "a954fec43af2d97acf507030a15bde1302ca15762b1a66835e83488ecd39023b",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -351,16 +429,23 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "u_inv",
    "cell": "INV",
    "level": "unit",
    "title": "INV — unit level (CMOS 인버터 / 버퍼)",
+   "scene_sha": "95b59c1deb049d2f67339ede368d167ead6ce0df1a1a891be9f8b6c4a9ffabe6",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -376,16 +461,23 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "u_latch",
    "cell": "CML_LATCH",
    "level": "unit",
    "title": "CML_LATCH — unit level (CML latch, 대칭)",
+   "scene_sha": "07a9669920c5b846dcc2cd8f602cc78329e73b7b78f23197715fa68a02eabf28",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -401,7 +493,11 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 2
+    "structural_crossings_allowed": 2,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {
     "structural_crossings": [
@@ -421,13 +517,16 @@
      }
     ]
    },
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "b_dff",
    "cell": "CML_DFF",
    "level": "block",
    "title": "CML_DFF — 블록 레벨 (master-slave)",
+   "scene_sha": "dd05f4068accd11e6c222728493c743ea744a9aa0d8a722f5dc9ad637685a11f",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -443,16 +542,23 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
-   "view": "u_clkterm",
+   "view": "u_clk_term",
    "cell": "CLK_DIST_TREE",
    "level": "unit",
    "title": "CLK_DIST_TREE — unit level (클럭 입력 종단, 소자 그대로)",
+   "scene_sha": "fafb5703aca26abf9b3d4fbbd70d589aa7e2234afc96731a9852e05ed38b8a68",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -468,16 +574,23 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
-   "view": "u_clkbuf",
+   "view": "u_clk_buf",
    "cell": "CLK_DIST_TREE",
    "level": "unit",
    "title": "CLK_DIST_TREE — unit level (CML 클럭 버퍼, 대칭)",
+   "scene_sha": "9976b35cd47aec2c74276884e8284a08e94070a6fb1acc2dce0d8893a5073a49",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -493,10 +606,16 @@
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   }
  ]
 }

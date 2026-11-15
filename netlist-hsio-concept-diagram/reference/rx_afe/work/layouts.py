@@ -1,8 +1,9 @@
 """Step 3 (plan sections 4, 5): concept-diagram views. Writes scenes.json
 Every template takes element names from the structural analysis (roles), not from the netlist text."""
 import json, sys, collections, re
-from netlist import parse, num
+from netlist import parse, num, fmt_si, group_bus, Polarity
 from scene import *
+from spec_rules import ANALOG_ROLES, CLASS_KO
 
 W = sys.argv[1]
 NL = sys.argv[2]
@@ -10,6 +11,54 @@ cells, order = parse(NL)
 A = json.load(open(W + '/analysis.json'))
 ROLES = A['roles']; CN = A['cellnet']; EFF = A['eff']; INST = A['cell_insts']
 VIEWS = []
+POL = Polarity(cells, A['top'])
+# view ids (plan §1.3-1): virtual blocks are u_<parent short name>_<role>
+VID = {'top': 'b_top', 'slice': 'b_slice', 'clk': 'b_clk', 'top_term': 'u_top_term', 'top_tg': 'u_top_tg', 'ctle': 'u_ctle',
+       'vga': 'u_vga', 'summer': 'u_summer', 'sa': 'b_sa', 'sa_core': 'u_sa_strongarm', 'sr': 'b_sr', 'nand': 'u_nand',
+       'inv': 'u_inv', 'latch': 'u_latch', 'dff': 'b_dff', 'clk_term': 'u_clk_term', 'clk_buf': 'u_clk_buf'}
+
+
+def is_logic_out(cell, port, group_role=None):
+    """V19: polarity bubbles only on logic outputs. Linear amplifier rows are analog; a CML buffer is logic when it
+    carries a clock; a composite block inherits the kind of the sub-block that drives the port."""
+    role = group_role or A['block'][cell]['role']
+    if role in ANALOG_ROLES:
+        return False
+    if role == 'cml_buffer':
+        return 'clock' in CN[cell].get(port, [])
+    if role == 'composite' and group_role is None:
+        for e in cells[cell]['elems']:
+            if e['kind'] == 'inst':
+                for q, n in e['pins'].items():
+                    if n == port and any(t == q for (_, t) in POL.port_map(e['cell'])):
+                        return is_logic_out(e['cell'], q)
+        for g in A['groups'].get(cell, []):
+            for m in g['members']:
+                e = el(cell, m)
+                if e['kind'] == 'mos' and port in (e['terms']['d'], e['terms']['s']):
+                    return is_logic_out(cell, port, g['role'])
+        return True
+    return True
+
+
+def polarity_marks(cell, ins, outs, members=None, group_role=None, kinds=None):
+    """(bubbles, pm) for a drawn block (plan §3.4-6, §4.1-13, V19, V21).
+    ins/outs: (pin name, local net) in drawn order. bubbles = logic outputs that invert w.r.t. their main input.
+    pm: '+' on the input in phase with the first output before any bubble (for analog outputs the inversion,
+    which V19 does not draw as a bubble, is carried by the +/- marks)."""
+    pol = POL.outputs(cell, [n for _, n in ins], [n for _, n in outs], members)
+    bub = set()
+    logic = {}
+    for pn, n in outs:
+        logic[pn] = is_logic_out(cell, n, group_role)
+        if logic[pn] and pol[n] == 'inv':
+            bub.add(pn)
+    pm = {}
+    if len(ins) >= 2:
+        p0, n0 = outs[0]
+        flip = pol[n0] == 'inv' and not logic[p0]
+        pm = {ins[0][0]: '−' if flip else '+', ins[1][0]: '+' if flip else '−'}
+    return bub, pm
 
 
 def el(cell, name):
@@ -64,8 +113,8 @@ def wl(cell, devs):
     if isinstance(devs, str):
         devs = [devs]
     es = [el(cell, d) for d in devs]
-    Ws = [e['params'].get('w', '?') for e in es]
-    Ls = sorted({e['params'].get('l', '?') for e in es}, key=lambda x: num(x) or 0)
+    Ws = [fmt_si(e['params'].get('w', '?')) for e in es]
+    Ls = sorted({fmt_si(e['params'].get('l', '?')) for e in es}, key=lambda x: num(x) or 0)
     ms = [e['params'].get('m') for e in es]
     if len(es) == 1:
         s = '%s/%s' % (Ws[0], Ls[0])
@@ -87,7 +136,7 @@ def cls_of(cell, net):
 
 
 def hidden_list(cell, shown=None):
-    """omitted (hidden) nets of the cell by class"""
+    """omitted (hidden) nets of the cell by class (finalised per view by finalize_omitted)"""
     out = []
     for n, c in sorted(CN[cell].items()):
         k = [x for x in c if x in ('general_control', 'bias', 'power')]
@@ -96,17 +145,81 @@ def hidden_list(cell, shown=None):
     return out
 
 
+def expand_bus(name):
+    m = list(re.finditer(r'<(\d+):(\d+)>', name))
+    if not m:
+        return [name]
+    import itertools
+    parts, last, rng = [], 0, []
+    for g in m:
+        parts.append(name[last:g.start()]); last = g.end()
+        a, b = int(g.group(1)), int(g.group(2))
+        rng.append(range(a, b - 1, -1) if a >= b else range(a, b + 1))
+    parts.append(name[last:])
+    out = []
+    for combo in itertools.product(*rng):
+        x = parts[0]
+        for k, v in enumerate(combo):
+            x += str(v) + parts[k + 1]
+        out.append(x)
+    return out
+
+
+def class_label(cell, nets):
+    c = CN[cell].get(nets[0], [])
+    k = [x for x in c if x in ('general_control', 'bias', 'power')][0]
+    lab = CLASS_KO[k]
+    if k == 'general_control':
+        ks = sorted({A['control_info'][A['l2g'][INST[cell][0]][n]]['K'] for n in nets if A['l2g'][INST[cell][0]].get(n) in A['control_info']})
+        if ks:
+            lab += ' (%s 정적 트림)' % '/'.join(ks)
+    return lab
+
+
+def finalize_omitted(V):
+    """plan §3.5-5: the omitted list holds every hidden net of the view that is not drawn with a line, a black label,
+    a port or a power symbol; a bus is one <MSB:LSB> line; same classes together; blocks keep their sentence."""
+    drawn = set()
+    for lb in V.labels:
+        if lb['kind'] in ('net', 'port', 'power', 'offpage'):
+            drawn |= set(expand_bus(lb['name']))
+    for s_ in V.symbols:
+        for p_ in s_.get('pins', []):
+            on = any(any(abs(p_['x'] - a[0]) < 0.6 and abs(p_['y'] - a[1]) < 0.6 for a in (w['pts'][0], w['pts'][-1])) for w in V.wires)
+            if on:
+                for sl in p_['terms'] or []:
+                    for e, t in sl:
+                        f = el(V.cell, e)
+                        drawn.add(f['pins'][t] if f['kind'] == 'inst' else f['terms'][t])
+    blocks = [o for o in V.omitted if 'block' in o]
+    nets = [o for o in V.omitted if 'net' in o and o['net'] not in drawn]
+    bycls = collections.defaultdict(list)
+    for o in nets:
+        bycls[o['class']].append(o['net'])
+    out = []
+    for k in ('general_control', 'bias', 'power'):
+        if k not in bycls:
+            continue
+        for bn, bits, _ in sorted(group_bus(bycls[k]), key=lambda t: t[0]):
+            out.append({'net': bn, 'bits': bits, 'class': class_label(V.cell, bits)})
+    for o in blocks:
+        out.append(o)
+    V.omitted = out
+
+
 def gnd_at(V, x, y, net='VSS', l=12):
     V.wire([(x, y), (x, y + l)], cls='power')
     gnd(V, x, y + l, net)
 
 
-def busslash(V, x, y, n, vertical=True):
+def busslash(V, x, y, name, n, vertical=True):
+    """bus mark (plan §3.5-2): a slash; the bit count only when the name has no <a:b>"""
+    V.line([(x - 7, y + 7), (x + 7, y - 7)], w=1.4, owner='bus')
+    if re.search(r'<\d+:\d+>', name):
+        return
     if vertical:
-        V.line([(x - 7, y + 7), (x + 7, y - 7)], w=1.4, owner='bus')
         V.text(x + 9, y + 4, str(n), size=10, anchor='start', cls='buswidth')
     else:
-        V.line([(x - 7, y + 7), (x + 7, y - 7)], w=1.4, owner='bus')
         V.text(x, y + 16, str(n), size=10, anchor='middle', cls='buswidth')
 
 
@@ -208,7 +321,7 @@ def view_ctle(cell):
         xR = AX + side * 260       # gate resistor x
         A_ = ai(o); P_ = pl(o); Rg = gate_r[el(cell, A_)['terms']['g']]
         # gate resistor from VDD to the active-inductor gate
-        rr = res(V, 'R_' + Rg, xR, 110, 'v', name=Rg, size=el(cell, Rg)['value'], a=T(Rg, 'p' if el(cell, Rg)['terms']['p'] == 'VDD' else 'n'),
+        rr = res(V, 'R_' + Rg, xR, 110, 'v', name=Rg, size=fmt_si(el(cell, Rg)['value']), a=T(Rg, 'p' if el(cell, Rg)['terms']['p'] == 'VDD' else 'n'),
                  b=T(Rg, 'n' if el(cell, Rg)['terms']['p'] == 'VDD' else 'p'), label_side='left' if side < 0 else 'right', members=[Rg])
         V.wire([(xR, 70), (xR, 80)], cls='power'); V.dot(xR, 70)
         tA, bA, gA = mosT(cell, A_)
@@ -258,10 +371,10 @@ def view_ctle(cell):
     rfix = [m for m in deg_r if el(cell, m)['kind'] == 'res']
     rsw = [m for m in deg_r if el(cell, m)['kind'] == 'mos']
     single = [m for m in rsw if not re.search(r'C\d', el(cell, m)['terms']['g'])]
-    lines = ['R_S (가변 R) = %s %sΩ ∥ 스위치 MOS 묶음 %s' % (', '.join(rfix), ', '.join(el(cell, m)['value'] for m in rfix),
+    lines = ['R_S (가변 R) = %s %sΩ ∥ 스위치 MOS 묶음 %s' % (', '.join(rfix), ', '.join(fmt_si(el(cell, m)['value']) for m in rfix),
                                                     ', '.join('%s(%s)' % (m, wl(cell, m)) for m in rsw[:3])),
              '      ∥ 직렬 스위치 쌍 %s' % ', '.join('%s(%s)' % (m, wl(cell, m)) for m in rsw[3:]),
-             'C_S (고정 C) = %s = %s (스위치와 직렬 아님 → 고정, Q1)' % (' ∥ '.join(deg_c), ' + '.join(el(cell, m)['value'] for m in deg_c))]
+             'C_S (고정 C) = %s = %s (스위치와 직렬 아님 → 고정, Q1)' % (' ∥ '.join(deg_c), ' + '.join(fmt_si(el(cell, m)['value']) for m in deg_c))]
     V.notes.append('R_S 스위치 게이트 %s: 일반 제어 → 그리지 않음 (가변 화살표가 "조절 가능"을 뜻함)' % ', '.join(sorted({el(cell, m)['terms']['g'] for m in rsw})))
     legend(V, 60, 585, lines)
     V.symmetry.append({'axis': AX, 'orient': 'v', 'pairs': [[ai(oP), ai(oN)], [pl(oP), pl(oN)], [mP, mN], [tails[sP], tails[sN]],
@@ -372,6 +485,8 @@ def view_multipair(cell, vid, kind):
             stub_label(V, gp, bn, 'left' if side < 0 else 'right', cls='data', L=24)
         else:
             V.wire([(gp['x'], yM), (gp['x'] + side * 24, yM)], cls='data')
+            if re.search(r'<\d+:\d+>', bn):
+                busslash(V, gp['x'] + side * 12, yM, bn, len(devs), vertical=False)     # merged gates = bus (plan §3.5-2)
             V.port(bn, gp['x'] + side * 24, yM, d='right' if side < 0 else 'left', io='in')
     # tails
     V.wire([(xPm, yM + 30), (xPm, yM + 50), (xNm, yM + 50), (xNm, yM + 30)], cls='plain')
@@ -418,7 +533,7 @@ def view_multipair(cell, vid, kind):
         vs['info']['bus_order'] = busnets
         bx = A2 + 40
         V.wire([(bx, yM + 110), (A2 + 170, yM + 110)], cls='bus')
-        busslash(V, A2 + 110, yM + 110, len(busnets), vertical=False)
+        busslash(V, A2 + 110, yM + 110, bn, len(busnets), vertical=False)
         V.port(bn, A2 + 170, yM + 110, d='left', io='in', cls='bus')
         dsub = cells[dac_cell]
         dr = ROLES[dac_cell]
@@ -426,16 +541,31 @@ def view_multipair(cell, vid, kind):
         lines = ['%s 탭 쌍 %d개 병합 (게이트 %s / %s), W/L 나열' % (mname(exP), n, busname(exP), busname(exN)),
                  '가변 전류원 = %s (%s ×%d, 전류 DAC): 스위치 %s %s, 전류원 %s %s' % (mname(allmem), dac_cell, len(allmem), '/'.join(sw), wl(dac_cell, sw)[0] if isinstance(wl(dac_cell, sw), list) else wl(dac_cell, sw),
                                                                                     '/'.join(cs), ' '.join(wl(dac_cell, cs)) if isinstance(wl(dac_cell, cs), list) else wl(dac_cell, cs)),
-                 '중요 제어 %s (%db, DFE 탭 계수) = 가변 전류원으로 들어가는 버스' % (bn, len(busnets))]
+                 '중요 제어 %s (%db, %s, DFE 탭 계수) = 가변 전류원으로 들어가는 버스' % (bn, len(busnets), A['control_info'][A['l2g'][pre][busnets[0]]]['K'])]
         V.notes.append('DAC 바이어스 입력 %s 는 그리지 않음 (바이어스)' % ', '.join(sorted({nn for m in allmem for p, nn in el(cell, m)['pins'].items() if 'bias' in CN[cell].get(nn, [])})))
     else:
         sws = [m for m in allmem if r[m]['role'] == 'switch']
         css = [m for m in allmem if r[m]['role'] != 'switch']
-        vs = visrc(V, 'ISRC', A2, yM + 110, name=mname(css).replace('MB', 'I'), size='', top=topT, bot=botT, members=allmem, label_side='left')
+        # gain-code switches whose gate is an important control (K6): the code enters the concept symbol as a bus (plan §3.4-4)
+        ctl = [m for m in sws if 'important_control' in CN[cell].get(el(cell, m)['terms']['g'], [])]
+        gnets = [el(cell, m)['terms']['g'] for m in ctl]
+        gbus = group_bus(gnets)[0] if ctl else None
+        bus_terms = [[(ctl[gnets.index(b)], 'g')] for b in gbus[1]] if ctl else None
+        vs = visrc(V, 'ISRC', A2, yM + 110, name=mname(css).replace('MB', 'I'), size='', top=topT, bot=botT, bus=bus_terms,
+                   bus_side='right', members=allmem, label_side='left')
         lines = ['%s 이득 쌍 %d개 병합 (게이트 = 주 쌍과 같은 %s/%s)' % (mname(exP), n, busname(exP), busname(exN)),
                  '가변 전류원 = 스위치 %s (%s) + 전류원 %s (%s)' % (mname(sws), ', '.join(wl(cell, sws)), mname(css), ', '.join(wl(cell, css)))]
-        V.notes.append('이득 스위치 게이트 %s: 일반 제어(이득) → 그리지 않음 (가변 화살표로 표시); 전류원 게이트 %s: 바이어스' % (
-            ', '.join(el(cell, m)['terms']['g'] for m in sws), ', '.join(sorted({el(cell, m)['terms']['g'] for m in css}))))
+        if ctl:
+            gk = A['control_info'][A['l2g'][pre][gnets[0]]]['K']
+            V.wire([(A2 + 40, yM + 110), (A2 + 170, yM + 110)], cls='bus')
+            busslash(V, A2 + 110, yM + 110, gbus[0], len(gbus[1]), vertical=False)
+            V.port(gbus[0], A2 + 170, yM + 110, d='left', io='in', cls='bus')
+            lines.append('중요 제어 %s (%s, 이득 코드 — 출력을 여러 비트 경로가 공유) = 가변 전류원으로 들어가는 버스' % (gbus[0], gk))
+            V.notes.append('이득 스위치 게이트 %s: 중요 제어 %s → 가변 전류원의 버스 핀으로 그림; 전류원 게이트 %s: 바이어스(회색 이름표 없음, 묶음 안)' % (
+                gbus[0], gk, ', '.join(sorted({el(cell, m)['terms']['g'] for m in css}))))
+        else:
+            V.notes.append('이득 스위치 게이트 %s: 일반 제어(이득) → 그리지 않음 (가변 화살표로 표시); 전류원 게이트 %s: 바이어스' % (
+                ', '.join(el(cell, m)['terms']['g'] for m in sws), ', '.join(sorted({el(cell, m)['terms']['g'] for m in css}))))
     gnd_at(V, A2, yM + 140)
     legend(V, 60, 520, lines)
     V.symmetry.append({'axis': A1, 'orient': 'v', 'pairs': [[loadP, loadN], [main[0], main[1]]], 'self': [mtail], 'x0': 150, 'x1': A1 + (A1 - 150),
@@ -474,7 +604,7 @@ def view_strongarm(cell, members):
     rsD = {o: [m for m in resets if o in (E(m)['terms']['d'], E(m)['terms']['s'])][0] for o in (dP, dN)}
     odd = [m for m in members if m not in [tail, iP, iN, cnP, cnN, cpP, cpN] + resets]
     clk = E(tail)['terms']['g']
-    V = new_view('u_strongarm', cell, 'unit', '%s — unit level (StrongARM core, 대칭)' % cell, 820, 700,
+    V = new_view(VID['sa_core'], cell, 'unit', '%s — unit level (StrongARM core, 대칭)' % cell, 820, 700,
                  scope=members)
     AX = 410; L, R = 330, 490
     rail(V, 180, 640, 60, 'VDD')
@@ -505,7 +635,7 @@ def view_strongarm(cell, members):
         xe = x + side * 190
         V.wire([(xe, 180), (x, 180)], cls='data'); V.dot(x, 180)
         V.wire([(xr, 160), (xr, 180)], cls='data'); V.dot(xr, 180)
-        V.netlabel(o, xe, 180, tx=xe + (2 if side < 0 else -2), ty=172, anchor='start' if side < 0 else 'end')
+        offpage(V, o, xe, 180, d='left' if side < 0 else 'right')
         # reset of DP/DN (local VDD)
         m = rsD[d]
         t_, b_, g_ = mosT(cell, m)
@@ -662,7 +792,7 @@ def view_cml_buffer(cell, members, vid):
         V.wire([(x, 170), (x, 270)], cls='clock')
         xe = AX + side * 250
         V.wire([(xe, 220), (x, 220)], cls='clock'); V.dot(x, 220)
-        V.netlabel(o, xe, 220, tx=xe + (2 if side < 0 else -2), ty=211, anchor='start' if side < 0 else 'end')
+        offpage(V, o, xe, 220, d='left' if side < 0 else 'right')
         gx = mi['pins'][2]['x']
         V.wire([(gx, 300), (gx + side * 60, 300)], cls='clock')
         V.port(E(inp)['terms']['g'], gx + side * 60, 300, d='right' if side < 0 else 'left', io='in', cls='clock')
@@ -762,14 +892,14 @@ def view_tg(cell, groups, vid):
         V.wire([(xn, 230), (xn, 270), (xp, 270), (xp, 230)], cls='data')
         V.dot(cx, 130); V.dot(cx, 270)
         V.wire([(cx, 130), (cx, 100)], cls='data')
-        V.netlabel(a, cx, 100, tx=cx, ty=90, anchor='middle')
+        offpage(V, a, cx, 100, d='up')
         V.wire([(cx, 270), (cx, 310)], cls='data')
         V.port(b, cx, 310, d='down', io='out')
         gxn = xn - 40 if xn < cx else xn + 40
         V.wire([(gxn, 200), (gxn, 225)], cls='power'); gnd(V, gxn, 225, E(nm)['terms']['g'])
         gxp = xp + 40 if xp > cx else xp - 40
         V.wire([(gxp, 200), (gxp, 175)], cls='power'); vdd_tee(V, gxp, 175, E(pm)['terms']['g'])
-    V.text(40, 400, '두 TG 모두 NMOS 게이트=VSS, PMOS 게이트=VDD → 항상 OFF. O_DOUTP/N 은 사실상 떠 있음 (Q3).', size=11, color='#a33', cls='note')
+    V.text(40, 400, '두 TG 모두 NMOS 게이트=VSS, PMOS 게이트=VDD → 항상 OFF. O_DOUTP/N 은 구동원 없음(미구동, §2.3-13, Q3).', size=11, color='#a33', cls='note')
     V.symmetry.append({'axis': 380, 'orient': 'v', 'pairs': [[groups[0][0], groups[1][0]], [groups[0][1], groups[1][1]]], 'self': [], 'x0': 60, 'x1': 700, 'exempt_wires': []})
     V.omitted = []
     return V
@@ -807,7 +937,7 @@ def view_nand(cell):
     ps.sort(key=lambda m: ports.index(E(m)['terms']['g']))
     y = [n for n in E(ps[0])['terms'].values() if n in ports and n not in ('VDD', 'VSS') and n != E(ps[0])['terms']['g']][0]
     nTop = [m for m in ns if y in E(m)['terms'].values()][0]; nBot = [m for m in ns if m != nTop][0]
-    V = new_view('u_nand', cell, 'unit', '%s — unit level (정적 CMOS 게이트, 사전에 없음 → 소자 그대로)' % cell, 560, 520)
+    V = new_view('u_nand', cell, 'unit', '%s — unit level (정적 CMOS %s)' % (cell, A['block'][cell]['role'].upper()), 560, 520)
     rail(V, 160, 420, 70, 'VDD')
     xs = [220, 340]
     for x, m in zip(xs, ps):
@@ -856,10 +986,11 @@ def view_top(cell):
     # input ports + termination/ESD markers
     V.port(P, 110, yP, d='right', io='in'); V.port(N, 110, yN, d='right', io='in')
     term = [g for g in groups if g['role'].startswith('termination')][0]
-    term_marker(V, 'TERM_P', 160, yP, True, 'R_T 50Ω', [[(m, t) for m in term['members'] for t, n in el(cell, m)['terms'].items() if n == P and t != 'b']], esd=True,
-                link='u_rxterm', members=term['members'])
-    term_marker(V, 'TERM_N', 160, yN, False, 'R_T 50Ω', [[(m, t) for m in term['members'] for t, n in el(cell, m)['terms'].items() if n == N and t != 'b']], esd=True,
-                link='u_rxterm', members=[])
+    rt = 'R_T %sΩ' % fmt_si([el(cell, m)['value'] for m in term['members'] if el(cell, m)['kind'] == 'res'][0])
+    term_marker(V, 'TERM_P', 160, yP, True, rt, [[(m, t) for m in term['members'] for t, n in el(cell, m)['terms'].items() if n == P and t != 'b']], esd=True,
+                link=VID['top_term'], members=term['members'])
+    term_marker(V, 'TERM_N', 160, yN, False, rt, [[(m, t) for m in term['members'] for t, n in el(cell, m)['terms'].items() if n == N and t != 'b']], esd=True,
+                link=VID['top_term'], members=[])
     V.dot(160, yP); V.dot(160, yN)
     V.wire([(160, yP), (160, yP - 12)], cls='data'); V.wire([(160, yN), (160, yN + 12)], cls='data')
     # chain of amplifier stages from the HS input: follow instance connectivity
@@ -878,9 +1009,21 @@ def view_top(cell):
     for k, (i, a, b_, o1, o2) in enumerate(chain):
         e = insts[i]
         lab = {'ctle': 'CTLE', 'vga': 'VGA', 'cml_buffer': 'BUF'}[B[e['cell']]['role']]
+        bub, pm = polarity_marks(e['cell'], [(a, a), (b_, b_)], [(o1, o1), (o2, o2)])
+        # important control of the stage (e.g. the shared gain code, K6) enters from the top (plan §3.2-3, V18)
+        ictl = [p for p in sp if 'important_control' in CN[e['cell']].get(p, [])]
+        topp = []
+        if ictl:
+            gbn, gbits, _ = group_bus(ictl)[0]
+            topp = [(gbn, 30, [[(i, q)] for q in gbits], 'bus')]
         tri(V, i, x0, 160, lab, i, ins=[(a, -10, inst_terms(i, a)), (b_, 10, inst_terms(i, b_))],
             outs=[(o1, -10, inst_terms(i, o1)), (o2, 10, inst_terms(i, o2))], link={'ctle': 'u_ctle', 'vga': 'u_vga'}[B[e['cell']]['role']],
-            members=[i], sub=e['cell'])
+            members=[i], sub=e['cell'], top=topp, bubbles=bub, pm=pm)
+        if ictl:
+            gx, gy = x0 + 30, 160 - 45 - 20
+            V.wire([(gx, 50), (gx, gy)], cls='bus')
+            V.port(gbn, gx, 50, d='down', io='in', cls='bus', label_side='right')
+            busslash(V, gx, (50 + gy) / 2, gbn, len(gbits))
         if prev is None:
             V.wire([(110, yP), (x0 - 20, yP)], cls='data'); V.wire([(110, yN), (x0 - 20, yN)], cls='data')
         else:
@@ -922,8 +1065,9 @@ def view_top(cell):
         lefts = [(left_main[0], y0 + 25), (left_main[1], y0 + 45)] + [(p, y0 + 85 + 20 * k) for k, p in enumerate(fb_in)]
         rights = [(p, y0 + 25 + 20 * k + (20 if k >= 2 else 0)) for k, p in enumerate(outs_s)]
         h = max(y for _, y in lefts) - y0 + 25
+        sbub, _ = polarity_marks(scell, [(left_main[0], left_main[0]), (left_main[1], left_main[1])], [(p, p) for p in outs_s])
         sym = box(V, si, bx, y0, bw, h, scell, si, left=[(p, y, inst_terms(si, p), 'data') for p, y in lefts],
-                  right=[(p, y, inst_terms(si, p), 'data') for p, y in rights],
+                  right=[(p, y, inst_terms(si, p), 'data') for p, y in rights], bubbles=sbub,
                   bottom=[(clocks[0], bx + 60, inst_terms(si, clocks[0]), 'clock'), (clocks[1], bx + 120, inst_terms(si, clocks[1]), 'clock')],
                   top=[('W<4:1>_<3:0>', bx + 200, [[(si, p)] for p in bus], 'bus')], link='b_slice', members=[si])
         pinpos[si] = {p['name']: p for p in sym['pins']}
@@ -956,9 +1100,10 @@ def view_top(cell):
     wp = pinpos[s0]['W<4:1>_<3:0>']
     V.wire([(wp['x'], 50), (wp['x'], wp['y'])], cls='bus')
     V.port(bnm, wp['x'], 50, d='down', io='in', cls='bus', label_side='right')
-    busslash(V, wp['x'], 78, len(bus))
+    busslash(V, wp['x'], 78, bnm, len(bus))
     wp1 = pinpos[s1]['W<4:1>_<3:0>']
-    stub_label(V, wp1, bnm, 'up', cls='bus', L=20, side='right')
+    stub_label(V, wp1, bnm, 'up', cls='bus', L=30, side='right')
+    busslash(V, wp1['x'], wp1['y'] - 12, bnm, len(bus))        # plan §3.5-1: a bus label carries the bus mark too
     # TG (always-off) between the odd slice output and O_DOUT
     tg = [g for g in groups if g['role'] == 'tg']
     e1 = insts[s1]
@@ -973,7 +1118,7 @@ def view_top(cell):
         yc = pp['y'] - 40 if up else pp['y'] + 40
         ta = [[(m, t) for m in g['members'] for t in ('d', 's') if el(cell, m)['terms'][t] == (inner if up else portnet)]]
         tb_ = [[(m, t) for m in g['members'] for t in ('d', 's') if el(cell, m)['terms'][t] == (portnet if up else inner)]]
-        switch_open(V, 'TG%d' % k, xt, yc, 'v', ta, tb_, 'TG', '/'.join(g['members']) + ' (off)', link='u_tg', members=g['members'])
+        switch_open(V, 'TG%d' % k, xt, yc, 'v', ta, tb_, 'TG', '/'.join(g['members']) + ' (off)', link=VID['top_tg'], members=g['members'])
         if up:
             V.wire([(xt, yc + 30), (xt, pp['y'])], cls='data'); V.dot(xt, pp['y'])
             stub_label(V, {'x': xt, 'y': yc - 30}, inner, 'up', L=16, side='right')
@@ -986,8 +1131,10 @@ def view_top(cell):
     cin = [p for p in cp if 'clock' in CN[ce['cell']][p] and ce['pins'][p] in c['ports']]
     cout = [p for p in cp if 'clock' in CN[ce['cell']][p] and p not in cin]
     bx0, by0 = 380, 630
+    cbub, _ = polarity_marks(ce['cell'], [(p, p) for p in cin], [(p, p) for p in cout])
     sym = box(V, ck, bx0, by0, 200, 140, ce['cell'], ck, left=[(p, by0 + 40 + 20 * k, inst_terms(ck, p), 'clock') for k, p in enumerate(cin)],
-              right=[(p, by0 + 40 + 20 * k + (20 if k >= 2 else 0), inst_terms(ck, p), 'clock') for k, p in enumerate(cout)], link='b_clk', members=[ck])
+              right=[(p, by0 + 40 + 20 * k + (20 if k >= 2 else 0), inst_terms(ck, p), 'clock') for k, p in enumerate(cout)], link='b_clk', members=[ck],
+              bubbles=cbub)
     for p in sym['pins']:
         if p['name'] in cin:
             V.wire([(110, p['y']), (p['x'], p['y'])], cls='clock')
@@ -998,7 +1145,7 @@ def view_top(cell):
     om = []
     for i, e in insts.items():
         if B[e['cell']]['symbol'] == 'omit':
-            om.append({'block': i, 'cell': e['cell'], 'reason': '고속 신호와 연결 없음 (%s)' % B[e['cell']]['role']})
+            om.append({'block': i, 'cell': e['cell'], 'reason': '고속 신호와 무관'})
     V.omitted = hidden_list(cell) + om
     V.text(40, 800, '연결 규칙: 블록을 돌아가야 하는 넷(귀환 탭, 클럭 분배, 두 번째 슬라이스의 계수 버스)은 같은 이름의 넷 이름표로 연결 (Virtuoso 방식)', size=10, color='#555', cls='note')
     return V
@@ -1024,34 +1171,37 @@ def view_slice(cell):
     taps = [p for p in sports if 'data' in CN[se['cell']].get(p, []) and p not in main_in and p not in souts]
     bus = [p for p in sports if 'important_control' in CN[se['cell']].get(p, [])]
     # summer box
-    sx, sy, sw, sh = 200, 150, 200, 110
-    sym = box(V, summ, sx, sy, sw, sh, 'Σ', summ, left=[(main_in[0], 200, inst_terms(summ, main_in[0]), 'data'), (main_in[1], 220, inst_terms(summ, main_in[1]), 'data')],
+    tap_y = [260 + 20 * k for k in range(len(taps))]
+    sx, sy, sw = 200, 150, 200
+    sh = tap_y[-1] + 20 - sy
+    sym = box(V, summ, sx, sy, sw, sh, 'Σ', summ, left=[(main_in[0], 200, inst_terms(summ, main_in[0]), 'data'), (main_in[1], 220, inst_terms(summ, main_in[1]), 'data')]
+              + [(p, y, inst_terms(summ, p), 'data') for p, y in zip(taps, tap_y)],
               right=[(souts[0], 200, inst_terms(summ, souts[0]), 'data'), (souts[1], 220, inst_terms(summ, souts[1]), 'data')],
-              bottom=[(p, sx + 30 + 20 * k, inst_terms(summ, p), 'data') for k, p in enumerate(taps)],
               top=[('W<4:1>_<3:0>', sx + 100, [[(summ, p)] for p in bus], 'bus')], link='u_summer', members=[summ], big=True, sub=se['cell'])
     pp = {p['name']: p for p in sym['pins']}
     # main inputs
     for k, p in enumerate(main_in):
         V.wire([(110, pp[p]['y']), (pp[p]['x'], pp[p]['y'])], cls='data')
         V.port(se['pins'][p], 110, pp[p]['y'], d='right', io='in')
-    # tap inputs from ports at left-bottom (nested L shapes, no crossing)
+    # tap (feedback) inputs: data pins on the left below the main input (V18), straight from the left ports
     for k, p in enumerate(taps):
-        y = 300 + 20 * k
-        V.wire([(110, y), (pp[p]['x'], y), (pp[p]['x'], pp[p]['y'])], cls='data')
+        y = pp[p]['y']
+        V.wire([(110, y), (pp[p]['x'], y)], cls='data')
         V.port(se['pins'][p], 110, y, d='right', io='in')
     # W bus
     wp = pp['W<4:1>_<3:0>']
     V.wire([(wp['x'], 80), (wp['x'], wp['y'])], cls='bus')
     V.port('W<4:1>_<3:0>', wp['x'], 80, d='down', io='in', cls='bus', label_side='right')
-    busslash(V, wp['x'], 105, len(bus))
+    busslash(V, wp['x'], 105, 'W<4:1>_<3:0>', len(bus))
     # slicer
-    sl = [i for i in insts if rl[i] == 'composite' and insts[i]['pins'].get(cells[insts[i]['cell']]['ports'][0]) == se['pins'][souts[0]]][0]
+    sl = [i for i in insts if rl[i] in ('composite', 'comparator') and insts[i]['pins'].get(cells[insts[i]['cell']]['ports'][0]) == se['pins'][souts[0]]][0]
     le = insts[sl]; lp = cells[le['cell']]['ports']
     lclk = [p for p in lp if 'clock' in CN[le['cell']].get(p, [])]
     louts = [p for p in lp if 'data' in CN[le['cell']].get(p, []) and p not in lp[:2]]
+    sbub, spm = polarity_marks(le['cell'], [(lp[0], lp[0]), (lp[1], lp[1])], [(louts[0], louts[0]), (louts[1], louts[1])])
     tri(V, sl, 520, 210, 'SA', sl, ins=[(lp[0], -10, inst_terms(sl, lp[0])), (lp[1], 10, inst_terms(sl, lp[1]))],
         outs=[(louts[0], -10, inst_terms(sl, louts[0])), (louts[1], 10, inst_terms(sl, louts[1]))],
-        bottom=[(lclk[0], 30, inst_terms(sl, lclk[0]), 'clock')], link='b_sa', members=[sl], clock_mark=True, sub=le['cell'])
+        bottom=[(lclk[0], 30, inst_terms(sl, lclk[0]), 'clock')], link='b_sa', members=[sl], clock_mark=True, sub=le['cell'], bubbles=sbub, pm=spm)
     for k, p in enumerate(souts):
         y = pp[p]['y']
         V.wire([(420, y), (500, y)], cls='data')
@@ -1070,7 +1220,8 @@ def view_slice(cell):
         ck = [p for p in ip if CN[e['cell']].get(p, []) == ['clock']]
         qo = [p for p in ip if ('data' in CN[e['cell']].get(p, []) or 'clock' in CN[e['cell']].get(p, [])) and p not in ip[:2] and p not in ck]
         lab = 'LATCH' if rl[i] == 'latch' else 'DFF'
-        sym = box(V, i, x, 160, 100, 100, lab, i, left=[(ip[0], 200, inst_terms(i, ip[0]), 'data'), (ip[1], 220, inst_terms(i, ip[1]), 'data')],
+        lbub, _ = polarity_marks(e['cell'], [(ip[0], ip[0]), (ip[1], ip[1])], [(qo[0], qo[0]), (qo[1], qo[1])])
+        sym = box(V, i, x, 160, 100, 100, lab, i, bubbles=lbub, left=[(ip[0], 200, inst_terms(i, ip[0]), 'data'), (ip[1], 220, inst_terms(i, ip[1]), 'data')],
                   right=[(qo[0], 200, inst_terms(i, qo[0]), 'data'), (qo[1], 220, inst_terms(i, qo[1]), 'data')],
                   bottom=[(ck[0], x + 30, inst_terms(i, ck[0]), 'clock'), (ck[1], x + 70, inst_terms(i, ck[1]), 'clock')],
                   link='u_latch' if rl[i] == 'latch' else 'b_dff', members=[i], sub=e['cell'])
@@ -1136,8 +1287,9 @@ def view_clk(cell):
     V.port(cin[0], 110, yP, d='right', io='in', cls='clock'); V.port(cin[1], 110, yN, d='right', io='in', cls='clock')
     term = [g for g in groups if g['role'] == 'termination'][0]
     tm = lambda net: [[(m, t) for m in term['members'] for t, n in el(cell, m)['terms'].items() if n == net]]
-    term_marker(V, 'TERM_P', 160, yP, True, 'R_T 50Ω', tm(cin[0]), link='u_clkterm', members=term['members'])
-    term_marker(V, 'TERM_N', 160, yN, False, 'R_T 50Ω', tm(cin[1]), link='u_clkterm', members=[])
+    rt = 'R_T %sΩ' % fmt_si([el(cell, m)['value'] for m in term['members'] if el(cell, m)['kind'] == 'res'][0])
+    term_marker(V, 'TERM_P', 160, yP, True, rt, tm(cin[0]), link=VID['clk_term'], members=term['members'])
+    term_marker(V, 'TERM_N', 160, yN, False, rt, tm(cin[1]), link=VID['clk_term'], members=[])
     V.dot(160, yP); V.dot(160, yN)
     V.wire([(160, yP), (160, yP - 12)], cls='clock'); V.wire([(160, yN), (160, yN + 12)], cls='clock')
     buf = [g for g in groups if g['role'] == 'cml_buffer'][0]
@@ -1147,8 +1299,9 @@ def view_clk(cell):
     oP = E(ins[0])['terms'][topbot(cell, ins[0])[0]]; oN = E(ins[1])['terms'][topbot(cell, ins[1])[0]]
     def gt(net):
         return [[(m, t) for m in bm for t, n in E(m)['terms'].items() if n == net and t != 'b']]
-    tri(V, 'BUF', 240, 210, 'BUF', '', ins=[('INP', -10, gt(cin[0])), ('INN', 10, gt(cin[1]))], outs=[(oP, -10, gt(oP)), (oN, 10, gt(oN))],
-        link='u_clkbuf', members=bm, sub='CML buffer (MP/MN_B1*, MB_B1)', cls='clock')
+    bbub, bpm = polarity_marks(cell, [(cin[0], cin[0]), (cin[1], cin[1])], [(oP, oP), (oN, oN)], members=set(bm), group_role='cml_buffer')
+    tri(V, 'BUF', 240, 210, 'BUF', '', ins=[(cin[0], -10, gt(cin[0])), (cin[1], 10, gt(cin[1]))], outs=[(oP, -10, gt(oP)), (oN, 10, gt(oN))],
+        link=VID['clk_buf'], members=bm, sub='CML buffer (MP/MN_B1*, MB_B1)', cls='clock', bubbles=bbub, pm=bpm, vblock=True)
     V.wire([(110, yP), (220, yP)], cls='clock'); V.wire([(110, yN), (220, yN)], cls='clock')
     # latches: master fed by buffer output
     lat = [i for i in insts if rl[i] == 'latch']
@@ -1161,7 +1314,8 @@ def view_clk(cell):
     me = insts[m_]; se_ = insts[s_]
     for i, x in ((m_, 460), (s_, 700)):
         e = insts[i]
-        box(V, i, x, 160, 100, 100, 'LATCH', i, left=[(lp[0], 200, inst_terms(i, lp[0]), 'clock'), (lp[1], 220, inst_terms(i, lp[1]), 'clock')],
+        lbub, _ = polarity_marks(e['cell'], [(lp[0], lp[0]), (lp[1], lp[1])], [(lq[0], lq[0]), (lq[1], lq[1])])
+        box(V, i, x, 160, 100, 100, 'LATCH', i, bubbles=lbub, left=[(lp[0], 200, inst_terms(i, lp[0]), 'clock'), (lp[1], 220, inst_terms(i, lp[1]), 'clock')],
             right=[(lq[0], 200, inst_terms(i, lq[0]), 'clock'), (lq[1], 220, inst_terms(i, lq[1]), 'clock')],
             bottom=[(lck[0], x + 30, inst_terms(i, lck[0]), 'clock'), (lck[1], x + 70, inst_terms(i, lck[1]), 'clock')], link='u_latch', members=[i],
             sub=e['cell'])
@@ -1176,9 +1330,10 @@ def view_clk(cell):
         if ys == ytarget:
             V.wire([(340, ys), (440, ys)], cls='clock')
         else:
-            V.wire([(340, ys), (380, ys)], cls='clock')
+            # plan §1.4-7: line ends of different nets on one straight line stay >= 40 px apart
+            V.wire([(340, ys), (360, ys)], cls='clock')
             stub_label(V, {'x': 440, 'y': ytarget}, net, 'left', cls='clock', L=40)
-    V.netlabel(oP, 350, yP, tx=352, ty=yP - 8, anchor='start'); V.netlabel(oN, 350, yN, tx=352, ty=yN + 9, anchor='start')
+    V.netlabel(oP, 350, yP, tx=342, ty=yP - 8, anchor='start'); V.netlabel(oN, 350, yN, tx=342, ty=yN + 9, anchor='start')
     # master Q -> slave D, branches to ports + INV chains
     invs = [i for i in insts if rl[i] == 'inverter']
     def chain_from(net):
@@ -1229,7 +1384,7 @@ def view_clk(cell):
                 V.wire([(xx - 40, yi), (xx - 20, yi)], cls='clock')
             xx += 102
         stub_label(V, {'x': xx - 40, 'y': yi}, endnet, 'right', cls='clock', L=24, side='above' if up else 'below')
-    V.text(40, 455, '주의: 이름은 DIV(÷2)이지만 구조상 귀환 루프 없음 → LATCH 2개 직렬로 그대로 그림 (Q2). INV 체인 출력은 연결 없음 (Q6).', size=10, color='#a33', cls='note')
+    V.text(40, 455, '주의: 이름은 DIV(÷2)이지만 구조상 귀환 루프 없음 → LATCH 2개 직렬로 그대로 그림 (Q2). INV 체인 출력은 연결 없음 — 미사용 출력, 짧은 선 + 이름표 (§3.5-4).', size=10, color='#a33', cls='note')
     V.omitted = hidden_list(cell)
     return V
 
@@ -1259,14 +1414,16 @@ def view_sa_block(cell, core_members):
         return [[(m, t) for m in core_members for t, n in E(m)['terms'].items() if n == net and t != 'b']]
     inP, inN = E(ins[0])['terms']['g'], E(ins[1])['terms']['g']
     ck = E(clk)['terms']['g']
+    cbub, cpm = polarity_marks(cell, [(inP, inP), (inN, inN)], [(outs[0], outs[0]), (outs[1], outs[1])], members=set(core_members), group_role='strongarm')
     tri(V, 'SA_CORE', 200, 210, 'SA', 'StrongARM core', ins=[(inP, -10, gt(inP)), (inN, 10, gt(inN))], outs=[(outs[0], -10, gt(outs[0])), (outs[1], 10, gt(outs[1]))],
-        bottom=[(ck, 30, gt(ck), 'clock')], link='u_strongarm', members=core_members, clock_mark=True)
+        bottom=[(ck, 30, gt(ck), 'clock')], link=VID['sa_core'], members=core_members, clock_mark=True, bubbles=cbub, pm=cpm, vblock=True)
     V.wire([(110, 200), (180, 200)], cls='data'); V.port(inP, 110, 200, d='right', io='in')
     V.wire([(110, 220), (180, 220)], cls='data'); V.port(inN, 110, 220, d='right', io='in')
     V.wire([(230, 275), (230, 300)], cls='clock'); V.port(ck, 230, 300, d='up', io='in', cls='clock')
     srq = [p for p in srp if 'data' in CN[insts[sr]['cell']][p] and insts[sr]['pins'][p] not in outs]
+    rbub, _ = polarity_marks(insts[sr]['cell'], [(srp[0], srp[0]), (srp[1], srp[1])], [(srq[0], srq[0]), (srq[1], srq[1])])
     box(V, sr, 380, 160, 110, 100, insts[sr]['cell'], sr, left=[(srp[0], 200, inst_terms(sr, srp[0]), 'data'), (srp[1], 220, inst_terms(sr, srp[1]), 'data')],
-        right=[(srq[0], 200, inst_terms(sr, srq[0]), 'data'), (srq[1], 220, inst_terms(sr, srq[1]), 'data')], link='b_sr', members=[sr])
+        right=[(srq[0], 200, inst_terms(sr, srq[0]), 'data'), (srq[1], 220, inst_terms(sr, srq[1]), 'data')], link='b_sr', members=[sr], bubbles=rbub)
     for k, n in enumerate(outs):
         y = 200 + 20 * k
         V.wire([(300, y), (360, y)], cls='data')
@@ -1280,7 +1437,7 @@ def view_sa_block(cell, core_members):
         iv = [i for i in invs if insts[i]['pins']['A'] == net][0]
         inv(V, iv, 600, yi, iv, inst_terms(iv, 'A'), inst_terms(iv, 'Y'), link='u_inv', members=[iv], flip_label=up)
         stub_label(V, {'x': 662, 'y': yi}, insts[iv]['pins']['Y'], 'right', L=30, side='above' if up else 'below')
-    V.text(40, 370, '출력 버퍼 %s 의 출력은 연결 없음 (Q6)' % ', '.join(invs), size=10, color='#555', cls='note')
+    V.text(40, 370, '출력 버퍼 %s 의 출력은 연결 없음 — 미사용 출력, 짧은 선 + 이름표 (§3.5-4)' % ', '.join(invs), size=10, color='#555', cls='note')
     V.omitted = hidden_list(cell)
     return V
 
@@ -1296,7 +1453,8 @@ def view_dff(cell):
     m_ = [e for e in insts if e['pins'][lp[0]] in cp][0]; s_ = [e for e in insts if e is not m_][0]
     V = new_view('b_dff', cell, 'block', '%s — 블록 레벨 (master-slave)' % cell, 760, 420)
     for e, x in ((m_, 200), (s_, 420)):
-        box(V, e['name'], x, 160, 100, 100, 'LATCH', e['name'], left=[(lp[0], 200, inst_terms(e['name'], lp[0]), 'data'), (lp[1], 220, inst_terms(e['name'], lp[1]), 'data')],
+        lbub, _ = polarity_marks(sub, [(lp[0], lp[0]), (lp[1], lp[1])], [(lq[0], lq[0]), (lq[1], lq[1])])
+        box(V, e['name'], x, 160, 100, 100, 'LATCH', e['name'], bubbles=lbub, left=[(lp[0], 200, inst_terms(e['name'], lp[0]), 'data'), (lp[1], 220, inst_terms(e['name'], lp[1]), 'data')],
             right=[(lq[0], 200, inst_terms(e['name'], lq[0]), 'data'), (lq[1], 220, inst_terms(e['name'], lq[1]), 'data')],
             bottom=[(lck[0], x + 30, inst_terms(e['name'], lck[0]), 'clock'), (lck[1], x + 70, inst_terms(e['name'], lck[1]), 'clock')], link='u_latch',
             members=[e['name']], sub=sub)
@@ -1336,12 +1494,14 @@ def view_sr(cell):
     sub = insts[0]['cell']; gp = cells[sub]['ports']
     gin = [p for p in gp if 'data' in CN[sub][p]][:2]; gout = [p for p in gp if 'data' in CN[sub][p]][2]
     x1 = [e for e in insts if e['pins'][gin[0]] == cp[0]][0]; x2 = [e for e in insts if e is not x1][0]
-    V = new_view('b_sr', cell, 'block', '%s — 블록 레벨 (교차 결합 게이트; 사전에 없음 → 박스)' % cell, 640, 420)
-    # x1 on top (A upper, B lower); x2 mirrored (B upper, A lower)
+    V = new_view('b_sr', cell, 'block', '%s — 블록 레벨 (교차 결합 %s)' % (cell, sub), 640, 420)
+    # x1 on top (A upper, B lower); x2 mirrored (B upper, A lower); NAND output bubble from the structural polarity (§3.4-6)
+    nb1, _ = polarity_marks(sub, [(gin[0], gin[0]), (gin[1], gin[1])], [(gout, gout)])
+    nb2, _ = polarity_marks(sub, [(gin[1], gin[1]), (gin[0], gin[0])], [(gout, gout)])
     box(V, x1['name'], 250, 130, 90, 70, sub, x1['name'], left=[(gin[0], 150, inst_terms(x1['name'], gin[0]), 'data'), (gin[1], 180, inst_terms(x1['name'], gin[1]), 'data')],
-        right=[(gout, 165, inst_terms(x1['name'], gout), 'data')], link='u_nand', members=[x1['name']])
+        right=[(gout, 165, inst_terms(x1['name'], gout), 'data')], link='u_nand', members=[x1['name']], bubbles=nb1)
     box(V, x2['name'], 250, 260, 90, 70, sub, x2['name'], left=[(gin[1], 280, inst_terms(x2['name'], gin[1]), 'data'), (gin[0], 310, inst_terms(x2['name'], gin[0]), 'data')],
-        right=[(gout, 295, inst_terms(x2['name'], gout), 'data')], link='u_nand', members=[x2['name']])
+        right=[(gout, 295, inst_terms(x2['name'], gout), 'data')], link='u_nand', members=[x2['name']], bubbles=nb2)
     V.wire([(110, 150), (230, 150)], cls='data'); V.port(x1['pins'][gin[0]], 110, 150, d='right', io='in')
     V.wire([(110, 310), (230, 310)], cls='data'); V.port(x2['pins'][gin[0]], 110, 310, d='right', io='in')
     V.wire([(360, 165), (520, 165)], cls='data'); V.port(x1['pins'][gout], 520, 165, d='right', io='out')
@@ -1369,7 +1529,7 @@ def main():
         if b['role'] == 'ctle':
             view_ctle(c)
         elif b['role'] == 'vga':
-            view_multipair(c, 'u_vga', 'vga')
+            view_multipair(c, VID['vga'], 'vga')
         elif b['role'] == 'summer':
             view_multipair(c, 'u_summer', 'summer')
         elif b['role'] == 'latch':
@@ -1378,9 +1538,9 @@ def main():
             view_dff(c)
         elif b['role'] == 'inverter':
             view_inv(c)
-        elif b['role'] == 'static_cmos_gate':
+        elif b['role'] in ('nand', 'nor', 'static_cmos_gate'):
             view_nand(c)
-        elif b['role'] == 'cross_coupled_gates':
+        elif b['role'] in ('sr_latch', 'cross_coupled_gates'):
             view_sr(c)
     for c, gs in G.items():
         for g in gs:
@@ -1388,17 +1548,19 @@ def main():
                 view_sa_block(c, g['members'])
                 view_strongarm(c, g['members'])
             if g['role'] == 'cml_buffer' and B[c]['role'] == 'composite':
-                view_cml_buffer(c, g['members'], 'u_clkbuf')
+                view_cml_buffer(c, g['members'], VID['clk_buf'])
             if g['role'] == 'termination' and c != top:
-                view_termination(c, g['members'], 'u_clkterm', '%s — unit level (클럭 입력 종단, 소자 그대로)' % c)
+                view_termination(c, g['members'], VID['clk_term'], '%s — unit level (클럭 입력 종단, 소자 그대로)' % c)
             if g['role'] == 'termination_esd':
-                view_termination(c, g['members'], 'u_rxterm', '%s — unit level (입력 종단 + ESD, 소자 그대로)' % c)
+                view_termination(c, g['members'], VID['top_term'], '%s — unit level (입력 종단 + ESD, 소자 그대로)' % c)
         tgs = [g['members'] for g in gs if g['role'] == 'tg']
         if tgs:
-            view_tg(c, tgs, 'u_tg')
-    order_ids = ['b_top', 'b_slice', 'b_clk', 'u_rxterm', 'u_tg', 'u_ctle', 'u_vga', 'u_summer', 'b_sa', 'u_strongarm', 'b_sr', 'u_nand', 'u_inv',
-                 'u_latch', 'b_dff', 'u_clkterm', 'u_clkbuf']
+            view_tg(c, tgs, VID['top_tg'])
+    order_ids = [VID[k] for k in ('top', 'slice', 'clk', 'top_term', 'top_tg', 'ctle', 'vga', 'summer', 'sa', 'sa_core', 'sr', 'nand', 'inv',
+                                  'latch', 'dff', 'clk_term', 'clk_buf')]
     vs = sorted(VIEWS, key=lambda v: order_ids.index(v.id) if v.id in order_ids else 99)
+    for v in vs:
+        finalize_omitted(v)
     out = []
     for v in vs:
         d = dict(v.__dict__)

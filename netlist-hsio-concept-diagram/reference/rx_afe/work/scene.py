@@ -10,8 +10,7 @@ BUS_W = 1.6
 SYM_W = 1.6
 
 
-def fmt_si(v):
-    return v
+from netlist import fmt_si      # SI-prefixed values (plan §3.5-6); the v3 placeholder returned the netlist string
 
 
 class View:
@@ -120,9 +119,12 @@ class View:
         return s
 
 
-def pin(name, x, y, terms):
+def pin(name, x, y, terms, side=None):
     """terms: list (per slice) of list of (element, terminal). For block instances element=inst name, terminal=port."""
-    return {'name': name, 'x': float(x), 'y': float(y), 'terms': terms}
+    p = {'name': name, 'x': float(x), 'y': float(y), 'terms': terms}
+    if side:
+        p['side'] = side
+    return p
 
 
 # ============================ device symbols ============================
@@ -299,42 +301,63 @@ def gray_gate(V, p, name, side):
 
 # ============================ block symbols ============================
 def tri(V, sid, x0, yc, label, inst, w=80, h=90, ins=None, outs=None, bottom=None, top=None, link=None,
-        clock_mark=False, members=None, sub='', cls='data'):
-    """amplifier triangle pointing right. ins/outs: list of (pinname, dy, terms). bottom/top: list of (pinname, dx, terms, cls)"""
+        clock_mark=False, members=None, sub='', cls='data', bubbles=(), pm=None, out_names=True, vblock=False):
+    """amplifier triangle pointing right. ins/outs: list of (pinname, dy, terms). bottom/top: list of (pinname, dx, terms, cls).
+    bubbles: output pin names drawn with a polarity bubble (plan §3.4-6, V19). pm: {input pin name: '+' | '−'} (V21).
+    out_names: write the output pin names when there are two or more outputs (plan §3.4-7)."""
     V.poly([(x0, yc - h / 2), (x0 + w, yc), (x0, yc + h / 2)], fill='#fff', stroke=BLACK, w=SYM_W, owner=sid)
     V.text(x0 + w * 0.36, yc, label, size=12, anchor='middle', weight='bold', cls='blk', owner=sid)
     pins = []
     lw = CLK_W if cls == 'clock' else SYM_W
     for (pn, dy, terms) in (ins or []):
         V.line([(x0 - 20, yc + dy), (x0, yc + dy)], w=lw, owner=sid)
-        pins.append(pin(pn, x0 - 20, yc + dy, terms))
+        pins.append(pin(pn, x0 - 20, yc + dy, terms, side='left'))
+        if pm and pn in pm:
+            V.text(x0 + 7, yc + dy, pm[pn], size=10, anchor='middle', weight='bold', cls='pm', owner=sid)
     for (pn, dy, terms) in (outs or []):
         xe = x0 + w * (1 - abs(dy) / (h / 2))
-        V.line([(xe, yc + dy), (x0 + w + 20, yc + dy)], w=lw, owner=sid)
-        pins.append(pin(pn, x0 + w + 20, yc + dy, terms))
+        if pn in bubbles:
+            # bubble tangent to the slope (perpendicular distance r = 4 from the slanted edge)
+            sl = (h / 2) / math.hypot(w, h / 2)
+            bx = xe + 4.0 / sl
+            V.circle(bx, yc + dy, 4, fill='#fff', owner=sid)
+            V.line([(bx + 4, yc + dy), (x0 + w + 20, yc + dy)], w=lw, owner=sid)
+            tx = bx + 6
+        else:
+            V.line([(xe, yc + dy), (x0 + w + 20, yc + dy)], w=lw, owner=sid)
+            tx = xe + 4
+        pins.append(pin(pn, x0 + w + 20, yc + dy, terms, side='right'))
+        if out_names and len(outs) >= 2:
+            V.text(tx, yc + dy + (-8 if dy < 0 else 9), pn, size=9, anchor='start', color='#555', cls='pintext', owner=sid)
     for (pn, dx, terms, cl) in (bottom or []):
         ye = yc + (h / 2) * (1 - dx / w)
         V.line([(x0 + dx, ye), (x0 + dx, yc + h / 2 + 20)], w=CLK_W if cl == 'clock' else SYM_W, owner=sid)
-        pins.append(pin(pn, x0 + dx, yc + h / 2 + 20, terms))
+        pins.append(pin(pn, x0 + dx, yc + h / 2 + 20, terms, side='bottom'))
         if clock_mark:
             V.poly([(x0 + dx - 6, ye), (x0 + dx, ye - 8), (x0 + dx + 6, ye)], fill='none', stroke=BLACK, w=1.2, owner=sid)
     for (pn, dx, terms, cl) in (top or []):
         ye = yc - (h / 2) * (1 - dx / w)
         V.line([(x0 + dx, ye), (x0 + dx, yc - h / 2 - 20)], w=BUS_W if cl == 'bus' else SYM_W, owner=sid)
-        pins.append(pin(pn, x0 + dx, yc - h / 2 - 20, terms))
+        pins.append(pin(pn, x0 + dx, yc - h / 2 - 20, terms, side='top'))
+    icls = 'vblk' if vblock else 'inst'
     if inst:
-        V.text(x0 + w / 2 - 6, yc - h / 2 - 10, inst, size=10, anchor='middle', italic=True, color='#444', cls='inst', owner=sid)
+        if top:
+            # a control pin enters from the top: the instance name moves to the right of its lead
+            dx0 = max(dx for _, dx, _, _ in top)
+            V.text(x0 + dx0 + 6, yc - h / 2 - 10, inst, size=10, anchor='start', italic=True, color='#444', cls=icls, owner=sid)
+        else:
+            V.text(x0 + w / 2 - 6, yc - h / 2 - 10, inst, size=10, anchor='middle', italic=True, color='#444', cls=icls, owner=sid)
     if sub:
         if bottom:
-            V.text(x0 + w / 2 - 6, yc - h / 2 - 23, sub, size=10, anchor='middle', color='#444', cls='inst', owner=sid)
+            V.text(x0 + w / 2 - 6, yc - h / 2 - 23, sub, size=10, anchor='middle', color='#444', cls=icls, owner=sid)
         else:
-            V.text(x0 + w / 2 - 6, yc + h / 2 + 12, sub, size=10, anchor='middle', color='#444', cls='inst', owner=sid)
+            V.text(x0 + w / 2 - 6, yc + h / 2 + 12, sub, size=10, anchor='middle', color='#444', cls=icls, owner=sid)
     body = [[x0, yc - h / 2, x0 + w * 0.5, yc + h / 2], [x0 + w * 0.5, yc - h / 4, x0 + w * 0.85, yc + h / 4]]
-    return V.add_symbol(sid, 'tri', body, pins, members or [], link, dict(x0=x0, yc=yc, w=w, h=h))
+    return V.add_symbol(sid, 'tri', body, pins, members or [], link, dict(x0=x0, yc=yc, w=w, h=h, outline=[[x0, yc - h / 2], [x0 + w, yc], [x0, yc + h / 2]]))
 
 
 def box(V, sid, x0, y0, w, h, label, inst, left=None, right=None, bottom=None, top=None, link=None, members=None,
-        big=False, pin_text=True, sub=None):
+        big=False, pin_text=True, sub=None, bubbles=()):
     """block box. left/right: list of (pinname, y, terms, cls); bottom/top: list of (pinname, x, terms, cls). pins at 20px from edge."""
     V.rect(x0, y0, w, h, fill='#fff', stroke=BLACK, sw=SYM_W, owner=sid)
     V.text(x0 + w / 2, y0 + h / 2 - (8 if sub else 0), label, size=22 if big else 13, anchor='middle', weight='bold', cls='blk', owner=sid)
@@ -347,22 +370,26 @@ def box(V, sid, x0, y0, w, h, label, inst, left=None, right=None, bottom=None, t
         return CLK_W if cl in ('clock', 'bus') else SYM_W
     for (pn, y, terms, cl) in (left or []):
         V.line([(x0 - 20, y), (x0, y)], w=lw(cl), owner=sid)
-        pins.append(pin(pn, x0 - 20, y, terms))
+        pins.append(pin(pn, x0 - 20, y, terms, side='left'))
         if pin_text:
             V.text(x0 + 4, y, pn, size=9, anchor='start', color='#555', cls='pintext', owner=sid)
     for (pn, y, terms, cl) in (right or []):
-        V.line([(x0 + w, y), (x0 + w + 20, y)], w=lw(cl), owner=sid)
-        pins.append(pin(pn, x0 + w + 20, y, terms))
+        if pn in bubbles:
+            V.circle(x0 + w + 4, y, 4, fill='#fff', owner=sid)
+            V.line([(x0 + w + 8, y), (x0 + w + 20, y)], w=lw(cl), owner=sid)
+        else:
+            V.line([(x0 + w, y), (x0 + w + 20, y)], w=lw(cl), owner=sid)
+        pins.append(pin(pn, x0 + w + 20, y, terms, side='right'))
         if pin_text:
             V.text(x0 + w - 4, y, pn, size=9, anchor='end', color='#555', cls='pintext', owner=sid)
     for (pn, x, terms, cl) in (bottom or []):
         V.line([(x, y0 + h), (x, y0 + h + 20)], w=lw(cl), owner=sid)
-        pins.append(pin(pn, x, y0 + h + 20, terms))
+        pins.append(pin(pn, x, y0 + h + 20, terms, side='bottom'))
         if pin_text:
             V.text(x, y0 + h - 8, pn, size=9, anchor='middle', color='#555', cls='pintext', owner=sid)
     for (pn, x, terms, cl) in (top or []):
         V.line([(x, y0), (x, y0 - 20)], w=lw(cl), owner=sid)
-        pins.append(pin(pn, x, y0 - 20, terms))
+        pins.append(pin(pn, x, y0 - 20, terms, side='top'))
         if pin_text:
             V.text(x, y0 + 9, pn, size=9, anchor='middle', color='#555', cls='pintext', owner=sid)
     return V.add_symbol(sid, 'box', [[x0, y0, x0 + w, y0 + h]], pins, members or [], link, dict(x0=x0, y0=y0, w=w, h=h))
@@ -421,3 +448,25 @@ def term_marker(V, sid, x, y, up, label, terms, esd=False, link=None, members=No
 
 def sorted_box(x0, y0, x1, y1):
     return [min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)]
+
+
+def offpage(V, name, x, y, d='left'):
+    """off-page connector (plan §3.5-1 화면 밖 연결 기호): small pentagon arrow pointing out of the view, attached at
+    (x, y) (wire end); the name sits beyond the tip in 11 px regular type (ports are 12 px bold)."""
+    L, H = 14, 8
+    if d == 'left':
+        pts = [(x, y - H / 2), (x - L + 5, y - H / 2), (x - L, y), (x - L + 5, y + H / 2), (x, y + H / 2)]
+        tid = V.text(x - L - 4, y, name, size=11, anchor='end', cls='offpage')
+    elif d == 'right':
+        pts = [(x, y - H / 2), (x + L - 5, y - H / 2), (x + L, y), (x + L - 5, y + H / 2), (x, y + H / 2)]
+        tid = V.text(x + L + 4, y, name, size=11, anchor='start', cls='offpage')
+    elif d == 'up':
+        pts = [(x - H / 2, y), (x - H / 2, y - L + 5), (x, y - L), (x + H / 2, y - L + 5), (x + H / 2, y)]
+        tid = V.text(x, y - L - 9, name, size=11, anchor='middle', cls='offpage')
+    else:
+        pts = [(x - H / 2, y), (x - H / 2, y + L - 5), (x, y + L), (x + H / 2, y + L - 5), (x + H / 2, y)]
+        tid = V.text(x, y + L + 9, name, size=11, anchor='middle', cls='offpage')
+    V.poly(pts, fill='#fff', stroke=BLACK, w=1.2, owner='offpage')
+    xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
+    V.labels.append({'name': name, 'at': [float(x), float(y)], 'kind': 'offpage', 'tid': tid})
+    V.symbols.append({'id': 'off_' + name + '_%d' % len(V.symbols), 'kind': 'offpageglyph', 'body': [[min(xs), min(ys), max(xs), max(ys)]], 'pins': [], 'members': []})

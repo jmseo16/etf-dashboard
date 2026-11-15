@@ -23,7 +23,8 @@ for v in scenes:
                  'children': sorted({(h['link']) for h in v['hot']})})
 summary = {
     'hs_inputs': ann['hs_inputs'], 'clock_inputs': ann['clock_inputs'], 'hs_outputs': ann['hs_outputs'],
-    'buses': ann.get('_important_control_buses', {}), 'general': ann['_general_controls'], 'bias': ann['_bias'],
+    'buses': ann.get('_important_control_buses', {}), 'general': ann['_general_controls'],
+    'general_buses': ann.get('_general_control_buses', {}), 'bias': ann['_bias'],
     'questions': [{'id': q['id'], 'item': q['item'], 'assumed': q['assumed']} for q in ann['_questions_and_assumed_answers']],
 }
 data = {'views': slim, 'parent': parent, 'summary': summary}
@@ -115,8 +116,9 @@ function show(id){
   h += '</ul>';
   if (v.notes.length) h += '<h2>주석</h2><ul>' + v.notes.map(n => `<li>${n}</li>`).join('') + '</ul>';
   h += `<h2>분류 요약 (전체)</h2><ul><li>고속 데이터 입력: ${S.hs_inputs.join(', ')}</li><li>클럭 입력: ${S.clock_inputs.join(', ')}</li><li>고속 출력: ${S.hs_outputs.join(', ')}</li>`;
-  for (const b in S.buses) h += `<li>중요 제어 버스: ${b} (${S.buses[b].bits.length}b) — ${S.buses[b].function}</li>`;
-  h += `<li>일반 제어(생략): ${S.general.join(', ')}</li><li>바이어스(생략): ${S.bias.join(', ')}</li></ul>`;
+  for (const b in S.buses) h += `<li>중요 제어 버스 (${S.buses[b].K}): ${b} — ${S.buses[b].function}</li>`;
+  const gb = Object.keys(S.general_buses || {});
+  h += `<li>일반 제어(생략): ${gb.length ? gb.map(b => b + ' (' + S.general_buses[b].K + ')').join(', ') : S.general.join(', ')}</li><li>바이어스(생략): ${S.bias.join(', ')}</li></ul>`;
   h += '<h2>가정한 답 (질문)</h2><ul>' + S.questions.map(q => `<li><b>${q.id}</b> ${q.item}: ${q.assumed}</li>`).join('') + '</ul>';
   h += '<h2>모든 화면</h2><ul id="views">' + DATA.views.map(x => `<li><a onclick="go('${x.id}')">${x.title}</a></li>`).join('') + '</ul>';
   sd.innerHTML = h;

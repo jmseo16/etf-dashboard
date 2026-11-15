@@ -174,8 +174,12 @@ class Flat:
         for s in starts:
             reached[s] = {'depth': 0, 'via': 'start'}
             q.append(s)
+        edges = self.trace_edges = []
         def add(n, frm, via):
-            if n in reached or self.is_rail(n):
+            if self.is_rail(n):
+                return
+            edges.append((frm, n))
+            if n in reached:
                 return
             reached[n] = {'depth': reached[frm]['depth'] + 1, 'via': via}
             q.append(n)
@@ -271,6 +275,35 @@ def gate_users(F, n):
 def classify(F, cells, top, hs_inputs):
     top_ports = cells[top]['ports']
     data_r, data_ev = F.trace(hs_inputs, 'data')
+    data_edges = collections.defaultdict(set)
+    for a, b in F.trace_edges:
+        data_edges[a].add(b)
+
+    def downstream(nets):
+        seen = set(nets); q = list(nets)
+        while q:
+            x = q.pop()
+            for y in data_edges[x]:
+                if y not in seen:
+                    seen.add(y); q.append(y)
+        return seen
+
+    def sharing_paths(drains):
+        """bit paths (sibling instances of one cell) that receive the stage output (plan §2.5-5 K6)"""
+        par = min(drains).rsplit('/', 1)[0] + '/' if '/' in min(drains) else ''
+        insts = collections.defaultdict(set)
+        for n in downstream(drains):
+            if not n.startswith(par):
+                continue
+            rest = n[len(par):]
+            if '/' in rest:
+                insts[rest.split('/')[0]].add(n)
+        bycell = collections.defaultdict(list)
+        for i in insts:
+            c = [cc for pre, cc, nm in instance_tree(cells, top) if pre == par + i + '/']
+            if c:
+                bycell[c[0]].append(i)
+        return {c: sorted(v) for c, v in bycell.items() if len(v) >= 2}
     cand = [p for p in top_ports if p not in F.rails and p not in hs_inputs and p not in data_r]
     clock_inputs, clk_evidence = [], {}
     for p in cand:
@@ -345,15 +378,26 @@ def classify(F, cells, top, hs_inputs):
                 main_src = min(allg, key=lambda k: min(depth.get(g, 999) for g in allg[k]))
                 main_g = allg[main_src]
                 if set(gates) != main_g and F.eff[prs[0]['path']][0] != main_src:
-                    kinds.append(('important', 'switch -> current of pair %s, summed at %s with main pair %s' % (
+                    kinds.append(('important', 'K1', 'switch -> current of pair %s, summed at %s with main pair %s' % (
                         '/'.join(gates), '/'.join(sorted(drains)), '/'.join(sorted(main_g)))))
                 else:
-                    kinds.append(('general', 'switch -> current of an extra pair with the SAME inputs %s as the main pair (gain only)' % '/'.join(gates)))
+                    # gain stage switched in (VGA row, plan §2.6-1). K6 if the stage output is shared by >= 2 bit paths
+                    sh = sharing_paths(drains)
+                    if sh:
+                        kinds.append(('important', 'K6', 'gain code: switch -> current of an extra pair with the SAME inputs %s as the main pair; '
+                                      'stage output %s shared by %s' % ('/'.join(gates), '/'.join(sorted(drains)),
+                                                                       '; '.join('%s (%s)' % (', '.join(v), c) for c, v in sh.items()))))
+                    else:
+                        kinds.append(('general', 'K7', 'gain code not shared: switch -> current of an extra pair with the SAME inputs %s' % '/'.join(gates)))
             else:
-                kinds.append(('general', 'switch across %s-%s (degeneration bank, not a summing branch)' % (s, dr)))
-        k = 'important' if any(k == 'important' for k, _ in kinds) else 'general'
-        control_info[n] = {'kind': k, 'why': sorted({w for _, w in kinds}), 'bundle_type': sorted(btypes),
-                           'switches': [d['path'] for d in sws]}
+                kinds.append(('general', 'K7', 'switch across %s-%s (degeneration bank inside the high-speed path: peaking/gain trim)' % (s, dr)))
+        k = 'important' if any(k == 'important' for k, _, _ in kinds) else 'general'
+        order = ['K1', 'K2', 'K3', 'K4', 'K5', 'K6', 'K7', 'K8', 'K9', 'K10', 'K11']
+        kk = min((kn for kd, kn, _ in kinds if kd == k), key=order.index)
+        first = sorted(sws, key=lambda d: d['path'])[0]
+        control_info[n] = {'kind': k, 'K': kk, 'why': sorted({w for _, _, w in kinds}), 'bundle_type': sorted(btypes),
+                           'switches': [d['path'] for d in sws], 'endpoint': first['path'] + '.g',
+                           'source': 'port' if n in top_ports else 'internal'}
         netclass[n] = ['important_control' if k == 'important' else 'general_control']
     bias_why = {}
     for n in all_nets:
@@ -515,8 +559,20 @@ def group_role(cells, cname, members, croles, cn, F, prefix):
         n_p = sum(1 for m in members if el[m].get('type') == 'p')
         n_n = sum(1 for m in members if el[m].get('type') == 'n')
         if n_p == 1 and n_n == 1:
-            return {'role': 'inverter', 'conf': 'high', 'symbol': 'triangle (CMOS buffer)', 'why': 'complementary PMOS/NMOS with common gate and drain'}
-        return {'role': 'static_cmos_gate', 'conf': 'low', 'symbol': 'box (cell name)', 'why': 'static CMOS gate (pull-up gate set = pull-down gate set): NOT in the dictionary'}
+            return {'role': 'inverter', 'conf': 'high', 'symbol': 'inverter', 'why': 'complementary PMOS/NMOS with common gate and drain'}
+        ps = [el[m] for m in members if el[m].get('type') == 'p']; ns = [el[m] for m in members if el[m].get('type') == 'n']
+        outs = {e['terms']['d'] for e in ps} & {e['terms']['d'] for e in ns} | {e['terms']['s'] for e in ps} & {e['terms']['d'] for e in ns}
+        par_p = all(F.is_rail(F.eff[prefix + e['name']][0]) for e in ps)       # every PMOS from the supply = parallel pull-up
+        ser_n = sum(1 for e in ns if F.is_rail(F.eff[prefix + e['name']][0])) == 1 and len(ns) >= 2
+        par_n = all(F.is_rail(F.eff[prefix + e['name']][0]) for e in ns)
+        ser_p = sum(1 for e in ps if F.is_rail(F.eff[prefix + e['name']][0])) == 1 and len(ps) >= 2
+        if par_p and ser_n and n_p == n_n:
+            return {'role': 'nand', 'conf': 'high', 'symbol': 'box (cell name) + output bubble',
+                    'why': 'static CMOS gate: %d parallel PMOS pull-ups, %d series NMOS pull-downs (NAND, dictionary list §2.6-1)' % (n_p, n_n)}
+        if par_n and ser_p and n_p == n_n:
+            return {'role': 'nor', 'conf': 'high', 'symbol': 'box (cell name) + output bubble',
+                    'why': 'static CMOS gate: %d series PMOS, %d parallel NMOS (NOR, dictionary list §2.6-1)' % (n_p, n_n)}
+        return {'role': 'static_cmos_gate', 'conf': 'low', 'symbol': 'box (cell name)', 'why': 'static CMOS gate (pull-up gate set = pull-down gate set), stack shape not a dictionary gate'}
     inputs = [m for m in members if m in croles and croles[m]['role'] == 'input']
     if inputs:
         # pair inputs by structural source node
@@ -735,14 +791,22 @@ def main():
                 # identify clock pins structurally: pins that are clock-only in the latch cell
                 b = {'role': 'dff', 'conf': 'high' if ('DFF' in cname.upper() or 'FF' in cname.upper()) else 'low',
                      'symbol': 'box DFF', 'why': 'two latches in series (master->slave) with complementary clocks'}
+            elif sub in ('nand', 'nor') and (set(a['pins'].values()) & set(bb['pins'].values())):
+                # cross-coupled: each gate's output drives an input of the other
+                b = {'role': 'sr_latch', 'conf': 'high', 'symbol': 'box (cell name)',
+                     'why': 'two %s gates cross-coupled (output of each drives an input of the other): SR latch (dictionary list §2.6-1)' % sub.upper()}
             elif sub == 'static_cmos_gate':
                 b = {'role': 'cross_coupled_gates', 'conf': 'low', 'symbol': 'box (cell name)',
-                     'why': 'two static CMOS gates cross-coupled (SR latch); NOT in the dictionary'}
+                     'why': 'two static CMOS gates cross-coupled; NOT in the dictionary'}
             else:
                 b = {'role': 'composite', 'conf': 'high', 'symbol': 'box (cell name)', 'why': 'two sub-blocks'}
+        elif [g['role'] for g in ginfo] == ['strongarm'] and nondac and all(block[e['cell']]['role'] in ('sr_latch', 'inverter') for e in nondac):
+            b = {'role': 'comparator', 'conf': 'high', 'symbol': 'triangle "SA" + clock',
+                 'why': 'StrongARM core (clocked tail, input pair, cross-coupled NMOS/PMOS, reset PMOS) + output stage (%s): comparator row' %
+                        ', '.join(sorted({block[e['cell']]['role'] for e in nondac}))}
         else:
             b = {'role': 'composite', 'conf': 'high', 'symbol': 'box (cell name)',
-                 'why': 'hierarchical: %d sub-blocks + %d primitive unit(s); not itself a dictionary block' % (len(nondac), len(ginfo))}
+                 'why': 'hierarchical: %d sub-blocks + %d primitive unit(s); every sub-block is a dictionary block' % (len(nondac), len(ginfo))}
         block[cname] = b; done.add(cname)
         return b
     solve(top)
@@ -797,7 +861,36 @@ def main():
         nm, dm, un = mirror_partners(cells, cname, F, pre, seed)
         sym[cname] = {'seed': seed, 'unmatched_devices': un}
 
+    # undriven high-speed nets (plan §2.3-13): every channel on the net belongs to an always-off TG, no other driver
+    def off_tg(d):
+        p = F.tg_partner(d)
+        if p is None:
+            return False
+        own = lambda m: F.ground if m['type'] == 'n' else F.supply
+        return d['terms']['g'] == own(d) and p['terms']['g'] == own(p)
+    undriven = []
+    for n, cs in netclass.items():
+        if not ({'data', 'clock'} & set(cs)) or n in hs_inputs or n in C['clock_inputs']:
+            continue
+        chans = [(d, t) for d, t in F.by_net[n] if d['kind'] == 'mos' and t in 'ds']
+        passive = [d for d, t in F.by_net[n] if d['kind'] != 'mos']
+        if chans and all(off_tg(d) for d, t in chans) and not passive:
+            undriven.append(n)
+    # unused outputs (plan §3.5-4): a high-speed local net of a cell with a single connection
+    unused = collections.defaultdict(list)
+    for cname in cells:
+        if not cell_insts[cname]:
+            continue
+        cnt = collections.Counter()
+        for e in cells[cname]['elems']:
+            vals = e['pins'].values() if e['kind'] == 'inst' else [v for k, v in e['terms'].items() if not (e['kind'] == 'mos' and k == 'b')]
+            for v in vals:
+                cnt[v] += 1
+        for n, k in cnt.items():
+            if k == 1 and n not in cells[cname]['ports'] and ({'data', 'clock'} & cellnet[cname][n]):
+                unused[cname].append(n)
     res = {
+        'undriven_hs': sorted(undriven), 'unused_outputs': {c: sorted(v) for c, v in unused.items()},
         'top': top, 'rails': {'supply': F.supply, 'ground': F.ground},
         'hs_inputs': hs_inputs, 'clock_inputs': C['clock_inputs'], 'clock_evidence': C['clk_evidence'],
         'netclass': {k: v for k, v in sorted(netclass.items())},

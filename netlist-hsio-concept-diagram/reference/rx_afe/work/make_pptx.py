@@ -69,7 +69,8 @@ add_text(s0, Inches(0.4), y, Inches(12), Inches(0.3), '가정한 답 (질문에 
 for q in ann['_questions_and_assumed_answers']:
     s = '%s %s: %s' % (q['id'], q['item'], q['assumed'])
     tb = add_text(s0, Inches(0.4), y, Inches(12.5), Inches(0.3), s, 9, valign='t', wrap=True)
-    y += Inches(0.42) if len(s) > 170 else Inches(0.27)
+    units = sum(2 if ord(ch) > 0x2E80 else 1 for ch in s)          # CJK glyphs are about twice as wide
+    y += Inches(0.1) + Inches(0.17) * (1 + units // 190)
 s0.notes_slide.notes_text_frame.text = '분류 확인 표와 질문/가정한 답 전문은 classification.md, annotations.json 참조.'
 
 for v in scenes:
