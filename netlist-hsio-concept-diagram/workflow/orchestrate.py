@@ -89,7 +89,7 @@ def cmd_init(a):
         shutil.copy(os.path.join(HERE, "prompts", f), p(job, "prompts", f))
     if not os.path.exists(p(job, "user", "answers.md")):
         with open(p(job, "user", "answers.md"), "w", encoding="utf-8") as f:
-            f.write("# 질문 답과 분류 확인\n\n<!-- 질문에 답하고, 분류를 확인했으면 맨 마지막 줄에 확인 완료 네 글자만 쓴다 -->\n")
+            f.write("# 질문 답\n\n<!-- review/classify_review.md의 사용자 질문(최대 10개)에만 답하고, 맨 마지막 줄에 확인 완료 네 글자만 쓴다 -->\n")
     st = {"job": os.path.basename(os.path.abspath(job)), "step": "1_classify", "round": 0,
           "gate_retries": 0, "next": "glm", "history": [[now(), "1_classify", "init"]]}
     save_state(job, st)
@@ -194,8 +194,8 @@ def cmd_run(a):
             with open(p(job, "user", "answers.md"), encoding="utf-8") as f:
                 lines = [x.strip() for x in f if x.strip()]
             if not lines or lines[-1].strip("-*# ") != "확인 완료":
-                log(job, "orchestrate", "사용자 확인을 기다린다: review/classify_review.md를 읽고 "
-                                        "user/answers.md에 답한 뒤 마지막 줄에 '확인 완료'를 쓰고 다시 run")
+                log(job, "orchestrate", "사용자 답을 기다린다: review/classify_review.md의 질문(최대 10개)에 "
+                                        "user/answers.md로 답한 뒤 마지막 줄에 '확인 완료'를 쓰고 다시 run")
                 return
             set_step(job, st, "4_draw", "사용자 확인 완료")
         elif step == "4_draw":
