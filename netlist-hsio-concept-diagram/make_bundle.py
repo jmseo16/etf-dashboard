@@ -15,7 +15,9 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FILES = [
+    "README.md",
     "RELEASES.md",
+    "BACKLOG.md",
     "SKILL.md",
     "DRAWING_PLAN.md",
     "Q2_layout_options.html",
