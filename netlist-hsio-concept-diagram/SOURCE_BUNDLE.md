@@ -39,12 +39,14 @@ sys.exit(1 if bad else 0)
 
 | 경로 | 바이트 | SHA-256 |
 |---|---|---|
-| `RELEASES.md` | 1080 | `2cb724574900…` |
+| `README.md` | 7068 | `0092a3acdd35…` |
+| `RELEASES.md` | 1655 | `ff26895ae90d…` |
+| `BACKLOG.md` | 3262 | `12dc9955a9de…` |
 | `SKILL.md` | 57127 | `259aeee931d5…` |
 | `DRAWING_PLAN.md` | 139135 | `97edfabe6163…` |
 | `Q2_layout_options.html` | 19337 | `3d7d75fe4b09…` |
 | `spec_lint.py` | 6182 | `d90aa76b3fe6…` |
-| `make_bundle.py` | 8416 | `b3be132a28f5…` |
+| `make_bundle.py` | 8451 | `e31e19ed5f4b…` |
 | `workflow/WORKFLOW.md` | 6807 | `aab091d97df4…` |
 | `workflow/orchestrate.py` | 12667 | `318343ba48d9…` |
 | `workflow/orchestrate_config.json` | 430 | `89bc4a7c0caf…` |
@@ -73,20 +75,159 @@ sys.exit(1 if bad else 0)
 
 ## 파일
 
+### FILE: README.md
+<!-- sha256=0092a3acdd35bcf31c7fd9cc9b6db9be5ed6c8725e7ce90a2f21e51c7d380d5e newline=1 -->
+`````markdown
+# 넷리스트 기반 High-Speed IO 개념도 그리기
+
+> 배포 **R0.1** · 명세서 **v6.1** · 처음 보는 사람은 이 문서부터 읽는다.
+
+## 이게 뭔가
+
+HSPICE/Virtuoso **netlist를 넣으면 고속 IO 회로의 개념도**를 만들어 주는 스킬(LLM 작업 지침 + 도구)이다.
+
+- **무엇을 그리나**: 고속 데이터·클럭·중요 제어만 그리고, 일반 제어·바이어스·전원은 지운다. Rx(CTLE·VGA·DFE·샘플러), Tx(직렬화기·프리드라이버·드라이버·FFE), 클럭 분배, DCC·ZQ·ODT 같은 보정 루프, ESD를 "회로를 아는 사람이 손으로 그린 블록도"처럼 정리한다.
+- **어떻게 보나**: 최상위 블록도에서 블록을 클릭하면 하위 블록도로, 맨 아래에서는 MOSFET 단위(교과서식 대칭 배치)까지 내려간다.
+- **믿을 수 있나**: 그린 그림을 **선의 좌표만으로 다시 읽어 netlist와 연결을 대조**하는 검증이 함께 돈다. 일부러 오류를 넣어 검증기가 잡는지도 매번 시험한다.
+
+### 결과물 (`out/`)
+
+| 파일 | 내용 |
+|---|---|
+| `concept.html` | 오프라인 단일 파일 뷰어. 클릭으로 내려가기, ▲ 위로, W/L 표시 토글, **PPT 내려받기**(PPTX 내장) |
+| `concept.pptx` | 요약 1장 + 화면마다 1장. PowerPoint 도형이라 수정 가능, 블록 클릭 → 해당 슬라이드 |
+| `classification.md` | 포트·신호 분류 표, 제어마다 근거(끝점·출처), **질문과 가정한 답** |
+| `annotations.json` | 사용자가 확인한 답 (자동 판정보다 우선) |
+| `block_dictionary.json` | 블록마다 어떤 사전 기호로 그렸는지, 맞은 특징·빠진 특징 |
+| `verify_report.json` | 화면별 연결·품질 검증 결과 |
+| `self_checklist.json` | 자동 검사 결과와 오류 주입 시험 결과 |
+| `screenshots/` | 화면마다 PNG |
+
+## 받은 파일 풀기 (메일로 받은 경우)
+
+메일로는 텍스트 묶음 두 개를 받는다 (zip이 아님. `.md` 또는 `.txt`).
+
+| 파일 | 필요 |
+|---|---|
+| `HSIO_R0.1_SOURCE.md` | 꼭 필요: 스킬 전체 |
+| `HSIO_R0.1_TESTS.md` | 스킬을 고쳐 다시 시험할 때만: 회귀 시험 세트 |
+
+1. 묶음 맨 위의 "복원 스크립트" 코드 블록을 `restore.py`로 저장한다.
+2. `python3 restore.py HSIO_R0.1_SOURCE.md netlist-hsio-concept-diagram`
+3. 모든 줄이 `OK`, 마지막 줄이 `0 checksum mismatches`면 정상이다 (파일마다 SHA-256으로 한 글자도 바뀌지 않았는지 확인한다).
+
+## 5분 시작
+
+1. **환경**: Python 3.6+ + `python-pptx`, Node.js 18+ + Playwright(Chromium). 인터넷이 막힌 서버는 `SKILL.md` §2.1.
+2. **기준 결과 재현** — 도구가 제대로 깔렸는지 보는 시험:
+   ```bash
+   cd netlist-hsio-concept-diagram
+   bash reference/rx_afe/work/run_all.sh
+   python3 -c "import json;print(json.load(open('reference/rx_afe/out/verify_report.json'))['summary'])"
+   # {'views': 17, 'connectivity_pass': 17, 'quality_pass': 17} 이면 성공
+   ```
+   `reference/rx_afe/out/concept.html`을 브라우저로 열어 결과물이 어떻게 생겼는지 본다.
+3. **내 netlist로 그리기**: 아래 "실제로 쓰는 법".
+
+## 실제로 쓰는 법
+
+LLM(코딩 에이전트)에게 이 폴더를 주고 `SKILL.md`대로 netlist를 처리하게 한다. 사내에서는 **GLM(토큰 무제한)과 Claude Code(토큰 제한)를 나눠 쓴다** — 자세한 것은 `workflow/WORKFLOW.md`.
+
+```
+사용자: netlist (+ 아시면 고속 입력·클럭 포트 이름)
+  → GLM: 분류 표 초안 · 질문 · block_dictionary          (workflow/prompts/glm_1_classify.md)
+  → Claude: 분류·사전 대응 검토 (짧게)                     (claude_2_review_classify.md)
+  → 사용자: 질문에 답하고 분류 확인  ← 정확도에 가장 큰 영향
+  → GLM: 그리기 + 자동 검사 0건까지 반복                   (glm_4_draw.md)
+  → Claude: 최종 검토 → 수정 요청                          (claude_6_review_final.md)
+  → GLM: 수정 (최대 3라운드)                               (glm_7_fix.md)
+```
+
+- 단계는 사람이 넘겨도 되고(방식 1), `workflow/orchestrate.py`로 돌려도 된다(방식 2, `orchestrate_config.json`의 명령 두 줄만 사내에 맞춘다).
+- **정답지는 필요 없다.** 회로를 아는 사용자가 분류 표를 확인하는 것이 정답지 역할을 한다.
+- GLM이 스스로 "통과"라고 해도 합격 근거로 쓰지 않는다. 합격은 자동 검사(0건)와 Claude 검토가 정한다.
+
+## 꼭 알아야 할 원칙 (명세서의 요지)
+
+1. **이름이 아니라 구조로 판단한다.** `CLK`, `EN` 같은 이름은 확신도에만 쓴다. 이름을 모두 무작위로 바꾼 netlist로 시험해 이 원칙을 확인했다.
+2. **틀리게 그리는 것은 금지, 모르면 묻는다.** 확신이 낮은 것만 질문하고, 답을 못 받으면 가정한 답을 적고 진행한다.
+3. **그리는 것 / 지우는 것**: 고속 데이터·클럭·중요 제어(가중치·선택·켜기·종단·세기·기준 레벨·루프가 만든 코드)는 그리고, 정적 트림·리셋·오버라이드·바이어스·전원은 지운다. 판정표는 `DRAWING_PLAN.md` §2.5.
+4. **블록도에는 선 교차 0.** 선이 꼬일 곳은 이름표로 잇는다. 차동 회로는 유닛 화면에서 축 대칭.
+
+## 폴더 지도
+
+| 경로 | 무엇 | 언제 읽나 |
+|---|---|---|
+| `README.md` | 이 문서 | 처음 |
+| `SKILL.md` | 구현 가이드: 절차, 수치, 기호 좌표, 템플릿, 기준 결과 설명 | 구현·실행할 때 |
+| `DRAWING_PLAN.md` | 명세서(규칙의 기준). 0 원칙 · 1 산출물 · 2 분석 · 3 그리기 · 4 검증 · 부록 A 예시 · B 정답지 대응 · C 이력 | 판단이 갈릴 때 (규칙이 다르면 이 문서가 이긴다) |
+| `workflow/` | 실사용 흐름, 단계별 지시문 5개, `orchestrate.py` | 사내에서 쓸 때 |
+| `reference/rx_afe/` | 기준 결과: netlist, 코드, 기대 결과 | 도구 확인, 구현 출발점 |
+| `tests/regression/` | 회귀 시험 세트 9개 (정답지·설계 메모 포함) | 스킬을 고친 뒤 |
+| `RELEASES.md`, `RELEASE_NOTES_R0.1.md` | 배포 기록, 이번 배포 노트(알려진 한계) | 배포 받을 때 |
+| `BACKLOG.md` | 다음 개정 후보 | 스킬을 고칠 때 |
+| `spec_lint.py`, `make_bundle.py` | 명세서 구조 검사기, 메일용 묶음 만들기 | 명세서를 고칠 때 |
+
+## 버전
+
+- **배포 번호**(R0, R0.1, R1 …): 회사로 보낸 묶음. 문제를 알려 줄 때는 이 번호로. 기록은 `RELEASES.md`.
+- **명세서 버전**(v6.1 …): 규칙 개정. `DRAWING_PLAN.md` 머리말과 부록 C.1.
+- 지금: **R0.1 = 명세서 v6.1**. R0와 규칙은 같고, 이 README·4회차 최종 결과·알려진 문제·다음 개정 후보가 더해졌다.
+
+## 문제를 알릴 때
+
+배포 번호, netlist(가능하면), 문제 화면 id(HTML 주소 `#<id>`), 체크리스트 항목 id(예: M2, J1), 기대한 것과 실제 그림을 함께 적는다. 알려진 한계는 `RELEASE_NOTES_R0.1.md`.
+`````
+
 ### FILE: RELEASES.md
-<!-- sha256=2cb7245749007a23c452bc33a2b2253ccad4c294fa3c7ec36e388d7e37bc5ede newline=1 -->
+<!-- sha256=ff26895ae90dfa103d485ae2e5c892ef247fdb0f3ff995630516ba5f95fffd80 newline=1 -->
 `````markdown
 # 배포 기록
 
-사내로 보내는 묶음에는 명세서 버전(v6.1 …)과 **따로** 배포 번호 R0, R1, R2 …를 붙인다.
+사내로 보내는 묶음에는 명세서 버전(v6.1 …)과 **따로** 배포 번호 R0, R0.1, R1 …를 붙인다. 규칙이 바뀌지 않는 보완 배포는 소수점(R0.1), 규칙이 바뀌는 배포는 정수(R1)를 올린다.
 
 - **명세서 버전**: 루프를 돌며 명세서를 고칠 때마다 올라가는 개발 버전 (`DRAWING_PLAN.md` 머리말, 부록 C.1).
-- **배포 번호**: 회사로 실제로 보낸 묶음. 보낸 파일은 `releases/R<n>/`에 그대로 보관하고 저장소 태그 `release-<n>`을 붙인다. 회사에서 문제를 알려 오면 배포 번호로 찾는다.
+- **배포 번호**: 회사로 실제로 보낸 묶음. 보낸 파일은 `releases/R<n>/`에 그대로 보관하고, 배포 커밋을 이 표에 적는다(태그 `release-<n>`은 저장소에 push할 수 있을 때 붙인다). 회사에서 문제를 알려 오면 배포 번호로 찾는다.
 - 메일(Gmail)은 zip을 받지 않으므로 묶음은 **텍스트 파일**(`.md`)이다. 사내 메일이 `.md`를 막으면 `.txt`로 이름만 바꿔 보내도 된다.
 
 | 배포 | 날짜 | 명세서 | 소스 커밋 | 보낸 파일 | 들어 있는 것 | 회사 발송 |
 |---|---|---|---|---|---|---|
-| R0 | 2026-11-15 | v6.1 | (묶음 머리말의 커밋) | `HSIO_R0_SOURCE.md`, `HSIO_R0_TESTS.md` | 명세서 v6.1, SKILL, 기준 결과 RX AFE(v6.1로 다시 만듦), 실사용 흐름(GLM + Claude Code), 검사기, 회귀 시험 세트 9개 | (보낸 날짜를 적는다) |
+| R0 | 2026-11-15 | v6.1 | 소스 `bfabdf9`, 배포 `0601211` (브랜치 `claude/hspice-netlist-schematic-keantb`) | `HSIO_R0_SOURCE.md`, `HSIO_R0_TESTS.md` | 명세서 v6.1, SKILL, 기준 결과 RX AFE(v6.1로 다시 만듦), 실사용 흐름(GLM + Claude Code), 검사기, 회귀 시험 세트 9개 | (보낸 날짜를 적는다) |
+| R0.1 | 2026-11-16 | v6.1 | (묶음 머리말의 소스 커밋) | `HSIO_R0.1_SOURCE.md`, `HSIO_R0.1_TESTS.md`, `README_R0.1.md` | R0 + 처음 보는 사람용 README, 4회차 최종 결과, 알려진 문제(보수 출력 동그라미), BACKLOG. 규칙·기준 결과·시험 세트는 R0와 같음 | (보낸 날짜를 적는다) |
+`````
+
+### FILE: BACKLOG.md
+<!-- sha256=12dc9955a9de919b2ad14ab6507973be22884d047fb91837e109c7380513ca5f newline=1 -->
+`````markdown
+# 다음 개정(v6.2 / R1) 후보
+
+R0(명세서 v6.1) 이후 남은 것. 명세서를 고칠 때는 `DRAWING_PLAN.md` 부록 C.10의 규칙(골격 고정, 그 자리 수정, 이력은 부록 C, `spec_lint.py` 0건)을 따른다.
+
+## 1. 4회차 마지막 라운드에서 나온 것
+
+| 출처 | 내용 | 종류 |
+|---|---|---|
+| E 3라운드 | 서로 보수인 두 출력에는 동그라미가 정확히 하나 (§3.4-6) | 규칙 |
+| E 3라운드 | 극성 검사(M8)를 자동으로: 하위 화면 경로의 반전 횟수와 부모 화면 동그라미를 모든 계층·모든 가상 블록에서 대조. 주 입력이 비어 있는 블록(가상 블록 포함)은 허용하지 않음 | 자동 검사 |
+| E 3라운드 | 차동 P쪽 판정: 선택 스위치가 기준과 바꿔 끼울 수 있는 입력이 N, 참/보수 쌍에서는 반전 횟수가 짝수인 쪽이 P | 규칙 (V94 보강) |
+| E 3라운드 | 블록 역할 이름은 쓰임새가 아니라 구조로 (예: ÷2·ICG를 구조 없이 붙이지 않음) | 규칙 |
+| E 3라운드 | 이름 가림 시험(N1)의 (b)를 원인별(그린 쪽 / 명세 빈틈 / 이름 의존)로 세고, 그리는 쪽 자체 이름 섞기 시험은 B2 근거로 쓰지 않음 | 체크리스트 |
+| E 3라운드 | 수정 라운드의 바뀐 화면 이유에 "다시 배치"도 적기 (A6) | 체크리스트 |
+| E 3라운드 | 열린 문제: tie 입력으로 정해지는 인스턴스별 극성, 양방향 핀, 허브·FSM 출력의 동그라미 | 열린 문제 |
+| F 3라운드 | 부록 B에 "정책 차이" 행 (정답지와 일부러 다르게 정한 V7·V14·V15는 대조에서 빼거나 기대값 지정) | 부록 |
+| F 3라운드 | 가변 R·가변 C 기호의 제어 핀 위치 정의 (SKILL §6.3) | 그리기 |
+| F 3라운드 | 선 끝 1.5px 검사를 1라운드부터 필수, AGENT 3 독립 검증 스크립트를 참조 구현으로 배포 | 검증 |
+| F 3라운드 | 1:N 디시리얼라이저의 워드 출력 포트 자체가 워드 속도 데이터 | 규칙 |
+| G 3라운드 | 반복 인스턴스 합치기 vs 끝점 분류로 버스 나누기 우선순위 | 규칙 |
+| G 3라운드 | "×N"은 인스턴스 개수만, 인스턴스 m은 "m=N" | 표기 |
+| G 3라운드 | 체크리스트: 합성 블록 표 자동 대조, 표↔그림 넷별 일치, 단일 연결 넷 전수, 셀 포트 대조, 반복 그룹 전수, 박스·화면 밖 글자, HTML 단독 열기 + PPT 해시, 루프 가시성, 시험 netlist용 함정 항목 | 체크리스트 |
+| 기준 결과 | 사이드 패널 변경 지문 (scene_sha는 그림만) — 부록 C.9-7 | 열린 문제 |
+
+## 2. 큰 일
+
+1. **공용 도구 묶음(toolkit)**: 4회차에서 가장 다듬어진 분석·배치·검증 코드(극성 계층 계산, 핀 방향, 기호 획 검사, 오류 주입 묶음)를 스킬 안에 넣어, 그리는 쪽(GLM)이 netlist마다 코드를 새로 짜지 않게 한다. 토큰과 품질 편차를 함께 줄이는 가장 큰 수단.
+2. **v6.1로 회귀 시험 재실행**: `tests/regression/` 전체를 v6.1 규칙으로 다시 돌려 N1 (b) = 0, 정책 차이 외 G1 불일치 0을 확인.
+3. **사내 실사용 피드백**: R0를 사내 GLM + Claude Code로 돌린 결과(특히 `orchestrate.py`의 실제 명령 연결)를 반영.
 `````
 
 ### FILE: SKILL.md
@@ -2027,7 +2168,7 @@ if __name__ == "__main__":
 `````
 
 ### FILE: make_bundle.py
-<!-- sha256=b3be132a28f5211e2e85c37ca3147ae849339e036e945514f74659893daa763f newline=1 -->
+<!-- sha256=e31e19ed5f4bf82e5d0436d10c5ba1a73c0921e955a88632cf2cd1cba7d8b755 newline=1 -->
 `````python
 #!/usr/bin/env python3
 """Pack the skill folder into text-only bundles for hand-over by e-mail (no zip).
@@ -2046,7 +2187,9 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FILES = [
+    "README.md",
     "RELEASES.md",
+    "BACKLOG.md",
     "SKILL.md",
     "DRAWING_PLAN.md",
     "Q2_layout_options.html",
