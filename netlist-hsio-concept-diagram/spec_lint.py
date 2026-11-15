@@ -9,10 +9,10 @@ Rules enforced (DRAWING_PLAN.md v6+, appendix C "명세서 고치는 규칙"):
                   chapter and run 1, 2, 3 ... without gaps.
   2. markers    — no override/patch markers in the body (outside the header block and appendix C):
                   struck text, "대체", "이긴다", "(바꿈)", "vN:" version tags.
-  3. refs       — every §N / §N.M reference in DRAWING_PLAN.md and every "계획서 §" reference in
+  3. refs       — every §N / §N.M reference in DRAWING_PLAN.md (outside appendix C) and every "계획서 §" reference in
                   SKILL.md points at an existing chapter / sub-section.
   4. checklist  — the checklist sub-section has one table; ids match M\\d+ | J\\d+ | G1[a-d] | N\\d+,
-                  are unique, and every row cites at least one § reference.
+                  are unique, and every row cites at least one § or 부록 reference.
   5. history    — the version in the status line appears in appendix C.
   6. skill-top  — SKILL.md has no stacked "명세서 vN" notes before its first '## ' heading.
 """
@@ -86,7 +86,7 @@ def main():
             key = parts[0] if len(parts) == 1 else "%s.%s" % (parts[0], parts[1])
             if key not in known:
                 fails.append(("refs", "%s: §%s does not exist" % (label, ref)))
-    check_refs(plan, "DRAWING_PLAN", r"§(\d+(?:\.\d+)?)")
+    check_refs("\n".join(lines[:end]), "DRAWING_PLAN", r"§(\d+(?:\.\d+)?)")  # appendix C may cite old numbers
     check_refs(skill, "SKILL", r"계획서\s*§(\d+(?:\.\d+)?)")
 
     # 4. checklist
@@ -102,7 +102,7 @@ def main():
             m = CHECK_ID.match(ln)
             if m:
                 ids.append(m.group(1))
-                if "§" not in ln:
+                if "§" not in ln and "부록" not in ln:
                     fails.append(("checklist", "%s cites no § rule" % m.group(1)))
         dup = sorted(set(x for x in ids if ids.count(x) > 1))
         if not ids:
