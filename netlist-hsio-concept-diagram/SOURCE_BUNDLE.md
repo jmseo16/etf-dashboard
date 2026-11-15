@@ -39,19 +39,19 @@ sys.exit(1 if bad else 0)
 
 | 경로 | 바이트 | SHA-256 |
 |---|---|---|
-| `README.md` | 7068 | `0092a3acdd35…` |
-| `RELEASES.md` | 1655 | `ff26895ae90d…` |
+| `README.md` | 8234 | `3db2715a9ecc…` |
+| `RELEASES.md` | 2003 | `5922aa173304…` |
 | `BACKLOG.md` | 3262 | `12dc9955a9de…` |
 | `SKILL.md` | 57127 | `259aeee931d5…` |
 | `DRAWING_PLAN.md` | 139135 | `97edfabe6163…` |
 | `Q2_layout_options.html` | 19337 | `3d7d75fe4b09…` |
 | `spec_lint.py` | 6182 | `d90aa76b3fe6…` |
 | `make_bundle.py` | 8451 | `e31e19ed5f4b…` |
-| `workflow/WORKFLOW.md` | 6807 | `aab091d97df4…` |
-| `workflow/orchestrate.py` | 12667 | `318343ba48d9…` |
+| `workflow/WORKFLOW.md` | 8003 | `15a2dfb31b0c…` |
+| `workflow/orchestrate.py` | 12694 | `d5a16fee0be9…` |
 | `workflow/orchestrate_config.json` | 430 | `89bc4a7c0caf…` |
-| `workflow/prompts/glm_1_classify.md` | 1240 | `4867bbc64cac…` |
-| `workflow/prompts/claude_2_review_classify.md` | 1174 | `3c782b9e5cfb…` |
+| `workflow/prompts/glm_1_classify.md` | 1396 | `652c262bc482…` |
+| `workflow/prompts/claude_2_review_classify.md` | 1692 | `4a823b953159…` |
 | `workflow/prompts/glm_4_draw.md` | 1170 | `244c1bad263a…` |
 | `workflow/prompts/claude_6_review_final.md` | 1350 | `a32be1cd1c1a…` |
 | `workflow/prompts/glm_7_fix.md` | 679 | `16c14c4d3ade…` |
@@ -76,17 +76,22 @@ sys.exit(1 if bad else 0)
 ## 파일
 
 ### FILE: README.md
-<!-- sha256=0092a3acdd35bcf31c7fd9cc9b6db9be5ed6c8725e7ce90a2f21e51c7d380d5e newline=1 -->
+<!-- sha256=3db2715a9ecc7b61288e5bc573b26b74421dc4c8036661535361233b17d40f01 newline=1 -->
 `````markdown
 # 넷리스트 기반 High-Speed IO 개념도 그리기
 
-> 배포 **R0.1** · 명세서 **v6.1** · 처음 보는 사람은 이 문서부터 읽는다.
+> 배포 **R0.2** · 명세서 **v6.1** · 처음 보는 사람은 이 문서부터 읽는다.
 
 ## 이게 뭔가
 
 HSPICE/Virtuoso **netlist를 넣으면 고속 IO 회로의 개념도**를 만들어 주는 스킬(LLM 작업 지침 + 도구)이다.
 
-- **무엇을 그리나**: 고속 데이터·클럭·중요 제어만 그리고, 일반 제어·바이어스·전원은 지운다. Rx(CTLE·VGA·DFE·샘플러), Tx(직렬화기·프리드라이버·드라이버·FFE), 클럭 분배, DCC·ZQ·ODT 같은 보정 루프, ESD를 "회로를 아는 사람이 손으로 그린 블록도"처럼 정리한다.
+- **무엇을 그리나** — 기준은 "고속 신호가 지나가나"가 아니라 **"고속 노드에 붙어 있거나 고속 동작을 바꾸는가"**다:
+  - 고속 경로에 **직렬**로 있는 블록: Rx(CTLE·VGA·DFE·샘플러), Tx(직렬화기·프리드라이버·드라이버·FFE), 클럭 분배.
+  - 고속 노드(패드·입출력선)에 **매달린** 것: ESD, 종단 R, ODT 다리 → 그 자리의 개념 기호(선 위 "ESD" 표시, 종단 R, 가변 종단 R).
+  - 고속 동작을 **바꾸는** 제어와 루프: ODT enable·코드(종단), 드라이버 세기, VREF 레벨, 탭 가중치, 경로 선택, 루프가 만든 코드 → 버스·선으로. ZQ·DCC 같은 보정 루프 → 루프 화면 하나.
+  - **지우는 것**: 정적 트림·리셋·오버라이드 같은 일반 제어, 바이어스, 전원, 고속 노드에 닿지 않는 블록(전원 레일 클램프 ESD, 디캡, 바이어스 발생기) → 생략 목록에만 남긴다.
+  - 판정표는 `DRAWING_PLAN.md` §2.5(제어), §3.1·§3.4(블록·기호).
 - **어떻게 보나**: 최상위 블록도에서 블록을 클릭하면 하위 블록도로, 맨 아래에서는 MOSFET 단위(교과서식 대칭 배치)까지 내려간다.
 - **믿을 수 있나**: 그린 그림을 **선의 좌표만으로 다시 읽어 netlist와 연결을 대조**하는 검증이 함께 돈다. 일부러 오류를 넣어 검증기가 잡는지도 매번 시험한다.
 
@@ -109,11 +114,11 @@ HSPICE/Virtuoso **netlist를 넣으면 고속 IO 회로의 개념도**를 만들
 
 | 파일 | 필요 |
 |---|---|
-| `HSIO_R0.1_SOURCE.md` | 꼭 필요: 스킬 전체 |
-| `HSIO_R0.1_TESTS.md` | 스킬을 고쳐 다시 시험할 때만: 회귀 시험 세트 |
+| `HSIO_R0.2_SOURCE.md` | 꼭 필요: 스킬 전체 |
+| `HSIO_R0.2_TESTS.md` | 스킬을 고쳐 다시 시험할 때만: 회귀 시험 세트 |
 
 1. 묶음 맨 위의 "복원 스크립트" 코드 블록을 `restore.py`로 저장한다.
-2. `python3 restore.py HSIO_R0.1_SOURCE.md netlist-hsio-concept-diagram`
+2. `python3 restore.py HSIO_R0.2_SOURCE.md netlist-hsio-concept-diagram`
 3. 모든 줄이 `OK`, 마지막 줄이 `0 checksum mismatches`면 정상이다 (파일마다 SHA-256으로 한 글자도 바뀌지 않았는지 확인한다).
 
 ## 5분 시작
@@ -137,14 +142,15 @@ LLM(코딩 에이전트)에게 이 폴더를 주고 `SKILL.md`대로 netlist를 
 사용자: netlist (+ 아시면 고속 입력·클럭 포트 이름)
   → GLM: 분류 표 초안 · 질문 · block_dictionary          (workflow/prompts/glm_1_classify.md)
   → Claude: 분류·사전 대응 검토 (짧게)                     (claude_2_review_classify.md)
-  → 사용자: 질문에 답하고 분류 확인  ← 정확도에 가장 큰 영향
+  → 사용자: 질문에만 답한다 (최대 10개, 확신 낮은 것만)  ← 정확도에 가장 큰 영향
   → GLM: 그리기 + 자동 검사 0건까지 반복                   (glm_4_draw.md)
   → Claude: 최종 검토 → 수정 요청                          (claude_6_review_final.md)
   → GLM: 수정 (최대 3라운드)                               (glm_7_fix.md)
 ```
 
 - 단계는 사람이 넘겨도 되고(방식 1), `workflow/orchestrate.py`로 돌려도 된다(방식 2, `orchestrate_config.json`의 명령 두 줄만 사내에 맞춘다).
-- **정답지는 필요 없다.** 회로를 아는 사용자가 분류 표를 확인하는 것이 정답지 역할을 한다.
+- **정답지는 필요 없다.** 회로를 아는 사용자가 질문에 답하는 것이 정답지 역할을 한다.
+- **질문은 적게**: 확신이 낮은 것만, 회로 하나에 최대 10개, 그림이 크게 달라지는 것부터 묻는다. 같은 종류는 한 질문으로 묶고, 나머지는 가정한 답으로 진행해 "가정한 답" 목록에만 남긴다(답하지 않아도 된다). 분류 표 전체를 검토할 필요는 없다 — 보고 싶을 때만 본다.
 - GLM이 스스로 "통과"라고 해도 합격 근거로 쓰지 않는다. 합격은 자동 검사(0건)와 Claude 검토가 정한다.
 
 ## 꼭 알아야 할 원칙 (명세서의 요지)
@@ -164,7 +170,7 @@ LLM(코딩 에이전트)에게 이 폴더를 주고 `SKILL.md`대로 netlist를 
 | `workflow/` | 실사용 흐름, 단계별 지시문 5개, `orchestrate.py` | 사내에서 쓸 때 |
 | `reference/rx_afe/` | 기준 결과: netlist, 코드, 기대 결과 | 도구 확인, 구현 출발점 |
 | `tests/regression/` | 회귀 시험 세트 9개 (정답지·설계 메모 포함) | 스킬을 고친 뒤 |
-| `RELEASES.md`, `RELEASE_NOTES_R0.1.md` | 배포 기록, 이번 배포 노트(알려진 한계) | 배포 받을 때 |
+| `RELEASES.md`, `RELEASE_NOTES_R0.2.md` | 배포 기록, 이번 배포 노트(알려진 한계) | 배포 받을 때 |
 | `BACKLOG.md` | 다음 개정 후보 | 스킬을 고칠 때 |
 | `spec_lint.py`, `make_bundle.py` | 명세서 구조 검사기, 메일용 묶음 만들기 | 명세서를 고칠 때 |
 
@@ -172,15 +178,15 @@ LLM(코딩 에이전트)에게 이 폴더를 주고 `SKILL.md`대로 netlist를 
 
 - **배포 번호**(R0, R0.1, R1 …): 회사로 보낸 묶음. 문제를 알려 줄 때는 이 번호로. 기록은 `RELEASES.md`.
 - **명세서 버전**(v6.1 …): 규칙 개정. `DRAWING_PLAN.md` 머리말과 부록 C.1.
-- 지금: **R0.1 = 명세서 v6.1**. R0와 규칙은 같고, 이 README·4회차 최종 결과·알려진 문제·다음 개정 후보가 더해졌다.
+- 지금: **R0.2 = 명세서 v6.1**. 규칙은 R0와 같다. R0.1에서 README·4회차 최종 결과·알려진 문제·다음 개정 후보가, R0.2에서 "무엇을 그리나" 설명과 질문 줄이기(최대 10개)가 더해졌다.
 
 ## 문제를 알릴 때
 
-배포 번호, netlist(가능하면), 문제 화면 id(HTML 주소 `#<id>`), 체크리스트 항목 id(예: M2, J1), 기대한 것과 실제 그림을 함께 적는다. 알려진 한계는 `RELEASE_NOTES_R0.1.md`.
+배포 번호, netlist(가능하면), 문제 화면 id(HTML 주소 `#<id>`), 체크리스트 항목 id(예: M2, J1), 기대한 것과 실제 그림을 함께 적는다. 알려진 한계는 `RELEASE_NOTES_R0.2.md`.
 `````
 
 ### FILE: RELEASES.md
-<!-- sha256=ff26895ae90dfa103d485ae2e5c892ef247fdb0f3ff995630516ba5f95fffd80 newline=1 -->
+<!-- sha256=5922aa17330442293d8ba54a42cab561841f3551b293c1bb1b9b75631985c5e2 newline=1 -->
 `````markdown
 # 배포 기록
 
@@ -193,7 +199,8 @@ LLM(코딩 에이전트)에게 이 폴더를 주고 `SKILL.md`대로 netlist를 
 | 배포 | 날짜 | 명세서 | 소스 커밋 | 보낸 파일 | 들어 있는 것 | 회사 발송 |
 |---|---|---|---|---|---|---|
 | R0 | 2026-11-15 | v6.1 | 소스 `bfabdf9`, 배포 `0601211` (브랜치 `claude/hspice-netlist-schematic-keantb`) | `HSIO_R0_SOURCE.md`, `HSIO_R0_TESTS.md` | 명세서 v6.1, SKILL, 기준 결과 RX AFE(v6.1로 다시 만듦), 실사용 흐름(GLM + Claude Code), 검사기, 회귀 시험 세트 9개 | (보낸 날짜를 적는다) |
-| R0.1 | 2026-11-16 | v6.1 | (묶음 머리말의 소스 커밋) | `HSIO_R0.1_SOURCE.md`, `HSIO_R0.1_TESTS.md`, `README_R0.1.md` | R0 + 처음 보는 사람용 README, 4회차 최종 결과, 알려진 문제(보수 출력 동그라미), BACKLOG. 규칙·기준 결과·시험 세트는 R0와 같음 | (보낸 날짜를 적는다) |
+| R0.1 | 2026-11-16 | v6.1 | 소스 `bdcf300`, 배포 `4cd092d` | `HSIO_R0.1_SOURCE.md`, `HSIO_R0.1_TESTS.md`, `README_R0.1.md` | R0 + 처음 보는 사람용 README, 4회차 최종 결과, 알려진 문제(보수 출력 동그라미), BACKLOG. 규칙·기준 결과·시험 세트는 R0와 같음 | (보낸 날짜를 적는다) |
+| R0.2 | 2026-11-16 | v6.1 | (묶음 머리말의 소스 커밋) | `HSIO_R0.2_SOURCE.md`, `HSIO_R0.2_TESTS.md`, `README_R0.2.md` | R0.1 + "무엇을 그리나" 기준 설명(ESD·종단·ODT·보정 루프), 사용자 질문 최대 10개·질문에만 답하기. 규칙·기준 결과·시험 세트는 R0와 같음 | (보낸 날짜를 적는다) |
 `````
 
 ### FILE: BACKLOG.md
@@ -2350,7 +2357,7 @@ if __name__ == "__main__":
 `````
 
 ### FILE: workflow/WORKFLOW.md
-<!-- sha256=aab091d97df49f6808b609791109941f6fcb216658a5af8188a843cbbf8cfd57 newline=1 -->
+<!-- sha256=15a2dfb31b0cfc5b343f06ea9b3eaa2da0269725b5df7bbd20164df635daea4e newline=1 -->
 `````markdown
 # 실사용 작업 흐름 — GLM(무제한) + Claude Code(토큰 제한)
 
@@ -2368,7 +2375,7 @@ if __name__ == "__main__":
 | 0 | 사용자 | — | `input/netlist.sp`, `input/hints.md`(선택: 고속 입력·클럭 포트, 아는 블록) | — |
 | 1 분류 초안 | **GLM** | netlist, hints, 명세서 전체 | `glm/out/classification.md`, `annotations.json`, `block_dictionary.json`, 질문 | `prompts/glm_1_classify.md` |
 | 2 분류 검토 | **Claude** | 검토 묶음 `review/pack_classify/` (분류 표·사전 대응·질문·필요한 netlist 발췌) | `review/classify_review.md` (고칠 목록, 사용자에게 물을 것) | `prompts/claude_2_review_classify.md` |
-| 3 확인 | **사용자** | 질문, Claude 검토 | `user/answers.md` (마지막 줄 `확인 완료`) | — |
+| 3 답하기 | **사용자** | `review/classify_review.md`의 **사용자 질문(최대 10개)** | `user/answers.md` (질문에만 답하고, 마지막 줄 `확인 완료`) | — |
 | 4 그리기 | **GLM** | 확정 분류(answers 반영) | `glm/out/` 전부(명세서 §1.2) | `prompts/glm_4_draw.md` |
 | 5 관문 | **검증 스크립트** | `glm/out/` | 자동 검사(체크리스트 M 묶음) 0건이면 통과 | (모델 없음) |
 | 6 최종 검토 | **Claude** | 검토 묶음 `review/pack_rK/` (최상위 + 대표 화면 3–5장, 자동 검사 요약, 체크리스트, 분류 표) | `review/rK/checklist.json`, `fix_request.md` | `prompts/claude_6_review_final.md` |
@@ -2378,6 +2385,18 @@ if __name__ == "__main__":
 - **GLM의 자체 점검(`self_checklist.json`)은 합격 근거가 아니다.** 합격은 5(검증 스크립트)와 6(Claude)이 정한다. 시험에서 그린 쪽 검사기가 "전부 통과"라고 한 그림에 끊어진 선·교차·동그라미 누락이 있었다.
 - **분류는 그리기 전에 확인한다(2–3단계).** 분류가 틀린 채 다 그리면 고치는 데 그림 전체를 다시 해야 한다.
 
+## 1-1. 사용자에게 묻는 것은 적게
+
+- 사용자는 **질문에만 답한다.** 분류 표 전체를 검토하지 않아도 된다(보고 싶을 때만 본다).
+- 질문은 명세서 §2.7대로 **확신이 낮은 것만**. 규칙이 정한 것은 묻지 않는다(netlist 오류 의심만 확인 질문).
+- **회로 하나에 최대 10개.** 2단계 Claude가 GLM의 질문을 걸러 이 순서로 고른다:
+  1. 고속 입력·클럭 입력 판정 (틀리면 그림 전체가 바뀜)
+  2. 그리느냐 숨기느냐가 갈리는 제어 (중요/일반, 끝점 표 K#)
+  3. 고속 경로 위 블록의 역할 (사전에 없거나 특징 일부만 맞음)
+  4. netlist 오류 의심 (항상 꺼진 TG, 미구동 넷, 이상한 벌크, 짝 없는 소자)
+- 같은 종류는 **한 질문으로 묶는다** (예: "포트 A, B, C는 모두 클럭 입력입니까?").
+- 10개를 넘는 나머지는 묻지 않고 **가정한 답**으로 진행하며 `classification.md`의 "가정한 답" 목록에만 남긴다. 사용자는 답하지 않아도 되고, 고치고 싶으면 `answers.md`에 적으면 된다.
+
 ## 2. 정답지는 필요 없다
 
 정답지(설계자가 쓴 분류)는 명세서를 시험·개선할 때만 쓴다. 실사용에서는 아래가 대신한다.
@@ -2386,8 +2405,8 @@ if __name__ == "__main__":
 |---|---|
 | 연결 | 그림의 기하만으로 연결을 다시 읽어 netlist와 비교 (검증 스크립트) |
 | 극성 | 논리 출력마다 netlist에서 극성 계산 → 동그라미와 대조 (검증 스크립트) |
-| 포트·제어 분류 | 2단계 Claude 검토 + **3단계 사용자 확인** (`annotations.json`이 자동 판정보다 우선) |
-| 블록 역할 | `block_dictionary.json` (특징이 모두 맞을 때만 사전 기호) + Claude 검토 + 사용자 확인 |
+| 포트·제어 분류 | 2단계 Claude 검토 + **3단계 사용자 답** (`annotations.json`이 자동 판정보다 우선) |
+| 블록 역할 | `block_dictionary.json` (특징이 모두 맞을 때만 사전 기호) + Claude 검토 + (확신 낮으면) 사용자 답 |
 
 체크리스트의 G 묶음(정답지)은 "해당 없음", N 묶음(이름 가림)도 "해당 없음"이다.
 **회귀 시험 세트**: 스킬(명세서·도구)을 고칠 때는 정답지 딸린 시험 netlist로 다시 돌려 전에 맞던 것이 틀려지지 않았는지 본다. 실업무 netlist에서 새 문제가 나오면, 사용자가 확인한 `annotations.json`을 그 netlist의 정답지로 올려 세트에 더할 수 있다(사내에만 보관).
@@ -2432,7 +2451,7 @@ hsio_job_<회로명>/
 `````
 
 ### FILE: workflow/orchestrate.py
-<!-- sha256=318343ba48d9628e6385f2b7dd4544b8d03b0781767316f2e223f88a092534a6 newline=1 -->
+<!-- sha256=d5a16fee0be99ed0bc6eb6d80c3f9f9df34256cfc48f8ad6f4af171b6a718b41 newline=1 -->
 `````python
 #!/usr/bin/env python3
 """Run the GLM + Claude Code workflow of WORKFLOW.md as a state machine (방식 2).
@@ -2525,7 +2544,7 @@ def cmd_init(a):
         shutil.copy(os.path.join(HERE, "prompts", f), p(job, "prompts", f))
     if not os.path.exists(p(job, "user", "answers.md")):
         with open(p(job, "user", "answers.md"), "w", encoding="utf-8") as f:
-            f.write("# 질문 답과 분류 확인\n\n<!-- 질문에 답하고, 분류를 확인했으면 맨 마지막 줄에 확인 완료 네 글자만 쓴다 -->\n")
+            f.write("# 질문 답\n\n<!-- review/classify_review.md의 사용자 질문(최대 10개)에만 답하고, 맨 마지막 줄에 확인 완료 네 글자만 쓴다 -->\n")
     st = {"job": os.path.basename(os.path.abspath(job)), "step": "1_classify", "round": 0,
           "gate_retries": 0, "next": "glm", "history": [[now(), "1_classify", "init"]]}
     save_state(job, st)
@@ -2630,8 +2649,8 @@ def cmd_run(a):
             with open(p(job, "user", "answers.md"), encoding="utf-8") as f:
                 lines = [x.strip() for x in f if x.strip()]
             if not lines or lines[-1].strip("-*# ") != "확인 완료":
-                log(job, "orchestrate", "사용자 확인을 기다린다: review/classify_review.md를 읽고 "
-                                        "user/answers.md에 답한 뒤 마지막 줄에 '확인 완료'를 쓰고 다시 run")
+                log(job, "orchestrate", "사용자 답을 기다린다: review/classify_review.md의 질문(최대 10개)에 "
+                                        "user/answers.md로 답한 뒤 마지막 줄에 '확인 완료'를 쓰고 다시 run")
                 return
             set_step(job, st, "4_draw", "사용자 확인 완료")
         elif step == "4_draw":
@@ -2719,7 +2738,7 @@ if __name__ == "__main__":
 `````
 
 ### FILE: workflow/prompts/glm_1_classify.md
-<!-- sha256=4867bbc64cacdae45bed827ff217c2e8ae90af884e0325424e05d1f69bafab16 newline=1 -->
+<!-- sha256=652c262bc4824177af43c7ce83ead8809cfd91062d7c3a420fb16ffa7aee0e58 newline=1 -->
 `````markdown
 # GLM — 1단계: 분류 초안
 
@@ -2729,13 +2748,13 @@ if __name__ == "__main__":
 1. `input/netlist.sp`를 파싱·평탄화한다 (SKILL §4.1–4.3). `input/hints.md`가 있으면 확신도에만 쓴다.
 2. 고속 데이터·클럭 추적(명세서 §2.3), 입력 포트 판정(§2.4), 제어·비고속 분류(§2.5 끝점 표)를 **구조로** 한다. 이름은 확신도에만.
 3. 블록 역할을 사전 대응으로 정한다(§2.6). 사전 행의 특징이 모두 맞을 때만 사전 기호, 아니면 일반 박스 + 질문.
-4. 질문은 확신이 낮은 것만, 템플릿 문장으로(§2.7). 규칙이 이미 정한 것은 묻지 않는다(netlist 오류 의심은 확인 질문).
+4. 질문은 확신이 낮은 것만, 템플릿 문장으로(§2.7). 규칙이 이미 정한 것은 묻지 않는다(netlist 오류 의심은 확인 질문). 같은 종류는 한 질문으로 묶고, 질문마다 가정한 답을 적는다. 사용자에게는 이 중 최대 10개만 간다(2단계에서 고름).
 5. 산출물 (`glm/out/`): `classification.md`(분류 표, 포트 표, 그리는 제어·숨긴 다비트 제어마다 K#·끝점 핀·출처, 질문과 가정한 답), `annotations.json`, `block_dictionary.json`.
 6. 아직 그리지 않는다. 끝나면 `state.json`의 `step`을 `2_review_classify`, `next`를 `claude`로 바꾸고 `log.md`에 한 줄 남긴다.
 `````
 
 ### FILE: workflow/prompts/claude_2_review_classify.md
-<!-- sha256=3c782b9e5cfba7a1edf1af23bb9d0863bba55c419de46207ebc8b4b07a73a29f newline=1 -->
+<!-- sha256=4a823b953159bf92ee30bff169ae500bf99de524f51d2cb96d90aea79be265ab newline=1 -->
 `````markdown
 # Claude — 2단계: 분류 검토 (짧게)
 
@@ -2745,9 +2764,9 @@ if __name__ == "__main__":
 1. 고속 데이터 입력·클럭 입력이 구조로 맞게 정해졌나 (§2.4). 단일 디지털 포트를 고속 입력으로 잡지 않았나.
 2. 그리는 제어마다 K# 끝점이 맞나 (§2.5 표 순서: K8·K9를 K3보다 먼저, K5는 패드·최종 출력 노드 다리만, 정적 트림은 일반). 숨긴 것 중 그려야 할 것은 없나.
 3. 사전 대응: 사전 기호로 그릴 블록이 특징을 모두 갖췄나. 기본 소자로 쪼개면 비슷해 보이는 블록(닫힌 고리, 루프가 만드는 제어, 같은 신호인지 다른 신호인지)을 착각하지 않았나 (§2.6).
-4. 질문이 꼭 필요한 것만 남았나.
+4. **사용자 질문 고르기 (최대 10개)**: GLM의 질문에서 규칙이 정한 것은 빼고(§2.7-4), 같은 종류는 하나로 묶고, 다음 순서로 최대 10개만 남긴다 — ① 고속 입력·클럭 판정 ② 그리느냐 숨기느냐가 갈리는 제어 ③ 고속 경로 위 블록의 역할 ④ netlist 오류 의심. 나머지는 가정한 답으로 두고 질문 목록에서 뺀다.
 
-내는 것 `review/classify_review.md`: (a) GLM이 고칠 목록 — 근거는 netlist 줄과 명세서 조항만, (b) 사용자에게 물을 것(짧게, 선택지로).
+내는 것 `review/classify_review.md`: (a) GLM이 고칠 목록 — 근거는 netlist 줄과 명세서 조항만, (b) **사용자 질문 최대 10개** — 번호, 짧은 선택지, 가정한 답, 왜 묻는지 한 줄, (c) 묻지 않고 가정한 답으로 둔 것의 목록(한 줄씩, 사용자가 볼 필요 없음).
 끝나면 `state.json`을 `3_user_confirm`, `next`를 `user`로 바꾸고 `log.md`에 한 줄.
 `````
 
