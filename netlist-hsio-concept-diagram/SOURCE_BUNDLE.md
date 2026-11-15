@@ -1,25 +1,25 @@
-# 넷리스트 기반 High-Speed IO 개념도 그리기 — 전체 파일 묶음 (SOURCE_BUNDLE)
+# 넷리스트 기반 High-Speed IO 개념도 그리기 — 스킬 전체 묶음
 
-텍스트 파일만 주고받을 수 있을 때 쓰는 파일이다. 이 파일 하나에 스킬 폴더 `netlist-hsio-concept-diagram/`의 텍스트 파일이 **전부** 들어 있다 (가이드, 계획서, 그림 B, 기준 netlist, 기준 코드, 기대 결과). 그림 파일(스크린샷 PNG, PPTX, HTML)은 넣지 않았다 — 복원 후 기준 코드로 다시 만든다.
+텍스트 파일만 주고받을 때 쓰는 파일이다 (메일 첨부 가능, zip 아님). 이 파일 하나에 스킬 폴더 `netlist-hsio-concept-diagram/`의 텍스트 파일이 **전부** 들어 있다: 명세서, 구현 가이드, 그림 B, 기준 netlist·코드·기대 결과, 실사용 흐름(workflow), 검사기. 그림 파일(PNG, PPTX, HTML 결과)은 넣지 않았다 — 복원 후 기준 코드로 다시 만든다. 
 
 ## 복원 방법
 
 1. 아래 복원 스크립트를 `restore.py`로 저장하고 실행한다:
    `python3 restore.py SOURCE_BUNDLE.md netlist-hsio-concept-diagram`
-   → 모든 줄이 `OK`, 마지막 줄이 `0 checksum mismatches`여야 한다.
+   → 모든 줄이 `OK`, 마지막 줄이 `0 checksum mismatches`여야 한다. (메일이 .md를 막아 .txt로 바꿔 받았어도 똑같다.)
 2. 코드를 실행할 수 없으면 각 `### FILE:` 블록 내용을 한 글자도 바꾸지 말고 그 경로의 파일로 만든다 (`newline=1`이면 파일 끝에 줄바꿈 하나).
-3. 기준 결과를 다시 만든다 (Python 3.6+ + python-pptx, Node.js 18+ + Playwright Chromium 필요):
+3. 기준 결과를 다시 만든다 (Python 3.6+ + python-pptx, Node.js 18+ + Playwright Chromium):
    `bash netlist-hsio-concept-diagram/reference/rx_afe/work/run_all.sh`
-   → `reference/rx_afe/out/`에 concept.html, concept.pptx, screenshots/ 17장이 생기고, `out/verify_report.json`의 summary가 `{'views': 17, 'connectivity_pass': 17, 'quality_pass': 17}`이어야 한다. `out/classification.md`, `out/annotations.json`은 `expected/`의 같은 파일과 내용이 같아야 한다.
-4. 그다음 `SKILL.md`를 처음부터 읽는다. 그림 B는 `Q2_layout_options.html`을 브라우저로 열어 본다.
+   → `reference/rx_afe/out/`에 concept.html, concept.pptx, screenshots/ 17장. `out/verify_report.json`의 summary가 `{'views': 17, 'connectivity_pass': 17, 'quality_pass': 17}`, `out/`의 classification.md·annotations.json·block_dictionary.json이 `expected/`와 같아야 한다.
+4. 그다음 `SKILL.md`를 처음부터 읽는다. 실사용(GLM + Claude Code 분담)은 `workflow/WORKFLOW.md`.
 
 ### 복원 스크립트 (restore.py)
 
-````python
+`````python
 import hashlib, os, re, sys
 src = open(sys.argv[1], encoding="utf-8").read()
 dest = sys.argv[2] if len(sys.argv) > 2 else "netlist-hsio-concept-diagram"
-pat = re.compile(r"^### FILE: (\S+)\n<!-- sha256=([0-9a-f]{64}) newline=([01]) -->\n````\w*\n(.*?)\n````$", re.S | re.M)
+pat = re.compile(r"^### FILE: (\S+)\n<!-- sha256=([0-9a-f]{64}) newline=([01]) -->\n`{5}\w*\n(.*?)\n`{5}$", re.S | re.M)
 n = bad = 0
 for path, sha, nl, body in pat.findall(src):
     data = body + ("\n" if nl == "1" else "")
@@ -33,36 +33,65 @@ for path, sha, nl, body in pat.findall(src):
     print(("OK   " if ok else "BAD  ") + path)
 print("%d files restored, %d checksum mismatches" % (n, bad))
 sys.exit(1 if bad else 0)
-````
+`````
 
 ## 파일 목록
 
 | 경로 | 바이트 | SHA-256 |
 |---|---|---|
-| `SKILL.md` | 42483 | `72c00c1b8aff…` |
-| `DRAWING_PLAN.md` | 82418 | `bb931e675657…` |
+| `RELEASES.md` | 1080 | `2cb724574900…` |
+| `SKILL.md` | 57127 | `259aeee931d5…` |
+| `DRAWING_PLAN.md` | 139135 | `97edfabe6163…` |
 | `Q2_layout_options.html` | 19337 | `3d7d75fe4b09…` |
+| `spec_lint.py` | 6182 | `d90aa76b3fe6…` |
+| `make_bundle.py` | 8416 | `b3be132a28f5…` |
+| `workflow/WORKFLOW.md` | 6807 | `aab091d97df4…` |
+| `workflow/orchestrate.py` | 12667 | `318343ba48d9…` |
+| `workflow/orchestrate_config.json` | 430 | `89bc4a7c0caf…` |
+| `workflow/prompts/glm_1_classify.md` | 1240 | `4867bbc64cac…` |
+| `workflow/prompts/claude_2_review_classify.md` | 1174 | `3c782b9e5cfb…` |
+| `workflow/prompts/glm_4_draw.md` | 1170 | `244c1bad263a…` |
+| `workflow/prompts/claude_6_review_final.md` | 1350 | `a32be1cd1c1a…` |
+| `workflow/prompts/glm_7_fix.md` | 679 | `16c14c4d3ade…` |
 | `reference/rx_afe/rx_afe_top.sp` | 7988 | `9b001491856b…` |
 | `reference/rx_afe/.gitignore` | 108 | `b3ef110f1924…` |
 | `reference/rx_afe/work/run_all.sh` | 620 | `96d8e6ea3d3b…` |
-| `reference/rx_afe/work/netlist.py` | 5199 | `c08c72b5de85…` |
-| `reference/rx_afe/work/analyze.py` | 38083 | `46eff9bb9907…` |
-| `reference/rx_afe/work/classify_report.py` | 11766 | `4b6521d30c16…` |
-| `reference/rx_afe/work/scene.py` | 23112 | `6d495d826614…` |
-| `reference/rx_afe/work/layouts.py` | 80670 | `70dd702f2bb6…` |
-| `reference/rx_afe/work/render_html.py` | 8998 | `7be17cdfcfc7…` |
-| `reference/rx_afe/work/make_pptx.py` | 7869 | `48e47eeaf53d…` |
+| `reference/rx_afe/work/netlist.py` | 15925 | `fdc78e3804a7…` |
+| `reference/rx_afe/work/analyze.py` | 43939 | `4f5ce2cd3c52…` |
+| `reference/rx_afe/work/spec_rules.py` | 4899 | `d575276492dd…` |
+| `reference/rx_afe/work/classify_report.py` | 24350 | `b204323c5914…` |
+| `reference/rx_afe/work/scene.py` | 26434 | `2c056600e54a…` |
+| `reference/rx_afe/work/layouts.py` | 90075 | `d37008f47136…` |
+| `reference/rx_afe/work/render_html.py` | 9172 | `28e68ee7a726…` |
+| `reference/rx_afe/work/make_pptx.py` | 7974 | `135acf3a007f…` |
 | `reference/rx_afe/work/measure.js` | 2328 | `0fa8be3455b0…` |
-| `reference/rx_afe/work/verify.py` | 25805 | `ae5d15694419…` |
-| `reference/rx_afe/expected/classification.md` | 19201 | `a9dd4e98774c…` |
-| `reference/rx_afe/expected/annotations.json` | 5270 | `85f106f3be52…` |
-| `reference/rx_afe/expected/verify_report.json` | 11138 | `4eab2aecc442…` |
+| `reference/rx_afe/work/verify.py` | 106818 | `2a9f44501706…` |
+| `reference/rx_afe/expected/classification.md` | 23542 | `c3f4578e9080…` |
+| `reference/rx_afe/expected/annotations.json` | 10615 | `e9567216df93…` |
+| `reference/rx_afe/expected/block_dictionary.json` | 10134 | `9f21f5b8e6fd…` |
+| `reference/rx_afe/expected/verify_report.json` | 14914 | `f71c69bfa652…` |
 
 ## 파일
 
+### FILE: RELEASES.md
+<!-- sha256=2cb7245749007a23c452bc33a2b2253ccad4c294fa3c7ec36e388d7e37bc5ede newline=1 -->
+`````markdown
+# 배포 기록
+
+사내로 보내는 묶음에는 명세서 버전(v6.1 …)과 **따로** 배포 번호 R0, R1, R2 …를 붙인다.
+
+- **명세서 버전**: 루프를 돌며 명세서를 고칠 때마다 올라가는 개발 버전 (`DRAWING_PLAN.md` 머리말, 부록 C.1).
+- **배포 번호**: 회사로 실제로 보낸 묶음. 보낸 파일은 `releases/R<n>/`에 그대로 보관하고 저장소 태그 `release-<n>`을 붙인다. 회사에서 문제를 알려 오면 배포 번호로 찾는다.
+- 메일(Gmail)은 zip을 받지 않으므로 묶음은 **텍스트 파일**(`.md`)이다. 사내 메일이 `.md`를 막으면 `.txt`로 이름만 바꿔 보내도 된다.
+
+| 배포 | 날짜 | 명세서 | 소스 커밋 | 보낸 파일 | 들어 있는 것 | 회사 발송 |
+|---|---|---|---|---|---|---|
+| R0 | 2026-11-15 | v6.1 | (묶음 머리말의 커밋) | `HSIO_R0_SOURCE.md`, `HSIO_R0_TESTS.md` | 명세서 v6.1, SKILL, 기준 결과 RX AFE(v6.1로 다시 만듦), 실사용 흐름(GLM + Claude Code), 검사기, 회귀 시험 세트 9개 | (보낸 날짜를 적는다) |
+`````
+
 ### FILE: SKILL.md
-<!-- sha256=72c00c1b8aff18b07a4e46e876fe41fcc8f359f27b14068f663c059fe1396ab9 newline=1 -->
-````markdown
+<!-- sha256=259aeee931d53276d352e6bb7ae6925aaa1194bfdd884812b2f89709a6b27b07 newline=1 -->
+`````markdown
 ---
 name: netlist-hsio-concept-diagram
 description: 넷리스트 기반 high speed IO 개념도 그리기. HSPICE/Virtuoso netlist를 받아 고속 IO 회로(RX AFE, CTLE, VGA, DFE, 샘플러, 클럭 분배, TX 드라이버 등)의 "개념도"를 그린다. 고속 데이터·클럭·중요 제어만 그리고 일반 제어·바이어스는 지우며, 블록도에서 클릭으로 MOSFET 유닛 레벨까지 내려가는 단일 오프라인 HTML과 수정 가능한 PPTX를 만들고, 그린 것이 netlist와 같은지 스스로 검증한다. 사용자가 netlist(.sp/.cir/.SUBCKT 텍스트)를 주며 고속 IO 개념도·블록도·회로 설명 그림을 원할 때 사용.
@@ -81,9 +110,9 @@ description: 넷리스트 기반 high speed IO 개념도 그리기. HSPICE/Virtu
 | `DRAWING_PLAN.md` | 사용자와 확정한 **규칙과 결정 전부** (부록 C 결정 기록) | **규칙의 원본** — 이 문서와 다르면 계획서가 이긴다 |
 | `Q2_layout_options.png` / `.html` | 여러 차동쌍 배치 그림 (같은 그림, html은 브라우저로 연다). **B(쌍별 대칭, 나란히)가 채택안** | 계획서 §3.3-2 |
 | `reference/rx_afe/rx_afe_top.sp` | 기준 netlist (RX AFE) | |
-| `reference/rx_afe/out/` | 기준 결과: `concept.html`, `concept.pptx`, `classification.md`, `annotations.json`, `verify_report.json`, `screenshots/` 17장 | **결과 모습의 기준** |
+| `reference/rx_afe/out/` | 기준 결과: `concept.html`, `concept.pptx`, `classification.md`, `annotations.json`, `verify_report.json`(화면마다 `scene_sha`), `self_checklist.json`(`auto_checks`), `block_dictionary.json`, `screenshots/` 17장 | **결과 모습의 기준** |
 | `reference/rx_afe/work/` | 기준 결과를 만든 코드 (`run_all.sh`로 재실행) | 심볼·렌더·검증 코드는 재사용 가능, 배치 좌표는 RX AFE 전용 |
-| `reference/rx_afe/expected/` | 기대 결과 중 텍스트 파일 (분류 표, annotations, 검증 결과) — `run_all.sh` 결과와 대조용 | |
+| `reference/rx_afe/expected/` | 기대 결과 중 텍스트 파일(분류 표, annotations, 검증 결과, 사전 대응 기록) — `run_all.sh` 결과와 바이트 단위로 대조 | |
 | `SOURCE_BUNDLE.md` | **텍스트만 전달할 수 있을 때**: 위 텍스트 파일 전부 + 복원 스크립트 + SHA-256. 복원 후 `run_all.sh`로 그림 파일을 다시 만든다 | |
 
 읽는 순서: `DRAWING_PLAN.md` 전체 → 이 문서 §1~§3 → 기준 스크린샷 17장 → 이 문서 나머지.
@@ -116,9 +145,12 @@ description: 넷리스트 기반 high speed IO 개념도 그리기. HSPICE/Virtu
 
 ### 2.2 먼저 기준 결과를 재현해 도구를 확인한다
 ```bash
-bash reference/rx_afe/work/run_all.sh
+bash reference/rx_afe/work/run_all.sh          # 검증·주입 시험이 하나라도 실패하면 0이 아닌 값으로 끝난다
 python3 -c "import json;print(json.load(open('reference/rx_afe/out/verify_report.json'))['summary'])"
 # 기대값: {'views': 17, 'connectivity_pass': 17, 'quality_pass': 17}
+python3 -c "import json;print(json.load(open('reference/rx_afe/out/self_checklist.json'))['self_test'])"
+# 기대값: {'injected': 57, 'caught': 57, 'all_caught': True}
+for f in classification.md annotations.json verify_report.json block_dictionary.json; do cmp reference/rx_afe/out/$f reference/rx_afe/expected/$f; done
 ```
 (`run_all.sh`는 `out/`을 다시 만든다. 원본을 보존하려면 폴더를 복사해서 실행한다.)
 
@@ -210,7 +242,7 @@ python3 -c "import json;print(json.load(open('reference/rx_afe/out/verify_report
 셀 로컬 넷 분류 = 인스턴스 합집합. 그릴 때 하나만 고를 때의 우선순위: 데이터 > 클럭 > 중요 제어 > 일반 제어 > 바이어스 > 전원. **한 곳에서라도 보이는 핀은 그 셀의 모든 화면에서 보인다.**
 
 ### 4.9 블록 역할 (계획서 §2.6 사전)
-셀마다 구조 특징으로 역할을 정한다: `ctle`(degeneration R∥C 차동쌍), `vga`(같은 입력의 추가 쌍을 스위치로 더함), `summer`(다른 입력의 쌍들이 같은 출력에 합산), `strongarm`, `latch`(cross-coupled + 클럭 스티어링), `dff`(latch 두 개 직렬, 클럭 반대), `cml_buffer`, `inverter`, `dac`, `bias`, `composite`(하위가 **모두** 사전에 있는 블록 — 묻지 않음), `unknown`(질문).
+셀마다 구조 특징으로 역할을 정한다. 구조 특징은 계획서 §2.6-1 사전 행 그대로다(여기서 다시 적지 않는다). 역할 이름은 기준 코드(`work/spec_rules.py`의 `DICT_ROWS`·`DICT_LISTED`)와 같게 쓴다: `termination`·`termination_esd`(종단·ESD), `ctle`, `vga`, `tia`, `summer`, `comparator`(비교기·샘플러 셀 — 그 안의 StrongARM 코어 가상 블록은 `strongarm`), `latch`, `dff`, `cml_buffer`, 논리 게이트 `inverter`·`nand`·`nor`(`and`·`or`·`xor`), `sr_latch`, 사전 목록의 `icg`·`dly`·`ls`·`c2c`·`ota`, `dac`, `bias`, `tg`(항상 꺼진 전달 게이트), `composite`(하위가 **모두** 사전에 있는 블록 — 묻지 않음, 닫힌 고리 예외는 계획서 §2.6-1), `unknown`(사전에 없음 — 질문).
 - 이름과 구조가 다르면 **구조로 고르고 묻는다** (이름은 ÷2인데 루프가 없으면 LATCH 두 개).
 - **고속 신호와 연결이 없는 블록**(바이어스 발생기 등)은 생략하고 생략 목록에.
 - VGA/CTLE 구분과 사전 대응(행의 특징이 모두 맞을 때만, `block_dictionary.json`)은 계획서 §2.6.
@@ -230,9 +262,9 @@ python3 -c "import json;print(json.load(open('reference/rx_afe/out/verify_report
 고속 데이터 입력 : RX_INP, RX_INN            (확신 높음)
 클럭 입력        : CLK_INP, CLK_INN          (확신 높음)
 고속 출력        : DOUT_EVEN_P, DOUT_EVEN_N, DOUT_ODD_P, DOUT_ODD_N
-중요 제어 (버스) : W<4:1>_<3:0> (16b) — DFE 탭1~4 계수   (확신 높음)
-생략             : 제어 10개 (C0-2, R0-2, G0-3), 바이어스 4개 (IREF, VBN, VBP, VCM_RX), 블록 1개 (BIAS_GEN)
-질문             : Q1 … (확신 낮은 것만)
+중요 제어 (버스) : W<4:1>_<3:0> — K1 DFE 탭1~4 계수 (확신 높음) / G<3:0> — K6 VGA 이득 코드, 두 슬라이스 공유 (확신 높음)
+생략             : 제어 6개 (C<2:0>, R<2:0> — K7 정적 트림), 바이어스 4개 (IREF, VBN, VBP, VCM_RX), 전원 2개 (VDD, VSS), 블록 1개 (X_BIAS (BIAS_GEN))
+질문             : Q1 … Q5 (확신 낮은 것만, 템플릿 문장)
 ```
 ```json
 {"hs_inputs": [], "clock_inputs": [], "hs_outputs": [], "important_controls": [],
@@ -246,12 +278,13 @@ annotations의 값은 항상 자동 판정보다 우선한다.
 ## 5. 화면 목록 만들기
 
 1. top 셀부터 DFS. 셀 종류별:
+   - 짧은 이름은 netlist 셀 이름을 소문자로 쓴 것이고, 뜻이 남는 한 줄여도 된다 (계획서 §1.3-1).
    - **블록만 있는 셀** → 블록 화면 (`b_<짧은이름>`).
    - **트랜지스터만 있는 셀** → 유닛 화면 (`u_<짧은이름>`).
-   - **섞인 셀** → 블록 화면 하나 + 트랜지스터를 **채널 연결 덩어리**(전원 아닌 드레인/소스 넷을 공유하면 같은 덩어리, 게이트만 공유하면 따로)로 묶은 **자동 가상 블록**마다 유닛 화면. 예외: 종단 R·ESD는 블록이 아니라 입력선 위 표시(§6.3)로 그리고, 그 소자들의 유닛 화면을 하나 둔다. 항상 꺼진 전달 게이트는 열린 스위치 기호 + 유닛 화면.
+   - **섞인 셀** → 블록 화면 하나 + 트랜지스터를 **채널 연결 덩어리**(전원 아닌 드레인/소스 넷을 공유하면 같은 덩어리, 게이트만 공유하면 따로)로 묶은 **자동 가상 블록**마다 유닛 화면(id `u_<부모 짧은 이름>_<역할>`). 예외: 종단 R·ESD는 블록이 아니라 입력선 위 표시(§6.3)로 그리고, 그 소자들의 유닛 화면을 하나 둔다. 항상 꺼진 전달 게이트는 열린 스위치 기호 + 유닛 화면.
 2. 같은 셀이 여러 곳에 쓰이면 화면은 **하나** (부모는 처음 만난 곳).
 3. 생략 블록은 화면을 만들지 않는다.
-4. 제목 형식: `<셀> — 블록 레벨` / `<셀> — 블록 레벨 (최상위)` / `<셀> — unit level (<역할 설명>)`. 경로(breadcrumb)는 `RX_AFE_TOP › HALF_RATE_DFE_SLICE › DFE_SUMMER (unit)`.
+4. 제목 형식: `<셀> — 블록 레벨` / `<셀> — 블록 레벨 (최상위)` / `<셀> — unit level (<역할 설명>)`. 경로(breadcrumb)는 `RX_AFE_TOP › HALF_RATE_DFE_SLICE › DFE_SUMMER (unit)`. 제목과 경로에는 언제나 원래 셀 이름을 쓰고, 화면 id는 HTML 주소(`#<id>`)로 확인한다 (계획서 §1.3-1).
 
 반복 인스턴스 합치기·반복 인식, 보정 루프 화면, 유닛 화면 크기 상한은 계획서 §3.1.
 
@@ -285,24 +318,29 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 - **가변 전류원**: 리드 ±(16~30), 원 r16, 안쪽 아래 화살표 (x, y−9)→(x, y+6) + 촉 (x, y+10),(x±4, y+3), 사선 (x−20, y+20)→(x+18, y−18) + 촉 (x+21, y−21),(x+11, y−18),(x+18, y−11). 중요 제어 버스 핀: 원 옆에서 가로로 24px.
 - **열린 스위치**(항상 꺼진 전달 게이트): 리드 ±(12~30), 끝점 원 r2.5 흰 채움, 날 (x, y+12)→(x+13, y−9) 굵기 1.8, 글자 "TG" 11 굵게 + 소자 이름과 "(off)" 9.
 - **선택 스위치**(상보 선택 전달 게이트, 계획서 §3.4-6): 리드 ±(12~30), 끝점 원 r2.5 흰 채움, 날 (x−13, y)→(x+11, y−10) 굵기 1.8. **en 리드**: x−4에서 위에서 내려와, 그 x에서 날보다 5px 위에 짧은 가로 작동선 (x−9)~(x+1)로 끝남. **enb 리드**: x+8에서 내려와, 그 x에서 날보다 5px 위에 동그라미 r3(아래 끝)으로 끝남 — 작동선과 동그라미 사이 4px 이상. 두 리드는 서로 닿지 않고 날에도 닿지 않는다(기호 획이 두 넷을 이으면 SHORT, 계획서 §4.1-1). 핀 이름 `en`/`enb` 9, 글자 "SEL" 9 굵게. 항상 켜진 TG는 지금처럼 TG 박스 또는 선(연결).
+- **차동 입력 +/−**(증폭기·비교기 삼각형, 계획서 §3.4-6): netlist의 비반전 입력에 "+", 반전 입력에 "−"를 그 핀 옆에 쓴다. 글자 10 굵게, 그 입력 핀 높이에서 삼각형 왼쪽 변 7px 안쪽 (기준 코드 `scene.tri`의 `pm`). 핀의 위·아래 자리는 §7-2와 계획서 §2.5-4가 정한다(기준은 왼쪽 둘째(아래) 자리) — 그래서 "+"가 아래 입력에 올 수 있다.
 - **종단·ESD 표시**(입력선 위): 선에서 12px 아래(또는 위)부터 지그재그 5마디 진폭 5, 끝에 열린 원 r3 (공통모드 쪽 = 숨긴 넷이라 이름표 없음), 글자 "R_T 50Ω"(값은 netlist), "ESD" 굵게 9.
 - **접지**: (x,y)→(x,y+8), 가로 ±10 (1.8), ±6 (1.6), ±2 (1.4) 간격 4.
-- **VDD 국소 기호**: (x,y)→(x,y−8), 가로 ±10, 글자 "VDD" (x, y−17) 10. **VDD 레일**: 가로선 + 왼쪽 끝에 "VDD" 12 굵게.
+- **VDD 국소 기호**: (x,y)→(x,y−8), 가로 ±10, 글자 "VDD" (x, y−17) 10. 전원이 둘 이상인 셀에서는 국소 전원·접지 기호와 유닛 화면의 레일 이름에 "VDD" 대신 실제 레일 이름(예: VCCQ, VSSQ)을 쓴다 (계획서 §3.4-6). **VDD 레일**: 가로선 + 왼쪽 끝에 "VDD" 12 굵게 (전원이 둘 이상인 셀은 실제 레일 이름).
 - **포트 핀**(Virtuoso 오각형): 길이 18, 높이 10, 흰 채움, 테두리 1.4. 입력은 회로 쪽을 가리키고 출력은 바깥을 가리킴. 이름 12 굵게, 바깥쪽 4px.
 - **넷 이름표**: 선 위의 앵커점 + 글자(기본 앵커 +4, −8). **이름표 연결의 짧은 선**: 블록 레벨 40~46px, 유닛 레벨 24px. 가로선이면 글자는 선 가운데 위(−8), 세로선이면 끝.
+- **화면 밖 연결 기호**(화면 경계를 넘는 넷, 계획서 §3.5-1): 선 끝에 붙는 작은 오각 화살표 — 길이 14, 높이 8(끝 5px가 뾰족), 흰 채움, 테두리 1.2 — 가 화면 밖을 가리킨다. 이름은 11 보통 굵기로 화살표 끝에서 4px 바깥(위·아래를 가리키면 9px). 포트(12 굵게)·일반 이름표와 구분한다 (기준 코드 `scene.offpage`).
 - **회색 게이트 이름표**(숨긴 넷의 게이트): 게이트 핀 끝에서 3px, 10 `#777`, 선·핀 없음.
-- **버스 표시**: 사선 (x−7, y+7)→(x+7, y−7) 1.4 + 비트 수 글자.
+- **버스 표시**: 사선 (x−7, y+7)→(x+7, y−7) 1.4. 이름에 `<a:b>`가 있으면 비트 수 글자를 쓰지 않고, 없으면 사선 옆에 비트 수 글자 (계획서 §3.5-2).
 
 ### 6.4 블록 기호
-- **삼각형**(CTLE, VGA, BUF, SA): 기본 w80 h90, 꼭짓점 (x0, yc±h/2), (x0+w, yc). 제목 (x0+0.36w, yc). 입력 리드 20px 왼쪽, 출력은 경사면에서 오른쪽 끝+20까지. 클럭 핀은 아래, 버스 핀은 위. 인스턴스 이름 위, 셀 이름 아래.
-- **박스**(슬라이스, LATCH, DFF, 클럭 트리, Σ 블록 화면 표시): 직사각형, 핀 리드 20px 바깥, 핀 이름 9 안쪽, 제목 13 굵게 가운데(+셀 이름 10 아래), 인스턴스 이름 왼쪽 위.
+- **삼각형**(CTLE, VGA, BUF, SA): 기본 w80 h90, 꼭짓점 (x0, yc±h/2), (x0+w, yc). 제목 (x0+0.36w, yc). 입력 리드 20px 왼쪽, 출력은 경사면에서 오른쪽 끝+20까지. 핀 쪽은 계획서 §3.2-8 핀 방향 표: 데이터 입력 왼쪽, 출력 오른쪽, 중요 제어(1비트 포함)·명령·시험 입력 위, 기준 입력은 왼쪽 둘째 자리(아래 변 아님), 느린 신호·루프 신호 입력은 왼쪽(데이터처럼), 클럭 아래(클럭을 흘려보내는 블록은 왼쪽 허용). 비교기·증폭기의 차동 입력에는 +/− 표시(§6.3). 인스턴스 이름 위, 셀 이름 아래.
+- **박스**(슬라이스, LATCH, DFF, 클럭 트리, Σ 블록 화면 표시): 직사각형, 핀 리드 20px 바깥(핀 쪽은 삼각형과 같은 핀 방향 표), 핀 이름 9 안쪽, 제목 13 굵게 가운데(+셀 이름 10 아래), 인스턴스 이름 왼쪽 위.
 - **인버터**: 삼각형 w34 h30 + 동그라미 r4, 리드 20.
+- **출력 동그라미**(r4)는 논리 출력에만 — 정적 CMOS·TG 논리, latch·FF, MUX, CML 버퍼·latch, 비교기·샘플러(판정 출력), 분주기, C2C, 패드 드라이버의 출력. 아날로그 출력(증폭기 CTLE·VGA·OTA, Summer(Σ), TIA, 위상 보간기, 적분기, 차지 펌프, DAC, 바이어스)에는 그리지 않는다. 극성은 주 입력 → 출력으로 본다: 주 입력은 데이터 입력이고(데이터와 클럭이 함께 있는 latch·DFF·비교기·샘플러도 데이터, 클럭은 타이밍 입력), 고속 입력이 클럭뿐인 블록(버퍼·분주기·클럭 트리)은 클럭이다. 차동이면 P쪽. 기준 입력은 주 입력이 아니다. 그런 입력이 없는 블록(제어 허브, FSM)에는 동그라미를 그리지 않고 극성도 검사하지 않는다. 인스턴스마다 극성이 다른 셀은 인스턴스마다 판정한다 (계획서 §3.4-6). 삼각형은 동그라미를 경사면에, 박스는 오른쪽 변에 붙이고 출력선은 동그라미 바깥에서 시작한다.
+- **핀 이름**(계획서 §3.4-7): 출력이 둘 이상인 기호와 선택 핀이 있는 기호(MUX·선택 스위치)는 그 핀마다 핀 이름(9 `#555`)을 쓴다. 삼각형은 제목과 겹치지 않게 출력선 위(위 출력, 8px)·아래(아래 출력, 9px)에, 박스는 안쪽에 쓴다. 기준 코드 `scene.tri`·`scene.box`의 `bubbles`(동그라미), `pm`(+/−), `out_names`(출력 핀 이름).
 - 블록 기호의 **핀은 보이는 핀만**. 숨긴 핀(제어·바이어스·전원)은 리드도 이름도 없다. 크기는 보이는 핀 수로 다시 정한다.
 
 ### 6.5 글자 형식
 - MOS 크기: `16u/45n` (SI 접두어, 계획서 §3.5-6), m≠1이면 ` ×2`. nf·모델명은 쓰지 않는다.
 - 합친 소자: 이름 `M_G<3:0>_P`, 크기 두 줄 `W 4u,8u,16u,32u` / `L 45n`.
 - 개념 기호 이름: `R_S (가변)`, `C_S`, `I_G<3:0>`, `X_DAC<4:1>`.
+- 화면 id·제목: id는 소문자 짧은 이름(가상 블록 `u_<부모>_<역할>`), 제목은 원래 셀 이름 그대로 (§5-1·§5-4, 계획서 §1.3).
 - 화면 아래 범례 "묶음·병합 (bundles / merged)": 기호마다 대신한 소자와 크기 전부.
 - 비대칭 주석: 화면 아래 `#a33` 10: `비대칭: M11: PMOS S=VDD, D=DP, G=DN — 거울 짝 없음 (netlist 비대칭, Q4)`.
 
@@ -313,7 +351,7 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 **원칙**: 보이는 넷(고속 데이터, 고속 클럭, 중요 제어)만. 나머지는 선·이름표·핀·포트 **모두 없음**. 생략은 사이드 패널과 PPT 메모의 생략 목록에만 (다시 켜는 토글 없음).
 
 1. **기호 고르기**: 역할 → ctle/vga/cml_buffer/strongarm = 삼각형(SA는 클럭 표시), summer = Σ 박스, latch = LATCH 박스, dff = DFF 박스, composite·unknown = 박스(셀 이름), inverter = 인버터, 종단·ESD = 입력선 표시, 항상 꺼진 TG = 열린 스위치.
-2. **핀 쪽**: 데이터 입력 왼쪽(주 입력 P, N 먼저, 그다음 피드백·탭 입력을 합산되는 탭 순서로), 데이터 출력 오른쪽(주 출력 먼저), 클럭 아래(CLK, CLKB 순), 중요 제어 버스 위. **P 위, N 아래.** 핀 간격 20.
+2. **핀 쪽** (계획서 §3.2-8 핀 방향 표): 데이터 입력 왼쪽(주 입력 P, N 먼저, 그다음 피드백·탭 입력을 합산되는 탭 순서로), 데이터 출력 오른쪽(주 출력 먼저), 클럭 아래(CLK, CLKB 순; 클럭을 흘려보내는 블록은 왼쪽 허용), 중요 제어(1비트 포함)·명령·시험 입력 위, 기준 입력은 왼쪽(데이터 쪽) 둘째 자리(아래 변 아님), 느린 신호·루프 신호 입력은 왼쪽(데이터처럼). 예외: 제어 허브 입력, 루프 고리 넷(루프 화면의 주 경로), P2 패턴 데이터, 제어 전달 셀(레벨 시프터 등)의 단일 입력, 핀 자리가 정해진 기본 소자(게이트 입력 왼쪽, MUX 선택 아래 경사면, 선택 스위치 위). **P 위, N 아래.** 핀 간격 20.
 3. **열(층)**: 데이터 그래프(출력 핀 → 같은 넷의 입력 핀)를 고속 입력이 들어가는 블록부터 DFS, 되돌아가는 간선은 피드백으로 빼고, 최장 경로로 층을 정한다. 주 경로는 **한 줄(같은 높이)로 곧게**, 블록 사이 간격 약 80px(삼각형은 160px 피치).
 4. **병렬 블록**(같은 셀, 같은 주 입력 — 예: even/odd 슬라이스): 같은 열에 위아래로 netlist 순서대로 쌓는다 (기준: y 125, 445).
 5. **클럭만 다루는 블록**(보이는 핀이 모두 클럭): 주 경로 아래 행, 왼쪽부터. 클럭 입력 포트는 그 행의 왼쪽 끝.
@@ -324,9 +362,9 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
      교차 0 · 블록 몸통(±9) 관통 없음 · 길이 ≤ 1.5 × (|Δx|+|Δy|) · 새 접점이 기존 접점에서 20px 이상 · 꺾인 선분 20px 이상.
    - 여러 핀 넷: 구동 핀에서 줄기를 만들고 가까운 핀부터 붙인다. 실패한 핀만 이름표.
    - 이름표는 핀에서 짧은 선(40~46px) + 넷 이름. **같은 이름표는 화면 안에 짝(선에 붙은 같은 이름의 이름표나 그 넷의 포트)이 있어야 한다** (예외는 계획서 §3.5-1). 구동 쪽 선 끝에도 같은 이름을 붙인다.
-   - 차동이면 P/N 둘 다 이름표, 버스면 이름표에도 비트 수.
+   - 차동이면 P/N 둘 다 이름표, 버스면 이름표에도 버스 표시(사선, 이름에 `<a:b>`가 있으면 비트 수 없음 — 계획서 §3.5-2).
    - 결과적으로 블록 레벨 교차는 **0개**여야 한다.
-8. **미사용 출력**: 지우지 않는다. 짧은 선 + 넷 이름표로 끝낸다. 그것을 구동하는 소자(더미 인버터 등)도 그린다.
+8. **미사용 출력**: 넷이 숨기는 분류인 출력 핀은 그리지 않는다(핀째 숨김). 그리는 분류의 미사용 출력은 지우지 않는다. 짧은 선 + 넷 이름표로 끝낸다. 그것을 구동하는 소자(더미 인버터 등)도 그린다 (계획서 §3.5-4).
 9. 인스턴스 이름은 기호 위, 셀 이름은 아래. 글자가 선·다른 글자와 겹치면 후보 위치(위/아래/오른쪽 위…)로 옮긴다.
 
 ---
@@ -356,23 +394,24 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 
 ## 9. 검증 (계획서 §4.1)
 
-자동 검사 전체 목록(출력별 극성, 이름 일치, 핀 이름, `scene_sha` 등)과 기록 위치(`self_checklist.json`의 `auto_checks`)는 계획서 §4.1.
+자동 검사 전체 목록(출력별 극성, 이름 일치, 핀 이름, `scene_sha`, 핀 방향, 회색 이름표 범위, 질문, 끝점 핀, 표 간 분류 일치, 블록 핀 이름, R/C 값, 글자 위치 등)과 기록 위치(`self_checklist.json`의 `auto_checks`)는 계획서 §4.1. 검증기는 `reference/rx_afe/work/verify.py`에서 시작해 넓힌다(처음부터 새로 짜지 않는다). 기준 `verify.py`는 계획서 §4.1 검사 전부와 버스 표시(계획서 §3.5-2)·사전 대응(계획서 §2.6-4)·M1 파일·M10 유닛 크기 — 자동 검사 29개 — 를 돌리고 주입 오류 57건을 넣는다(§11.5).
 
 1. **연결 재추출 — 그림의 기하만 사용**: 선 끝점, 핀 좌표, 접점 점, 이름표·포트·전원 기호의 앵커만 읽는다 (선에 붙은 넷 이름 속성은 쓰지 않는다).
    - 선 끝이 다른 선 위에 닿으면 T 연결(접점 점 필수). 끝 없이 두 선이 지나가면 **교차 = 연결 아님**.
    - 같은 화면의 같은 이름표/포트 이름 = 같은 넷. 짝 없는 이름표는 오류.
    - 합친 소자는 비트별로 펼쳐 대조, 개념 기호는 "기호 단자 = 묶음의 바깥 넷"으로 대조.
    - 오류: 핀 누락, 없는 핀, OPEN(한 넷이 조각남), SHORT(두 넷이 한 덩어리), 이름표가 다른 넷 위.
-2. **보이는 고속 넷 완전성**: 화면의 고속 넷은 그 화면의 모든 해당 핀까지 선 또는 이름표로 이어짐.
-3. **생략 = 분류**: 그리지 않은 넷·블록은 전부 숨김 분류이고 생략 목록에 있음.
+2. **보이는 고속 넷 완전성**: 화면의 고속 넷은 그 화면의 모든 해당 핀까지 선 또는 이름표로 이어짐. 짝 없는 이름표는 오류 — 예외(미사용 출력, 화면 밖 연결 기호로 그린 경계 넷)는 계획서 §3.5-1.
+3. **생략 = 분류**: 그리지 않은 넷·블록은 전부 숨김 분류이고 생략 목록에 있음. 생략 목록 ↔ 그린 넷 일치 (계획서 §3.5-5).
 4. **기호 = 묶음**: 묶음의 모든 소자가 기호 하나에 속하고 묶음 안쪽 넷이 바깥에서 안 쓰임.
 5. **품질 (모두 0)**:
    - 글씨 겹침 (브라우저 `getBBox`로 측정: `work/measure.js`), 선이 심볼 관통, 대칭 위반(쌍의 높이·거울 x), PMOS가 NMOS 아래.
    - **꼬임**: 선 길이 > 1.5 × (|Δx|+|Δy|).
    - **짧은 꺾임**: 꺾인 선분 < 20px. **접점 근접**: 접점 사이 < 20px. (정확히 20은 허용)
+   - **접점**: 한 점에 선분 4개(4방향) 금지. 같은 직선 위 서로 다른 넷의 자유 선 끝이 40px 미만이면 위반 (계획서 §1.4-7).
    - **교차**: 허용 목록 밖이면 위반. 블록 레벨 0. 유닛 레벨은 §8 표의 허용 수와 위치(템플릿이 선언한 자리 ±12px)만.
 1-1. **기호 획도 읽는다**: 기호의 선·원 획이 서로 다른 넷의 핀 둘을 이으면 SHORT(`symbol_stroke_joins_pins`). 예외는 소자 몸체(MOS 채널, 저항 지그재그, 전류원 원, 커패시터 판)뿐.
-6. **검증기를 검증**: 일부러 오류를 넣어(포트 뒤바꿈, 선 삭제, 선 이동, 접점 삭제, 이름표 바꿈, 소자 삭제) 모두 잡히는지 확인. 계획서 §4.1의 검사마다 주입 오류를 하나 이상 넣고 결과를 `self_checklist.json`의 `auto_checks`에 적는다(예: 기호 획으로 두 선택 핀 잇기, 반전 블록 동그라미 지우기, 없는 인스턴스 이름 쓰기, 선택 핀 이름 지우기).
+6. **검증기를 검증**: 일부러 오류를 넣어(포트 뒤바꿈, 선 삭제, 선 이동, 접점 삭제, 이름표 바꿈, 소자 삭제) 모두 잡히는지 확인. 계획서 §4.1의 검사마다 주입 오류를 하나 이상 넣고 결과를 `self_checklist.json`의 `auto_checks`에 적는다(예: 기호 획으로 두 선택 핀 잇기, 반전 블록 동그라미 지우기, 없는 인스턴스 이름 쓰기, 선택 핀 이름 지우기). 반드시 넣을 오류: OPEN(선 끊기), SHORT, 블록 교차, 동그라미 지우기, 미사용 출력 지우기, 없는 핀 이름, 그리지도 생략하지도 않은 넷, 짧은 꺾임(<20px), 글자 겹침, 점선, 핀 방향 위반 (계획서 §4.1). 기준 결과는 57건이다(§11.5).
 7. **눈 확인**: 화면마다 스크린샷(deviceScaleFactor 1, 1820×1000), PPTX는 LibreOffice로 PNG 변환해서 본다.
 
 ---
@@ -381,6 +420,7 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 
 기준 구현: `work/render_html.py`, `work/make_pptx.py`.
 - **HTML 구조**: 위 막대(`header`): 화면 제목, 경로 링크(‹›), 오른쪽에 `▲ 위로`(맨 위에서 비활성), 체크박스 `W/L·m 표시`(끄면 `body.nosize .size{display:none}`), `PPT 내려받기`(data: URI). 가운데 그림 카드(SVG), 오른쪽 사이드 패널(330px).
+- **PPTX 내장**: PPTX는 HTML 안에 base64로 넣는다(크기 상한 없음, 옆 파일 링크 금지). 커지면 화면 데이터를 gzip으로 압축해 넣고 브라우저 내장 `DecompressionStream`으로 푼다 (계획서 §1.2).
 - **사이드 패널 순서**: 이 화면(셀·레벨, 클릭하면 내려가는 하위 목록) → 생략 목록(이 화면, `넷 — 분류` / `블록 (셀) — 이유`) → 주석 → 분류 요약(전체) → 가정한 답(질문) → 모든 화면 링크.
 - **이동**: 블록 위 투명 클릭 영역(`hot` 사각형, 마우스 올리면 점선 강조) → 하위 화면. 주소 `#화면id`로 이동, 뒤로가기 동작.
 - **모바일**: 900px 이하에서 사이드 패널이 아래로, 그림은 폭 640px 고정·카드 안 가로 스크롤 (페이지 자체는 가로로 넘치지 않음).
@@ -390,61 +430,145 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 
 ## 11. 기준 결과 — RX AFE (`reference/rx_afe/`)
 
-> 이 기준 결과는 명세서 v3 기준이다. 이득 코드 G<3:0>은 v4부터 중요 제어다(계획서 부록 A) — 아래 표와 §4.12 예시의 G0–G3 숨김은 v3 결과다.
+`bash reference/rx_afe/work/run_all.sh`를 돌리면 `out/`의 `classification.md`, `annotations.json`, `verify_report.json`, `block_dictionary.json`이 `expected/`의 같은 파일과 바이트 단위로 같아야 한다. 화면마다 `scene_sha`도 `expected/verify_report.json`과 같아야 한다. `run_all.sh`는 검증(자동 검사 또는 주입 시험)이 하나라도 실패하면 0이 아닌 값으로 끝난다.
 
 ### 11.1 분류 (사용자 확인 완료, 계획서 부록 A + 결정)
 | 분류 | 결과 |
 |---|---|
 | 고속 데이터 입력 | RX_INP, RX_INN |
 | 고속 데이터 출력 | DOUT_EVEN_P/N, DOUT_ODD_P/N |
-| 고속 데이터 내부 | CTLE1_P/N, CTLE2_P/N, VGA_P/N, E_T2P/N, E_T3P/N, O_T2P/N, O_T3P/N, O_DOUTP/N |
+| 고속 데이터 내부 | CTLE1_P/N, CTLE2_P/N, VGA_P/N, E_T2P/N, E_T3P/N, O_T2P/N, O_T3P/N, O_DOUTP/N. O_DOUTP/N은 항상 꺼진 TG 뒤라 **미구동**이다(계획서 §2.3-13, Q3) |
 | 고속 클럭 | CLK_INP/N → (B1P/B1N) → CLKI, CLKIB, CLKQ, CLKQB |
-| 중요 제어 | `W<4:1>_<3:0>` 16비트 버스 1개 — DFE 탭 1~4 계수 |
-| 숨김 일반 제어 | C0–C2, R0–R2 (CTLE), G0–G3 (VGA) |
-| 숨김 바이어스 | IREF, VBN, VBP, VCM_RX (종단 공통모드) |
-| 생략 블록 | X_BIAS (BIAS_GEN) |
-| 최상위 포트 | 37개 중 9개만 그림 (데이터 입력 2, 클럭 입력 2, 출력 4, W 버스 1) |
+| 중요 제어 (버스) | `W<4:1>_<3:0>` 16비트 — **K1**. DFE 탭 1~4 계수: 전류 DAC 스위치 → 탭 쌍 꼬리 전류, 탭 입력 = 귀환 데이터, Σ 출력에서 합산. 끝점 `X_DFE_EVEN/X_SUM/X_DAC1/MS0.g` |
+| 중요 제어 (버스) | `G<3:0>` 4비트 — **K6**. VGA 이득 코드: 스위치 → 이득 쌍 꼬리 전류, VGA 출력 VGA_P/N을 X_DFE_EVEN·X_DFE_ODD(HALF_RATE_DFE_SLICE 2개)가 공유한다. 끝점 `X_VGA/MS_G0.g`. 이득 다리는 최종 출력 노드가 아닌 안쪽 노드에 있어 K5가 아니고, 공유 이득 코드(K6)가 표에서 먼저다(계획서 부록 C.8, V41·V44·V86) |
+| 숨김 일반 제어 | `C<2:0>`, `R<2:0>` (CTLE) — **K7** 정적 트림. 고속 경로 안쪽 노드(두 소스 사이)의 degeneration 스위치이고 출처가 최상위 포트라 일반 제어다(V7). 끝점 `X_CTLE1/MC0N.g`, `X_CTLE1/MR0.g` |
+| 숨김 바이어스 | IREF (K11, BIAS_GEN 미러에만 닿음, C.8 D5), VBN, VBP, VCM_RX (종단 공통모드, V14) |
+| 비고속 분류 점검 (§2.5-9) | 기준 전압·상태 출력·명령·시험 입력·워드 속도 디지털 없음. 이득 코드 K6 = `G<3:0>` |
+| 생략 블록 | X_BIAS (BIAS_GEN) — 고속 신호와 무관 |
+| 블록 역할 | CTLE_STAGE = CTLE, VGA_STAGE = VGA, DFE_SUMMER = Summer, STRONGARM_SLICER = 비교기(StrongARM 코어 + SR latch·INV 출력단), CML_LATCH = latch, CML_DFF = DFF, INV·NAND2 = 논리 게이트, SR_LATCH = SR latch, IDAC_4BIT = 전류 DAC(부모 유닛 화면의 가변 전류원), HALF_RATE_DFE_SLICE·CLK_DIST_TREE·RX_AFE_TOP = 복합 블록. 모두 사전 행(§2.6-1)이라 묻지 않는다. `block_dictionary.json`의 모든 행은 `missing_features`가 비어 있다 |
+| 최상위 포트 | 37개 중 28개를 포트 기호 10개로 그린다: 데이터 입력 2, 클럭 입력 2, 출력 4, W 버스 1, G 버스 1. 숨긴 포트는 9개다: IREF, C0–C2, R0–R2, VDD, VSS |
 
 ### 11.2 질문 (이 netlist에서 반드시 나와야 하는 것)
-| ID | 내용 | 처리 |
-|---|---|---|
-| Q1 | CTLE의 C0–C2: 이름은 C 뱅크인데 구조는 SP–(MOS 직렬쌍)–SN 저항 경로, C*_CAP은 항상 연결 | 구조대로: 가변 R_S에 포함, 고정 C_S(330f) |
-| Q2 | X_DIV_M/S: 이름은 ÷2인데 귀환 루프 없음 | 구조대로 LATCH 박스 2개 |
-| Q3 | M_TIE 전달 게이트: NMOS 게이트=VSS, PMOS 게이트=VDD → 항상 꺼짐, O_DOUTP/N 미구동 | 끊긴 것으로 처리, 열린 스위치 "(off)", O_DOUT은 고속 핀(T1_FB)에 붙어 고속 데이터로 그리고 이름표로 끝냄 |
-| Q4 | StrongARM M11 (PMOS VDD→DP, 게이트 DN) 짝 없음 | DP쪽 바깥, 게이트 DN 이름표, 비대칭 주석 |
-| Q5 | NAND2, SR_LATCH 사전에 없음 | 박스(셀 이름), 유닛은 소자 그대로 |
-| Q6 | 미사용 고속 출력: 최상위 CLKQ/CLKQB, 클럭 트리 인버터 출력 4개, StrongARM QPB/QNB | 지우지 않음, 짧은 선 + 이름표 |
-| Q7 | W 버스를 16b 하나로 / 4b×4로 | 16b 하나 (기능 하나 = DFE 탭 계수) |
+모든 질문은 확신 낮음이고, `spec_rules.QUESTION_TEMPLATES`의 템플릿 문장으로 만든다(annotations에 `template`·`fields`가 있다).
+
+| ID | 템플릿 | 내용 | 처리 |
+|---|---|---|---|
+| Q1 | name_vs_structure | CTLE의 C0–C2: 이름은 C 뱅크인데 구조는 SP–SN 사이 직렬 스위치 쌍(저항 경로)이고, C*_CAP은 항상 연결돼 있다 | 구조대로 처리한다. 스위치 쌍은 가변 R_S에 넣고, C_DEG_BASE ∥ C0_CAP ∥ C1_CAP ∥ C2_CAP은 고정 C_S(50f + 40f + 80f + 160f)로 그린다 |
+| Q2 | name_vs_structure | X_DIV_M/S: 이름은 ÷2인데 귀환 루프가 없다 | 구조대로 LATCH 박스 2개로 그린다 |
+| Q3 | netlist_error_confirm | M_TIE TG: NMOS 게이트=VSS, PMOS 게이트=VDD라 항상 꺼져 있다 → O_DOUTP/N 미구동(X_DFE_EVEN.T1_FB_P/N에만 닿음) | 끊긴 것으로 처리한다: 열린 스위치 "(off)". O_DOUTP/N은 고속(미구동)으로 그린다. 끝은 블록 화면에서는 이름표, u_top_tg에서는 화면 밖 연결 기호다 |
+| Q4 | netlist_error_confirm | StrongARM M11(PMOS, S=VDD, D=DP, G=DN)에 짝이 없다 | DP쪽 바깥에 두고, 게이트 DN은 이름표로 잇고, 비대칭 주석을 단다 |
+| Q5 | bus_notation_guess | 비트 표기가 `<n>`이 아니다: W1_0…W4_3, G0…G3, C0…C2, R0…R2 | 이름 끝 숫자를 비트로 읽는다: `W<4:1>_<3:0>`, `G<3:0>`, `C<2:0>`, `R<2:0>` (§2.5-7 표기 추측 → 확신 낮음) |
+
+규칙이 정해서 **묻지 않는 것**(§2.7-4, classification.md "규칙이 정한 것"):
+- NAND2, SR_LATCH, INV — 사전 목록이다(§2.6-1).
+- 미사용 고속 출력 — 최상위 CLKQ/CLKQB, 클럭 트리 인버터 출력 4개(CLKI_BUF, CLKIB_BUF, CLKQ_BUF, CLKQB_BUF), StrongARM QPB/QNB. 짧은 선 + 이름표로 그린다(§3.5-4).
+- W를 16비트 버스 하나로 묶기 — 같은 기능의 비트는 버스 하나다(§2.5-7).
 
 ### 11.3 화면 17개 (id · 셀 · 레벨 · 크기 · 하위 · 허용 교차)
+가상 블록 화면의 id는 `u_<부모 짧은 이름>_<역할>`이다(계획서 §1.3-1).
+
 | id | 셀 | 레벨 | viewBox | 하위 화면 | 교차 |
 |---|---|---|---|---|---|
-| b_top | RX_AFE_TOP | 블록(최상위) | 1420×840 | b_clk, b_slice, u_ctle, u_rxterm, u_tg, u_vga | 0 |
+| b_top | RX_AFE_TOP | 블록(최상위) | 1420×840 | b_clk, b_slice, u_ctle, u_top_term, u_top_tg, u_vga | 0 |
 | b_slice | HALF_RATE_DFE_SLICE | 블록 | 1420×520 | b_dff, b_sa, u_latch, u_summer | 0 |
-| b_clk | CLK_DIST_TREE | 블록 | 1300×480 | u_clkbuf, u_clkterm, u_inv, u_latch | 0 |
-| u_rxterm | RX_AFE_TOP | 유닛 (입력 종단 + ESD) | 640×600 | | 0 |
-| u_tg | RX_AFE_TOP | 유닛 (전달 게이트, 항상 OFF) | 800×440 | | 0 |
+| b_clk | CLK_DIST_TREE | 블록 | 1300×480 | u_clk_buf, u_clk_term, u_inv, u_latch | 0 |
+| u_top_term | RX_AFE_TOP | 유닛 (입력 종단 + ESD) | 640×600 | | 0 |
+| u_top_tg | RX_AFE_TOP | 유닛 (전달 게이트, 항상 OFF) | 800×440 | | 0 |
 | u_ctle | CTLE_STAGE | 유닛 (CTLE, 대칭) | 900×680 | | 0 |
 | u_vga | VGA_STAGE | 유닛 (그림 B) | 1000×660 | | 2 |
 | u_summer | DFE_SUMMER | 유닛 (그림 B) | 1120×660 | | 2 |
-| b_sa | STRONGARM_SLICER | 블록 | 900×400 | b_sr, u_inv, u_strongarm | 0 |
-| u_strongarm | STRONGARM_SLICER | 유닛 (StrongARM core) | 820×700 | | 2 |
-| b_sr | SR_LATCH | 블록 | 640×420 | u_nand | 0 |
-| u_nand | NAND2 | 유닛 | 560×520 | | 0 |
+| b_sa | STRONGARM_SLICER | 블록 | 900×400 | b_sr, u_inv, u_sa_strongarm | 0 |
+| u_sa_strongarm | STRONGARM_SLICER | 유닛 (StrongARM core) | 820×700 | | 2 |
+| b_sr | SR_LATCH | 블록 (교차 결합 NAND2) | 640×420 | u_nand | 0 |
+| u_nand | NAND2 | 유닛 (정적 CMOS NAND) | 560×520 | | 0 |
 | u_inv | INV | 유닛 | 480×420 | | 0 |
 | u_latch | CML_LATCH | 유닛 (CML latch) | 800×700 | | 2 |
 | b_dff | CML_DFF | 블록 (master-slave) | 760×420 | u_latch | 0 |
-| u_clkterm | CLK_DIST_TREE | 유닛 (클럭 입력 종단) | 640×510 | | 0 |
-| u_clkbuf | CLK_DIST_TREE | 유닛 (CML 클럭 버퍼) | 760×560 | | 0 |
+| u_clk_term | CLK_DIST_TREE | 유닛 (클럭 입력 종단) | 640×510 | | 0 |
+| u_clk_buf | CLK_DIST_TREE | 유닛 (CML 클럭 버퍼) | 760×560 | | 0 |
 
 ### 11.4 화면별로 반드시 같아야 하는 것
-- **b_top**: 한 줄 주 경로 RX_INP/N → [종단·ESD 표시] → CTLE(X_CTLE1) → CTLE(X_CTLE2) → VGA → X_DFE_EVEN(위 박스). X_DFE_ODD는 그 아래 같은 열, **주 입력은 VGA_P/VGA_N 이름표**. 두 슬라이스의 피드백·탭 입력(왼쪽)과 탭 출력(오른쪽)은 전부 이름표. W 버스 포트는 위 슬라이스 위에서 선(16 표시), 아래 슬라이스는 `W<4:1>_<3:0>` 이름표. 클럭: 클럭 트리 박스는 왼쪽 아래, CLK_INP/N 포트에서 선, 출력 CLKI/CLKIB/CLKQ/CLKQB는 짧은 선 + 이름표, 슬라이스 클럭 핀(아래)도 이름표 (X_DFE_ODD는 CLKIB, CLKI 순 — netlist대로 뒤바뀜). DOUT_ODD_P/N 오른쪽에 열린 스위치 두 개와 O_DOUTP/N 이름표. 숨긴 포트 28개는 그리지 않음.
-- **b_slice**: Σ(X_SUM, 왼쪽, W 버스 위에서, 탭 입력 T1_FB…T4는 아래쪽 핀에서 왼쪽 포트로) → SA 삼각형(클럭 표시) → LATCH → DFF → DFF → 오른쪽 출력. D_OUTP/N, T2_OUTP/N은 사슬의 갈림 모서리에서 위/아래 포트. CLK는 아래 줄기 선, **CLKB는 블록마다 이름표**.
-- **b_clk**: CLK_INP/N → 종단 표시 → BUF 삼각형(자동 가상 블록) → B1P/B1N 이름표 → LATCH(X_DIV_M, 데이터 입력에 B1N/B1P **이름표**, 클럭 핀 B1P/B1N 이름표) → LATCH(X_DIV_S) → CLKI/CLKIB/CLKQ/CLKQB 포트. 인버터 체인 4개는 갈림 모서리 위아래로, 끝은 `*_BUF` 이름표.
-- **b_sa**: StrongARM 코어 삼각형(자동 가상 블록, 클럭 아래) → SR_LATCH 박스 → QP/QN 포트, 인버터 2개(QPB/QNB 이름표).
-- **b_sr**: NAND2 두 개 위아래 거울, 교차 결합은 **이름표**(QB→위 NAND B, Q→아래 NAND B).
-- **b_dff**: LATCH(X_M) → LATCH(X_S), 사이 넷 MP/MN 이름. netlist에서 master의 클럭 핀이 뒤바뀌어 있으므로(CLK 핀←CLKB, CLKB 핀←CLK) CLK 줄기 선은 X_M의 CLKB 핀과 X_S의 CLK 핀으로, CLKB는 나머지 두 핀에 이름표. 교차 0.
-- **u_vga/u_summer/u_ctle/u_latch/u_strongarm**: §8 표와 스크린샷.
+
+**모든 블록 화면에 공통**
+
+**극성 동그라미** (§3.4-6, §4.1-13, V19). 논리 출력에만 단다. 극성은 netlist 구조로 정한다: 게이트 → 부하 있는 드레인 = 반전, 스택 소스 → 드레인 = 그대로, 하위 블록 = 그 블록의 극성. 차동 블록은 상보 입력에서 같은 쪽 입력(P↔P, N↔N)과 비교한다. 그 결과는 다음과 같다:
+- 반전 → 동그라미: INV, NAND2(Y), SR_LATCH(Q·QB), CML_LATCH(QP·QN), StrongARM 코어(OUTP·OUTN), 클럭 BUF(B1P·B1N), CLK_DIST_TREE 박스의 CLKI·CLKIB.
+- 비반전 → 동그라미 없음: CML_DFF, STRONGARM_SLICER(SA), HALF_RATE_DFE_SLICE, CLK_DIST_TREE의 CLKQ·CLKQB.
+- 아날로그 → 동그라미 없음: CTLE·VGA·Σ.
+
+**차동 입력 표시** (V21). 삼각형 입력에 +/−를 단다. "+"는 동그라미를 달기 전 첫(위) 출력과 같은 위상인 입력이다.
+- CTLE·VGA: OUTP가 INP 소자의 드레인이라 반전하고, 아날로그라 동그라미가 없다 → 위 입력(INP) "−", 아래 입력(INN) "+".
+- SA·BUF·StrongARM 코어: 위 입력 "+".
+
+**출력 핀 이름** (§3.4-7). 출력이 둘 이상인 삼각형은 출력선 위·아래에 핀 이름을 쓴다(OUTP/OUTN, QP/QN, B1P/B1N). 박스는 지금처럼 안쪽에 쓴다.
+
+**버스 표시** (§3.5-2). 사선만 긋고, 이름에 `<a:b>`가 있으므로 비트 수는 쓰지 않는다. 버스 이름표에도 사선을 긋는다.
+
+**생략 목록** (§3.5-5). 버스는 `<MSB:LSB>` 한 줄로 쓰고, 분류는 한국어로 쓴다(`C<2:0> — 일반 제어 (K7 정적 트림)`). 블록 문구는 "고속 신호와 무관"이다. 유닛 화면에서는 레일·접지 기호로 그린 VDD/VSS를 넣지 않는다. 회색 이름표로만 보인 바이어스(VBN, VBP)는 넣는다.
+
+**화면별**
+
+**b_top**
+- 주 경로는 한 줄이다: RX_INP/N → [종단·ESD 표시 "R_T 50Ω"] → CTLE(X_CTLE1) → CTLE(X_CTLE2) → VGA → X_DFE_EVEN(위 박스).
+- **VGA 이득 코드**: `G<3:0>` 포트(위, y=50)에서 VGA 삼각형 위 핀(x0+30)까지 곧은 버스선, 가운데 사선. 인스턴스 이름 X_VGA는 그 선의 오른쪽으로 옮긴다.
+- X_DFE_ODD는 그 아래 같은 열에 둔다. 주 입력은 VGA_P/VGA_N 이름표다. 두 슬라이스의 피드백·탭 입력(왼쪽)과 탭 출력(오른쪽)은 전부 이름표다.
+- W 버스: 포트는 위 슬라이스 위에서 선으로 내려온다(사선, 비트 수 없음). 아래 슬라이스는 30px 짧은 선 + 사선 + `W<4:1>_<3:0>` 이름표다.
+- 클럭 트리 박스는 왼쪽 아래에 둔다. CLK_INP/N 포트에서 선으로 잇는다. 출력 CLKI/CLKIB(동그라미)와 CLKQ/CLKQB는 짧은 선 + 이름표다. 슬라이스 클럭 핀(아래)도 이름표다. X_DFE_ODD는 CLKIB, CLKI 순이다(netlist대로 뒤바뀜).
+- DOUT_ODD_P/N 오른쪽에 열린 스위치 두 개와 O_DOUTP/N 이름표가 있다.
+- 숨긴 포트 9개는 그리지 않는다.
+
+**b_slice**
+- Σ(X_SUM, 왼쪽)는 높이 270이다. 주 입력 INP/INN(y 200/220) 아래에 **탭 입력 T1P…T4N을 왼쪽 핀**(y 260…400)으로 두고, 왼쪽 포트 T1_FB_P…T4_INN에서 곧은 선으로 잇는다(V18: 데이터는 왼쪽).
+- W 버스는 위에서 들어온다(사선).
+- 다음 순서로 오른쪽 출력까지 간다: SA 삼각형(+/−, 클럭 표시, 동그라미 없음) → LATCH(QP·QN 동그라미) → DFF → DFF.
+- D_OUTP/N, T2_OUTP/N은 사슬의 갈림 모서리에서 위/아래 포트로 나간다.
+- CLK는 아래 줄기 선이고, **CLKB는 블록마다 이름표**다.
+
+**b_clk**
+- CLK_INP/N → 종단 표시 → BUF 삼각형(자동 가상 블록, +/−, B1P·B1N 동그라미, 핀 이름 B1P/B1N). BUF 출력선은 x=360에서 끝난다. 같은 직선 위의 다른 넷 이름표 선(400–440)과 40px을 띄운다(§1.4-7).
+- B1P/B1N 이름표 → LATCH(X_DIV_M, 데이터 입력에 B1N/B1P **이름표**, 클럭 핀 B1P/B1N 이름표, QP·QN 동그라미) → LATCH(X_DIV_S, 동그라미) → CLKI/CLKIB/CLKQ/CLKQB 포트.
+- 인버터 체인 4개는 갈림 모서리 위아래로 두고, 끝은 `*_BUF` 이름표(미사용 출력)다.
+
+**b_sa**
+- StrongARM 코어 삼각형(자동 가상 블록, +/−, OUTP·OUTN 동그라미, 클럭 아래) → SR_LATCH 박스(Q·QB 동그라미) → QP/QN 포트.
+- 인버터 2개가 있고, 출력은 QPB/QNB 이름표(미사용 출력)다.
+
+**b_sr**
+- NAND2 두 개를 위아래 거울로 둔다(Y 동그라미).
+- 교차 결합은 **이름표**다(QB→위 NAND B, Q→아래 NAND B).
+- 제목은 "SR_LATCH — 블록 레벨 (교차 결합 NAND2)"이다.
+
+**b_dff**
+- LATCH(X_M) → LATCH(X_S)로 두고, 둘 다 QP·QN에 동그라미를 단다. 사이 넷 이름은 MP/MN이다.
+- netlist에서 master의 클럭 핀이 뒤바뀌어 있다(CLK 핀←CLKB, CLKB 핀←CLK). 그래서 CLK 줄기 선은 X_M의 CLKB 핀과 X_S의 CLK 핀으로 가고, CLKB는 나머지 두 핀에 이름표로 단다. 교차 0.
+
+**u_vga**
+- 그림 B. 추가 쌍 꼬리 = 가변 전류원 `I_G<3:0>`이다. 그 오른쪽 버스 핀에서 `G<3:0>` 포트(오른쪽, 사선)로 간다(§3.4-4).
+- 범례에 "중요 제어 G<3:0> (K6, …)"를 쓴다.
+
+**u_summer**
+- 그림 B. `X_DAC<4:1>` 가변 전류원 → `W<4:1>_<3:0>` 포트(사선, 비트 수 없음).
+- 합친 탭 쌍 게이트 포트 `T<4:1>P`/`T<4:1>N`에도 사선을 긋는다.
+
+**u_sa_strongarm · u_clk_buf · u_top_tg**
+- 화면 밖으로 나가는 넷은 **화면 밖 연결 기호**(작은 오각 화살표 + 11px 이름)로 그린다(§3.5-1): OUTP/OUTN, B1P/B1N, O_DOUTP/O_DOUTN.
+- 셀 포트는 지금처럼 포트 기호로 그린다.
+
+**u_ctle**
+- 게이트 저항 값은 SI 표기 "2k"로 쓴다(§3.5-6).
+
+**u_nand**
+- 제목은 "NAND2 — unit level (정적 CMOS NAND)"이다.
+
+**u_ctle·u_vga·u_summer·u_sa_strongarm·u_latch**
+- 그 밖에는 §8 표와 스크린샷대로다.
+
+### 11.5 검증·산출물 (이 기준 결과에서 나와야 하는 값)
+- `verify_report.json` summary는 `{'views': 17, 'connectivity_pass': 17, 'quality_pass': 17}`이다. 화면마다 `scene_sha`(제목·크기·그림 요소·클릭 영역의 SHA-256)와 `checks`가 있다.
+- `self_checklist.json`의 `auto_checks`에는 자동 검사 29개가 있고 모두 `pass`, 건수 0이다. 계획서 §4.1-1~17, V24 8개, 버스 표시(§3.5-2), 사전 대응(§2.6-4), M1 파일, M10 유닛 크기가 들어 있다.
+- 주입 오류 57건이 모두 잡힌다(`self_test.all_caught = true`). V25 필수 목록 11종(OPEN, SHORT, 블록 교차, 동그라미 지우기, 미사용 출력 지우기, 없는 핀 이름, 그리지도 생략하지도 않은 넷, 짧은 꺾임, 글자 겹침, 점선, 핀 방향 위반)이 모두 들어 있다. §4.1-12 CCI는 이 회로에 CCI가 없어 해당 없음이다.
+- 체크리스트 counts는 `{pass 20, fail 0, na 7, star_fail 0}`이고 `verdict_drawing = PASS`이다.
+- `block_dictionary.json`은 그린 셀 13행과 가상 블록 6행(입력 종단·ESD, TG 2개, 클럭 종단, CML 클럭 버퍼, StrongARM 코어)으로 19행이다. `not_drawn`은 BIAS_GEN이다.
 
 ---
 
@@ -455,7 +579,7 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 - [ ] 모든 화면 연결 검증 PASS, 품질 수치 0, 교차는 허용 목록 그대로.
 - [ ] 블록 화면에 숨김 넷의 선·핀·포트·이름표가 하나도 없다. 생략 목록에는 전부 있다.
 - [ ] 미사용 출력은 짧은 선 + 이름표로 남아 있다.
-- [ ] 차동 유닛은 대칭(짝 없는 소자만 예외, 주석 있음). 모든 배선은 같은 굵기(1.6), 버스는 사선 + 비트 수 표시.
+- [ ] 차동 유닛은 대칭(짝 없는 소자만 예외, 주석 있음). 모든 배선은 같은 굵기(1.6), 버스는 사선(이름에 `<a:b>`가 있으면 비트 수 없음, 계획서 §3.5-2).
 - [ ] 스크린샷을 직접 봤다. PPTX를 그림으로 변환해 봤다. HTML은 외부 리소스 없이 열린다.
 - [ ] RX AFE로 돌리면 §11과 같다.
 
@@ -479,15 +603,15 @@ SVG 좌표, y는 아래로 +, 단위 px, 격자 10 (반 칸 5까지 허용). 화
 11. 꼬임 기준 거리·20px 경계가 달라 결과가 다름 → 가로+세로 거리, 20 미만만 위반.
 12. 섞인 셀을 유닛 화면에 블록 기호를 섞어 그림 → 자동 가상 블록.
 13. "C 뱅크" 이름을 믿고 가변 C로 그림 → 구조를 따르고 묻는다.
-````
+`````
 
 ### FILE: DRAWING_PLAN.md
-<!-- sha256=bb931e675657012562826b855acad78cdfeeeab8e400de6835408b92d48d5167 newline=1 -->
-````markdown
+<!-- sha256=97edfabe616307e094d6175284c9e7bb383c39661d2fe1f54f4b141638e27ead newline=1 -->
+`````markdown
 # 넷리스트 기반 High-Speed IO 개념도 그리기 — 도면 계획서 (일반판)
 
 > 스킬 이름: **넷리스트 기반 high speed IO 개념도 그리기** (폴더/식별자: `netlist-hsio-concept-diagram`)
-> 상태: **명세서 v6** — v5의 규칙을 한 곳에 하나씩 정리하고 v5 안의 충돌을 정리함 (부록 C).
+> 상태: **명세서 v6.1** — v6 위에 4회차 결정 V1–V95를 각 규칙 자리에 반영함 (부록 C).
 > 구현 가이드: 같은 폴더의 `SKILL.md` (수치·템플릿·기준 결과 `reference/rx_afe/`). 규칙이 다르면 이 계획서가 이긴다.
 > 이 문서는 **특정 netlist에 맞춘 규칙을 쓰지 않는다.** 예시(RX AFE)는 부록에만 둔다.
 
@@ -534,17 +658,17 @@ HSPICE/Virtuoso netlist를 받아 **High-Speed IO 회로의 개념을 설명하�
 
 | 파일 | 내용 |
 |---|---|
-| `concept.html` | 단일 HTML (§1.1) |
+| `concept.html` | 단일 HTML (§1.1). PPTX를 base64로 이 파일 안에 넣는다 — 크기 상한은 없고, 옆 파일 링크는 금지. 커지면 화면 데이터를 gzip으로 압축하고 브라우저 내장 DecompressionStream으로 푼다 |
 | `concept.pptx` | 수정 가능한 PPTX (§1.1) |
 | `classification.md` | 분류 확인 표 (§1.5, 기재 항목 §2.5-9) |
 | `annotations.json` | 질문의 답 (§2.7-6) |
-| `verify_report.json` | summary `{views, connectivity_pass, quality_pass}` + 화면별 결과. 화면마다 `scene_sha`(그 화면 그림 데이터의 SHA-256) |
+| `verify_report.json` | summary `{views, connectivity_pass, quality_pass}` + 화면별 결과. 화면마다 `scene_sha`(그 화면 그림 — 제목·크기·그림 요소·클릭 영역 — 만의 SHA-256. 사이드 패널은 넣지 않는다) |
 | `screenshots/<화면id>.png` | 화면별 스크린샷 |
 | `self_checklist.json` | AGENT 2 자체 점검. 체크리스트(§4.2)와 같은 형식. 모든 자동 검사의 결과·건수·주입 시험은 `auto_checks`(§4.1) |
 | `block_dictionary.json` | 그린 블록의 사전 대응 기록 (§2.6-4) |
 
 ### 1.3 화면 id·제목·사이드 패널
-1. **화면 id**: 블록 `b_<셀 짧은 이름>`, 유닛 `u_<셀 짧은 이름>`(가상 블록은 `u_<부모>_<역할>`), 보정 루프 화면(§3.1-6)은 고리가 한 셀 안에 있으면 그 셀의 블록 화면이 곧 루프 화면(id `b_<셀 짧은 이름>`), 여러 셀에 걸치면 고리를 품은 가장 작은 공통 셀 이름으로 `b_<셀 짧은 이름>_loop`.
+1. **화면 id**: 블록 `b_<셀 짧은 이름>`, 유닛 `u_<셀 짧은 이름>`(가상 블록은 `u_<부모>_<역할>`), 보정 루프 화면(§3.1-6)은 고리가 한 셀 안에 있으면 그 셀의 블록 화면이 곧 루프 화면(id `b_<셀 짧은 이름>`), 여러 셀에 걸치면 고리를 품은 가장 작은 공통 셀 이름으로 `b_<셀 짧은 이름>_loop`. 셀 짧은 이름은 netlist 셀 이름을 소문자로 쓴 것이고, 뜻이 남는 한 줄여도 된다(예: HALF_RATE_DFE_SLICE → slice, RX_AFE_TOP → top). 화면 제목에는 언제나 원래 셀 이름을 쓰고(2항), 화면 id는 HTML 주소(`#<id>`)로 확인할 수 있게 한다. 가상 블록 id는 `u_<부모>_<역할>` 그대로다.
 2. **제목**: `<셀> — 블록 레벨` / `<셀> — unit level (<역할>)` / 보정 루프 화면은 `<셀> — 블록 레벨 (보정 루프)`(여러 셀에 걸친 고리는 공통 셀 이름).
 3. **사이드 패널 순서**: 이 화면 → 생략 목록 → 주석 → 분류 요약 → 질문(가정한 답) → 모든 화면.
 
@@ -555,7 +679,7 @@ HSPICE/Virtuoso netlist를 받아 **High-Speed IO 회로의 개념을 설명하�
 4. **가지는 이미 꺾이는 모서리에서**: 모서리 → T 하나. 기존 접점에서 **20px 미만** 거리에 새 접점 금지 (20px 이상은 허용).
 5. **꼬임 금지**: 선 길이가 두 끝점의 **가로+세로 거리**(|Δx|+|Δy|)의 1.5배를 넘거나 소자를 돌아가면 꼬임이다. 블록 레벨은 이름표로 바꾸고(§3.5-1), 유닛 레벨은 다시 배치한다.
 6. **짧은 꺾임 금지**: 꺾인 선분 길이가 **20px 미만**이면 위반 (20px 이상은 허용).
-7. **접점**: 한 점에 선분 3개까지(4방향 금지). 서로 다른 넷의 선 끝이 같은 직선 위에 있으면 40px 이상 떨어뜨린다.
+7. **접점**: 한 점에 선분 3개까지(4방향 금지). 서로 다른 넷의 선 끝이 같은 직선 위에 있으면 40px 이상 떨어뜨린다. 자유 선 끝만 센다 — 핀이나 다른 선 위(T 접점)에서 끝나는 끝은 세지 않는다.
 8. **대칭 배선**: P쪽 경로는 N쪽 경로의 거울상.
 9. **교차는 허용 목록에 있는 것만**: 블록 레벨은 **0개**(교차가 생기면 이름표, §3.5-1). 유닛 레벨은 템플릿마다 정한 것만 — cross-coupled 쌍마다 X 1개, 쌍별 대칭(§3.3-2)은 쌍마다 1개, CML latch의 클럭 스티어링 1개. 이 밖의 교차는 전부 위반이다.
 
@@ -633,18 +757,20 @@ HSPICE/Virtuoso netlist를 받아 **High-Speed IO 회로의 개념을 설명하�
    - ⑤ TG latch/DFF의 상보 게이트
 
    **cross-coupled 소자는 먼저 빼고** 판정한다. 이 판정에는 넷 이름을 쓰지 않는다.
-5. **느린 신호(검출)**: RC 저역통과 뒤에서 시작해 추적되는 넷(평균값, 비교기 판정, 루프 필터)은 "느린 신호"로 분류한다(그림 §2.5-4). 이 신호를 받는 비교기의 클럭은 클럭으로 둔다.
+5. **느린 신호(검출)**: RC 저역통과 뒤에서 시작해 추적되는 넷(평균값, 비교기 판정, 루프 필터)은 "느린 신호"로 분류한다 — 루프 안 검출기 출력은 14항 "루프 신호 (느린 신호)" (그림 §2.5-4). 이 신호를 받는 비교기의 클럭은 클럭으로 둔다.
 6. **배선 RC 예외**: 직렬 R + 접지 C라도 τ=RC가 단위 간격의 1/20보다 작고(또는 10ps 미만) 뒤에서 같은 신호를 다시 구동하면 **배선 RC** — 추적을 계속한다 (그림 §3.4-6).
 7. **분주기**: latch·DFF의 데이터 입력이 (인버터를 거쳐) 자기 출력에서만 오고 클럭 핀에 클럭이 들어오면 분주기다. 분주기 출력이 클럭인 것은 그 출력이 다른 블록의 클럭 핀을 구동할 때만이다.
 8. **리플 카운터 예외**: 각 단이 앞 단 출력으로 클럭되는 사슬의 Q는 **계수(상태 출력)**이지 클럭이 아니다.
-9. **사건 플래그**: D가 상수이고 클럭·리셋이 있는 플립플롭의 출력은 sticky 상태 출력(상수 아님).
+9. **사건 플래그**: D가 상수이고 클럭·리셋이 있는 플립플롭의 출력은 상수가 아니다. 루프 안에서는 14항 루프 신호가 먼저고, 그 밖에서는 출력이 블록 밖으로 나가든 안 나가든 sticky 상태 출력이다.
 10. **포트 방향**: 블록 안 출력단이 구동하는 포트는 출력. 같은 넷을 안에서 다시 읽어도(루프백 탭) 입력으로 세지 않는다.
 11. **의사 차동쌍**: 한쪽 게이트가 기준 전압인 쌍은 두 드레인 모두 신호.
-12. **비동기 set/reset 핀**은 데이터 추적 대상이 아니다.
+12. **비동기 set/reset 핀**은 데이터 추적 대상이 아니다. 단 블록 안에서 그 블록의 출력으로 만들어져 자기 상태 소자를 리셋하는 경로(예: 두 출력이 모두 서면 스스로 리셋)는 신호 경로다 — 숨기지 않는다. 그 경로의 분류는 그 경로를 만드는 블록 출력의 분류를 따른다(예: 루프 검출기 출력으로 만든 리셋은 루프 신호, 14항).
 13. **미구동 넷**: 구동원이 없고 고속 핀에만 닿는 넷(꺼진 전달 게이트 뒤 등)은 "고속(미구동)" — 그 핀 분류로 그리고 이름표로 끝내며 확인 질문을 남긴다(§2.7-4).
+14. **루프 검출기 출력**: 루프(§2.5-6 O2) 안 검출기(위상 검출기·비교기·적분기·차지 펌프)의 출력(up/dn 등)은 고속 데이터가 아니라 **루프 신호 (느린 신호)** — 루프 안의 느린 신호다 (그림은 §2.5-4 표).
+15. **모니터 출력 표시**: 고속 추적이 다른 부하가 없는 관찰 가지로만 출력 포트에 닿으면, 그 포트는 추적한 분류 그대로이고 출력 포트 + 이름 옆 "(mon)"으로 그린다. "(mon)"은 출력 포트 표시이지 추적 분류가 아니다. 추적이 닿지 않는 경우는 §2.5-4 '모니터 출력' 행.
 
 ### 2.4 입력 포트 판정
-1. **고속 입력 후보는 차동 포트 쌍 또는 종단·ESD가 붙은 패드**만. 단일 디지털 포트는 아래 판정으로 데이터가 되지 않는다.
+1. **고속 입력 후보는 차동 포트 쌍 또는 종단·ESD가 붙은 패드**만. 단일 디지털 포트는 아래 판정으로 데이터가 되지 않는다. 종단 없이 ESD만 붙은 단일 종단 패드도 고속 입력 후보가 아니다 — 끝점으로 분류한다(§2.5: 명령·시험·느린 클럭·상태 등).
 2. 입력 포트에서 §2.3 규칙으로 추적했을 때:
    - **클럭 역할 게이트**(§2.3-4)에 하나라도 도달 → **클럭 입력** (latch 데이터 입력에도 닿을 수 있음: 분주기·I/Q)
    - 클럭 역할 게이트에는 닿지 않고, 입력 트랜지스터를 거쳐 latch·샘플러의 **데이터 입력**에 도달 → **데이터 입력**
@@ -660,52 +786,61 @@ HSPICE/Virtuoso netlist를 받아 **High-Speed IO 회로의 개념을 설명하�
    - **출처**: 그 넷이 어디서 오는가 — 최상위 포트, 레지스터(고속 클럭이 아닌 상태 소자), **루프**(6항 O2), 상수(전원·접지·tie 셀).
    - **모양**: 비트 수, 패드·ESD 여부, 출력 포트 여부.
 2. **이름은 판정에 쓰지 않는다.** 구조로 정한 뒤 확신도에만 쓴다(§2.7). 구조로 정할 수 없을 때만 이름으로 가정하고 질문을 남긴다. 이름과 구조가 반대 뜻이면 구조를 따르고 질문한다.
-3. 끝점이 여러 개면 **끝점 표(5항)에서 가장 위에 있는 분류**가 이긴다. 같은 넷이 출력 포트이기도 하면 O1(6항)을 함께 적용한다(선 하나에 출력 포트 + 버스).
+3. 끝점이 여러 개면 **끝점 표(5항)에서 가장 위에 있는 분류**가 이긴다. 다만 K8(명령)과 K9(시험 입력)은 K3보다 먼저 본다. 같은 넷이 출력 포트이기도 하면 O1(6항)을 함께 적용한다(선 하나에 출력 포트 + 버스). 중요 제어가 논리를 거쳐 오버라이드 선택(K10)에도 닿으면 그 경로는 그 중요 제어의 분류다.
 4. **분류 표** — 모든 신호 분류와 그리는 방법:
 
 | 분류 | 판정 | 그림 |
 |---|---|---|
 | 고속 데이터 | 데이터 입력에서 추적(§2.3)으로 도달 (출력·피드백 포함) | 선 |
 | 고속 클럭 | 클럭 입력에서 추적으로 도달 | 선 (데이터와 같은 굵기) |
+| 느린 클럭 (클럭 분류의 하위 이름) | 클럭이 고속 경로(고속 데이터 또는 고속 클럭 추적이 닿는 노드) 밖의 상태 소자에만 닿으면 느린 클럭이라 적는다. 신호가 클럭으로 흘러 상태 소자(FSM·카운터·레지스터)의 클럭 핀에 닿는 입력은 고속이 아니어도 클럭이다. K8로 보지 않는다. 슬로우 스트로브 패드도 같다. 루프의 갱신 입력에만 닿는 1비트 포트는 K8이고, 클럭 게이트의 enable 쪽 입력은 게이트되는 클럭이 고속이면 K3, 느리면 K8이다(5항) | 클럭과 같음. 이름 옆 "(slow)"는 붙이지 않음 |
 | 느린 신호(검출) | RC 저역통과 뒤에서 시작해 추적되는 넷 (§2.3-5) | 실선. 선 모양으로 구분하지 않고 분류 표와 화면 설명에만 표시 |
+| 루프 신호 (느린 신호) | 루프 안 검출기의 출력 — 루프 안의 느린 신호 (§2.3-14) | 느린 신호와 같은 실선. 분류 표에는 "루프 신호 (느린 신호)" |
 | 워드 속도 디지털 | 1:N 디시리얼라이저의 워드 출력 뒤 / N:1 직렬화기의 워드 입력 앞의 데이터와 그것만 다루는 로직 (PRBS 생성·검사기, 카운터, 잠금 검출) | 박스로만 (§3.1-5) |
 | 중요 제어 | 끝점 K1–K6, 출처가 루프인 K7, 패턴 생성 슬라이스의 1비트 입력(P2) | 끝점 표(5항)의 "그림" 열 |
 | 일반 제어 | 출처가 포트·레지스터인 K7(트림), K10 | 숨김 |
 | 명령 | K8 | 받는 블록으로 가는 실선 한 줄 + 이름표, 버스 아님 |
-| 상태 출력 | O1 | 실선 + 출력 포트. 모니터 출력은 이름 옆 "(mon)". 선 모양으로 구분하지 않고 분류 표와 화면 설명에만 표시 |
+| 상태 출력 | O1 | 실선 + 출력 포트. 선 모양으로 구분하지 않고 분류 표와 화면 설명에만 표시 |
+| 상태·시험 출력 — 모니터 출력 | 출력 포트가 (a) 다른 고속·클럭·아날로그 노드의 주 경로에서 갈라진 가지(버퍼·게이트·직렬 R)로만 구동되고 (b) 그 가지가 칩 안 다른 곳에서 쓰이지 않으면 (mon). 그 가지를 켜고 끄는 1비트 입력은 K9. 상태 소자 출력(카운터 값 등)을 내보내는 출력은 O1 상태 출력이고 모니터 표시는 하지 않는다. 고속 추적이 관찰 가지로 출력 포트에 닿는 경우는 §2.3-15 | 실선 + 출력 포트, 이름 옆 "(mon)" |
 | 시험 입력 | K9 | 한 줄, 그 (mon) 출력 옆 |
 | 기준 | 외부 기준 패드 P1, 기준 전압 (6항) | 회색 실선 + 이름표, 받는 블록의 둘째 입력 핀. 기준 전압을 만드는 DAC는 "VREF" 박스 |
-| 바이어스 | 꼬리 전류원·캐스코드 게이트, 다이오드 노드, 기준 전류, 공통모드(§2.2). 끝점으로는 K11 | 숨김 |
+| 바이어스 | 루프 출처가 아닌 꼬리 전류원·캐스코드 게이트, 다이오드 노드, 기준 전류, 공통모드(§2.2). 끝점으로는 K11 | 숨김 |
 | 전원 | 공급·접지 (§2.1) | 블록 화면 숨김, 유닛 화면 레일 (상수 입력은 §3.5-3) |
 
 5. **끝점 표** — 넷이 결국 닿는 곳으로 분류한다:
 
 | # | 넷이 결국 닿는 곳 (구조) | 분류 | 그림 |
 |---|---|---|---|
-| K1 | 여러 고속 신호(또는 여러 클럭 위상)를 한 노드에 합하는 가지의 전류·세기 | 중요 (a) 가중치 | 버스 |
-| K2 | 서로 다른 고속 원천(데이터·클럭·루프백) 중 하나를 고르는 MUX·상보 선택 스위치의 선택 핀 | 중요 (b) 선택 | 선택 핀까지 선 |
-| K3 | 고속 경로를 끊거나 잇는 곳: 고속 신호와 함께 들어가는 정적 게이트의 다른 입력(클럭 게이트), 고속 경로의 직렬 스위치, 고속 블록의 꼬리·전원 스위치, 패드 드라이버를 끄는 곳(출력 enable). **그리는 보정 루프(§3.1-6)를 켜고 끄는 곳도 포함** | 중요 (f) 켜기 | 1비트 = 한 줄, 여러 비트 = 버스 |
+| K1 | 여러 고속 신호(또는 여러 클럭 위상)를 한 노드에 합하는 가지의 전류·세기. 병렬 다리는 다리의 데이터 입력이 주 신호와 **다른** 고속 신호(FFE 탭)일 때만 K1 — 주 데이터 다리의 enable은 패드·최종 출력 노드면 K5, 그 앞이면 K7(출력 끄기면 K3) | 중요 (a) 가중치 | 버스 |
+| K2 | 서로 다른 고속 원천(데이터·클럭·루프백) 중 하나를 고르는 MUX·상보 선택 스위치의 선택 핀. 같은 원천에서 나온 서로 다른 블록 경로(정합/비정합, 지연/비지연 등) 중 하나를 고르는 선택도 K2. 같은 지연 소자의 탭을 고르는 것(미세 트림)은 K7 | 중요 (b) 선택 | 선택 핀까지 선 |
+| K3 | 고속 경로를 끊거나 잇는 곳: 고속 신호와 함께 들어가는 정적 게이트의 다른 입력(클럭 게이트), 고속 경로의 직렬 스위치, 고속 블록의 꼬리·전원 스위치, 패드 드라이버를 끄는 곳(출력 enable). **그리는 보정 루프(§3.1-6)의 아날로그 전원·꼬리·분압 스위치, 복제 다리 게이트, 루프 안 발생기·분압기를 켜고 끄는 곳도 포함**. 클럭 게이트와 직렬 스위치 항목은 게이트하는 신호가 고속(데이터 또는 고속 클럭)일 때만 — 느린 루프 클럭을 게이트하는 곳은 K3 끝점이 아니다. 1비트 입력이 클럭을 게이트하면 게이트되는 클럭이 고속이면 K3, 느리면 K8 | 중요 (f) 켜기 | 1비트 = 한 줄, 여러 비트 = 버스 |
 | K4 | 패드나 고속 노드에 R을 직렬로 거는 스위치 (종단) | 중요 (f) 종단 | 버스 (1비트면 한 줄) |
-| K5 | 출력이 같은 패드·고속 출력 노드에 묶인 **병렬 다리**를 켜는 곳 (세기) | 중요 (f) 세기 | 버스 |
-| K6 | 비교기·샘플러의 **기준 입력 레벨**을 정하는 코드, 여러 비트 경로(또는 여러 슬라이스)가 **공유**하는 이득 코드 | 중요 (d) | 버스 |
+| K5 | 코드로 켜는 **병렬 다리** 중 출력이 패드, 또는 패드·종단을 바로 구동하는 마지막 출력 노드에 묶인 것 (마지막 구동 세기·종단). 그 앞 노드에서 주 데이터를 싣는 다리(구동 세기·에지 속도)는 블록 경계와 상관없이 K7 | 중요 (f) 세기 | 버스 |
+| K6 | 다비트 **레벨** 코드(비교기·샘플러의 기준 입력 레벨)와 여러 비트 경로(또는 여러 슬라이스)가 **공유**하는 이득 코드만. 이득 코드는 사전 VGA 행(§2.6-1)으로 그리는 이득 단의 코드다 — CTLE 행의 R·C 코드는 피킹이라 K7. 기준 **원천** 선택(내부 발생기 ↔ 외부 패드)과 루프 밖 발생기 켜기·끄기는 K10 (그리는 보정 루프 안의 발생기·분압기는 K3) | 중요 (d) | 버스 |
 | K7 | 고속 경로 **안쪽 노드**(패드·고속 출력이 아닌 곳)에 C·R·작은 전류를 더해 지연·에지·듀티·오프셋·피킹·이득을 바꾸는 곳 | 출처가 **루프**면 중요 (c), 포트·레지스터면 **일반(트림)** | 중요 = 버스(아날로그면 한 줄), 일반 = 숨김 |
-| K8 | 상태 소자(FSM·카운터·레지스터)의 동작을 **한 번** 일으키는 동기 입력(상태 소자의 시작·적재(load)·갱신(update)·동기 set/clear 조건에만 닿고 고속 경로·K3–K7 끝점에는 닿지 않는 1비트). 비동기 set/reset 핀은 K10 | 명령 | 한 줄, 버스 아님 |
-| K9 | **모니터 출력 쪽으로만** 가는 경로(그 넷의 끝점이 전부 (mon) 출력을 만드는 게이트·버퍼) | 시험 입력 | 한 줄, 그 (mon) 출력 옆 |
-| K10 | 정상 코드 대신 고정값을 넣는 MUX의 선택·데이터(오버라이드), 비동기 set/reset 핀, 한 경로 안의 아날로그 동작 모드(초퍼·저전력) | 일반 | 숨김 |
-| K11 | 바이어스 노드(미러 게이트, 꼬리·캐스코드 게이트) | 바이어스 | 숨김 |
+| K8 | 상태 소자(FSM·카운터·레지스터)의 동작을 **한 번** 일으키는 동기 입력(상태 소자의 시작·적재(load)·갱신(update)·동기 set/clear 조건에만 닿고 고속 경로에는 닿지 않는 1비트). 비동기 set/reset 핀은 K10. 루프의 상태 소자 enable·동기 리셋(clear)·갱신 입력에만 닿는 1비트 포트는 K8. 1비트 입력이 클럭을 게이트하면 게이트되는 클럭이 고속이면 K3, 느리면 K8. 신호가 클럭으로 흘러 상태 소자의 클럭 핀에 닿는 입력은 K8이 아니라 느린 클럭(4항 표) | 명령 | 한 줄, 버스 아님 |
+| K9 | **모니터 출력 쪽으로만** 가는 경로(그 넷의 끝점이 전부 (mon) 출력을 만드는 게이트·버퍼, 모니터 출력은 4항 표·§2.3-15) | 시험 입력 | 한 줄, 그 (mon) 출력 옆 |
+| K10 | 정상 코드 대신 고정값을 넣는 MUX의 선택·데이터(오버라이드), 블록 밖(포트·제어 허브)에서 오는 비동기 set/reset 핀, 한 경로 안의 아날로그 동작 모드(초퍼·저전력), 기준 원천 선택(내부 발생기 ↔ 외부 패드)과 루프 밖 기준 발생기 켜기·끄기 | 일반 | 숨김 |
+| K11 | 루프 출처가 아닌 바이어스 노드 자체(미러 게이트, 꼬리·캐스코드 게이트) | 바이어스 | 숨김 |
 
    - K3의 "끊거나 잇는다"는 그 핀 값에 따라 고속 신호가 출력에 **나타나거나 사라지는** 것이다. 세기·지연만 바꾸면 K5·K7이다.
    - 공유하지 않는 이득 코드는 K7이다 (출처가 포트·레지스터면 일반 제어).
+   - 포트·레지스터에서 오는 정적 코드(slew, CTLE 피킹, 디스큐, 지연 트림)는 K7 일반 — 숨김.
+   - 바이어스 발생기 안의 코드 스위치(바이어스 DAC로만 가는 코드)는 K7 — 정적 출처면 일반, 루프 출처면 중요 (c).
+   - 보정 루프가 만드는 아날로그 트림 전류·전압(오프셋 보정 DAC 출력 등)은 루프 출처 K7 — 중요 (c). 꼬리·미러 게이트에 닿아도 같다(출처가 정한다).
+   - 패드·종단을 바로 구동하는 마지막 출력 노드보다 앞 노드에서 주 데이터를 그대로 싣는 병렬 다리(구동 세기·에지 속도)를 코드로 켜는 곳은 어느 블록 경계 뒤에 있든 K7이다(예: 프리드라이버 단, 슬루 제한 인버터, 내부 버퍼) — 정적 출처면 일반, 루프 출처면 중요 (c). 서로 다른 고속 신호를 섞는 다리는 K1(DFE·FFE 탭), 공유 이득 코드는 K6 — 표에서 위에 있는 K1·K6이 먼저다.
+   - 클럭 게이트가 보통 게이트(AND·NAND)면 클럭 추적이 닿는 입력이 클럭 쪽이고, 다른 입력이 enable 쪽이다.
+   - 고속으로 추적되지 않은 포트(예: ESD만 붙은 느린 패드)에서 오는 클럭은 상태 소자의 클럭 핀에서 거꾸로 따라가며 게이트마다 클럭 쪽을 정한다. 분주기·발진기·클럭 포트·클럭 패드에서 오는 입력, 또는 이 게이트를 거치지 않고 다른 상태 소자의 클럭 핀에도 닿는 입력이 클럭 쪽이고, 다른 입력이 enable 쪽이다. 두 입력이 모두 해당하거나 둘 다 해당하지 않으면 묻는다(§2.7).
 
 6. **출처·모양 규칙**
    - **O1 상태 출력**: 최상위(또는 그 화면의) **출력 포트**를 상태 소자(카운터·레지스터·FSM·플래그 플립플롭)가 구동하고 고속 데이터·클럭이 아니면 **상태 출력** — 다비트 코드도 포함. 같은 넷이 안에서 K5 등에 쓰이면 그 경로는 그 끝점 분류로 그린다.
-   - **O2 루프 출처**: 넷을 거꾸로 따라가 **검출기**(비교기, 또는 RC 저역통과·적분 C 뒤의 판정)의 출력에서 상태 소자나 적분 C를 거쳐 왔고, 그 검출기의 입력이 이 넷이 바꾸는 노드(또는 그 노드에서 만든 신호)로 돌아오면 **루프**다. 디지털 코드든 아날로그 전압이든 같다. 루프 안의 아날로그 넷은 느린 신호 규칙(§2.3-5, 실선)도 그대로 적용한다.
+   - **O2 루프 출처**: 넷을 거꾸로 따라가 **검출기**(위상 검출기, 비교기, 적분기·차지 펌프, 또는 RC 저역통과·적분 C 뒤의 판정)의 출력에서 상태 소자나 적분 C를 거쳐 왔고, 그 검출기의 입력이 이 넷이 바꾸는 노드(또는 그 노드에서 만든 신호)로 돌아오면 **루프**다. 디지털 코드든 아날로그 전압이든 같다. 루프 안의 아날로그 넷은 느린 신호 규칙(§2.3-5, 실선)도 그대로 적용한다.
    - **P1 외부 기준 패드**: ESD가 붙은 포트인데 고속 데이터·클럭 추적이 닿지 않고, 비교기·OTA 입력이나 보정 다리에**만** 닿으면 **기준**. 바이어스 생성(미러)에만 닿는 패드는 바이어스(K11, 숨김).
    - **기준 전압**: 추적되지 않은 넷이 비교기·프리앰프·샘플러의 한쪽 입력으로 들어가 판정 기준이 되면 기준 전압 — 회색 실선, 만드는 DAC는 VREF 박스 (그림은 4항 표 '기준').
-   - **P2 패턴 생성 슬라이스**: 직렬화기(클럭으로 고르는 MUX)의 데이터 입력이 **전부** 상수, 또는 1비트 입력 하나와 그 반전으로만 채워지면 패턴 생성 슬라이스다. 출력은 **클럭(스트로브)**, 그 1비트 입력은 **중요 (e)**. 고속 데이터 입력이 아니다(§2.4-1과 같은 방향).
+   - **P2 패턴 생성 슬라이스**: 직렬화기(클럭으로 고르는 MUX)의 데이터 입력이 **전부** 상수, 1비트 입력 하나와 그 반전, 또는 1비트 입력 하나와 상수로만 채워지면 패턴 생성 슬라이스다. 출력은 **클럭(스트로브)**, 그 1비트 입력은 **중요 (e)**. 고속 데이터 입력이 아니다(§2.4-1과 같은 방향).
 7. **버스 묶기**
    - 같은 기능의 비트는 버스 하나. 이름이 달라 하나의 버스 이름으로 펼칠 수 없으면 버스를 나눈다.
-   - netlist의 비트 표기가 `<n>`이 아니어도(`[n]`, `_n`, 숫자 꼬리 등) 이름 줄기가 같고 정수가 연속이면 버스로 묶는다. 이름은 §1.4-3 형식. 표기를 추측했으면(예: `_n`) 분류 표에 적고 확신도 낮음.
+   - netlist의 비트 표기가 `<n>`이 아니어도(`[n]`, `_n`, 숫자 꼬리 등) 이름 줄기가 같고 정수가 연속이면 버스로 묶는다. 이름은 §1.4-3 형식. 표기를 추측했으면(예: `_n`) 분류 표에 적고 확신도 낮음 — 묻는다(§2.7-1).
    - 이름 줄기가 같아도 **끝점 분류가 다르면** 버스를 나눈다.
 8. **제어 허브·디코더**
    - **제어 허브**(입력이 주로 제어 포트이고 출력이 여러 블록의 제어 핀으로 가는 디코더·레지스터·FSM)의 출력은 허브 이름과 상관없이 **그 출력의 끝점**으로 분류한다.
@@ -728,6 +863,7 @@ HSPICE/Virtuoso netlist를 받아 **High-Speed IO 회로의 개념을 설명하�
 | 공통 | Latch · DFF | latch: cross-coupled 쌍 + 클럭 스티어링, 또는 클럭드 인버터(C2MOS)나 상보 클럭이 여닫는 전달 게이트로 닫히는 귀환 루프 (§2.2 역할). DFF: 그런 latch 두 개를 반대 클럭으로 직렬 | 박스 LATCH/DFF | latch 교과서 배치 |
 | RX | Demux | latch/DFF 병렬 + 위상이 다른 클럭 | 박스 "1:N" | — |
 | TX | Serializer (MUX) | 클럭으로 고르는 데이터 경로 | 사다리꼴 MUX | — |
+| 공통 | MUX | 둘 이상의 데이터 입력 + 상보 선택(셀 안 인버터로 만들든 밖에서 sel/selb로 받든). AO22/AOI22 구조는 두 선택이 상보일 때만 MUX다 — 한쪽이 다른 쪽의 반전(셀 안에서 만들었거나, 인버터를 거쳐 한 출처로 거슬러 올라감). 두 선택이 따로면 MUX가 아니라 일반 논리 박스 | 사다리꼴 MUX (§3.4-6) | — |
 | TX | Driver | CML 차동 출력단, SST/전압 모드 세그먼트 | 삼각형 "DRV" | 대칭, 세그먼트 합쳐서 ×N |
 | Clock | 버퍼 · 분주기 · 위상 보간기 | CML/CMOS 버퍼, ÷2 latch 루프, 가중 합산 | 삼각형, "÷2", "PI" | 대칭 |
 | 공통 | CML→CMOS 변환기 | — | 삼각형 "C2C" | — |
@@ -735,16 +871,16 @@ HSPICE/Virtuoso netlist를 받아 **High-Speed IO 회로의 개념을 설명하�
 | 공통 | RC 평균기 | — | 박스 "LPF" | — |
 | 공통 | DCC 조정단 | 다리 헤더/풋터로 세기를 바꾸는 인버터 | 가변 세기 인버터 (§3.4-6) | — |
 | 공통 | 바이어스 · DAC · 디지털 제어 | 미러, 전류 DAC, 디코더 | **생략**. 예외: 출력 중 하나라도 그리는 분류인 제어 허브·디코더·FSM·레지스터(박스, §2.5-8), 워드 속도 디지털(박스로만, §3.1-5), 기준 전압 DAC "VREF" 박스(§2.5-4), 보정 루프에 속한 것(§3.1-6) | — |
-| 공통 | 복합 블록 | 하위 블록이 **모두** 사전에 있는 블록 (예: DFE 슬라이스, 클럭 트리) | 박스(셀 이름) + 보이는 핀만, 확신 높음 (묻지 않음) | — |
+| 공통 | 복합 블록 | 하위 블록이 **모두** 사전에 있는 블록 (예: DFE 슬라이스, 클럭 트리). 단 하위 블록들이 상태 소자의 데이터 입력을 거치지 않고 닫히는 고리(순수 조합 고리, 또는 비동기 set/reset 핀으로 닫히는 고리)를 이루면 이 행이 아니다 — 일반 박스로 그리고 묻는다. 이 예외는 그 자체가 고리를 정의하는 사전 항목 — Latch·DFF 행(TG·C2MOS latch 포함), SR latch(사전 목록), ÷2 분주기(Clock 행; DFF를 고리로 이은 ÷N은 이들로 된 복합 블록), §3.3-7 CCI 구조 — 에는 쓰지 않는다. 하위 인스턴스가 없는 셀에서는 트랜지스터를 묶은 가상 블록끼리 고리를 이루는 경우에도 이 예외를 쓴다 | 박스(셀 이름) + 보이는 핀만, 확신 높음 (묻지 않음) | — |
 | 기타 | 사전에 없음 | — | 박스(셀 이름) + 보이는 핀만 | 대칭 가능하면 대칭, 확인 요청 |
 
-   - 다음도 사전에 있다 — 묻지 않는다: 논리 게이트(INV/NAND/NOR/AND/OR/XOR), SR latch, 클럭 게이팅 셀(ICG), 지연 셀(DLY), 레벨 시프터(LS), CML→CMOS(C2C), OTA. C2MOS latch와 TG latch/DFF는 Latch·DFF 행이다.
+   - 다음도 사전에 있다 — 묻지 않는다: 논리 게이트(INV/NAND/NOR/AND/OR/XOR), SR latch, 클럭 게이팅 셀(ICG), 지연 셀(DLY), 레벨 시프터(LS), CML→CMOS(C2C), OTA. C2MOS latch와 TG latch/DFF는 Latch·DFF 행이다. 블록 레벨에서 논리 게이트·SR latch 셀은 셀 이름 박스로 그리고, 출력이 반전이면 동그라미(§3.4-6)를 단다.
 2. **이름과 구조가 다르면 구조로 고르고 묻는다** (§0.3-1). 예: 이름은 ÷2인데 latch 루프가 없으면 ÷2 기호가 아니라 LATCH 박스 2개로 그리고 질문한다. VGA·CTLE는 이름과 구조가 맞으면 묻지 않는다.
 3. **사전 대응**: 블록을 사전의 한 행으로 그리려면 **그 행의 구조 특징이 모두** 그 블록에 있어야 한다. 일부만 맞으면 "사전에 없음"(§2.7)으로 보고 **소자 구성을 짧게 적은 이름의 일반 박스**로 그린 뒤 질문한다 (그 이름은 블록 제목, §4.1-14). 기본 소자(인버터·NAND·MUX·차동쌍)로 쪼개면 비슷해 보여도 사전 행의 특징이 하나라도 빠지면 다른 블록이다.
 4. **`out/block_dictionary.json`** (AGENT 2): 그린 블록(셀)마다 `{"cell", "row" (사전 행 또는 "general"), "matched_features": [...], "missing_features": [...], "confidence"}`. `missing_features`가 있는데 사전 기호로 그렸으면 불통과.
 
 ### 2.7 확신도·질문
-1. 각 판단(고속 입력, 클럭 입력, 중요 제어, 블록 종류)에 **높음 / 낮음**을 매긴다. 구조와 이름이 맞으면 높음, 어긋나거나 사전에 없으면 낮음.
+1. 각 판단(고속 입력, 클럭 입력, 중요 제어, 블록 종류, 버스 비트 표기)에 **높음 / 낮음**을 매긴다. 구조와 이름이 맞으면 높음, 어긋나거나 사전에 없으면 낮음. 버스 비트 표기를 추측했으면 낮음(§2.5-7).
 2. 낮음만 질문한다. 질문은 선택지로 짧게, **템플릿 문장**으로 만든다 (회로 이름을 코드에 박지 않는다).
    - 예: "포트 `X`는 고속 데이터 입력입니까? (예 / 클럭 / 제어 / 바이어스)"
    - 구조와 이름이 다를 때: "`<항목>`: 구조는 `<A>`인데 이름/기능은 `<B>`입니다. (A로 / B로)"
@@ -769,14 +905,15 @@ HSPICE/Virtuoso netlist를 받아 **High-Speed IO 회로의 개념을 설명하�
 2. **트랜지스터와 하위 블록이 섞인 셀**: 트랜지스터를 채널 연결 덩어리별로 묶어 **자동 가상 블록**으로 만든다. 블록 화면에서는 박스(또는 사전의 기호)로 그리고, 클릭하면 그 덩어리의 유닛 화면으로 들어간다. 종단·ESD처럼 사전에서 "입력선 위 표시"로 정한 것은 블록을 만들지 않고 표시만 한다.
 3. **같은 가상 블록이 여럿이면 화면 하나**, 핀 이름은 일반 이름(in/out), 인스턴스별 넷은 범례 표.
 4. **생략하는 블록**: 고속 신호와 연결이 없는 블록(예: 바이어스 발생기)은 생략하고 생략 목록에 남긴다(문구 §3.5-5). 예외: 출력 중 하나라도 그리는 분류(K1–K6, 출처가 루프인 K7, K8, K9, O1, P2)인 제어 허브·디코더·FSM·레지스터(§2.5-8), 워드 속도 디지털 박스(5항), 기준 전압 DAC "VREF" 박스(§2.5-4), 보정 루프(6항).
-5. **박스로만 그리는 블록**: 워드 속도 디지털(§2.5-4)은 최상위에 박스로만 그리고 하위 화면을 만들지 않는다. 박스로만 그리는 것은 워드 속도 디지털과, 루프에 속하지 않는 레지스터·디코더·FSM뿐이다.
+5. **박스로만 그리는 블록**: 워드 속도 디지털(§2.5-4)은 최상위에 박스로만 그리고 하위 화면을 만들지 않는다. 박스로만 그리는 것은 워드 속도 디지털, 루프에 속하지 않는 레지스터·디코더·FSM, 그리고 루프 화면 안의 루프 상태 소자(6항)뿐이다.
 6. **보정 루프 화면 (L1)**: 검출기 → 상태 소자(또는 적분) → 코드·제어 → 다리·DAC·조정 소자 → 검출기 입력으로 돌아오는 **고리**는, 단독 netlist든 큰 netlist 안이든 **루프 화면 하나**를 그린다.
    - 고속 경로가 없는 보정 회로(ZQ 등)는 보정 루프(아날로그 노드 → 비교기 → SAR/카운터 → 코드 → 복제 다리)를 주 경로로 그리고, FSM은 그 루프와 주고받는 명령·상태·단계 선택만 보인다. 단계 선택(예: 비교기 입력 교차)은 회색 선택 핀.
+   - 루프에 속한 FSM·카운터·SAR은 루프 화면 안에서 박스로 그린다 (하위 화면 없이 가능).
 7. **합치기**
    - 같은 역할 소자는 하나로 합쳐 `M<3:0>`, 크기는 전부 나열.
    - **반복 인스턴스**: 같은 셀이 같은 연결 패턴으로 여러 번(드라이버 세그먼트, DCC 다리) → 블록 하나 `xi<4:0>` + 배수(m=1,2,4,8,16) 표기 + 범례. 반복 표기(`XI7<7:0>`)가 없어도 **같은 셀이고 연결 패턴이 비트 번호만 다른** 인스턴스들은 반복 블록으로 합친다. 반복 표기 없이 합친 블록은 "첫 … 끝"으로 적는다(예: `X_DQ0 … X_DQ7`). 범례에는 인스턴스를 모두 적고, 적은 이름은 모두 netlist에 있어야 한다.
    - 사슬로 이어진 인버터들은 버퍼 블록 하나. latch·FF 화면 안에서도 같다(중간 넷이 사슬 밖에서 쓰이지 않을 때).
-   - **합친 블록의 범례는 필수**: 인스턴스별 넷 대응.
+   - **합친 블록의 범례는 필수**: 인스턴스별 넷 대응. 합친 반복 블록의 연결이 비트 역순이면 버스 이름은 `<MSB:LSB>` 그대로 두고 범례에 연결 관계(예: `X1[j].q → rxd<7−j>`)를 적는다.
 8. **유닛 화면 크기 상한**: 그린 기호가 20개를 넘으면 이 순서로 줄인다 — ① 같은 역할 반복을 하나로 합침(`M<3:0>`), ② 묶음을 개념 기호로 바꿈(가변 R/C/전류원, 게이트 로직은 NAND/NOR 기호), ③ 그래도 넘으면 기능 단위로 화면을 나눔(예: 게이트 로직 / 출력단), 나눈 화면 사이는 화면 밖 연결 기호(§3.5-1). 폰에서 읽힐 필요는 없다.
 
 ### 3.2 블록 레벨 (모든 계층에 같은 규칙)
@@ -787,6 +924,18 @@ HSPICE/Virtuoso netlist를 받아 **High-Speed IO 회로의 개념을 설명하�
 5. **선 수 최소화**: 줄기 하나 + 가지, 핀 높이 정렬로 꺾임 제거.
 6. **하위 블록**: 하위 셀의 핀은 위에서 정해진 분류를 따른다. 같은 셀이 여러 곳에 쓰이면 한 곳에서라도 보이는 핀은 보인다.
 7. 선으로 그리면 교차·우회가 생기는 넷은 이름표로 연결한다 (§3.5-1).
+8. **핀 방향** — 블록 화면의 박스·삼각형:
+
+| 핀 | 쪽 |
+|---|---|
+| 데이터 입력 | 왼쪽 |
+| 출력 | 오른쪽 |
+| 중요 제어(1비트 포함)·명령·시험 입력 | 위 |
+| 클럭 | 아래 (그 블록이 클럭을 흘려보내는 블록이면 왼쪽 허용) |
+| 기준 입력 | 왼쪽(데이터 쪽)의 둘째 자리 — 아래(클럭 쪽) 변에는 두지 않는다 (§2.5-4) |
+| 느린 신호·루프 신호 입력 | 왼쪽 (데이터처럼) |
+
+   예외: 제어 허브 입력, 루프 고리 넷(루프 화면의 주 경로), P2 패턴 데이터, 제어 전달 셀(레벨 시프터 등)의 단일 입력, 핀 자리가 정해진 기본 소자(게이트 입력 왼쪽, MUX 선택 아래 경사면, 선택 스위치 위).
 
 ### 3.3 유닛 레벨 (MOSFET 단위)
 1. **차동 증폭기 = 무조건 대칭**, 신호선 꼬임 금지, 노드 최소. **한 축 대칭**: P쪽 절반 왼쪽, N쪽 절반 오른쪽, 정확한 거울상. 자기대칭 소자는 축 위.
@@ -828,14 +977,16 @@ HSPICE/Virtuoso netlist를 받아 **High-Speed IO 회로의 개념을 설명하�
 | 대상 | 기호 |
 |---|---|
 | **MUX** | 사다리꼴: 왼쪽 변 높이 = 입력 수×20+20, 오른쪽 변 = 왼쪽의 0.6배, 폭 50. 선택 핀은 아래 경사면 |
-| **반전 블록** | 입력→출력이 반전이면 출력에 동그라미(r4). 한 기능을 여러 블록으로 나눠 그렸으면 블록마다 극성이 netlist와 맞아야 한다 |
+| **반전 블록** | 입력→출력이 반전인 **논리 출력**에 동그라미(r4). 논리 출력 = 정적 CMOS·TG 논리, latch·FF, MUX, CML 버퍼·latch, 비교기·샘플러(판정 출력), 분주기, C2C, 패드 드라이버의 출력(디지털 값을 싣는 노드). 아날로그 출력 — 증폭기(CTLE, VGA, OTA), Summer(Σ), TIA, 위상 보간기, 적분기, 차지 펌프, DAC, 바이어스 — 에는 극성 동그라미를 그리지 않는다. 극성은 블록의 **주 입력** → 출력이다. 주 입력은 고속 데이터 입력이다. 데이터 입력과 클럭 입력이 함께 있는 블록(latch, DFF, 비교기, 샘플러)도 데이터 입력이 주 입력이고, 클럭은 타이밍 입력이다. 고속 입력이 클럭뿐인 블록(버퍼, 분주기, 클럭 트리)은 클럭이 주 입력이다. 차동 입력이면 P쪽이 주 입력이다. 기준 입력(둘째 입력, §2.5-4)은 주 입력이 아니다. 그런 입력이 없는 블록(제어 허브, FSM)은 극성이 정해지지 않는다 — 동그라미도 극성 검사도 없다. 인스턴스마다 극성이 다른 셀은 인스턴스마다 판정한다. 한 기능을 여러 블록으로 나눠 그렸으면 블록마다 극성이 netlist와 맞아야 한다 |
 | **가변 세기 인버터** (다리 헤더/풋터로 세기를 바꾸는 인버터, DCC 조정단) | 인버터 삼각형 + 위(PU)·아래(PD)에 가변 전류원 기호, 코드 핀 |
 | **SST/전압모드 드라이버 슬라이스** | 풀업 = 가변 저항(+직렬 R), 풀다운 = 거울상 아래, 출력은 가운데. 게이트 로직은 NAND/NOR 기호 |
 | **부하 C** (노드에서 접지로) | 선 위 짧은 가지 + 커패시터 + 접지 기호, 값 표시 |
 | **출력 패드 ESD / 킵퍼** | 출력선 위 작은 박스 "ESD" / 종단 표시와 같은 모양에 "KEEP" |
 | **선택 스위치** (상보 선택 전달 게이트) | 스위치 기호(SKILL §6.3 "선택 스위치") + 회색 선택 핀. en 리드와 enb 리드는 서로 닿지 않고 날에도 닿지 않는다. 선택 핀이 K2면 선택 핀까지 선(§2.5-5) |
 | **종단 끝** | 숨긴 공통모드 쪽은 열린 원(r3), 이름표 없음 |
+| **국소 전원·접지 기호, 유닛 화면의 레일 이름** (전원이 둘 이상인 셀) | "VDD" 대신 실제 레일 이름(예: VCCQ, VSSQ)을 쓴다 (SKILL §6.3) |
 | **배선 RC** (§2.3-6) | 선 위 "RC" 표시(값 함께) |
+| **비교기·증폭기의 차동 입력** | 입력 핀에 netlist 극성대로 +/− 표시. 핀의 위·아래 자리는 핀 방향 규칙대로(기준은 왼쪽 둘째(아래) 자리, §2.5-4)라서 "+"가 아래 입력에 올 수 있다 (SKILL §6.3) |
 
 7. **핀 이름**: 출력이 둘 이상인 기호, 선택 핀이 있는 기호(MUX·선택 스위치)는 출력·선택 핀마다 핀 이름.
 8. **블록 기호**: §2.6 사전의 "블록도 기호" 열.
@@ -856,7 +1007,7 @@ HSPICE/Virtuoso netlist를 받아 **High-Speed IO 회로의 개념을 설명하�
    - 숨긴 선택 신호 때문에 스위치·전달 게이트가 동시에 켜진 것처럼 보이면, 그 선택 핀만 회색 짧은 선 + 회색 이름표 (버스로 그리지 않음).
    - 논리 게이트의 숨긴 입력: 회색 짧은 선 + 회색 이름표 (예: EN) — 1입력 NAND처럼 보이지 않게.
    - **상수**(전원·접지·tie 셀에 묶인 입력 핀): 블록 화면에서 회색 짧은 선 + 레일(또는 tie 넷) 이름표를 허용한다 (전원 숨김의 예외, 상보 선택 스위치가 항상 켜진 것을 보이기 위함). 유닛 화면은 레일 기호.
-4. **미사용 출력은 모두 짧은 선 + 넷 이름표**: 고속 신호인데 아무것도 구동하지 않는 출력도, 보조 출력(qb, 쓰지 않는 q)도 같다. 지우지 않고, 그것을 구동하는 소자도 그대로 그린다. 핀 리드만 있고 아무것도 없는 출력은 금지. 생략 목록에는 넣지 않는다(그렸으므로).
+4. **미사용 출력**: 넷이 숨기는 분류인 출력 핀은 그리지 않는다 — 핀째 숨긴다(3항). 그리는 분류의 미사용 출력은 모두 짧은 선 + 넷 이름표로 끝낸다 — 고속 신호인데 아무것도 구동하지 않는 출력도, 보조 출력(qb, 쓰지 않는 q)도 같다. 그런 출력은 지우지 않고, 그것을 구동하는 소자도 그대로 그린다. 핀 리드만 있고 아무것도 없는 출력은 금지. 생략 목록에는 넣지 않는다(그렸으므로).
 5. **생략 목록** (사이드 패널·PPT 메모):
    - 그 화면에 선·검은 이름표·포트·전원 기호로 그린 넷은 빼고, 한 넷은 한 번만.
    - 버스는 비트마다 쓰지 않고 `<MSB:LSB>` 한 줄. 같은 분류끼리 모아 쓴다.
@@ -870,6 +1021,7 @@ HSPICE/Virtuoso netlist를 받아 **High-Speed IO 회로의 개념을 설명하�
 
 ### 4.1 자동 검사
 AGENT 2는 그린 결과를 아래 검사로 모두 확인하고, 검사마다 결과·건수를 `self_checklist.json`의 `auto_checks`에 남긴다. 검사마다 오류를 일부러 넣어 잡히는지 확인한 결과(`injected`)를 함께 적는다. 1–5가 실패하면 전달하지 않는다(§0.3-4).
+검증기는 기준 결과의 `reference/rx_afe/work/verify.py`에서 시작해 넓힌다(처음부터 약한 검사기를 새로 짜지 않는다). 다음 오류는 반드시 주입한다: OPEN(선 끊기), SHORT, 블록 교차, 동그라미 지우기, 미사용 출력 지우기, 없는 핀 이름, 그리지도 생략하지도 않은 넷, 짧은 꺾임(<20px), 글자 겹침, 점선, 핀 방향 위반.
 
 | # | 검사 | 통과 조건 | 주입 오류 예 (SKILL §9-6) |
 |---|---|---|---|
@@ -885,15 +1037,23 @@ AGENT 2는 그린 결과를 아래 검사로 모두 확인하고, 검사마다 �
 | 10 | 붙지 않은 출력 핀 | 아무것도 붙지 않은 출력 핀 0 (§3.5-4) | — |
 | 11 | 점선 | 점선 0 (§1.4-1) | — |
 | 12 | CCI 배치 | cross-coupled 인버터 쌍은 인버터를 90° 돌려 위·아래 노드 사이에 나란히 (§3.3-7) | — |
-| 13 | 출력별 극성 | 그린 블록마다 주 입력 → **각 출력**의 극성을 netlist에서 계산(정적 논리는 진리표, 그 밖의 블록은 소자 연결로)하고 출력 동그라미 유무와 대조 | 반전 블록 동그라미 지우기 |
-| 14 | 이름 일치 | 이름 칸 — 인스턴스 이름, 셀 이름 부제, 넷 이름표, 포트 이름 — 이 모두 netlist에 있는 이름. 반복 인스턴스는 netlist의 반복 표기 그대로, 반복 표기 없이 합친 블록은 "첫 … 끝"과 범례의 이름 모두(§3.1-7). 빼는 것: 블록 제목(CTLE·DLY 같은 개념 이름, 일반 박스의 소자 구성 이름 §2.6-3), 같은 가상 블록 화면의 일반 핀 이름(in/out, §3.1-3), 가상 블록 id | 없는 인스턴스 이름 쓰기 |
+| 13 | 출력별 극성 | 그린 블록마다 주 입력(§3.4-6) → **각 논리 출력**의 극성을 netlist에서 계산(정적 논리는 진리표, 그 밖의 블록은 소자 연결로)하고 출력 동그라미 유무와 대조. 아날로그 출력과 주 입력이 없는 블록(§3.4-6)은 검사하지 않는다 | 반전 블록 동그라미 지우기 |
+| 14 | 이름 일치 | 이름 칸 — 인스턴스 이름, 셀 이름 부제, 넷 이름표, 포트 이름 — 이 모두 netlist에 있는 이름. 반복 인스턴스는 netlist의 반복 표기 그대로, 반복 표기 없이 합친 블록은 "첫 … 끝"과 범례의 이름 모두(§3.1-7). 빼는 것: 블록 제목(CTLE·DLY 같은 개념 이름, 일반 박스의 소자 구성 이름 §2.6-3), 같은 가상 블록 화면의 일반 핀 이름(in/out, §3.1-3), 가상 블록 id, 범례의 연결 관계 식(예: `X1[j].q → rxd<7−j>`, §3.1-7) | 없는 인스턴스 이름 쓰기 |
 | 15 | 핀 이름 | §3.4-7 | 선택 핀 이름 지우기 |
 | 16 | 화면 지문 | `verify_report.json`의 화면마다 `scene_sha`. 수정 라운드에서는 바뀐 화면 목록을 `scene_sha`로 낸다 | — |
 | 17 | 생성 코드 변경 범위 | 기호·배치 생성 코드를 바꾸면 그 코드를 쓰는 **모든 화면**을 다시 검사하고 목록을 보고한다 (§4.3-5) | — |
+| 18 | 핀 방향 | 블록 화면의 핀이 핀 방향 표대로 (예외 포함, §3.2-8) | 핀 방향 위반 |
+| 19 | 회색 이름표 범위 | 회색 이름표는 허용한 곳에만 (§2.5-4 기준의 회색 선·이름표, §3.5-3, §3.1-6, §3.4-6) | — |
+| 20 | 질문 | 질문마다 확신 낮음, 템플릿 문장, 규칙이 정한 것이 아님 (예외: netlist 오류일 수 있는 것의 확인 질문, §2.7-4) | — |
+| 21 | 끝점 핀 | 분류 표의 끝점 핀(§2.5-9)이 `instance.pin` 형식이고, netlist에 있고, 그 넷에서 도달하며, 구동원이 아님 | — |
+| 22 | 표 간 분류 일치 | 분류 표·포트 표(`classification.md`의 최상위 포트 분류 표)·annotations·사이드 패널의 분류가 같음 | — |
+| 23 | 블록 핀 이름 | 블록 핀 이름 = 그 셀의 포트 이름. 같은 가상 블록의 일반 핀 이름(in/out)과 가상 블록 id는 뺀다(§4.1-14와 같음) | 없는 핀 이름 |
+| 24 | R/C 값 | 그린 R/C 값 = 인스턴스의 실제 값 | — |
+| 25 | 글자 위치 | 글자가 박스·화면 밖으로 나가지 않음 | — |
 
 **눈 확인** (자동 검사 뒤): 화면별 스크린샷, PPT를 그림으로 바꿔 확인.
 
-### 4.2 체크리스트 v6
+### 4.2 체크리스트 v6.1
 AGENT 3이 회로마다 `checklist.json`을 채운다(M 묶음은 AGENT 2의 `self_checklist`와 독립 검사기 결과를 비교해 채운다). 항목마다 **통과 / 불통과 / 해당 없음** + 근거(캡처 또는 netlist 줄) + 불통과면 원인(**그린 쪽** / **명세서**).
 ★ = 불통과면 그림이 틀렸거나 오해를 부른다 → 그 회로는 불합격.
 항목은 확인 방법에 따라 네 묶음이다.
@@ -908,15 +1068,17 @@ AGENT 3이 회로마다 `checklist.json`을 채운다(M 묶음은 AGENT 2의 `se
 | M5 | | 그림 품질 0: 글씨 겹침, 소자 관통 배선, 꼬임, 20px 미만 꺾임, 20px 미만 접점, 4방향 접점 | 자동 | §1.4-4~7, §4.1-5 |
 | M6 | ★ | 선: 모두 실선, 모두 1.6px. 아무것도 붙지 않은 출력 핀 없음. 떠 있는 포트 없음. 모든 이름표에 짝(허용된 예외 빼고) | 자동 | §1.4-1, §3.5-1, §3.5-4, §4.1-6·7·10·11 |
 | M7 | ★ | 이름: 그린 인스턴스·셀·넷·포트 이름이 모두 netlist에 있음. 버스는 `<MSB:LSB>` | 자동 | §1.4-3, §4.1-14 |
-| M8 | ★ | 출력별 극성: 출력 동그라미 == netlist에서 계산한 극성 | 자동 | §3.4-6, §4.1-13 |
+| M8 | ★ | 출력별 극성: 논리 출력의 동그라미 == netlist에서 계산한 극성 (아날로그 출력과 주 입력이 없는 블록은 검사하지 않음) | 자동 | §3.4-6, §4.1-13 |
 | M9 | | 다출력·선택 기호의 핀 이름 | 자동 | §3.4-7, §4.1-15 |
 | M10 | | 유닛 화면: 기호 20개 이하(넘으면 합치기 → 개념 기호 → 나누기). 크기는 SI 표기, W/L·m 표시, nf·모델명 없음 | 자동 | §3.1-8, §3.4-1, §3.5-6 |
 | M11 | | 주석·제목의 모든 수치가 netlist로 확인됨 (셀 이름에서 온 숫자 없음) | 자동 | §3.5-7, §4.1-9 |
 | M12 | | 수정 라운드만: 바뀐 화면(`scene_sha` 기준) == 요청에 적힌 화면 (+ 보고한 생성기 전체 변경) | 자동 | §4.1-16·17, §4.3-5 |
+| M13 | | 핀 방향: 블록 화면의 핀이 핀 방향 표대로 | 자동 | §3.2-8, §4.1-18 |
+| M14 | | 표 간 분류 일치: 분류 표·포트 표·annotations·사이드 패널 | 자동 | §4.1-22 |
 | **J. 판단** — AGENT 3이 읽고 보며 판정 | | | | |
 | J1 | ★ | 분류 표와 질문: 고속 입력·클럭·제어를 구조로 판정(이름 의존 없음). 그린 제어마다, 숨긴 다비트 제어마다 K#·끝점 핀·출처. 느린 신호·상태·명령·시험·기준 표시, 느린 신호·상태 출력은 화면 설명에도 표시. 질문은 확신 낮은 것만, 템플릿 문장, 규칙이 이미 정한 것은 묻지 않음 (예외: netlist 오류일 수 있는 것은 확인 질문, §2.7-4) | 손 | §2.4, §2.5, §2.7 |
 | J2 | ★ | 사전 대응: `block_dictionary.json`. 행의 특징이 모두 있을 때만 사전 기호, 아니면 일반 박스 + 질문. 개념 기호는 묶음을 정확히 대신함 | 손 | §2.6-3·4, §3.4-3, §4.1-4 |
-| J3 | | 블록 레벨 배치 관례: 왼→오 흐름, 클럭 아래, 버스 위, 주 경로 한 줄, 반복 블록은 합치고 배수·범례 (교차·우회 → 이름표는 M4) | 손 | §3.1-7, §3.2, §4.1-8 |
+| J3 | | 블록 레벨 배치 관례: 왼→오 흐름, 클럭 아래, 버스 위(§3.2-4 배치), 주 경로 한 줄, 반복 블록은 합치고 배수·범례 (핀 쪽은 M13, 교차·우회 → 이름표는 M4) | 손 | §3.1-7, §3.2, §4.1-8 |
 | J4 | ★ | 유닛 레벨: 차동 회로 거울 대칭(짝 없는 소자만 바깥 + 주석). 여러 쌍은 그림 B. cross-coupled 인버터 쌍은 90° 돌림 | 손 | §3.3, §4.1-12 |
 | J5 | ★ | 기하만으로 손 연결 대조: 최상위 + 구역이 다른 화면 5개 이상 | 손 | §4.1-1 |
 | J6 | ★ | 목적: 그림만 보고 고속 신호 흐름과 회로의 동작 원리(무엇을 조절하는지)가 설명됨 | 손 | §0.1 |
@@ -926,11 +1088,11 @@ AGENT 3이 회로마다 `checklist.json`을 채운다(M 묶음은 AGENT 2의 `se
 | G1a | ★ | 포트 분류 | 정답지 | 부록 B |
 | G1b | ★ | 블록 역할 | 정답지 | §2.6 |
 | G1c | ★ | 신호 흐름 (명세서가 그리는 분류의 흐름만) | 정답지 | 부록 B |
-| G1d | | 출력별 극성 | 정답지 | §4.1-13 |
+| G1d | | 출력별 극성 (논리 출력만, 주 입력이 있는 블록만) | 정답지 | §3.4-6, §4.1-13 |
 | **N. 이름 가림** — 이미 그린 netlist의 이름 가림 사본을 시험할 때만 | | | | |
 | N1 | ★ | 이름 대응표를 거쳐, 이름 가림 그림의 분류·블록 역할이 이름 있는 그림과 같음 | 대응표 | §0.3-5, §4.4-6 |
 
-`checklist.json`의 항목 id: M1–M12, J1–J8, G1a–G1d, N1. counts: `{pass, fail, na, star_fail, drawer, spec}`. 판정: `verdict_drawing` / `verdict_spec` (§4.3-1).
+`checklist.json`의 항목 id: M1–M14, J1–J8, G1a–G1d, N1. counts: `{pass, fail, na, star_fail, drawer, spec}`. 판정: `verdict_drawing` / `verdict_spec` (§4.3-1).
 
 ### 4.3 판정·루프
 **역할**: **AGENT 1** — 시험 netlist와 정답지를 만든다(부록 B의 "시험 netlist 설계자"). **AGENT 2** — 그리는 쪽: netlist를 받아(정답지 없이) 그림과 `out/` 파일(§1.2)을 만든다. **AGENT 3** — 검증 쪽: 정답지가 있으면 받아 `checklist.json`(§4.2), `fix_request.md`, 보고서를 만든다. **오케스트레이터** — 루프를 돌리고, `fix_request.md`를 AGENT 2에게 전달하고, 명세서를 고친다.
@@ -938,11 +1100,12 @@ AGENT 3이 회로마다 `checklist.json`을 채운다(M 묶음은 AGENT 2의 `se
 1. **두 축 판정**: 그린 쪽 원인 불통과 0 → **그림 PASS**. 명세서 원인 불통과 0 → **명세 PASS**. `checklist.json`에 `verdict_drawing`, `verdict_spec`을 따로 적고, 보고서도 두 표로 나눈다.
 2. **회로 합격** = 두 축 모두 PASS + ★ 전부 통과.
 3. **안쪽 루프 (AGENT 2 ↔ AGENT 3, 회로마다)**: 그림 판정만 대상. 원인이 "그린 쪽"인 불통과 항목을 근거·캡처와 함께 AGENT 2에게 돌려보내 고치게 하고 AGENT 3이 다시 채운다. **최대 3번**. 3번 안에 못 고치면 명세서 문제로 넘긴다.
-4. **반송 파일과 정답지**: AGENT 3은 그린 쪽 불통과마다 `fix_request.md`에 근거(netlist 줄, 명세 조항)와 고칠 내용만 쓴다. **정답지 내용은 넣지 않는다.** 오케스트레이터는 이 파일을 그대로 AGENT 2에게 전달한다. 정답지는 검증 쪽에만 준다.
+4. **반송 파일과 정답지**: AGENT 3은 그린 쪽 불통과마다 `fix_request.md`에 근거(netlist 줄, 명세 조항)와 고칠 내용만 쓰고, "이 목록은 최소 범위 — 같은 규칙을 전체에 적용하고 바뀐 화면을 보고"라고 적는다. **정답지 내용은 넣지 않는다.** 오케스트레이터는 이 파일을 그대로 AGENT 2에게 전달한다. 정답지는 검증 쪽에만 준다.
 5. **고칠 범위**: 수정 라운드에서 바뀐 화면 외에는 픽셀 단위로 같아야 한다(AGENT 3이 확인, `scene_sha` §4.1-16). 규칙을 생성기 전체에 적용해 다른 화면이 바뀌면 그 사실을 보고한다(§4.1-17).
 6. **바깥 루프 (오케스트레이터)**: 명세 판정은 오케스트레이터가 명세서로 고친다 — 원인이 "명세서"인 항목과 안쪽 루프에서 못 고친 항목으로 명세서를 고친다. 세 회로가 모두 ★ 통과하고 명세서 원인 항목이 없을 때만 승인. 다음 회차는 사용자 승인 후. 사용자 리뷰 결과는 다음 회차 전에 명세서에 반영한다.
 7. **정답지 분류 대응**: 정답지 분류 이름과 명세서 분류의 대응은 **부록 B**를 쓴다. 부록 B에 없는 정답지 분류가 나오면 AGENT 3은 정의를 읽고 가장 가까운 행으로 판정하되, 그 판단을 "뜻으로 판정" 목록에 적는다(다음 명세서 개정 재료).
 8. **실행**: 큰 회로는 사용량 한도에 걸린다 — 동시에 도는 에이전트 수를 줄이고, 끊기면 같은 에이전트를 이어서 돌린다(새로 띄우지 않는다).
+9. **검증 쪽(AGENT 3) 검사 범위**: 규칙형 항목 — 모든 M 규칙(이름은 M7, 핀 방향은 M13 등), 그리고 규칙을 모든 핀·화면에 적용하는 J 항목(예: J2 사전 특징, J4 유닛 대칭) — 은 모든 화면·모든 핀을 전수 검사하고 전체 목록을 첨부한다(표본 금지). J5의 손 연결 대조는 표본 그대로다(전수 연결 검사는 M2 자동). 검증 스크립트에도 오류를 주입한다.
 
 ### 4.4 일반성 시험
 1. 규칙을 바꿀 때마다 아래 모음 전체가 통과해야 한다.
@@ -972,12 +1135,12 @@ AGENT 3이 회로마다 `checklist.json`을 채운다(M 묶음은 AGENT 2의 `se
 | 고속 데이터 출력 | DOUT_EVEN_P/N, DOUT_ODD_P/N |
 | 고속 데이터 내부 | CTLE1_P/N, CTLE2_P/N, VGA_P/N, E_T2/E_T3, O_T2/O_T3, O_DOUTP/N (DFE 피드백, 꺼진 전달 게이트 뒤라 **미구동** — §2.3-13) |
 | 고속 클럭 | CLK_INP/N → CLKI, CLKIB, CLKQ, CLKQB |
-| 중요 제어 (버스) | W<4:1>_<3:0> (DFE 탭 계수) |
-| 숨김 (일반 제어) | C<2:0>, R<2:0> (CTLE) |
-| 중요 제어 (K6, §2.5-5) | G<3:0> (VGA 이득 코드) |
+| 중요 제어 (버스) | W<4:1>_<3:0> — K1 (DFE 탭 계수) |
+| 숨김 (일반 제어) | C<2:0>, R<2:0> — K7 정적 트림 (CTLE 피킹) |
+| 중요 제어 (버스) | G<3:0> — K6 (VGA 이득 코드, §2.5-5) |
 | 숨김 (바이어스) | IREF, VBN, VBP, VCM_RX (종단 공통모드) |
 | 생략 블록 | BIAS_GEN |
-| 최상위 포트 | 37개 → 9개 (데이터 입력 2, 클럭 입력 2, 출력 4, W 버스 1) |
+| 최상위 포트 | 37개 중 28개를 포트 기호 10개로 그린다 (데이터 입력 2, 클럭 입력 2, 출력 4, W 버스 1, G 버스 1). 숨긴 포트 9개: IREF, C0–C2, R0–R2, VDD, VSS |
 
 ## 부록 B. 정답지 분류 ↔ 명세서 분류 대응표 (AGENT 3용)
 
@@ -986,15 +1149,19 @@ AGENT 3이 회로마다 `checklist.json`을 채운다(M 묶음은 AGENT 2의 `se
 | 정답지 class | 명세서 분류 | 그림 | G1c 대조 |
 |---|---|---|---|
 | `hs_data_in` / `hs_data_out` / `hs_data_io` | 고속 데이터 | 선 | 함 |
-| `clock_in` / `clock_out` | 고속 클럭 | 선 | 함 |
+| `clock_in` / `clock_out` | 클럭 (느린 클럭은 하위 이름, §2.5-4) | 선 | 함 |
 | `word_rate_data` | 워드 속도 디지털 (직렬화기 입력 앞 / 디시리얼라이저 출력 뒤) | 경계 포트까지 선, 그 로직은 박스로만 | 경계까지 |
 | `important_control` | 중요 제어 (K1–K6, 루프 출처 K7, P2) | 버스 / 한 줄 | 함 |
 | `general_control` | 일반 제어 (정적 K7, K10) | 숨김 | 안 함 |
 | `command` | 명령 (K8) | 한 줄 | 함 |
 | `status_out` | 상태 출력 (O1) | 실선 + 출력 포트 | 함 |
-| `test_digital` | 시험 입력 (K9) 또는 모니터 출력 (mon) | 한 줄 | 함 |
+| `test_digital` 입력 | 시험 입력 (K9) | 한 줄 | 함 |
+| `test_digital` / `test_analog` 출력 | 추적한 분류 그대로(§2.3-15), 추적이 닿지 않으면 상태·시험 출력 — 모니터 출력(§2.5-4). 어느 쪽이든 "(mon)" 표시. G1a는 분류와 "(mon)" 표시를 함께 대조 | 출력 포트, 이름 옆 "(mon)" | 함 |
 | `reference` | 기준 (VREF, 외부 기준 패드 P1) | 회색 실선 | 함 |
 | `slow_signal` | 느린 신호 (§2.3-5) | 실선 | 함 |
+| `loop_control` | 중요 제어 — 루프 출처 K7 (c) (§2.5-5) | 버스 (아날로그면 한 줄) | 함 |
+| `loop_error` | 루프 신호 (느린 신호) — 검출기 출력 (§2.3-14) | 실선 | 함 |
+| `pi_code` | 중요 제어 K1 | 버스 | 함 |
 | `bias` | 바이어스 | 숨김 | 안 함 |
 | `power` | 전원 | 블록 숨김, 유닛 레일 | 안 함 |
 | 그 밖의 새 class | 정답지 README의 정의를 읽고 가장 가까운 행 | — | "뜻으로 판정" 목록에 적음 |
@@ -1019,6 +1186,7 @@ K#·O#·P#는 §2.5-5·6.
 | v4.2 | 루프 2회차 교훈 — v5 §14 |
 | v5 | 루프 3회차(NAND IO 전체, MOS 6833) 후: 제어·비고속 신호의 구조 판정표, 사전 대응, 자동 검사 의무, 두 축 판정 — v5 §15 |
 | v6 | v5의 규칙을 한 곳에 하나씩 정리하고 v5 안의 충돌을 정리함(C.8). 체크리스트 v6(M·J·G·N 네 묶음). v5와 달라진 규칙은 C.6의 "v6" 행과 C.8 |
+| v6.1 | 루프 4회차 결과를 그 자리에 반영 — D(NAND v5 재시험: 그림 PASS·명세 FAIL G1a), E(이름 가림: N1 b=8), G(새 구조), F(LPDDR5형: 정답지끼리 충돌). 사용자 결정 B안, 정적 코드는 1번(그대로). 결정 V1–V95(C.8; V42–V72는 v6.1 초안 독립 검토, V73–V85는 재검토, V86–V95는 기준 결과 재생성·통합 반영). 기준 결과 RX AFE를 v6.1로 다시 만듦(C.5). 고친 절: §1.2, §1.3-1, §1.4-7, §2.3-5·9·12·14·15, §2.4-1, §2.5-3·4·5·6·7, §2.6-1, §2.7-1, §3.1-5·6·7, §3.2-8, §3.4-6, §3.5-4, §4.1, §4.2(M8·M13·M14·J3·G1d), §4.3-4·9, 부록 A·B |
 
 v5까지는 절을 덧붙이는 방식이었고, 뒤 절이 앞 절보다 우선했다 (§15 > §14 > §13 > §12 > §11 > §0–10).
 
@@ -1124,6 +1292,7 @@ v5까지는 절을 덧붙이는 방식이었고, 뒤 절이 앞 절보다 우선
   6. 고칠 때 범위를 넘기지 않는다. → §4.3-5.
   7. 큰 회로는 사용량 한도에 걸린다. → §4.3-8.
 - **루프 3회차 (v5)**: NAND IO 전체(MOS 6833). 그린 쪽 불통과는 3 → 1 → 0으로 수렴했고, 남은 ★ 불통과(G1a·G1c·B3)는 모두 제어 분류 규칙이 이름 목록으로 적혀 있어서 조항끼리 다른 답을 냈기 때문이다 (v5 §11.2-5 "enable = 일반" ↔ §13.2 "run/enable 묶음 = 버스", §11.3-1(c) "지연 코드 = 중요" ↔ §11.3-2 "트림 = 일반", §12.4 "보정 코드 숨김" ↔ §13.1 "결과 상태 = 그림"). v5는 이 분류를 이름이 아니라 구조로 정하는 표 하나로 바꿨다 (사용자 결정, 3회차 후).
+- **기준 결과 재생성 (v6.1)**: 기준 결과 RX AFE(`reference/rx_afe/`)를 v3 결과에서 v6 + v6.1 규칙으로 다시 만들었다. 화면 17개 중 13개의 그림이 바뀌었고(`scene_sha` 기준), 나머지 4개는 id나 사이드 패널만 바뀌었다. 자동 검사 29개가 모두 통과했고(건수 0), 주입 오류 57건을 모두 잡았다(57/57). 분류는 `G<3:0>`만 숨김 일반 제어에서 중요 제어 K6(버스)로 바뀌었다. 기대값은 SKILL §11 (C.8 V92).
 
 ### C.6 바뀐 규칙 (예전 → 지금)
 | 예전 규칙 (v5 위치) | 바뀐 판 | 지금 (v6) |
@@ -1152,6 +1321,51 @@ v5까지는 절을 덧붙이는 방식이었고, 뒤 절이 앞 절보다 우선
 | 회색 이름표와 짝 규칙: 정해지지 않음 (§4-8, §11.5-1) | v6 | 회색 게이트·선택 핀 이름표는 짝 규칙에서 뺌 (§3.5-1) |
 | AGENT 1·2·3, 오케스트레이터: 정의 없음 | v6 | 역할 정의 (§4.3 머리) |
 | 체크리스트 J1에 B1의 "규칙이 있는 것은 묻지 않음"과 B5의 "화면 설명" 부분이 빠짐, C2의 우회 → 이름표가 ★ 없는 J3에만 있음 | v6 (체크리스트 검토 후) | J1에 둘 다 더함, M4★에 "블록 레벨에서 교차·우회가 생길 곳은 이름표" (§4.2) |
+| HTML 안 PPTX: "PPT 내려받기"만 정함 (v6 §1.1, §1.2) | v6.1 | base64 내장 필수, 크기 상한 없음, 옆 파일 링크 금지, 커지면 gzip + DecompressionStream (§1.2, V23) |
+| 비동기 set/reset 핀은 데이터 추적 대상이 아님 (v6 §2.3-12) | v6.1 | 자기 출력으로 자기 상태 소자를 리셋하는 경로는 신호 경로로 그림, 그 분류는 그 경로를 만드는 블록 출력의 분류 (§2.3-12, V12 + B9) |
+| 루프 검출기 출력: 정함 없음(래치 규칙으로 고속 데이터가 됨) (v6 §2.3) | v6.1 | "루프 신호 (느린 신호)" — 루프 안의 느린 신호, 느린 신호와 같은 실선. 루프 안 비교기 출력도 같음 (§2.3-5·14, §2.5-4, V11·V54) |
+| 고속 입력 후보: 차동 포트 쌍 또는 종단·ESD 패드 (v6 §2.4-1) | v6.1 | 종단 없이 ESD만 붙은 단일 종단 패드는 후보 아님 — 끝점으로 분류 (§2.4-1, V10) |
+| 끝점이 여러 개면 표에서 가장 위 (v6 §2.5-3) | v6.1 | K8·K9는 K3보다 먼저. 중요 제어가 오버라이드 선택에도 닿으면 그 경로는 중요 제어의 분류 (§2.5-3, V2·V5) |
+| 상태 소자의 클럭 핀에 닿는 비고속 입력: 행 없음 | v6.1 | 클럭 분류의 하위 이름 "느린 클럭": 고속 경로 밖 상태 소자에만 닿는 클럭. 신호가 클럭으로 흘러 클럭 핀에 닿으면 느린 클럭 — 클럭과 같이 그림, K8 아님. 고속 경로 = 고속 데이터·고속 클럭 추적이 닿는 노드. 루프의 갱신 입력에만 닿는 1비트 포트는 K8, 클럭 게이트의 enable 쪽은 게이트되는 클럭이 고속이면 K3·느리면 K8. 고속으로 추적되지 않은 클럭은 클럭 핀에서 거꾸로 따라가 클럭 쪽·enable 쪽을 정함 (§2.5-4·5, V9·V28·V43·V52·V73·V78·V84) |
+| K1: 여러 고속 신호를 합하는 가지 (v6 §2.5-5) | v6.1 | 병렬 다리는 데이터 입력이 다른 고속 신호(FFE 탭)일 때만 K1, 주 데이터 다리 enable은 패드·최종 출력 노드면 K5, 그 앞이면 K7(출력 끄기면 K3) (V4·V45) |
+| K2: 서로 다른 고속 원천 중 하나를 고르는 선택 | v6.1 | 같은 원천의 다른 블록 경로(정합/비정합, 지연/비지연) 선택도 K2. 같은 지연 소자의 탭 선택(미세 트림)은 K7 (V3·V49) |
+| K3: "그리는 보정 루프를 켜고 끄는 곳도 포함" | v6.1 | 루프의 아날로그 전원·꼬리·분압 스위치와 복제 다리 게이트로 좁힘 (V2). 클럭 게이트·직렬 스위치는 게이트하는 신호가 고속일 때만 (V29). 루프 안 발생기·분압기 켜기도 K3 (V48). 1비트 입력이 클럭을 게이트하면 고속 클럭이면 K3, 느린 클럭이면 K8 (V46) |
+| K5: 같은 패드·고속 출력 노드에 묶인 병렬 다리 | v6.1 | 코드로 켜는 병렬 다리 중 출력이 패드, 또는 패드·종단을 바로 구동하는 마지막 출력 노드에 묶인 것(마지막 구동 세기·종단). 그 앞 노드에서 주 데이터를 싣는 다리(구동 세기·에지 속도)는 K7 (V4 → V31 → V41 → V44) |
+| K6: 기준 입력 레벨 코드, 공유 이득 코드 | v6.1 | 다비트 레벨 코드와 공유 이득 코드만, 기준 원천 선택·루프 밖 발생기 켜기·끄기는 K10, 그리는 보정 루프 안 발생기·분압기는 K3. 이득 코드 = 사전 VGA 행 이득 단의 코드, CTLE 행 R·C 코드는 피킹 K7 (V1·V48·V86) |
+| K8: 동기 시작·적재·갱신·set/clear 조건만, "K3–K7 끝점에는 닿지 않는" 제외 조건 | v6.1 | 루프 상태 소자 enable·동기 리셋(clear)·갱신 입력에만 닿는 1비트 포트도 K8. 신호가 클럭으로 흘러 상태 소자 클럭 핀에 닿으면 느린 클럭. 순환하던 K3–K7 제외 조건을 지우고, 1비트 입력이 클럭을 게이트하면 고속 클럭이면 K3·느린 클럭이면 K8 (V2·V9·V28·V30·V46·V78) |
+| K10: 비동기 set/reset 핀 | v6.1 | 블록 밖(포트·제어 허브)에서 오는 비동기 set/reset만, 기준 원천 선택·루프 밖 기준 발생기 켜기·끄기 더함 (V12·V1·V48) |
+| K11: 바이어스 노드 | v6.1 | 루프 출처가 아닌 바이어스 노드 자체만 (V32). 바이어스 DAC로만 가는 코드는 K7 — 정적 출처면 일반, 루프 출처면 중요 (c) (V6·V50) |
+| 루프가 만드는 아날로그 트림: 명시 없음 | v6.1 | 루프 출처 K7 = 중요 (c), 꼬리·미러 게이트에 닿아도 같음 (V15·V32) |
+| 내부 노드의 코드로 켜는 다리(프리드라이버 에지 속도 등): 행 없음 | v6.1 | K7 — 정적 출처면 일반, 루프 출처면 중요 (c) (V31) |
+| K5 "블록의 고속 출력 노드"(v6.1 초안 V31): 어느 블록의 출력이든 되는 것으로 읽힘 | v6.1 | 패드, 또는 패드·종단을 바로 구동하는 마지막 출력 노드의 다리만 K5. 그 앞 노드(프리드라이버 단, 슬루 제한 인버터, 내부 버퍼 등)에서 주 데이터를 싣는 다리(구동 세기·에지 속도)는 블록 경계와 상관없이 K7. 다른 고속 신호를 섞는 다리는 K1, 공유 이득 코드는 K6 (§2.5-5, V41·V44) |
+| 모니터 출력 (mon): 구조 정의 없음 | v6.1 | 분류 표 "상태·시험 출력 — 모니터 출력" 행: 주 경로에서 갈라진 가지로만 구동되고 안에서 안 쓰이는 출력, 그 가지를 켜는 1비트 = K9, 상태 소자 출력은 O1 (§2.5-4, V8·V35). 고속 추적이 관찰 가지로만 닿는 출력 포트는 추적한 분류 그대로 + "(mon)" 표시 (§2.3-15, V51). K9 행도 §2.3-15를 가리킴 (V82) |
+| P2: 전부 상수 또는 1비트 + 그 반전 | v6.1 | 1비트 + 상수도 패턴 생성 슬라이스 (V13) |
+| 사전: MUX 행 없음 (Serializer (MUX)만) | v6.1 | MUX 행 — 둘 이상의 데이터 입력 + 상보 선택(필수). AO22/AOI22는 두 선택이 상보일 때만 MUX, 선택이 따로면 일반 논리 박스 (§2.6-1, V16·V67·V83) |
+| 박스로만: 워드 속도 디지털과 루프 밖 레지스터·디코더·FSM뿐 (v6 §3.1-5) | v6.1 | 루프 화면 안의 루프 상태 소자(FSM·카운터·SAR)도 박스로 (§3.1-5·6, V22) |
+| 비트 역순으로 합친 반복 블록: 정함 없음 | v6.1 | 버스 이름 `<MSB:LSB>` 그대로, 범례에 연결 관계 (§3.1-7, V20) |
+| 핀 방향: §3.2-4 배치와 J3 손 판정만 | v6.1 | 핀 방향 표 (§3.2-8, V18) — 기준 입력은 왼쪽(데이터 쪽) 둘째 자리(아래 변 아님), 느린 신호·루프 신호 입력은 왼쪽 (V62·V80). 자동 검사 §4.1-18, 체크리스트 M13 (V26) |
+| 출력 동그라미·출력별 극성: 모든 출력 | v6.1 | 논리 출력만, 아날로그 출력은 그리지도 검사하지도 않음. 논리 출력 = 정적 CMOS·TG 논리, latch·FF, MUX, CML 버퍼·latch, 비교기·샘플러, 분주기, C2C, 패드 드라이버의 출력. Summer·TIA·위상 보간기는 아날로그 (§3.4-6, §4.1-13, M8, G1d, V19·V63·V79) |
+| 비교기·증폭기 차동 입력 표시: 없음 | v6.1 | netlist 극성대로 +/− 표시, 핀 자리는 핀 방향 규칙(기준은 둘째(아래) 입력)이라 "+"가 아래에 올 수 있음 (§3.4-6, SKILL §6.3, V21·V57) |
+| 자동 검사 1–17 | v6.1 | 18–25 더함(23은 가상 블록 in/out·id 제외, V34), 필수 주입 오류 목록, 검증기는 기준 `verify.py`에서 시작 (§4.1, V24·V25). 19에 §2.5-4 기준의 회색 선·이름표 (V58), 20에 netlist 오류 확인 질문 예외 (V59) |
+| 체크리스트 M1–M12, J3에 핀 방향 | v6.1 | M13 핀 방향, M14 표 간 분류 일치. J3에서는 핀 쪽(블록의 어느 변)만 빼고 배치 관례 "클럭 아래, 버스 위"는 남김 (§4.2, V26·V42) |
+| 검증 쪽 검사 범위·fix_request 문구: 정함 없음 | v6.1 | 규칙형 항목(모든 M 규칙과, 규칙을 모든 핀·화면에 적용하는 J 항목 — 예: J2 사전 특징, J4 유닛 대칭) 전수 검사·전체 목록 첨부, J5는 표본 그대로 (V33·V60), 검증 스크립트 오류 주입, fix_request에 "최소 범위" 문구 (§4.3-4·9, V27) |
+| 표 간 분류 일치의 "포트 표": 정의 없음 | v6.1 | `classification.md`의 최상위 포트 분류 표 (§4.1-22, B8) |
+| 복합 블록(하위가 모두 사전 블록): 언제나 박스, 묻지 않음 (v6 §2.6-1) | v6.1 | 하위 블록이 상태 소자 데이터 입력을 거치지 않는 닫힌 고리(순수 조합, 비동기 set/reset으로 닫힘)를 이루면 일반 박스 + 질문. 그 자체가 고리를 정의하는 사전 항목(Latch·DFF 행, SR latch, ÷2 분주기, §3.3-7 CCI 구조)에는 쓰지 않음. 하위 인스턴스가 없는 셀에서 트랜지스터를 묶은 가상 블록끼리 이루는 고리에는 씀 (§2.6-1, V37·V61·V77) |
+| 미사용 출력: 모두 짧은 선 + 넷 이름표 (v6 §3.5-4) | v6.1 | 숨기는 분류의 출력 핀은 핀째 숨김. 짧은 선 + 이름표는 그리는 분류의 미사용 출력만 (§3.5-4, SKILL §7-8, V38·V68) |
+| 국소 전원·접지 기호의 글자: "VDD" (구현 가이드 §6.3) | v6.1 | 전원이 둘 이상인 셀에서는 국소 기호와 유닛 화면 레일 이름에 실제 레일 이름 (§3.4-6, SKILL §6.3, V39·V69) |
+| 사건 플래그: D 상수 + 클럭·리셋 FF 출력은 sticky 상태 출력 (v6 §2.3-9) | v6.1 | 루프 안에서는 루프 신호가 먼저, 그 밖에서는 블록 밖으로 나가든 안 나가든 sticky 상태 출력 (§2.3-9, V53·V74) |
+| O2 검출기: 비교기, 또는 RC 저역통과·적분 C 뒤의 판정 (v6 §2.5-6) | v6.1 | 위상 검출기, 비교기, 적분기·차지 펌프 포함 — §2.3-14와 같음 (§2.5-6, V55) |
+| 분류 표 바이어스 행: 출처 조건 없음 (v6 §2.5-4) | v6.1 | 루프 출처가 아닌 것만 — K11과 같음 (§2.5-4, V56) |
+| 클럭 게이트의 클럭 쪽·enable 쪽: 정함 없음 | v6.1 | 보통 게이트(AND·NAND)면 클럭 추적이 닿는 입력이 클럭 쪽, 다른 입력이 enable 쪽 (§2.5-5 아래, V47) |
+| 이름 일치의 범례: 범례의 이름 모두 검사 (v6 §4.1-14) | v6.1 | 범례의 연결 관계 식(`X1[j].q → rxd<7−j>` 등)은 이름 칸이 아니라 뺌 (§4.1-14, V64) |
+| 부록 B: 느린 클럭·루프 신호·PI 코드·아날로그 시험 출력 행 없음 | v6.1 | `clock_in`/`clock_out` → 클럭(느린 클럭은 하위 이름), `loop_control` → 중요 제어(루프 출처 K7 (c)), `loop_error` → 루프 신호 (느린 신호), `pi_code` → 중요 제어 K1, `test_digital` 입력 → K9, 시험 출력(`test_digital`·`test_analog`) → 추적한 분류 또는 모니터 출력 + "(mon)" (부록 B, V65·V75·V76·V81) |
+| 출력별 극성의 주 입력: 정의 없음 (v6 §4.1-13) | v6.1 | 주 입력 = 고속 데이터 입력. 데이터·클럭이 함께 있는 블록(latch, DFF, 비교기, 샘플러)도 데이터 입력(클럭은 타이밍 입력), 고속 입력이 클럭뿐인 블록(버퍼, 분주기, 클럭 트리)은 클럭, 차동이면 P쪽. 기준 입력은 주 입력이 아님. 그런 입력이 없는 블록(제어 허브, FSM)은 동그라미·극성 검사 없음. 인스턴스마다 극성이 다른 셀은 인스턴스마다 판정 (§3.4-6, §4.1-13, M8, G1d, V85·V94) |
+| 버스 비트 표기 추측: 확신도 낮음만 적음 (v6 §2.5-7) | v6.1 | 질문 항목 — §2.7-1 판단 목록에 넣음 (§2.5-7, §2.7-1, V87) |
+| 사전 목록의 논리 게이트·SR latch: 블록 기호 없음 (v6 §2.6-1) | v6.1 | 블록 레벨은 셀 이름 박스, 출력이 반전이면 동그라미 (§2.6-1, V88) |
+| 화면 id의 셀 짧은 이름: 정의 없음 (v6 §1.3-1) | v6.1 | netlist 셀 이름을 소문자로, 뜻이 남는 한 줄여도 됨. 제목에는 언제나 원래 셀 이름, 화면 id는 HTML 주소(`#<id>`)로 확인. 가상 블록 id는 `u_<부모>_<역할>` 그대로 (§1.3-1, V89·V93) |
+| 같은 직선 위 다른 넷의 선 끝 40px: 어떤 끝을 세는지 없음 (v6 §1.4-7) | v6.1 | 자유 선 끝만 셈, 핀이나 다른 선 위(T 접점)에서 끝나는 끝은 세지 않음 (§1.4-7, V90) |
+| `scene_sha`: 그 화면 그림 데이터의 SHA-256, 범위 없음 (v6 §1.2) | v6.1 | 그림(제목·크기·그림 요소·클릭 영역)만, 사이드 패널은 넣지 않음. 사이드 패널 변경은 C.9-7 (§1.2, V91) |
+| 부록 A 최상위 포트: 37개 → 9개 (W 버스 1) | v6.1 | 37개 중 28개를 포트 기호 10개로(W·G 버스 포함), 숨긴 포트 9개 (부록 A, V92) |
 
 ### C.7 체크리스트 v5 → v6 대응
 | v6 | v5 항목 |
@@ -1181,9 +1395,13 @@ v5까지는 절을 덧붙이는 방식이었고, 뒤 절이 앞 절보다 우선
 
 v5 체크리스트는 §12.2(A1–F1) 위에 §14.3(E7, E8, D6, A5)과 §15.7(A1·B2·B3 바꿈, B6, C7, C8, E1a·E1b, E9, A6, G1c·G1d 범위)을 더한 것이었다. G1을 G1a–G1d 넷으로 나눈 것은 §13.6-2.
 
+v6.1에서 M13(핀 방향, J3에서 나눔)과 M14(표 간 분류 일치)를 M 묶음 끝에 더했다 (C.8 V26). ★는 붙이지 않았다.
+
 ★ 변화: v6에서 ★로 올라간 v5 항목은 A3, A5(파일 부분), A6(scene_sha 부분), B3, B4, B5, C3, C5, D2, D3, D6, E4, E5, E6, E8. ★에서 내려간 항목은 없다 (C2의 우회 → 이름표 부분은 M4★에 있다).
 
-### C.8 v5 안의 충돌 정리 (오케스트레이터 결정)
+### C.8 충돌 정리·결정 (오케스트레이터)
+**v6 결정 (v5 안의 충돌)**
+
 | id | v5 문장 | 결정 | v6 |
 |---|---|---|---|
 | D1 | §15.1-4 "허브 자체는 박스로 그린다(중요 제어를 만들면 §11.3-3 DEC 박스 규칙)" ↔ §15.2 아래 "K7 일반·K10·K11을 만드는 로직은 생략 목록에 '블록 (셀) — 일반 제어만 만듦'". §4-3·§12.4-1 생략과 §3.4 '바이어스·DAC·디지털 제어 → 생략'의 예외 목록 | 출력 중 하나라도 그리는 분류(K1–K6, 루프 출처 K7, K8, K9, O1, P2)면 박스, 모두 숨기는 분류(정적 K7, K10, K11)면 생략. 중요 제어를 만드는 허브는 DEC 박스 꼴(입력 버스 → 박스 → 출력 버스). 예외 목록에 워드 속도 디지털 박스와 VREF DAC 박스도 넣음 | §2.5-8, §3.1-4, §2.6-1 |
@@ -1195,13 +1413,120 @@ v5 체크리스트는 §12.2(A1–F1) 위에 §14.3(E7, E8, D6, A5)과 §15.7(A1
 | D7 | §13.1 기준 전압 정의(§15가 대체) ↔ 부록 B "기준 (VREF, 외부 기준 패드 P1)", §13.1 그림 "만드는 DAC는 'VREF' 박스" | 내부 기준 정의를 되살림: 추적되지 않은 넷이 비교기·프리앰프·샘플러의 한쪽 입력으로 들어가 판정 기준이 되면 기준 전압 — 회색 실선, 만드는 DAC는 VREF 박스 | §2.5-6, §2.5-4 |
 | D8 | §11.6-4 "C2MOS latch(→ Latch/DFF)" ↔ §15.4-1 "그 행의 구조 특징이 모두 있어야" (Latch·DFF 행 특징 "cross-coupled + 클럭 스티어링, 두 latch 직렬") | Latch·DFF 행 특징: cross-coupled 쌍 + 클럭 스티어링, 또는 클럭드 인버터(C2MOS)나 상보 클럭이 여닫는 전달 게이트로 닫히는 귀환 루프. DFF = 그런 latch 두 개를 반대 클럭으로 직렬 | §2.6-1 |
 
+**v6.1 결정 (루프 4회차, 오케스트레이터; 사용자 승인 B안, 정적 코드 1번)** — 찾은 곳: D = NAND v5 재시험, E = 이름 가림, F = LPDDR5형, G = 새 구조.
+
+| id | 찾은 것 | 결정 | v6.1 |
+|---|---|---|---|
+| V1 | D: 기준 원천 선택(내부 발생기 ↔ 외부 패드) 신호가 K6 "기준 레벨"로 가 중요가 됨 (G1a) | K6은 다비트 레벨 코드와 공유 이득 코드만. 기준 원천 선택·발생기 켜기·끄기는 K10(일반) | §2.5-5 K6·K10 |
+| V2 | D: 루프 학습 시작 1비트 포트가 클럭 게이트 때문에 K3(켜기)로 감 | K8·K9를 K3보다 먼저 본다. 루프 상태 소자 enable·갱신 클럭 게이트·리셋·검출기 클럭 게이트에만 닿는 1비트 포트 = K8. K3의 루프 켜기는 아날로그 전원·꼬리·분압 스위치·복제 다리 게이트로 좁힘 | §2.5-3, §2.5-5 K3·K8 (V28–V30으로 정리) |
+| V3 | E: 같은 신호의 지연/비지연 선택이 K2 문구에 맞지 않음 | 같은 원천의 다른 경로(정합/비정합, 지연/비지연) 선택도 K2 | §2.5-5 K2 |
+| V4 | F: 드라이버 다리 enable이 "표 위가 이김"으로 K1로 감, 내부 노드 병렬 다리는 K5 밖 | 코드로 켜는 병렬 다리는 패드든 내부 노드든 K5. K1은 다리 입력이 다른 고속 신호(FFE 탭)일 때만, 주 데이터 다리 enable은 K5(출력 끄기면 K3) | §2.5-5 K1·K5 (V31로 K5를 좁힘) |
+| V5 | F: 중요 enable이 논리를 거쳐 오버라이드 선택에도 닿을 때 | 그 경로는 그 중요 제어의 분류 | §2.5-3 |
+| V6 | E, v6 C.9-2: 바이어스 발생기 안 코드 스위치의 행 없음 (K7/K11 경계) | 바이어스 DAC로만 가는 코드는 K7 정적 = 일반. K11은 바이어스 노드 자체만 | §2.5-5 K11·아래 |
+| V7 | F: 정적 코드(slew, CTLE 피킹, 디스큐, 지연 트림)를 NAND 정답지는 general_control, F 정답지는 important로 둠 — **정답지와 다름 (사용자/오케스트레이터 결정)** | 그대로: 포트·레지스터에서 오는 정적 코드는 K7 일반 = 숨김 (사용자 결정 1번). NAND 정답지와 같고 F 정답지와 다르다 | §2.5-5 아래 |
+| V8 | E, v6 C.9-1: (mon) 구조 정의가 없어 이름 없이 판정 못 함 (N1) | 주 경로에서 갈라진 가지로만 구동되고 안에서 안 쓰이는 출력 = (mon). 그 가지를 켜는 1비트 = K9. 상태 소자 출력은 O1(모니터 표시 없음) | §2.5-4 (V35로 자리 정함) |
+| V9 | E·G: 보정 FSM 클럭·슬로우 스트로브가 고속 클럭도 명령도 아님 | 상태 소자 클럭 핀에 닿는 입력 = 느린 클럭, K8 아님, 클럭과 같이 그림, "(slow)" 없음 | §2.5-4, §2.5-5 K8 |
+| V10 | G: ESD만 붙은 단일 종단 슬로우 패드 | 고속 입력 후보 아님, 끝점으로 분류 | §2.4-1 |
+| V11 | G: 루프 검출기 출력(up/dn)의 행 없음 | 루프 신호 — 느린 신호와 같은 실선, 분류 표에 "루프 신호(검출기 출력)" | §2.3-14, §2.5-4 (B10: 추적 예외 자리 받아들임) |
+| V12 | G: 자기 리셋 경로(PFD)가 비동기 리셋(K10)으로 숨겨짐 | 블록 안 자기 리셋 경로는 신호 경로 — 숨기지 않음. K10은 블록 밖에서 오는 비동기 set/reset만 | §2.3-12, §2.5-5 K10 (경로의 분류는 V72) |
+| V13 | D: "1비트 + 상수" 패턴 슬라이스 | P2에 포함 | §2.5-6 P2 |
+| V14 | G: vcm(공통모드)을 정답지 G는 기준으로 둠 — **정답지와 다름 (사용자/오케스트레이터 결정)** | 지금처럼 바이어스(숨김) | §2.5-4 바이어스 행 (변경 없음) |
+| V15 | F: 루프 출처 바이어스 DAC 출력(VALF·VTRN·VTRP)을 정답지 F는 바이어스로 둠 — **정답지와 다름 (사용자/오케스트레이터 결정)** | 보정 루프가 만드는 아날로그 트림 전류·전압은 루프 출처 K7 = 중요 (c) | §2.5-5 아래 (V32) |
+| V16 | E: AO22 + 외부 상보 선택이 MUX로 대응되지 않음 | MUX 행 특징: 두 데이터 입력 + 상보 선택(셀 안이든 밖이든), AO22/AOI22 + 상보 선택 = MUX | §2.6-1 |
+| V17 | 확인: TSPC 구조 | 사전에 없음 그대로 — 일반 박스 (변경 없음) | §2.6-1·3 (변경 없음) |
+| V18 | D: 핀 방향 규칙이 없어 제어·클럭 핀 자리가 그림마다 다름 | 핀 방향 표: 제어·명령·시험 위, 클럭 아래(흘려보내면 왼쪽 허용), 데이터 왼쪽, 출력 오른쪽, 예외 목록 | §3.2-8; SKILL §6.4 (§7-2는 V36) |
+| V19 | G: 극성 검사가 아날로그 출력(차지 펌프 등)에도 걸림 | 동그라미·극성 검사는 논리 출력만 | §3.4-6, §4.1-13, M8, G1d; SKILL §6.4 (정의는 V63) |
+| V20 | G: 비트 역순으로 합친 반복 블록의 버스 표기 | `<MSB:LSB>` 그대로, 범례에 연결 관계 | §3.1-7 |
+| V21 | D: 차동 입력 +/− 표시 없음 | 비교기·증폭기 차동 입력에 +/− | §3.4-6; SKILL §6.3·§6.4 (자리는 V36·V57) |
+| V22 | D: 루프 안 상태 소자를 루프 화면에서 그리는 법 없음 | 루프 화면 안에서 박스로 (하위 화면 없이 가능) | §3.1-5·6 |
+| V23 | G(A2): PPT 내장이 커지면 어떻게 하나 | base64 내장 필수, 크기 상한 없음, gzip + DecompressionStream, 옆 파일 링크 금지 | §1.2; SKILL §10 |
+| V24 | D: 기계로 잡을 수 있는 불통과가 자동 검사에 없음 | 자동 검사 18–25 (핀 방향, 회색 이름표 범위, 질문, 끝점 핀, 표 간 분류 일치, 블록 핀 이름, R/C 값, 글자 위치), 각각 오류 주입 | §4.1-18~25 (V34·V58·V59, "포트 표"는 V71); SKILL §9 |
+| V25 | E: AGENT 2 검증기 수준이 회로마다 다름 | 필수 주입 오류 목록, 검증기는 기준 `verify.py`에서 시작해 넓힘 | §4.1 머리; SKILL §9·§9-6 |
+| V26 | D: 핀 방향이 손 판정 J3 안에 있음 | M13 핀 방향, M14 표 간 분류 일치, J3에서 핀 방향을 뺌 | §4.2 (J3 배치 관례는 V42로 되살림) |
+| V27 | D: 검증 쪽 규칙형 항목의 검사 범위와 fix_request 범위가 정해지지 않음 | 규칙형 항목 전수 검사·전체 목록 첨부(표본 금지), 검증 스크립트 오류 주입, fix_request에 "최소 범위" 문구 | §4.3-4·9 (V33) |
+| V28 | v6.1 초안 충돌 A1: V2(루프 클럭 게이트 → K8) ↔ V9(상태 소자 클럭 핀 → 느린 클럭) | 포트가 닿는 게이트 핀으로 나눔. 신호가 클럭으로 흘러 상태 소자 클럭 핀에 닿으면 느린 클럭(V9), 루프 클럭 게이트의 enable 쪽 입력에만 닿으면 K8(V2). V2 문구를 "갱신·검출기 클럭 게이트의 enable 쪽 입력"으로 | §2.5-4 느린 클럭 행, §2.5-5 K8 (느린 클럭 행의 "루프"·"1비트"는 V43으로 되살림) |
+| V29 | A2: V2의 포트가 K3의 일반 "클럭 게이트"에도 맞아 K8의 "K3–K7 끝점에는 닿지 않는"과 부딪침 | K3의 클럭 게이트·직렬 스위치 항목은 게이트하는 신호가 고속(데이터 또는 고속 클럭)일 때만. 느린 루프 클럭을 게이트하는 곳은 K3 끝점이 아님 | §2.5-5 K3 |
+| V30 | A3: V2의 "리셋"이 동기인지 비동기인지 | 동기 리셋·clear만. 비동기 set/reset은 K10 그대로 (D4) | §2.5-5 K8 |
+| V31 | A4: V4(내부 노드 병렬 다리 → K5) ↔ V7(slew 정적 코드 → K7 일반) | V4를 좁힘: K5는 출력이 패드나 블록의 고속 출력 노드에 묶인 다리(마지막 구동 세기·종단)만. 내부 노드의 코드 다리(프리드라이버 에지 속도 다리 등)는 K7 — 정적 출처면 일반(V7), 루프 출처면 중요 (c) | §2.5-5 K5·아래 (V41로 문구를 정확히 함) |
+| V32 | A5: V15(루프 트림 → K7 중요) ↔ K11(바이어스 노드 → 숨김) | 출처가 정한다: 루프(O2)에서 온 트림 전압·전류는 꼬리·미러 게이트에 닿아도 루프 출처 K7 (c). K11은 루프 출처가 아닌 바이어스 노드 | §2.5-5 K11·아래 |
+| V33 | A6: V27(전수 검사, 표본 금지) ↔ J5(화면 5개 이상 손 대조) | J5는 표본 손 검사 그대로(전수 연결은 M2 자동). 전수 검사는 규칙형 항목: 모든 M 규칙과, 규칙을 모든 핀·화면에 적용하는 J 항목(이름, 핀 방향, 사전 특징 등) | §4.3-9 |
+| V34 | A7: 새 검사 "블록 핀 이름 = 셀 포트"에 가상 블록 예외 없음 | 가상 블록의 일반 핀 이름(in/out)과 가상 블록 id는 뺀다 — §4.1-14와 같은 예외 | §4.1-23 |
+| V35 | B1: V8 (mon)의 분류가 없고 그림 문구가 '상태 출력' 행에 있음 | (mon)의 분류는 "상태·시험 출력 — 모니터 출력". 정의와 그림 문구를 그 행에 함께 둠 | §2.5-4 |
+| V36 | B4·B6: SKILL의 핀 쪽(§7-2)이 핀 방향 표와 다르고, +/− 의 그리는 자리가 없음 | SKILL §7-2를 핀 방향 표에 맞춤(명령·시험 입력 위, 예외 목록). SKILL §6.3에 +/− 기하: 증폭기·비교기 삼각형의 위 차동 입력에 "+", 아래에 "−", 9 px, 삼각형 변에서 6 px 안쪽, "+"는 netlist의 비반전 입력. V16·V19·V22·V26(M13·M14 ★ 없음)은 초안대로 받아들임 | SKILL §6.3, §7-2; §3.4-6 |
+| V37 | 2라운드 검토(새 구조): 하위가 모두 사전 블록이라 복합 블록으로 묻지 않았는데, 하위 블록이 데이터 입력을 거치지 않는 고리를 이룸 | 복합 블록 규칙은 하위 블록이 상태 소자 데이터 입력을 거치지 않고 닫히는 고리(순수 조합 고리, 비동기 set/reset 핀으로 닫히는 고리)를 이루면 쓰지 않는다 — 일반 박스 + 질문 | §2.6-1 |
+| V38 | 2라운드 검토: 숨기는 분류의 미사용 출력을 짧은 선 + 이름표로 그림 | 넷이 숨기는 분류인 출력 핀은 그리지 않는다(핀째 숨김, C1). 짧은 선 + 이름표는 그리는 분류의 미사용 출력만(E7) | §3.5-4 |
+| V39 | 2라운드 검토: 전원이 여럿인 셀에서 국소 전원·접지 기호가 모두 "VDD" | 국소 전원·접지 기호에 실제 레일 이름(예: VCCQ, VSSQ) | §3.4-6, SKILL §6.3 |
+| V40 | 2라운드 검토: 키퍼 배치(§3.3 CCI 회전)로 차동 셀의 출력 탭이 비대칭이 될 수 있음 | 열린 문제로만 적음 — 정하지 않음 | C.9-6 |
+| V41 | 3라운드 확인: K5의 "블록의 고속 출력 노드"(V31)가 아무 블록의 출력으로 읽혀 에지 속도 코드가 걸린 프리드라이버 다리가 K5로 감 | K5는 출력이 패드, 또는 패드·종단을 바로 구동하는 마지막 출력 노드에 묶인 병렬 다리만. 그 앞 노드의 다리는 어느 블록 경계 뒤에 있든 K7(예: 프리드라이버 단, 슬루 제한 인버터, 내부 버퍼) — 정적 출처면 일반(V7), 루프 출처면 중요 (c) | §2.5-5 K5·아래 (V44로 주 데이터 다리에 좁힘) |
+| V42 | v6.1 검토: V26이 J3에서 배치 관례 "클럭 아래, 버스 위"(§3.2-4)까지 지움 — 결정보다 넓음 | J3에 "클럭 아래, 버스 위"를 배치 관례로 되살림. 빼는 것은 핀 쪽(M13)뿐 | §4.2 J3 |
+| V43 | v6.1 검토: 느린 클럭 행에서 V28의 "루프"·"1비트"가 빠져 모든 클럭 게이트 enable로 읽힘 — 결정보다 넓음 | "루프의 갱신·검출기 클럭 게이트의 enable 쪽 입력에만 닿는 1비트 포트는 K8"로 되살림 | §2.5-4 느린 클럭 행 |
+| V44 | 검토 NC1 (높음): V41 문장에 조건이 없어 RX의 DFE 탭(K1)·공유 이득(K6) 다리까지 K7 일반이 됨 — 부록 A와 어긋남 | "마지막 노드 앞 다리는 K7"은 주 데이터를 싣는 병렬 다리(구동 세기·에지 속도)에만. 서로 다른 고속 신호를 섞는 다리는 K1(DFE·FFE 탭), 공유 이득 코드는 K6 — 표에서 위라 먼저. 부록 A(W = K1, G<3:0> = K6) 그대로 | §2.5-5 K5·아래 |
+| V45 | NC2: K1의 "주 데이터 다리의 enable은 K5"가 V41 전 문구 | "주 데이터 다리의 enable은 패드·최종 출력 노드면 K5, 그 앞이면 K7" | §2.5-5 K1 |
+| V46 | NC3: 보는 순서(K8 먼저)와 K8 정의의 "K3–K7 끝점에는 닿지 않는"이 순환 | K8·K3 행에 우선 규칙: 1비트 입력이 클럭을 게이트하면 고속 클럭이면 K3, 느린 클럭이면 K8. K8의 순환 제외 조건을 지움 | §2.5-5 K3·K8 |
+| V47 | NC4: 보통 AND·NAND 클럭 게이트에서 어느 입력이 enable 쪽인지 구조로 안 정해짐 | 클럭 추적이 닿는 입력이 클럭 쪽, 다른 입력이 enable 쪽 | §2.5-5 아래 |
+| V48 | NC5: 루프 비교기의 기준 분압기를 켜는 1비트가 K3(루프 분압 스위치)과 K10(기준 발생기 켜기)에 함께 맞음 | 그리는 보정 루프(L1) 안의 발생기·분압기는 K3, 루프 밖 기준 발생기는 K10(V1) | §2.5-5 K3·K6·K10 |
+| V49 | NC6: 탭 MUX로 만든 디스큐·지연 트림이 구조로는 K2, 기능으로는 K7 | 같은 지연 소자의 탭을 고르는 것(미세 트림)은 K7. 서로 다른 블록 경로(정합/비정합 등) 사이의 선택은 K2(V3) | §2.5-5 K2 |
+| V50 | NC7: V6 "바이어스 DAC로만 가는 코드는 K7 정적"에 출처 조건이 없어 루프 출처 코드도 숨겨짐 | 정적 코드는 K7 일반, 루프 출처 코드는 K7 (c) | §2.5-5 아래 |
+| V51 | NC8: 고속 노드에서 갈라진 (mon) 출력은 추적으로 고속이 되어 §2.5의 모니터 행이 닿지 않음 | "(mon)"은 출력 포트 표시이지 추적 분류가 아니다. 고속 추적이 다른 부하 없는 관찰 가지로만 출력 포트에 닿으면 추적한 분류 그대로 + "(mon)". 추적이 닿지 않는 경우는 그대로 | §2.3-15, §2.5-4 |
+| V52 | NC9: TG·C2MOS FSM의 클럭 포트가 §2.4-2로 클럭 입력, V9로 느린 클럭 | "느린 클럭"은 클럭 분류의 하위 이름. 고속 경로 밖 상태 소자에만 닿는 클럭이 느린 클럭. 그림은 같고 §2.4와 부딪치지 않음 | §2.5-4 느린 클럭 행 |
+| V53 | NC10: 루프 안 위상 검출기 출력이 §2.3-9 사건 플래그와 §2.3-14 루프 신호에 함께 맞음 | 루프 안에서는 루프 신호(§2.3-14)가 먼저. 사건 플래그는 출력이 블록 밖으로 상태로 나갈 때만 | §2.3-9 |
+| V54 | NC11: 루프 비교기 출력이 §2.3-5 느린 신호와 §2.3-14 루프 신호에 함께 맞음 | 루프 신호는 루프 안의 느린 신호. 문구를 합쳐 "루프 신호 (느린 신호)", 그림 같음 | §2.3-5·14, §2.5-4 |
+| V55 | NC12: O2 검출기 목록에 위상 검출기가 없어 PLL·CDR 같은 고리가 루프가 아닐 수 있음 | O2 검출기에 위상 검출기, 적분기·차지 펌프를 더함 (§2.3-14와 같음) | §2.5-6 O2, §2.3-14 |
+| V56 | NC13: 분류 표 바이어스 행에 출처 조건이 없음 (V32는 K11만 고침) | 바이어스 행에 "루프 출처가 아닌" | §2.5-4 바이어스 행 |
+| V57 | NC14: SKILL +/− 기하("+"는 위)와 기준 = 둘째(아래) 입력이 부딪침 | 자리는 계획서대로(기준은 둘째(아래) 입력). +/−는 핀이 어디 있든 netlist 극성대로 — "+"가 아래에 올 수 있음 | §3.4-6; SKILL §6.3 |
+| V58 | NC15: 자동 검사 19의 허용 목록에 §2.5-4 기준 회색 선·이름표가 없음 | 검사 19에 §2.5-4 기준의 회색 선·이름표를 더함 | §4.1-19 |
+| V59 | NC16: 자동 검사 20에 §2.7-4 예외(netlist 오류 확인 질문)가 없음 | 검사 20에 그 예외를 더함 | §4.1-20 |
+| V60 | NC17: §4.3-9의 J 예(이름, 핀 방향)는 M7·M13 | J 예를 J2(사전 특징)·J4(유닛 대칭)로, 이름·핀 방향은 M7·M13으로 적음 | §4.3-9 |
+| V61 | NC18 (= 3라운드 시험 제안): V37이 그 자체가 고리인 사전 행(SR latch 등)과 부딪침 | V37은 고리를 정의하는 사전 행(Latch·DFF — 게이트 수준 SR latch, TG·C2MOS latch 포함 —, 분주기 ÷N, cross-coupled 키퍼·CCI)에는 쓰지 않고, 말단 셀의 가상 블록 안에서는 씀 | §2.6-1 복합 블록 행 |
+| V62 | U1: 핀 방향 표에 기준·느린 신호·루프 신호 입력이 없음 | 기준 입력은 데이터 쪽 둘째 입력(왼쪽 또는 아래, §2.5-4). 느린 신호·루프 신호 입력은 데이터처럼 왼쪽 | §3.2-8; SKILL §7-2 |
+| V63 | U2: "논리 출력"(V19) 정의 없음 | 논리 출력 = 정적 CMOS·TG 논리, latch·FF, MUX, CML 버퍼·latch의 출력(디지털 값). 아날로그 출력 = 증폭기(CTLE, VGA, OTA), 적분기, 차지 펌프, DAC, 바이어스 — 동그라미 없음 | §3.4-6, §4.1-13; SKILL §6.4 |
+| V64 | U3: 범례의 연결 관계 식(`X1[j].q → rxd<7−j>`)이 이름 일치 검사에 걸림 | 범례의 연결 관계 식은 이름 칸이 아니라 §4.1-14에서 뺌 | §4.1-14 |
+| V65 | U4: 부록 B에 느린 클럭·루프 신호 등의 행이 없음 | 부록 B에 행: 느린 클럭 → 클럭, `loop_control`/`loop_error` → 루프 신호 (느린 신호), `pi_code` → 중요 제어 K1, `test_analog` → 모니터 출력 (mon) | 부록 B |
+| V66 | U5·U6: C.8에 SKILL 위치가 빠짐, B8·B9가 V12·V24 행 안에만 있음 | C.8 V18·V19·V21·V23·V24·V25 행에 SKILL 위치를 적음. B8·B9를 V71·V72 행으로 나눔 | 부록 C.8 |
+| V67 | U7: MUX 행이 "두 데이터 입력"뿐 | 둘 이상의 데이터 입력 + (상보) 선택 | §2.6-1 MUX 행 |
+| V68 | U8: §3.5-4 문장 순서 때문에 숨긴 핀을 그리라는 말처럼 읽힘 | "숨기는 분류의 핀은 그리지 않는다"를 먼저 쓰고 나머지를 뒤에. SKILL §7-8도 맞춤 | §3.5-4; SKILL §7-8 |
+| V69 | U9: V39가 국소 기호만 다루고 유닛 화면 레일 이름은 "VDD" 그대로 | 전원이 둘 이상인 셀의 유닛 화면 레일 이름에도 실제 레일 이름 | §3.4-6; SKILL §6.3 |
+| V70 | U10: C.9-5가 NC3·NC4(클럭 게이트)와 겹침 | C.9-5에서 클럭 게이트 경우를 빼고 V46·V47을 가리킴 | 부록 C.9-5 |
+| V71 | B8 (V24에서 나눔): "포트 표" 정의 없음 | "포트 표" = `classification.md`의 최상위 포트 분류 표 (처음 쓰는 곳에 정의) | §4.1-22 |
+| V72 | B9 (V12에서 나눔): 자기 리셋 경로의 분류 없음 | 그 경로를 만드는 블록 출력의 분류를 따른다(예: 루프 검출기 출력으로 만든 리셋은 루프 신호) | §2.3-12 |
+| V73 | 재검토 R1 (중간, 충돌): V47 "클럭 추적이 닿는 입력이 클럭 쪽"은 고속으로 추적되지 않는 클럭(ESD만 붙은 느린 패드 등, V10·V52)에는 쓸 수 없음 | 상태 소자 클럭 핀에서 거꾸로 따라가 게이트마다 정함: 분주기·발진기·클럭 포트·클럭 패드에서 오는 입력, 또는 이 게이트를 거치지 않고 다른 상태 소자 클럭 핀에도 닿는 입력이 클럭 쪽, 다른 입력이 enable 쪽. 둘 다 해당하거나 둘 다 아니면 질문(§2.7). 고속으로 추적되지 않은 포트에 적용 | §2.5-5 (끝점 표 아래) |
+| V74 | 재검토 R2 (중간, 회귀): V53 "출력이 블록 밖으로 상태로 나갈 때만"이라 블록 안에만 머무는 사건 플래그의 분류가 없어짐 | 루프 안에서는 루프 신호(§2.3-14)가 먼저. 그 밖에서는 블록 밖으로 나가든 안 나가든 sticky 상태 출력. 상수가 아님 | §2.3-9 |
+| V75 | 재검토 R3 (중간, 충돌): 부록 B `test_digital`/`test_analog` → "모니터 출력 (mon)"이 §2.3-15(추적한 분류 그대로 + "(mon)")와 어긋남 | `test_digital` 입력 → K9 시험 입력. 시험 출력(`test_digital`·`test_analog` 출력) → 추적한 분류, 추적이 닿지 않으면 상태·시험 출력(모니터 출력), 어느 쪽이든 "(mon)" 표시. G1a는 분류 + 표시를 대조 (§2.3-15) | 부록 B |
+| V76 | 재검토 R4 (중간, 충돌): 부록 B `loop_control` → 루프 신호인데, 본문의 루프 신호는 검출기 출력뿐이고 루프가 만든 코드는 루프 출처 K7 (c) | `loop_control` → 중요 제어(루프 출처 K7 (c)). `loop_error` → 루프 신호(검출기 출력). `pi_code`는 K1 그대로 | 부록 B |
+| V77 | 재검토 R5 (낮음–중간, 충돌): V61 면제 목록이 사전과 어긋남 — Latch·DFF 행 특징에 게이트 수준 SR latch가 없고, "분주기(÷N) 행"·"키퍼·CCI" 행은 사전에 없음 | 면제 = Latch·DFF 행(TG·C2MOS 포함), SR latch(사전 목록), ÷2 분주기(DFF 고리 ÷N은 이들의 복합 블록), §3.3-7 CCI 구조(행이 아님). "말단 셀의 가상 블록 안에서는 쓴다" → "하위 인스턴스가 없는 셀에서는 트랜지스터를 묶은 가상 블록끼리 고리를 이루는 경우에도 V37을 쓴다" | §2.6-1 복합 블록 |
+| V78 | 재검토 R6 (낮음, 충돌): K8 행의 "검출기 클럭 게이트의 enable 쪽 → K8"이 같은 행의 V46(게이트되는 클럭이 고속이면 K3)과 겹침 | 그 구절을 지움. 클럭 게이트 enable은 V46만 따름: 게이트되는 클럭이 고속이면 K3, 느리면 K8. 느린 클럭 행의 같은 구절도 V46 문장으로 맞춤 | §2.5-4 느린 클럭, §2.5-5 K8 |
+| V79 | 재검토 R7 (낮음–중간, 빈틈): 논리·아날로그 출력 목록에 비교기·샘플러, 분주기, C2C, Summer, TIA, 위상 보간기, 드라이버가 없음 | 논리 출력에 비교기·샘플러(판정 출력), 분주기, C2C, 패드 드라이버를 더함. 아날로그 출력(동그라미 없음)에 Summer(Σ), TIA, 위상 보간기를 더함 | §3.4-6 (SKILL §6.4) |
+| V80 | 재검토 R8 (낮음): 핀 방향 표 "기준 입력 = 둘째 입력 (왼쪽 또는 아래)"의 "아래"가 아래 변인지 왼쪽 변의 아래 자리인지 모름. SKILL §6.4 핀 목록에 V62 두 줄이 없음 | 기준 입력은 왼쪽(데이터 쪽) 둘째 자리, 아래(클럭 쪽) 변이 아님. SKILL §6.4 핀 목록에 기준 입력, 느린 신호·루프 신호 입력 두 줄을 넣음 | §3.2-8, §3.4-6 (+/−), SKILL §6.3·§6.4·§7-2 |
+| V81 | 재검토 R9 (낮음): 부록 B 첫 칸 "느린 클럭"은 정답지 class가 아니라 명세서 분류 이름 | 느린 클럭 행을 클럭 행에 합침: `clock_in`/`clock_out` → 클럭(느린 클럭은 하위 이름, §2.5). 정답지 칸에는 명세서 용어를 쓰지 않음 | 부록 B |
+| V82 | 재검토 R10 (낮음): K9 "모니터 출력은 4항 표"가 §2.3-15를 가리키지 않음 | "모니터 출력은 4항 표·§2.3-15" | §2.5-5 K9 |
+| V83 | 재검토 R11 (낮음): MUX 행 "(상보) 선택"의 괄호 때문에 상보가 아니어도 되는 것으로 읽힘 | 상보 선택이 필수. AO22/AOI22는 두 선택이 상보일 때만 MUX(한쪽이 다른 쪽의 반전 — 셀 안에서 만들었거나 인버터를 거쳐 한 출처로 거슬러 올라감). 선택이 따로면 일반 논리 박스 | §2.6-1 MUX |
+| V84 | 재검토 R12 (낮음): 느린 클럭 행의 "고속 경로"가 데이터 경로만인지 고속 클럭 경로까지인지 정해지지 않음 | 고속 경로 = 고속 데이터 또는 고속 클럭 추적이 닿는 모든 노드 | §2.5-4 느린 클럭 |
+| V85 | 오케스트레이터 (재검토 후, 기준 결과 해석 REF_CHANGES 5-4): 출력별 극성의 "주 입력"이 정의되지 않음 | 주 입력 = 블록의 고속 데이터 입력 또는 클럭 입력, 차동 쌍이면 P쪽. 기준 입력은 주 입력이 아님(둘째 입력, §2.5-4). 그런 입력이 없는 블록(제어 허브, FSM)은 극성 없음 — 동그라미·극성 검사 없음. 인스턴스마다 극성이 다른 셀은 인스턴스마다 판정 | §3.4-6, §4.1-13, §4.2 M8·G1d (SKILL §6.4) |
+| V86 | 기준 결과 재생성 (REF_CHANGES 5-2): K6 "이득 코드"의 구조 정의가 없음 — CTLE `R<2:0>`·`C<2:0>`도 공유 경로의 이득·피킹을 바꿈 | 이득 코드 = 사전 VGA 행 이득 단의 코드. CTLE 행의 R·C 코드는 피킹 K7 | §2.5-5 K6 |
+| V87 | 기준 결과 재생성 (REF_CHANGES 5-6): §2.5-7 "표기 추측 → 확신 낮음"이 §2.7-1 판단 목록에 없음 | 버스 비트 표기 추측은 질문 항목(§2.7-1 판단 목록에 넣음) | §2.5-7, §2.7-1 |
+| V88 | 기준 결과 재생성 (REF_CHANGES 5-7): 사전 목록의 논리 게이트·SR latch에 블록 기호가 없음 | 블록 레벨에서 논리 게이트·SR latch 셀은 셀 이름 박스, 출력이 반전이면 동그라미 | §2.6-1 |
+| V89 | 기준 결과 재생성 (REF_CHANGES 5-8): 화면 id의 "셀 짧은 이름"이 정의되지 않음 | 셀 짧은 이름 = netlist 셀 이름을 소문자로 쓴 것 | §1.3-1 |
+| V90 | 기준 결과 재생성 (REF_CHANGES 5-9): §1.4-7 "서로 다른 넷의 선 끝"에 T 접점·핀에서 끝나는 끝이 드는지 모름 | 자유 선 끝만 셈 | §1.4-7 |
+| V91 | 기준 결과 재생성 (REF_CHANGES 5-11): `scene_sha`의 "그림 데이터" 범위가 없음 | `scene_sha`는 그림만(제목·크기·그림 요소·클릭 영역). 사이드 패널 변경은 v6.2 열린 문제(C.9-7) | §1.2, C.9 |
+| V92 | 기준 결과 RX AFE를 v6 + v6.1로 다시 만듦(REF_CHANGES). 부록 A 최상위 포트 줄이 G 버스와 어긋남(5-3) | 재생성을 C.1·C.5에 기록: 화면 17개 중 13개 그림 바뀜, 자동 검사 29개, 주입 오류 57/57 잡힘. SKILL §11 전체·§4.12 첫 코드 블록·§0 두 줄·§2.2 코드 블록을 기준 결과 교체 문안(A·B·C)으로, SKILL 버스 표시 줄(§6.3·§7-7·§12)을 §3.5-2에 맞춤(D). 부록 A: 37개 중 28개를 포트 기호 10개로, 숨긴 포트 9개, `G<3:0>` K6, W K1, C/R K7 숨김, 바이어스 숨김 | 부록 A, C.1, C.5 (SKILL §0·§2.2·§4.12·§6.3·§7-7·§11·§12) |
+| V93 | V89 ↔ 기준 결과 화면 id (SKILL §11.3의 b_top·b_slice 등): 소문자 셀 이름 그대로면 대부분 맞지 않음 | 셀 짧은 이름 = netlist 셀 이름을 소문자로, 뜻이 남는 한 줄여도 됨(예: HALF_RATE_DFE_SLICE → slice, RX_AFE_TOP → top). 화면 제목에는 언제나 원래 셀 이름, 화면 id는 HTML 주소(`#<id>`)로 확인 (기준 결과에 맞춤). 가상 블록 id는 `u_<부모>_<역할>` 그대로. 기준 결과 id는 이 규칙을 따라야 함 | §1.3-1 (SKILL §5·§6.5) |
+| V94 | V85 "고속 데이터 입력 또는 클럭 입력"이 둘 다 있는 블록에서 어느 쪽인지 정하지 않음 | 데이터·클럭이 함께 있는 블록(latch, DFF, 비교기, 샘플러)은 데이터 입력이 주 입력, 클럭은 타이밍 입력. 고속 입력이 클럭뿐인 블록(버퍼, 분주기, 클럭 트리)은 클럭이 주 입력. 차동 입력은 P쪽이 주 입력 | §3.4-6 (SKILL §6.4) |
+| V95 | 기준 결과 교체 문안 D: 남은 SKILL 일반 줄이 계획서·기준 결과와 맞지 않음 | 새 규칙 없이 맞춤만 — SKILL §6.4 동그라미·+/−·핀 이름, §6.3 화면 밖 연결 기호, §4.9 역할 이름, §5·§6.5 화면 id(가상 블록 포함), §9 검증 목록. 계획서와 기준 결과가 다르면 계획서를 따름 | SKILL §4.9·§5·§6.3·§6.4·§6.5·§9 |
+
+REF_CHANGES 5-1(VGA 이득 다리의 K5 ↔ K6)은 V41·V44·V86으로 이미 정해졌다: 이득 다리는 마지막 출력 노드가 아닌 안쪽 노드라 K5가 아니고, K6이 먼저다.
+
 ### C.9 열린 문제
 규칙이 아니다. 다음 개정에서 정할 것.
-1. 모니터 출력 "(mon)": 어떤 출력이 모니터 출력인지 정하는 구조 규칙이 없다 (K9와 부록 B가 이 말을 쓴다).
-2. 바이어스 DAC(바이어스 발생기)로만 가는 코드: 맞는 끝점 행이 없다 (K11은 바이어스 노드 자체).
-3. 구조 특징이 없는 사전 항목: C2C, OTA, RC 평균기, 그리고 논리 게이트·SR latch·ICG·DLY·LS. 사전 대응(§2.6-3)을 적용할 수 없다.
+1. (해소) 모니터 출력 "(mon)" — v6.1에서 정함 (C.8 V8·V35, §2.5-4).
+2. (해소) 바이어스 DAC로만 가는 코드 — v6.1에서 정함 (C.8 V6, §2.5-5).
+3. 구조 특징이 없는 사전 항목: C2C, OTA, RC 평균기, 그리고 논리 게이트·SR latch·ICG·DLY·LS. 사전 대응(§2.6-3)을 적용할 수 없다. (MUX는 v6.1에서 특징을 정함 — C.8 V16, §2.6-1. 논리 게이트·SR latch의 블록 레벨 그림도 v6.1에서 정함 — C.8 V88. 구조 특징은 아직 없다.)
 4. 다른 블록의 클럭 핀을 구동하지 않는 분주기 출력: 클럭이 아니라는 것만 정해져 있고(§2.3-7) 무슨 분류인지는 없다.
-5. 고속 클럭으로 동작하는 플립플롭·샘플러의 입력(제어 추적이 멈추는 곳, §2.5-1)에 닿는 제어: 맞는 끝점 행이 없다.
+5. 고속 클럭으로 동작하는 플립플롭·샘플러의 입력(제어 추적이 멈추는 곳, §2.5-1)에 닿는 제어: 맞는 끝점 행이 없다. 클럭 게이트의 enable 쪽 입력은 여기서 빼고 v6.1에서 정했다 (K3·K8 우선 규칙과 enable 쪽 정의, C.8 V46·V47).
+6. 키퍼 배치(§3.3-7 CCI 90° 회전)가 차동 셀의 출력 탭을 비대칭으로 만들 수 있다. 대칭 판정(체크리스트 J4, v5 D1)은 소자 쌍만 다루고 출력 탭 위치는 다루지 않는다 (C.8 V40).
+7. 사이드 패널(생략 목록·주석·분류 요약·질문)만 바뀐 화면: `scene_sha`(§1.2)는 그림만 덮으므로 수정 범위 검사(§4.1-16, §4.3-5, M12)가 사이드 패널 변경을 보지 못한다. 어떻게 볼지는 v6.2에서 정한다 (C.8 V91).
+8. 차동 입력 +/−(§3.4-6)의 "+": "netlist 극성대로"만 있고 어느 출력을 기준으로 보는지 없다. 기준 결과는 동그라미를 달기 전 첫(위) 출력과 같은 위상인 입력을 "+"로 했다 (REF_CHANGES 5-5).
+9. 여러 소자를 대신하는 개념 기호(R_S·C_S 등)의 값: §4.1-24 "그린 R/C 값 = 인스턴스 값"은 소자 하나의 기호만 다룬다. 지금은 개념 기호에 값 글자가 없고 범례 값만 §4.1-9로 확인한다 (REF_CHANGES 5-14).
+10. 사전 CTLE 행의 "피킹용 큰 C": "큰"의 기준이 없어 사전 대응(§2.6-3) 판정이 갈릴 수 있다 (REF_CHANGES 5-15).
 
 ### C.10 명세서 고치는 규칙 (오케스트레이터용, v6부터)
 1. **골격 고정**: 장은 `0 · 1 · 2 · 3 · 4 · 부록 A · B · C`뿐이다. 새 장을 만들지 않는다. 새 주제는 그것을 찾을 장 안의 절에 넣고, 절을 새로 만들 때는 그 장 번호를 이어 붙인다.
@@ -1210,11 +1535,11 @@ v5 체크리스트는 §12.2(A1–F1) 위에 §14.3(E7, E8, D6, A5)과 §15.7(A1
 4. **체크리스트는 §4.2 표 하나**: 항목 id(M·J·G·N)는 바꾸지 않는다. 더하면 그 묶음 끝에 새 번호, 지운 번호는 다시 쓰지 않는다. 항목마다 근거 조항(§ 또는 부록)을 적는다.
 5. **커밋 전 검사**: `python3 spec_lint.py`가 0건이어야 한다(골격, 덮어쓰기 표시, § 참조, 체크리스트 id, 버전 기록, SKILL 머리). 그다음 `make_bundle.py`로 묶음을 다시 만든다.
 6. **규칙을 고친 회차에는** 바뀐 절 목록을 현황 페이지에 보이고, 다음 회차 시험은 고친 판의 사본으로 돌린다.
-````
+`````
 
 ### FILE: Q2_layout_options.html
 <!-- sha256=3d7d75fe4b0955924d4868ee4f25d1fd02c3a049132b03adb2b80a5c7c0005a7 newline=0 -->
-````html
+`````html
 <!doctype html><html><head><meta charset="utf-8"><style>:root {
   --ink: #111;
   --paper: #fff;
@@ -1560,11 +1885,771 @@ body{background:#fff;display:block} .axis{stroke:#d0451b;stroke-width:1;stroke-d
 <line class="axis" x1="490" y1="-30" x2="490" y2="360"/>
 <line class="axis" x1="750" y1="-30" x2="750" y2="360"/>
 <text class="ttl" x="620" y="-60" text-anchor="middle" style="font-size:15px">B. 쌍별 대칭 (나란히, 논문 Fig.4(a) 방식)</text></svg></body></html>
-````
+`````
+
+### FILE: spec_lint.py
+<!-- sha256=d90aa76b3fe6b8cc743b2bb52cfabcd254dad5ec61261b4d21e7bdb4cbb046ba newline=1 -->
+`````python
+#!/usr/bin/env python3
+"""Keep the spec from turning into patchwork. Run before every commit that touches the spec.
+
+usage: python3 spec_lint.py [folder]      (default: this script's folder)
+exit 0 = clean, 1 = problems (each printed as FAIL <check>: <detail>).
+
+Rules enforced (DRAWING_PLAN.md v6+, appendix C "명세서 고치는 규칙"):
+  1. skeleton   — the '## ' chapters are exactly SKELETON; '### ' numbers sit under an existing
+                  chapter and run 1, 2, 3 ... without gaps.
+  2. markers    — no override/patch markers in the body (outside the header block and appendix C):
+                  struck text, "대체", "이긴다", "(바꿈)", "vN:" version tags.
+  3. refs       — every §N / §N.M reference in DRAWING_PLAN.md (outside appendix C) and every "계획서 §" reference in
+                  SKILL.md points at an existing chapter / sub-section.
+  4. checklist  — the checklist sub-section has one table; ids match M\\d+ | J\\d+ | G1[a-d] | N\\d+,
+                  are unique, and every row cites at least one § or 부록 reference.
+  5. history    — the version in the status line appears in appendix C.
+  6. skill-top  — SKILL.md has no stacked "명세서 vN" notes before its first '## ' heading.
+"""
+import os
+import re
+import sys
+
+SKELETON = ["0", "1", "2", "3", "4", "부록 A", "부록 B", "부록 C"]
+BODY_MARKERS = [
+    (r"~~", "struck text"),
+    (r"대체(됨|된다|되며|되고)|§[\d.\-]+[^|\n]{0,15}(로|으로) 대체", "'대체' (superseded) note"),
+    (r"(§[\d.\-]+|절|조항)[^|\n]{0,20}이긴다", "'이긴다' (section wins) note"),
+    (r"\(바꿈\)|\(나눔\)|\(범위\)", "change tag"),
+    (r"(?<![\w.])v\d+(\.\d+)?\s*[:：]", "version tag 'vN:'"),
+    (r"명세서 v\d", "version mention"),
+]
+CHECK_ID = re.compile(r"^\|\s*\**(M\d+|J\d+|G1[a-d]|N\d+)\**\s*\|")
+
+
+def chapter_key(title):
+    m = re.match(r"(부록 [A-Z])", title)
+    if m:
+        return m.group(1)
+    m = re.match(r"(\d+)\.", title)
+    return m.group(1) if m else title.split()[0]
+
+
+def main():
+    here = sys.argv[1] if len(sys.argv) > 1 else os.path.dirname(os.path.abspath(__file__))
+    plan = open(os.path.join(here, "DRAWING_PLAN.md"), encoding="utf-8").read()
+    skill = open(os.path.join(here, "SKILL.md"), encoding="utf-8").read()
+    fails = []
+    lines = plan.split("\n")
+
+    # 1. skeleton
+    chapters, subs = [], {}
+    for ln in lines:
+        if ln.startswith("## "):
+            chapters.append(chapter_key(ln[3:].strip()))
+        elif ln.startswith("### "):
+            m = re.match(r"(\d+)\.(\d+)\b", ln[4:].strip())
+            if m:
+                subs.setdefault(m.group(1), []).append(int(m.group(2)))
+            elif chapters and not chapters[-1].startswith("부록"):
+                fails.append(("skeleton", "unnumbered sub-section in chapter %s: %s" % (chapters[-1], ln)))
+    if chapters != SKELETON:
+        fails.append(("skeleton", "chapters %s != %s" % (chapters, SKELETON)))
+    for ch, nums in subs.items():
+        if ch not in SKELETON:
+            fails.append(("skeleton", "sub-sections under a missing chapter %s" % ch))
+        if nums != list(range(1, len(nums) + 1)):
+            fails.append(("skeleton", "chapter %s sub-sections not 1..n: %s" % (ch, nums)))
+    known = set(c for c in chapters if not c.startswith("부록"))
+    known |= set("%s.%d" % (ch, n) for ch, nums in subs.items() for n in nums)
+
+    # 2. markers (body = after the header block, before appendix C)
+    start = next((i for i, ln in enumerate(lines) if ln.startswith("## ")), 0)
+    end = next((i for i, ln in enumerate(lines) if ln.startswith("## 부록 C")), len(lines))
+    for i in range(start, end):
+        for pat, what in BODY_MARKERS:
+            if re.search(pat, lines[i]):
+                fails.append(("markers", "line %d: %s — %s" % (i + 1, what, lines[i].strip()[:90])))
+
+    # 3. refs
+    def check_refs(text, label, pattern):
+        for m in re.finditer(pattern, text):
+            if re.search(r"SKILL(\.md)?\s*$", text[max(0, m.start() - 11):m.start()]):
+                continue  # a reference into SKILL.md, not into the plan
+            ref = m.group(1)
+            parts = ref.split(".")
+            key = parts[0] if len(parts) == 1 else "%s.%s" % (parts[0], parts[1])
+            if key not in known:
+                fails.append(("refs", "%s: §%s does not exist" % (label, ref)))
+    check_refs("\n".join(lines[:end]), "DRAWING_PLAN", r"§(\d+(?:\.\d+)?)")  # appendix C may cite old numbers
+    check_refs(skill, "SKILL", r"계획서\s*§(\d+(?:\.\d+)?)")
+
+    # 4. checklist
+    ck_idx = next((i for i, ln in enumerate(lines) if ln.startswith("### ") and "체크리스트" in ln), None)
+    if ck_idx is None:
+        fails.append(("checklist", "no '### ... 체크리스트' sub-section"))
+    else:
+        j = ck_idx + 1
+        while j < len(lines) and not lines[j].startswith("#"):
+            j += 1
+        ids = []
+        for ln in lines[ck_idx:j]:
+            m = CHECK_ID.match(ln)
+            if m:
+                ids.append(m.group(1))
+                if "§" not in ln and "부록" not in ln:
+                    fails.append(("checklist", "%s cites no § rule" % m.group(1)))
+        dup = sorted(set(x for x in ids if ids.count(x) > 1))
+        if not ids:
+            fails.append(("checklist", "no item rows found"))
+        if dup:
+            fails.append(("checklist", "duplicate ids %s" % dup))
+
+    # 5. history
+    m = re.search(r"명세서 (v\d+(?:\.\d+)?)", "\n".join(lines[:start]))
+    appc = "\n".join(lines[end:])
+    if not m:
+        fails.append(("history", "no '명세서 vN' in the status line"))
+    elif m.group(1) not in appc:
+        fails.append(("history", "%s is not recorded in appendix C" % m.group(1)))
+
+    # 6. skill-top
+    top = skill.split("\n## ", 1)[0]
+    notes = re.findall(r"명세서 v\d", top)
+    if len(notes) > 1:
+        fails.append(("skill-top", "%d stacked version notes before the first chapter" % len(notes)))
+
+    for check, detail in fails:
+        print("FAIL %s: %s" % (check, detail))
+    print("spec_lint: %d problem(s)" % len(fails))
+    sys.exit(1 if fails else 0)
+
+
+if __name__ == "__main__":
+    main()
+`````
+
+### FILE: make_bundle.py
+<!-- sha256=b3be132a28f5211e2e85c37ca3147ae849339e036e945514f74659893daa763f newline=1 -->
+`````python
+#!/usr/bin/env python3
+"""Pack the skill folder into text-only bundles for hand-over by e-mail (no zip).
+
+usage:
+  python3 make_bundle.py                          SOURCE_BUNDLE.md (skill) + TESTS_BUNDLE.md (regression set)
+  python3 make_bundle.py --release R0 --spec v6.1 releases/R0/HSIO_R0_SOURCE.md + HSIO_R0_TESTS.md
+The receiver restores every file with the restore script printed at the top of each bundle;
+every file carries its SHA-256, so a changed character is reported.
+"""
+import datetime
+import hashlib
+import os
+import subprocess
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+FILES = [
+    "RELEASES.md",
+    "SKILL.md",
+    "DRAWING_PLAN.md",
+    "Q2_layout_options.html",
+    "spec_lint.py",
+    "make_bundle.py",
+    "workflow/WORKFLOW.md",
+    "workflow/orchestrate.py",
+    "workflow/orchestrate_config.json",
+    "workflow/prompts/glm_1_classify.md",
+    "workflow/prompts/claude_2_review_classify.md",
+    "workflow/prompts/glm_4_draw.md",
+    "workflow/prompts/claude_6_review_final.md",
+    "workflow/prompts/glm_7_fix.md",
+    "reference/rx_afe/rx_afe_top.sp",
+    "reference/rx_afe/.gitignore",
+    "reference/rx_afe/work/run_all.sh",
+    "reference/rx_afe/work/netlist.py",
+    "reference/rx_afe/work/analyze.py",
+    "reference/rx_afe/work/spec_rules.py",
+    "reference/rx_afe/work/classify_report.py",
+    "reference/rx_afe/work/scene.py",
+    "reference/rx_afe/work/layouts.py",
+    "reference/rx_afe/work/render_html.py",
+    "reference/rx_afe/work/make_pptx.py",
+    "reference/rx_afe/work/measure.js",
+    "reference/rx_afe/work/verify.py",
+    "reference/rx_afe/expected/classification.md",
+    "reference/rx_afe/expected/annotations.json",
+    "reference/rx_afe/expected/block_dictionary.json",
+    "reference/rx_afe/expected/verify_report.json",
+]
+LANG = {".py": "python", ".js": "javascript", ".md": "markdown", ".sp": "spice", ".sh": "bash",
+        ".json": "json", ".html": "html"}
+FENCE = "`" * 5  # built, so this file never contains the fence itself
+
+RESTORE = r'''import hashlib, os, re, sys
+src = open(sys.argv[1], encoding="utf-8").read()
+dest = sys.argv[2] if len(sys.argv) > 2 else "netlist-hsio-concept-diagram"
+pat = re.compile(r"^### FILE: (\S+)\n<!-- sha256=([0-9a-f]{64}) newline=([01]) -->\n`{5}\w*\n(.*?)\n`{5}$", re.S | re.M)
+n = bad = 0
+for path, sha, nl, body in pat.findall(src):
+    data = body + ("\n" if nl == "1" else "")
+    full = os.path.join(dest, path)
+    os.makedirs(os.path.dirname(full) or ".", exist_ok=True)
+    with open(full, "w", encoding="utf-8", newline="\n") as f:
+        f.write(data)
+    ok = hashlib.sha256(data.encode("utf-8")).hexdigest() == sha
+    bad += not ok
+    n += 1
+    print(("OK   " if ok else "BAD  ") + path)
+print("%d files restored, %d checksum mismatches" % (n, bad))
+sys.exit(1 if bad else 0)
+'''
+
+
+def write_bundle(out, files, header):
+    parts = list(header) + [
+        "### 복원 스크립트 (restore.py)\n",
+        FENCE + "python\n" + RESTORE.rstrip("\n") + "\n" + FENCE + "\n",
+        "## 파일 목록\n",
+    ]
+    listing, blocks = [], []
+    for rel in files:
+        with open(os.path.join(HERE, rel), encoding="utf-8") as f:
+            data = f.read()
+        if FENCE in data:
+            raise SystemExit("%s contains %s; choose a longer fence" % (rel, FENCE))
+        sha = hashlib.sha256(data.encode("utf-8")).hexdigest()
+        nl = "1" if data.endswith("\n") else "0"
+        body = data[:-1] if nl == "1" else data
+        lang = LANG.get(os.path.splitext(rel)[1], "")
+        listing.append("| `%s` | %d | `%s…` |" % (rel, len(data.encode("utf-8")), sha[:12]))
+        blocks.append("### FILE: %s\n<!-- sha256=%s newline=%s -->\n%s%s\n%s\n%s\n" % (rel, sha, nl, FENCE, lang, body, FENCE))
+    parts.append("| 경로 | 바이트 | SHA-256 |\n|---|---|---|\n" + "\n".join(listing) + "\n")
+    parts.append("## 파일\n")
+    parts.extend(blocks)
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    with open(out, "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(parts))
+    print("wrote", out, os.path.getsize(out), "bytes,", len(files), "files")
+
+
+def stamp(release, spec):
+    """One header line naming the release, the spec version, the source commit and the date."""
+    if not release:
+        return []
+    try:
+        commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=HERE,
+                                         universal_newlines=True).strip()
+    except Exception:
+        commit = "unknown"
+    return ["> **Release %s** — 명세서 %s — 소스 커밋 `%s` — %s\n"
+            % (release, spec or "?", commit, datetime.date.today().isoformat())]
+
+
+def test_files():
+    root = os.path.join(HERE, "tests", "regression")
+    files = []
+    for d, _, fs in sorted(os.walk(root)):
+        for name in sorted(fs):
+            files.append(os.path.relpath(os.path.join(d, name), HERE).replace(os.sep, "/"))
+    return files
+
+
+def source_header(name, release, spec):
+    notes = ["RELEASE_NOTES_%s.md" % release] if release else []
+    return [
+        "# 넷리스트 기반 High-Speed IO 개념도 그리기 — 스킬 전체 묶음\n",
+    ] + stamp(release, spec) + [
+        "텍스트 파일만 주고받을 때 쓰는 파일이다 (메일 첨부 가능, zip 아님). 이 파일 하나에 스킬 폴더 "
+        "`netlist-hsio-concept-diagram/`의 텍스트 파일이 **전부** 들어 있다: 명세서, 구현 가이드, 그림 B, "
+        "기준 netlist·코드·기대 결과, 실사용 흐름(workflow), 검사기. 그림 파일(PNG, PPTX, HTML 결과)은 넣지 않았다 — "
+        "복원 후 기준 코드로 다시 만든다. %s\n" % ("배포 노트는 `%s`." % notes[0] if notes else ""),
+        "## 복원 방법\n",
+        "1. 아래 복원 스크립트를 `restore.py`로 저장하고 실행한다:\n"
+        "   `python3 restore.py %s netlist-hsio-concept-diagram`\n"
+        "   → 모든 줄이 `OK`, 마지막 줄이 `0 checksum mismatches`여야 한다. (메일이 .md를 막아 .txt로 바꿔 받았어도 똑같다.)\n"
+        "2. 코드를 실행할 수 없으면 각 `### FILE:` 블록 내용을 한 글자도 바꾸지 말고 그 경로의 파일로 만든다 "
+        "(`newline=1`이면 파일 끝에 줄바꿈 하나).\n"
+        "3. 기준 결과를 다시 만든다 (Python 3.6+ + python-pptx, Node.js 18+ + Playwright Chromium):\n"
+        "   `bash netlist-hsio-concept-diagram/reference/rx_afe/work/run_all.sh`\n"
+        "   → `reference/rx_afe/out/`에 concept.html, concept.pptx, screenshots/ 17장. `out/verify_report.json`의 summary가 "
+        "`{'views': 17, 'connectivity_pass': 17, 'quality_pass': 17}`, `out/`의 classification.md·annotations.json·"
+        "block_dictionary.json이 `expected/`와 같아야 한다.\n"
+        "4. 그다음 `SKILL.md`를 처음부터 읽는다. 실사용(GLM + Claude Code 분담)은 `workflow/WORKFLOW.md`.\n" % name,
+    ]
+
+
+def main():
+    args = sys.argv[1:]
+    release = args[args.index("--release") + 1] if "--release" in args else None
+    spec = args[args.index("--spec") + 1] if "--spec" in args else None
+    if release:
+        out_dir = os.path.join(HERE, "releases", release)
+        src_name, test_name = "HSIO_%s_SOURCE.md" % release, "HSIO_%s_TESTS.md" % release
+        files = FILES + ["RELEASE_NOTES_%s.md" % release]
+    else:
+        out_dir = HERE
+        src_name, test_name = "SOURCE_BUNDLE.md", "TESTS_BUNDLE.md"
+        files = FILES
+    missing = [f for f in files if not os.path.exists(os.path.join(HERE, f))]
+    if missing:
+        raise SystemExit("missing files: %s" % ", ".join(missing))
+    write_bundle(os.path.join(out_dir, src_name), files, source_header(src_name, release, spec))
+    test_header = [
+        "# 넷리스트 기반 High-Speed IO 개념도 그리기 — 회귀 시험 세트 묶음\n",
+    ] + stamp(release, spec) + [
+        "`tests/regression/`의 시험 netlist·정답지·설계 메모 전부. 쓰는 법은 그 안의 `README.md`. "
+        "**정답지·설계 메모·name_map은 검증 쪽에만 준다(그리는 쪽에는 netlist.sp만).**\n",
+        "## 복원 방법\n",
+        "`python3 restore.py %s netlist-hsio-concept-diagram` → 모든 줄 `OK`, 마지막 줄 `0 checksum mismatches`.\n" % test_name,
+    ]
+    write_bundle(os.path.join(out_dir, test_name), test_files(), test_header)
+
+
+if __name__ == "__main__":
+    main()
+`````
+
+### FILE: workflow/WORKFLOW.md
+<!-- sha256=aab091d97df49f6808b609791109941f6fcb216658a5af8188a843cbbf8cfd57 newline=1 -->
+`````markdown
+# 실사용 작업 흐름 — GLM(무제한) + Claude Code(토큰 제한)
+
+> 전제: **사내 GLM(OpenCode)은 토큰 무제한, 사내 Claude Code는 토큰 제한.**
+> 그래서 반복·대량 작업(코드 작성, 그리기, 검사기를 통과할 때까지 반복 수정)은 GLM이 하고,
+> 판단·검토(분류 확인, 최종 검토, 수정 지시서 작성)는 Claude Code가 짧게 한다. 두 도구 사이는 **파일로만** 주고받는다.
+> 규칙의 근거는 같은 폴더 위의 `DRAWING_PLAN.md`(명세서)와 `SKILL.md`(구현 가이드)다. 이 문서는 "누가·언제·무엇을"만 정한다.
+
+---
+
+## 1. 역할
+
+| 단계 | 담당 | 받는 것 | 내는 것 | 지시문 |
+|---|---|---|---|---|
+| 0 | 사용자 | — | `input/netlist.sp`, `input/hints.md`(선택: 고속 입력·클럭 포트, 아는 블록) | — |
+| 1 분류 초안 | **GLM** | netlist, hints, 명세서 전체 | `glm/out/classification.md`, `annotations.json`, `block_dictionary.json`, 질문 | `prompts/glm_1_classify.md` |
+| 2 분류 검토 | **Claude** | 검토 묶음 `review/pack_classify/` (분류 표·사전 대응·질문·필요한 netlist 발췌) | `review/classify_review.md` (고칠 목록, 사용자에게 물을 것) | `prompts/claude_2_review_classify.md` |
+| 3 확인 | **사용자** | 질문, Claude 검토 | `user/answers.md` (마지막 줄 `확인 완료`) | — |
+| 4 그리기 | **GLM** | 확정 분류(answers 반영) | `glm/out/` 전부(명세서 §1.2) | `prompts/glm_4_draw.md` |
+| 5 관문 | **검증 스크립트** | `glm/out/` | 자동 검사(체크리스트 M 묶음) 0건이면 통과 | (모델 없음) |
+| 6 최종 검토 | **Claude** | 검토 묶음 `review/pack_rK/` (최상위 + 대표 화면 3–5장, 자동 검사 요약, 체크리스트, 분류 표) | `review/rK/checklist.json`, `fix_request.md` | `prompts/claude_6_review_final.md` |
+| 7 수정 | **GLM** | `review/rK/fix_request.md` | 고친 `glm/out/` + 바뀐 화면 목록 | `prompts/glm_7_fix.md` |
+
+- 5 → 6 → 7 → 5를 **최대 3라운드**. 3라운드 뒤에도 남는 것은 사용자에게 보고한다.
+- **GLM의 자체 점검(`self_checklist.json`)은 합격 근거가 아니다.** 합격은 5(검증 스크립트)와 6(Claude)이 정한다. 시험에서 그린 쪽 검사기가 "전부 통과"라고 한 그림에 끊어진 선·교차·동그라미 누락이 있었다.
+- **분류는 그리기 전에 확인한다(2–3단계).** 분류가 틀린 채 다 그리면 고치는 데 그림 전체를 다시 해야 한다.
+
+## 2. 정답지는 필요 없다
+
+정답지(설계자가 쓴 분류)는 명세서를 시험·개선할 때만 쓴다. 실사용에서는 아래가 대신한다.
+
+| 정답지가 잡던 것 | 실사용에서 |
+|---|---|
+| 연결 | 그림의 기하만으로 연결을 다시 읽어 netlist와 비교 (검증 스크립트) |
+| 극성 | 논리 출력마다 netlist에서 극성 계산 → 동그라미와 대조 (검증 스크립트) |
+| 포트·제어 분류 | 2단계 Claude 검토 + **3단계 사용자 확인** (`annotations.json`이 자동 판정보다 우선) |
+| 블록 역할 | `block_dictionary.json` (특징이 모두 맞을 때만 사전 기호) + Claude 검토 + 사용자 확인 |
+
+체크리스트의 G 묶음(정답지)은 "해당 없음", N 묶음(이름 가림)도 "해당 없음"이다.
+**회귀 시험 세트**: 스킬(명세서·도구)을 고칠 때는 정답지 딸린 시험 netlist로 다시 돌려 전에 맞던 것이 틀려지지 않았는지 본다. 실업무 netlist에서 새 문제가 나오면, 사용자가 확인한 `annotations.json`을 그 netlist의 정답지로 올려 세트에 더할 수 있다(사내에만 보관).
+
+## 3. 작업 폴더
+
+```
+hsio_job_<회로명>/
+  spec/        배포본 사본 (DRAWING_PLAN.md, SKILL.md, reference/, …)   둘 다 읽기만
+  input/       netlist.sp, hints.md                                     사용자만 씀
+  state.json   현재 단계·라운드·다음 담당                                  진행 담당만 씀
+  glm/         work/ (GLM 코드), out/ (산출물)                            GLM만 씀
+  review/      pack_*/ (검토 묶음), classify_review.md, r1/ r2/ r3/       Claude만 씀 (pack은 진행 담당이 만듦)
+  user/        answers.md                                               사용자만 씀
+  prompts/     단계별 지시문 (이 폴더의 prompts/ 사본)
+  log.md       누가 언제 무엇을 했는지 (한 줄씩 덧붙임)
+```
+
+**소유 규칙**: 한 폴더는 한 쪽만 쓴다. Claude는 `glm/`을 고치지 않는다(검토하는 쪽이 그림을 고치면 독립 검증이 깨진다). GLM은 `review/`를 고치지 않는다.
+
+## 4. `state.json`
+
+```json
+{"job": "<회로명>", "step": "1_classify", "round": 0, "max_rounds": 3,
+ "next": "glm", "history": [["2026-11-15T10:00", "1_classify", "start"]]}
+```
+단계: `1_classify` → `2_review_classify` → `3_user_confirm` → `4_draw` → `5_gate` → `6_review_final` → (`7_fix` → `5_gate` → `6_review_final`)* → `done`.
+6단계 `checklist.json`의 `verdict_drawing`이 PASS면 `done`, FAIL이면 `7_fix`, 라운드가 `max_rounds`면 `done`(남은 항목 보고).
+
+## 5. 진행 방식
+
+- **방식 1 — 수동**: 사용자가 `state.json`을 보고 해당 도구를 연다. GLM에는 "prompts/glm_N_*.md를 읽고 그대로 하라", Claude에는 "prompts/claude_N_*.md를 읽고 그대로 하라". 끝나면 도구가 `state.json`을 다음 단계로 바꾸고 `log.md`에 한 줄 남긴다.
+- **방식 2 — 스크립트** (`orchestrate.py`): 모델이 아닌 코드가 상태 기계를 돌린다. GLM·Claude는 명령줄 비대화 실행으로 부른다(명령은 `orchestrate_config.json`에서 정한다. 예: GLM `opencode run …`, Claude `claude -p …`). 5단계 관문은 스크립트가 직접 판정하고, 3단계에서는 `user/answers.md`의 `확인 완료`를 기다린다. Claude에게는 스크립트가 만든 **검토 묶음**만 넘긴다(큰 netlist·화면 전체를 읽히지 않는다).
+  - 이 초안은 실제 사내 GLM·Claude 없이 가짜 명령으로만 시험했다. 사내에서 `orchestrate_config.json`의 두 명령만 맞추면 된다.
+
+## 6. Claude 토큰 아끼기
+
+- Claude가 읽는 것은 **검토 묶음**뿐: 분류 표, `block_dictionary.json`, 질문, 자동 검사 요약, 최상위 + 대표 화면 3–5장, 필요한 netlist 발췌.
+- 명세서는 전체가 아니라 필요한 절만 (분류 검토: §2.4–2.7, 최종 검토: §3, §4.2 J 묶음).
+- 연결·교차·겹침·이름·극성·핀 방향처럼 기계로 볼 수 있는 것은 Claude가 다시 보지 않는다(5단계).
+- 시험에서 측정한 규모(큰 netlist, MOS 4–7천 개): Claude가 혼자 다 하면 160만–200만 토큰, 이 분배로는 Claude 15만–30만 토큰 정도.
+`````
+
+### FILE: workflow/orchestrate.py
+<!-- sha256=318343ba48d9628e6385f2b7dd4544b8d03b0781767316f2e223f88a092534a6 newline=1 -->
+`````python
+#!/usr/bin/env python3
+"""Run the GLM + Claude Code workflow of WORKFLOW.md as a state machine (방식 2).
+
+The models never decide what happens next; this script does. GLM gets the long, repetitive steps,
+Claude gets short review steps with a prepared review pack, the gate is decided here from the
+deliverables, and the user-confirm step waits for user/answers.md to end with "확인 완료".
+
+usage:
+  python3 orchestrate.py init   JOB --netlist path/to/netlist.sp [--hints hints.md] [--spec SKILL_DIR]
+  python3 orchestrate.py run    JOB [--config orchestrate_config.json]   # advance until it must wait or is done
+  python3 orchestrate.py status JOB
+
+Commands for the two models come from the config (see orchestrate_config.json). Placeholders:
+  {job} job folder, {prompt_file} the prompt file written for this call, {prompt_text} its text.
+Python 3.6+, standard library only.
+"""
+import argparse
+import datetime
+import json
+import os
+import shutil
+import subprocess
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+STEPS = ["1_classify", "2_review_classify", "3_user_confirm", "4_draw", "5_gate",
+         "6_review_final", "7_fix", "done"]
+DEFAULT_CONFIG = {
+    "glm_cmd": ["opencode", "run", "{prompt_text}"],
+    "claude_cmd": ["claude", "-p", "{prompt_text}"],
+    "timeout_s": 7200,
+    "max_rounds": 3,
+    "max_gate_retries": 3,
+    "pack_views": 4,
+}
+PROMPT = {"1_classify": "glm_1_classify.md", "2_review_classify": "claude_2_review_classify.md",
+          "4_draw": "glm_4_draw.md", "6_review_final": "claude_6_review_final.md", "7_fix": "glm_7_fix.md"}
+SCRIPT_OWNS_STATE = ("\n\n(방식 2: state.json과 log.md는 orchestrate.py가 바꾼다. 너는 고치지 마라. "
+                     "산출물만 정해진 폴더에 쓰고 끝내라.)\n")
+
+
+def now():
+    return datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+
+
+def p(job, *parts):
+    return os.path.join(job, *parts)
+
+
+def load_state(job):
+    with open(p(job, "state.json"), encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_state(job, st):
+    with open(p(job, "state.json"), "w", encoding="utf-8") as f:
+        json.dump(st, f, ensure_ascii=False, indent=1)
+
+
+def log(job, who, msg):
+    with open(p(job, "log.md"), "a", encoding="utf-8") as f:
+        f.write("- %s · %s · %s\n" % (now(), who, msg))
+    print("[%s] %s" % (who, msg))
+
+
+def set_step(job, st, step, note):
+    st["step"] = step
+    st["next"] = {"1_classify": "glm", "4_draw": "glm", "7_fix": "glm", "2_review_classify": "claude",
+                  "6_review_final": "claude", "3_user_confirm": "user", "5_gate": "script",
+                  "done": "-"}[step]
+    st["history"].append([now(), step, note])
+    save_state(job, st)
+
+
+def cmd_init(a):
+    job = a.job
+    for d in ("spec", "input", "glm/out", "glm/work", "review", "user", "prompts"):
+        os.makedirs(p(job, d), exist_ok=True)
+    shutil.copy(a.netlist, p(job, "input", "netlist.sp"))
+    if a.hints:
+        shutil.copy(a.hints, p(job, "input", "hints.md"))
+    spec = a.spec or os.path.dirname(HERE)
+    for name in ("DRAWING_PLAN.md", "SKILL.md"):
+        if os.path.exists(os.path.join(spec, name)):
+            shutil.copy(os.path.join(spec, name), p(job, "spec", name))
+    if os.path.isdir(os.path.join(spec, "reference")) and not os.path.exists(p(job, "spec", "reference")):
+        shutil.copytree(os.path.join(spec, "reference"), p(job, "spec", "reference"))
+    for f in os.listdir(os.path.join(HERE, "prompts")):
+        shutil.copy(os.path.join(HERE, "prompts", f), p(job, "prompts", f))
+    if not os.path.exists(p(job, "user", "answers.md")):
+        with open(p(job, "user", "answers.md"), "w", encoding="utf-8") as f:
+            f.write("# 질문 답과 분류 확인\n\n<!-- 질문에 답하고, 분류를 확인했으면 맨 마지막 줄에 확인 완료 네 글자만 쓴다 -->\n")
+    st = {"job": os.path.basename(os.path.abspath(job)), "step": "1_classify", "round": 0,
+          "gate_retries": 0, "next": "glm", "history": [[now(), "1_classify", "init"]]}
+    save_state(job, st)
+    open(p(job, "log.md"), "a").close()
+    log(job, "orchestrate", "작업 폴더 준비 완료")
+
+
+def run_model(job, cfg, who, step, extra):
+    with open(p(job, "prompts", PROMPT[step]), encoding="utf-8") as f:
+        text = f.read()
+    text = "작업 폴더: %s\n%s\n\n%s%s" % (os.path.abspath(job), extra, text, SCRIPT_OWNS_STATE)
+    pf = p(job, "review" if who == "claude" else "glm", "_prompt_%s.md" % step)
+    with open(pf, "w", encoding="utf-8") as f:
+        f.write(text)
+    tmpl = cfg["%s_cmd" % who]
+    argv = [s.replace("{job}", os.path.abspath(job)).replace("{prompt_file}", os.path.abspath(pf))
+            .replace("{prompt_text}", text) for s in tmpl]
+    log(job, who, "%s 시작" % step)
+    r = subprocess.run(argv, cwd=job, timeout=cfg["timeout_s"])
+    if r.returncode != 0:
+        raise SystemExit("%s 명령이 실패했다 (exit %d). log.md를 보고 다시 run 하라." % (who, r.returncode))
+    log(job, who, "%s 끝" % step)
+
+
+def need(job, *rel):
+    missing = [x for x in rel if not os.path.exists(p(job, x))]
+    if missing:
+        raise SystemExit("산출물이 없다: %s — 같은 단계를 다시 run 하라." % ", ".join(missing))
+
+
+def copy_if(src, dst_dir):
+    if os.path.exists(src):
+        shutil.copy(src, dst_dir)
+
+
+def build_pack(job, name, views=0):
+    pack = p(job, "review", name)
+    os.makedirs(pack, exist_ok=True)
+    for f in ("classification.md", "annotations.json", "block_dictionary.json", "self_checklist.json"):
+        copy_if(p(job, "glm", "out", f), pack)
+    vr = p(job, "glm", "out", "verify_report.json")
+    if os.path.exists(vr):
+        with open(vr, encoding="utf-8") as f:
+            rep = json.load(f)
+        with open(os.path.join(pack, "verify_summary.json"), "w", encoding="utf-8") as f:
+            json.dump({"summary": rep.get("summary"), "auto_checks": rep.get("auto_checks")}, f,
+                      ensure_ascii=False, indent=1)
+    if views:
+        shots = p(job, "glm", "out", "screenshots")
+        if os.path.isdir(shots):
+            names = sorted(os.listdir(shots))
+            top = [n for n in names if n.startswith("b_top")]
+            blocks = sorted([n for n in names if n.startswith("b_") and n not in top],
+                            key=lambda n: -os.path.getsize(os.path.join(shots, n)))
+            for n in top + blocks[:views]:
+                shutil.copy(os.path.join(shots, n), pack)
+    return pack
+
+
+def gate(job):
+    """M-group gate from the deliverables: verify summary all pass and every auto check zero."""
+    need(job, "glm/out/verify_report.json")
+    with open(p(job, "glm", "out", "verify_report.json"), encoding="utf-8") as f:
+        rep = json.load(f)
+    s = rep.get("summary") or {}
+    problems = []
+    if not s or not (s.get("views") == s.get("connectivity_pass") == s.get("quality_pass")):
+        problems.append("verify summary %s" % s)
+    sc = p(job, "glm", "out", "self_checklist.json")
+    if os.path.exists(sc):
+        with open(sc, encoding="utf-8") as f:
+            ac = (json.load(f) or {}).get("auto_checks") or {}
+        items = ac.items() if isinstance(ac, dict) else enumerate(ac)
+        for k, v in items:
+            n = v.get("count", v.get("violations", 0)) if isinstance(v, dict) else v
+            ok = v.get("pass", n in (0, None)) if isinstance(v, dict) else n in (0, None, True)
+            if not ok:
+                problems.append("auto_check %s = %s" % (k, n))
+    return problems
+
+
+def cmd_run(a):
+    job = a.job
+    cfg = dict(DEFAULT_CONFIG)
+    cf = a.config or os.path.join(HERE, "orchestrate_config.json")
+    if os.path.exists(cf):
+        with open(cf, encoding="utf-8") as f:
+            cfg.update(json.load(f))
+    st = load_state(job)
+    while True:
+        step = st["step"]
+        if step == "1_classify":
+            run_model(job, cfg, "glm", step, "단계: 분류 초안")
+            need(job, "glm/out/classification.md", "glm/out/block_dictionary.json")
+            set_step(job, st, "2_review_classify", "분류 초안 완료")
+        elif step == "2_review_classify":
+            pack = build_pack(job, "pack_classify")
+            run_model(job, cfg, "claude", step, "단계: 분류 검토. 검토 묶음: %s" % pack)
+            need(job, "review/classify_review.md")
+            set_step(job, st, "3_user_confirm", "분류 검토 완료")
+        elif step == "3_user_confirm":
+            with open(p(job, "user", "answers.md"), encoding="utf-8") as f:
+                lines = [x.strip() for x in f if x.strip()]
+            if not lines or lines[-1].strip("-*# ") != "확인 완료":
+                log(job, "orchestrate", "사용자 확인을 기다린다: review/classify_review.md를 읽고 "
+                                        "user/answers.md에 답한 뒤 마지막 줄에 '확인 완료'를 쓰고 다시 run")
+                return
+            set_step(job, st, "4_draw", "사용자 확인 완료")
+        elif step == "4_draw":
+            run_model(job, cfg, "glm", step, "단계: 그리기")
+            set_step(job, st, "5_gate", "그리기 완료")
+        elif step == "5_gate":
+            problems = gate(job)
+            if problems:
+                st["gate_retries"] += 1
+                log(job, "orchestrate", "관문 불통과 (%d/%d): %s" % (st["gate_retries"], cfg["max_gate_retries"],
+                                                                 "; ".join(problems)))
+                if st["gate_retries"] > cfg["max_gate_retries"]:
+                    set_step(job, st, "done", "관문 재시도 한도 초과 — 사용자 보고")
+                    log(job, "orchestrate", "멈춤: 자동 검사가 0건이 되지 않는다. glm/out/verify_report.json을 확인하라")
+                    return
+                with open(p(job, "review", "gate_fail.md"), "w", encoding="utf-8") as f:
+                    f.write("# 관문 불통과 — 자동 검사가 0건이 아니다\n\n" + "\n".join("- " + x for x in problems))
+                prev = "4_draw" if st["round"] == 0 else "7_fix"
+                st["history"].append([now(), prev, "관문 불통과로 다시"])
+                run_model(job, cfg, "glm", prev, "단계: 관문 불통과 수정. review/gate_fail.md의 자동 검사를 0건으로 만들어라.")
+                save_state(job, st)
+                continue
+            st["gate_retries"] = 0
+            st["round"] += 1
+            set_step(job, st, "6_review_final", "관문 통과 (라운드 %d)" % st["round"])
+        elif step == "6_review_final":
+            k = st["round"]
+            pack = build_pack(job, "pack_r%d" % k, views=cfg["pack_views"])
+            os.makedirs(p(job, "review", "r%d" % k), exist_ok=True)
+            run_model(job, cfg, "claude", step, "단계: 최종 검토 라운드 %d. 검토 묶음: %s. 결과는 review/r%d/에." % (k, pack, k))
+            need(job, "review/r%d/checklist.json" % k)
+            with open(p(job, "review", "r%d" % k, "checklist.json"), encoding="utf-8") as f:
+                verdict = json.load(f).get("verdict_drawing")
+            if verdict == "PASS":
+                set_step(job, st, "done", "그림 PASS (라운드 %d)" % k)
+            elif k >= cfg["max_rounds"]:
+                set_step(job, st, "done", "라운드 한도 — 남은 항목은 review/r%d/checklist.json" % k)
+            else:
+                need(job, "review/r%d/fix_request.md" % k)
+                set_step(job, st, "7_fix", "그림 FAIL (라운드 %d)" % k)
+        elif step == "7_fix":
+            k = st["round"]
+            run_model(job, cfg, "glm", step, "단계: 수정. 수정 요청: review/r%d/fix_request.md" % k)
+            set_step(job, st, "5_gate", "수정 완료 (라운드 %d)" % k)
+        elif step == "done":
+            log(job, "orchestrate", "완료: %s" % st["history"][-1][2])
+            return
+        st = load_state(job)
+
+
+def cmd_status(a):
+    st = load_state(a.job)
+    print(json.dumps({k: st[k] for k in ("job", "step", "round", "next")}, ensure_ascii=False))
+    for h in st["history"][-5:]:
+        print("  ", h)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    sub = ap.add_subparsers(dest="cmd")
+    i = sub.add_parser("init"); i.add_argument("job"); i.add_argument("--netlist", required=True)
+    i.add_argument("--hints"); i.add_argument("--spec")
+    r = sub.add_parser("run"); r.add_argument("job"); r.add_argument("--config")
+    s = sub.add_parser("status"); s.add_argument("job")
+    a = ap.parse_args()
+    {"init": cmd_init, "run": cmd_run, "status": cmd_status}.get(a.cmd, lambda _: ap.print_help())(a)
+
+
+if __name__ == "__main__":
+    main()
+`````
+
+### FILE: workflow/orchestrate_config.json
+<!-- sha256=89bc4a7c0cafc5373b016ce4d0df226c485f3e2e6d4870c0dd58a783b219639f newline=1 -->
+`````json
+{
+ "_comment": "사내에서 이 두 명령만 맞춘다. {prompt_text}=지시문 본문, {prompt_file}=지시문 파일 경로, {job}=작업 폴더. 예: GLM이 파일로 지시를 받으면 [\"opencode\", \"run\", \"--file\", \"{prompt_file}\"]",
+ "glm_cmd": ["opencode", "run", "{prompt_text}"],
+ "claude_cmd": ["claude", "-p", "{prompt_text}"],
+ "timeout_s": 7200,
+ "max_rounds": 3,
+ "max_gate_retries": 3,
+ "pack_views": 4
+}
+`````
+
+### FILE: workflow/prompts/glm_1_classify.md
+<!-- sha256=4867bbc64cacdae45bed827ff217c2e8ae90af884e0325424e05d1f69bafab16 newline=1 -->
+`````markdown
+# GLM — 1단계: 분류 초안
+
+너는 그리는 쪽이다. 작업 폴더의 `spec/DRAWING_PLAN.md`(명세서)와 `spec/SKILL.md`(구현 가이드)만 근거로 쓴다.
+쓸 수 있는 폴더는 `glm/`뿐이다. `review/`, `user/`, `input/`은 읽기만 한다.
+
+1. `input/netlist.sp`를 파싱·평탄화한다 (SKILL §4.1–4.3). `input/hints.md`가 있으면 확신도에만 쓴다.
+2. 고속 데이터·클럭 추적(명세서 §2.3), 입력 포트 판정(§2.4), 제어·비고속 분류(§2.5 끝점 표)를 **구조로** 한다. 이름은 확신도에만.
+3. 블록 역할을 사전 대응으로 정한다(§2.6). 사전 행의 특징이 모두 맞을 때만 사전 기호, 아니면 일반 박스 + 질문.
+4. 질문은 확신이 낮은 것만, 템플릿 문장으로(§2.7). 규칙이 이미 정한 것은 묻지 않는다(netlist 오류 의심은 확인 질문).
+5. 산출물 (`glm/out/`): `classification.md`(분류 표, 포트 표, 그리는 제어·숨긴 다비트 제어마다 K#·끝점 핀·출처, 질문과 가정한 답), `annotations.json`, `block_dictionary.json`.
+6. 아직 그리지 않는다. 끝나면 `state.json`의 `step`을 `2_review_classify`, `next`를 `claude`로 바꾸고 `log.md`에 한 줄 남긴다.
+`````
+
+### FILE: workflow/prompts/claude_2_review_classify.md
+<!-- sha256=3c782b9e5cfba7a1edf1af23bb9d0863bba55c419de46207ebc8b4b07a73a29f newline=1 -->
+`````markdown
+# Claude — 2단계: 분류 검토 (짧게)
+
+너는 검토하는 쪽이다. `review/pack_classify/`의 검토 묶음과 `spec/DRAWING_PLAN.md`의 §2.3–2.7만 읽는다. `glm/`은 고치지 않는다.
+
+판단할 것 (기계로 볼 수 없는 것만):
+1. 고속 데이터 입력·클럭 입력이 구조로 맞게 정해졌나 (§2.4). 단일 디지털 포트를 고속 입력으로 잡지 않았나.
+2. 그리는 제어마다 K# 끝점이 맞나 (§2.5 표 순서: K8·K9를 K3보다 먼저, K5는 패드·최종 출력 노드 다리만, 정적 트림은 일반). 숨긴 것 중 그려야 할 것은 없나.
+3. 사전 대응: 사전 기호로 그릴 블록이 특징을 모두 갖췄나. 기본 소자로 쪼개면 비슷해 보이는 블록(닫힌 고리, 루프가 만드는 제어, 같은 신호인지 다른 신호인지)을 착각하지 않았나 (§2.6).
+4. 질문이 꼭 필요한 것만 남았나.
+
+내는 것 `review/classify_review.md`: (a) GLM이 고칠 목록 — 근거는 netlist 줄과 명세서 조항만, (b) 사용자에게 물을 것(짧게, 선택지로).
+끝나면 `state.json`을 `3_user_confirm`, `next`를 `user`로 바꾸고 `log.md`에 한 줄.
+`````
+
+### FILE: workflow/prompts/glm_4_draw.md
+<!-- sha256=244c1bad263a50fc0e9dc09a2ca7e0490309de8b607fc07077aa7c8d04d3f3ba newline=1 -->
+`````markdown
+# GLM — 4단계: 그리기 (검증 스크립트를 통과할 때까지 반복)
+
+1. `review/classify_review.md`의 고칠 목록과 `user/answers.md`를 반영해 분류를 확정한다. 사용자 답은 자동 판정보다 우선이다(`annotations.json`에 기록).
+2. 명세서 §3(화면 구성, 블록·유닛 레벨, 기호, 이름표·버스·생략 목록)대로 모든 화면을 그린다. SKILL §5–§8의 수치·템플릿을 그대로 쓴다.
+3. 검증기는 `spec/reference/rx_afe/work/verify.py`에서 시작해 넓힌다. 처음부터 새로 짜지 않는다. 명세서 §4.1의 자동 검사를 모두 넣고, 검사마다 오류를 일부러 넣어 잡히는지 시험한다(§4.1의 필수 오류 주입 목록).
+4. 자동 검사가 **0건**이 될 때까지 고친다. 0건이 아닌데 다음 단계로 넘기지 않는다.
+5. 산출물은 명세서 §1.2 전부(`concept.html` 한 파일에 PPTX 내장, `concept.pptx`, `classification.md`, `annotations.json`, `block_dictionary.json`, `verify_report.json`(화면마다 `scene_sha`), `self_checklist.json`, `screenshots/`).
+6. 끝나면 `state.json`을 `5_gate`로 바꾸고 `log.md`에 한 줄.
+`````
+
+### FILE: workflow/prompts/claude_6_review_final.md
+<!-- sha256=a32be1cd1c1ae2fe2ac62c9a099c567366d37b8c3ade7aa1a1f3ad80737fb878 newline=1 -->
+`````markdown
+# Claude — 6단계: 최종 검토
+
+너는 검토하는 쪽이다. `review/pack_rK/`의 검토 묶음(최상위와 대표 화면 스크린샷, 자동 검사 요약, `self_checklist.json`, 분류 표)과 명세서 §3, §4.2만 읽는다. `glm/`은 고치지 않는다. GLM의 자체 점검을 근거로 쓰지 않는다.
+
+1. 체크리스트(명세서 §4.2)의 **J 묶음**(판단 항목)을 채운다: 분류 표·질문, 사전 대응, 블록 배치 관례, 유닛 대칭, 손 대조(최상위 + 화면 몇 장을 기하로), 목적(그림만으로 고속 흐름과 동작 원리가 설명되나), HTML·PPTX 동작.
+2. M 묶음은 5단계 결과를 그대로 옮긴다. G·N 묶음은 "해당 없음".
+3. 규칙형 항목은 묶음 안에서 전수로 본다(표본 금지). 문제마다 원인을 "그린 쪽" / "명세서"로 나눈다.
+4. 내는 것 `review/rK/`: `checklist.json`(`verdict_drawing`, `verdict_spec`, 항목별 결과·근거·원인·고칠 것), 그린 쪽 불통과가 있으면 `fix_request.md` — 근거는 netlist 줄과 명세서 조항만, 첫 줄에 "이 목록은 최소 범위다. 같은 규칙을 전체에 적용하고 바뀐 화면을 `scene_sha`로 보고하라".
+5. `verdict_drawing`이 PASS면 `state.json`을 `done`, 아니면 `7_fix`(라운드가 3이면 `done` + 남은 항목 보고). `log.md`에 한 줄.
+`````
+
+### FILE: workflow/prompts/glm_7_fix.md
+<!-- sha256=16c14c4d3adee1cfc211bd3252139b99412456b8e8f9c3703fb77bacfb31d08c newline=1 -->
+`````markdown
+# GLM — 7단계: 수정
+
+1. `review/rK/fix_request.md`의 항목을 모두 고친다. 목록은 최소 범위다 — 같은 규칙을 모든 화면·모든 핀에 적용한다.
+2. 검사기가 놓친 종류의 오류면, 그 오류를 잡는 자동 검사와 오류 주입 시험을 더한다.
+3. 요청한 화면만 바꾼다. 생성 코드를 바꿔 다른 화면도 바뀌면 그 목록과 이유를 적는다. 바뀐 화면은 `scene_sha`로 낸다.
+4. 자동 검사가 0건이 될 때까지 고친 뒤 `self_checklist.json`에 이번 라운드 결과(`changed_views` 포함)를 적는다.
+5. `state.json`을 `5_gate`로, 라운드를 하나 올리고 `log.md`에 한 줄.
+`````
 
 ### FILE: reference/rx_afe/rx_afe_top.sp
 <!-- sha256=9b001491856bfb5c276502efb598929454afadc8c2c7619e3e78885c8c9ce501 newline=1 -->
-````spice
+`````spice
 .SUBCKT INV A Y VDD VSS
 MP Y A VDD VDD PCH W=2u L=45n
 MN Y A VSS VSS NCH W=1u L=45n
@@ -1781,11 +2866,11 @@ M_TIE_P2 O_DOUTP VDD DOUT_ODD_P VDD PCH W=16u L=45n
 M_TIE_N O_DOUTN VSS DOUT_ODD_N VSS NCH W=16u L=45n
 M_TIE_N2 O_DOUTN VDD DOUT_ODD_N VDD PCH W=16u L=45n
 .ENDS RX_AFE_TOP
-````
+`````
 
 ### FILE: reference/rx_afe/.gitignore
 <!-- sha256=b3ef110f1924f3747706812b8c60aaca09de32f0ca0c180f51cbb3f99dcc5f10 newline=1 -->
-````
+`````
 # regenerated by run_all.sh
 work/__pycache__/
 work/*.json
@@ -1793,11 +2878,11 @@ work/shots/
 work/mut/
 work/mobile/
 work/pptcheck/
-````
+`````
 
 ### FILE: reference/rx_afe/work/run_all.sh
 <!-- sha256=96d8e6ea3d3b2dfefb6246850f860918bc7d97ef6c51f968f2b80778e0a8b915 newline=1 -->
-````bash
+`````bash
 #!/bin/bash
 set -e
 S="$(cd "$(dirname "$0")/.." && pwd)"
@@ -1814,11 +2899,11 @@ python3 render_html.py . ../out
 rm -f $S/out/screenshots/*.png
 node measure.js $S/out/concept.html $S/work/texts.json $S/out/screenshots
 python3 verify.py . ../rx_afe_top.sp ../out/verify_report.json
-````
+`````
 
 ### FILE: reference/rx_afe/work/netlist.py
-<!-- sha256=c08c72b5de8552fa5071e1c7111f7777376926bf1f9c94ab7a025faa27fbbe45 newline=1 -->
-````python
+<!-- sha256=fdc78e3804a721505e66a43a6e72f156be3f571966fc663a080063ecdb4efc63 newline=1 -->
+`````python
 """HSPICE / Virtuoso-style netlist parser + flattener (no name-based rules)."""
 import re
 
@@ -1968,11 +3053,256 @@ def instance_tree(cells, top):
 def fmt_len(v):
     """format W/L string like '24u' '45n'"""
     return v
-````
+
+
+# ======================================================================================
+# v6.1 helpers shared by the generator and the checker (plan §3.5-6, §2.5-7, §3.4-6/§4.1-13)
+# ======================================================================================
+_PFX = [(1e12, 't'), (1e9, 'g'), (1e6, 'meg'), (1e3, 'k'), (1, ''), (1e-3, 'm'), (1e-6, 'u'), (1e-9, 'n'), (1e-12, 'p'), (1e-15, 'f')]
+
+
+def fmt_si(s):
+    """netlist value string -> SI-prefixed string (plan §3.5-6): '2000' -> '2k', '600e-9' -> '600n', '50f' -> '50f'"""
+    v = num(str(s))
+    if v is None:
+        return str(s)
+    if v == 0:
+        return '0'
+    for mul, p in _PFX:
+        if abs(v) >= mul * 0.9999999:
+            m = v / mul
+            txt = ('%.3f' % m).rstrip('0').rstrip('.')
+            return txt + p
+    return str(s)
+
+
+def si_equal(a, b, rel=1e-9):
+    va, vb = num(str(a)), num(str(b))
+    return va is not None and vb is not None and abs(va - vb) <= rel * max(abs(va), abs(vb), 1e-30)
+
+
+def group_bus(names):
+    """group bit names into <MSB:LSB> buses (plan §2.5-7, §1.4-3). Returns [(busname, [bits LSB first], notation)];
+    notation: 'angle' (<n>), 'suffix' (number tail, e.g. G0), 'underscore2' (two indices, e.g. W1_0), 'single'."""
+    import collections as _c
+    out = []
+    two = _c.defaultdict(list); one = _c.defaultdict(list); rest = []
+    for n in names:
+        m2 = re.match(r'^(\D*?)(\d+)_(\d+)$', n)
+        m1 = re.match(r'^(.*?\D)(\d+)$', n) or re.match(r'^()(\d+)$', n)
+        ma = re.match(r'^(.*)<(\d+)>$', n)
+        if ma:
+            one[(ma.group(1), '<>')].append((int(ma.group(2)), n))
+        elif m2:
+            two[m2.group(1)].append((int(m2.group(2)), int(m2.group(3)), n))
+        elif m1:
+            one[(m1.group(1), '')].append((int(m1.group(2)), n))
+        else:
+            rest.append(n)
+    for k, v in two.items():
+        a = sorted({x for x, _, _ in v}); b = sorted({y for _, y, _ in v})
+        if len(v) == len(a) * len(b) and a == list(range(a[0], a[-1] + 1)) and b == list(range(b[0], b[-1] + 1)) and len(v) > 1:
+            bits = [n for _, _, n in sorted(v)]
+            out.append(('%s<%d:%d>_<%d:%d>' % (k, a[-1], a[0], b[-1], b[0]), bits, 'underscore2'))
+        else:
+            rest += [n for _, _, n in v]
+    for (k, kind), v in one.items():
+        idx = sorted(i for i, _ in v)
+        if len(v) > 1 and idx == list(range(idx[0], idx[-1] + 1)):
+            out.append(('%s<%d:%d>' % (k, idx[-1], idx[0]), [n for _, n in sorted(v)], 'angle' if kind else 'suffix'))
+        else:
+            rest += [n for _, n in v]
+    for n in rest:
+        out.append((n, [n], 'single'))
+    return out
+
+
+class Polarity:
+    """Structural signal polarity (plan §3.4-6 반전 블록, §4.1-13 출력별 극성).
+    Edges between local nets of a cell: gate -> loaded drain (inverting), stacked source -> drain and
+    follower gate -> source (non-inverting), conducting TG / series R,C (non-inverting, both ways, not through a
+    common-mode node), sub-instance input port -> output port (child polarity). Clock-role gates stop by
+    construction (their drains carry no load). BFS from the main input(s); the shortest path gives the parity."""
+
+    def __init__(self, cells, top):
+        import collections as _c
+        self.cells = cells
+        devs = flatten(cells, top)
+        pb = _c.Counter(d['terms']['b'] for d in devs if d['kind'] == 'mos' and d['type'] == 'p')
+        nb = _c.Counter(d['terms']['b'] for d in devs if d['kind'] == 'mos' and d['type'] == 'n')
+        sup, gnd = pb.most_common(1)[0][0], nb.most_common(1)[0][0]
+        self.sup = _c.defaultdict(set); self.gnd = _c.defaultdict(set)
+        for prefix, cname, nm in instance_tree(cells, top):
+            for ln, gn in nm.items():
+                if gn == sup: self.sup[cname].add(ln)
+                if gn == gnd: self.gnd[cname].add(ln)
+        self._pm = {}
+
+    def _elems(self, cname, members):
+        es = self.cells[cname]['elems']
+        return [e for e in es if members is None or e['name'] in members]
+
+    def _rail(self, cname, n):
+        return n in self.sup[cname] or n in self.gnd[cname]
+
+    def edges(self, cname, members=None):
+        import collections as _c
+        es = self._elems(cname, members)
+        sup, gnd = self.sup[cname], self.gnd[cname]
+        rail = lambda n: n in sup or n in gnd
+        at = _c.defaultdict(list)
+        for e in es:
+            if e['kind'] == 'mos':
+                for t in ('d', 's'):
+                    at[e['terms'][t]].append((e, t))
+            elif e['kind'] in ('res', 'cap', 'ind'):
+                for t in ('p', 'n'):
+                    at[e['terms'][t]].append((e, t))
+        def own(e):
+            return gnd if e['type'] == 'n' else sup
+        def other(e):
+            return sup if e['type'] == 'n' else gnd
+        def dist(x, e):
+            seen = {x: 0}; q = [x]
+            while q:
+                y = q.pop(0)
+                if y in own(e):
+                    return seen[y]
+                for f, t in at[y]:
+                    if f['kind'] == 'mos' and f['type'] == e['type']:
+                        o = f['terms']['s' if t == 'd' else 'd']
+                        if o not in seen:
+                            seen[o] = seen[y] + 1; q.append(o)
+            return 99
+        def sd(e):
+            a, b = e['terms']['s'], e['terms']['d']
+            if a in own(e): return a, b
+            if b in own(e): return b, a
+            if b in other(e): return a, b
+            if a in other(e): return b, a
+            return (b, a) if dist(b, e) < dist(a, e) else (a, b)
+        def loaded(m, x):
+            for f, t in at[x]:
+                if f is m:
+                    continue
+                if f['kind'] == 'mos':
+                    o = f['terms']['s' if t == 'd' else 'd']
+                    if f['terms']['g'] == x:
+                        return True
+                    if m['type'] == 'n' and (f['type'] == 'p' or o in sup):
+                        return True
+                    if m['type'] == 'p' and f['type'] == 'n':
+                        return True
+                elif f['kind'] == 'res':
+                    o = f['terms']['n' if t == 'p' else 'p']
+                    if (m['type'] == 'n' and o in sup) or (m['type'] == 'p' and o in gnd):
+                        return True
+            return False
+        def cm_node(y):
+            if rail(y):
+                return False
+            rs = set()
+            for f, t in at[y]:
+                if f['kind'] == 'res':
+                    o = f['terms']['n' if t == 'p' else 'p']
+                    if not rail(o):
+                        rs.add(o)
+                elif f['kind'] == 'cap':
+                    if not rail(f['terms']['n' if t == 'p' else 'p']):
+                        return False
+                else:
+                    return False
+            return len(rs) >= 2
+        E = []
+        for e in es:
+            if e['kind'] == 'mos':
+                g = e['terms']['g']
+                s, d = sd(e)
+                if g in (e['terms']['d'], e['terms']['s']):
+                    continue
+                part = [f for f, t in at[e['terms']['d']] if f is not e and f['kind'] == 'mos' and f['type'] != e['type']
+                        and {f['terms']['d'], f['terms']['s']} == {e['terms']['d'], e['terms']['s']}]
+                if part and not rail(e['terms']['d']) and not rail(e['terms']['s']):
+                    off = (g in own(e)) and all(f['terms']['g'] in own(f) for f in part)
+                    if not off:
+                        E.append((e['terms']['d'], e['terms']['s'], 0)); E.append((e['terms']['s'], e['terms']['d'], 0))
+                    continue
+                if rail(g):
+                    continue
+                if rail(d):
+                    if not rail(s):
+                        E.append((g, s, 0))           # follower / active inductor
+                    continue
+                if loaded(e, d):
+                    E.append((g, d, 1))
+                    if not rail(s):
+                        E.append((s, d, 0))           # stacked: source follows into drain
+            elif e['kind'] in ('res', 'cap', 'ind'):
+                a, b = e['terms']['p'], e['terms']['n']
+                if rail(a) or rail(b) or cm_node(a) or cm_node(b):
+                    continue
+                E.append((a, b, 0)); E.append((b, a, 0))
+            elif e['kind'] == 'inst':
+                for (p, q), par in self.port_map(e['cell']).items():
+                    E.append((e['pins'][p], e['pins'][q], par))
+        return E
+
+    def reach(self, cname, starts, members=None):
+        """multi-source BFS; starts: {local net: parity}. Returns {net: parity}"""
+        import collections as _c
+        adj = _c.defaultdict(list)
+        for a, b, p in self.edges(cname, members):
+            adj[a].append((b, p))
+        res = dict(starts)
+        frontier = list(starts)
+        while frontier:
+            nxt = []
+            for x in frontier:
+                for y, p in adj[x]:
+                    if y in res or self._rail(cname, y):
+                        continue
+                    res[y] = res[x] ^ p
+                    nxt.append(y)
+            frontier = nxt
+        return res
+
+    def port_map(self, cname):
+        if cname in self._pm:
+            return self._pm[cname]
+        self._pm[cname] = {}
+        ports = [p for p in self.cells[cname]['ports'] if not self._rail(cname, p)]
+        m = {}
+        for p in ports:
+            r = self.reach(cname, {p: 0})
+            for q in ports:
+                if q != p and q in r:
+                    m[(p, q)] = r[q]
+        self._pm[cname] = m
+        return m
+
+    def outputs(self, cname, ins, outs, members=None):
+        """per-output polarity of a drawn block (plan §4.1-13). ins: main input nets in drawn order (P first);
+        outs: output nets in drawn order. Two main inputs and an even number of outputs = differential: output k is
+        compared with the input on its own side (k even -> ins[0], k odd -> ins[1]) under complementary drive.
+        Otherwise every output is compared with ins[0]. Returns {out: 'inv' | 'non' | None (not reached)}."""
+        res = {}
+        if len(ins) >= 2 and len(outs) % 2 == 0:
+            r = self.reach(cname, {ins[0]: 0, ins[1]: 1}, members)
+            for k, o in enumerate(outs):
+                if o not in r:
+                    res[o] = None
+                else:
+                    res[o] = 'inv' if r[o] != (k % 2) else 'non'
+        else:
+            r = self.reach(cname, {ins[0]: 0}, members)
+            for o in outs:
+                res[o] = None if o not in r else ('inv' if r[o] else 'non')
+        return res
+`````
 
 ### FILE: reference/rx_afe/work/analyze.py
-<!-- sha256=46eff9bb9907f5c3ad3f214df7a5a086ba8aae29d792d099e2d7e0cdcdbd35a9 newline=1 -->
-````python
+<!-- sha256=4f5ce2cd3c527eeffba4719ed7aa9b55fc5075edd1d151d91fcf0ef76c46f98a newline=1 -->
+`````python
 """Step 1 (plan section 3): structural analysis.
 device roles, signal tracing (data / clock), signal classes, important-control detection,
 block roles, confidence, questions. Writes analysis.json, annotations.json, classification.md
@@ -2149,8 +3479,12 @@ class Flat:
         for s in starts:
             reached[s] = {'depth': 0, 'via': 'start'}
             q.append(s)
+        edges = self.trace_edges = []
         def add(n, frm, via):
-            if n in reached or self.is_rail(n):
+            if self.is_rail(n):
+                return
+            edges.append((frm, n))
+            if n in reached:
                 return
             reached[n] = {'depth': reached[frm]['depth'] + 1, 'via': via}
             q.append(n)
@@ -2246,6 +3580,35 @@ def gate_users(F, n):
 def classify(F, cells, top, hs_inputs):
     top_ports = cells[top]['ports']
     data_r, data_ev = F.trace(hs_inputs, 'data')
+    data_edges = collections.defaultdict(set)
+    for a, b in F.trace_edges:
+        data_edges[a].add(b)
+
+    def downstream(nets):
+        seen = set(nets); q = list(nets)
+        while q:
+            x = q.pop()
+            for y in data_edges[x]:
+                if y not in seen:
+                    seen.add(y); q.append(y)
+        return seen
+
+    def sharing_paths(drains):
+        """bit paths (sibling instances of one cell) that receive the stage output (plan §2.5-5 K6)"""
+        par = min(drains).rsplit('/', 1)[0] + '/' if '/' in min(drains) else ''
+        insts = collections.defaultdict(set)
+        for n in downstream(drains):
+            if not n.startswith(par):
+                continue
+            rest = n[len(par):]
+            if '/' in rest:
+                insts[rest.split('/')[0]].add(n)
+        bycell = collections.defaultdict(list)
+        for i in insts:
+            c = [cc for pre, cc, nm in instance_tree(cells, top) if pre == par + i + '/']
+            if c:
+                bycell[c[0]].append(i)
+        return {c: sorted(v) for c, v in bycell.items() if len(v) >= 2}
     cand = [p for p in top_ports if p not in F.rails and p not in hs_inputs and p not in data_r]
     clock_inputs, clk_evidence = [], {}
     for p in cand:
@@ -2320,15 +3683,26 @@ def classify(F, cells, top, hs_inputs):
                 main_src = min(allg, key=lambda k: min(depth.get(g, 999) for g in allg[k]))
                 main_g = allg[main_src]
                 if set(gates) != main_g and F.eff[prs[0]['path']][0] != main_src:
-                    kinds.append(('important', 'switch -> current of pair %s, summed at %s with main pair %s' % (
+                    kinds.append(('important', 'K1', 'switch -> current of pair %s, summed at %s with main pair %s' % (
                         '/'.join(gates), '/'.join(sorted(drains)), '/'.join(sorted(main_g)))))
                 else:
-                    kinds.append(('general', 'switch -> current of an extra pair with the SAME inputs %s as the main pair (gain only)' % '/'.join(gates)))
+                    # gain stage switched in (VGA row, plan §2.6-1). K6 if the stage output is shared by >= 2 bit paths
+                    sh = sharing_paths(drains)
+                    if sh:
+                        kinds.append(('important', 'K6', 'gain code: switch -> current of an extra pair with the SAME inputs %s as the main pair; '
+                                      'stage output %s shared by %s' % ('/'.join(gates), '/'.join(sorted(drains)),
+                                                                       '; '.join('%s (%s)' % (', '.join(v), c) for c, v in sh.items()))))
+                    else:
+                        kinds.append(('general', 'K7', 'gain code not shared: switch -> current of an extra pair with the SAME inputs %s' % '/'.join(gates)))
             else:
-                kinds.append(('general', 'switch across %s-%s (degeneration bank, not a summing branch)' % (s, dr)))
-        k = 'important' if any(k == 'important' for k, _ in kinds) else 'general'
-        control_info[n] = {'kind': k, 'why': sorted({w for _, w in kinds}), 'bundle_type': sorted(btypes),
-                           'switches': [d['path'] for d in sws]}
+                kinds.append(('general', 'K7', 'switch across %s-%s (degeneration bank inside the high-speed path: peaking/gain trim)' % (s, dr)))
+        k = 'important' if any(k == 'important' for k, _, _ in kinds) else 'general'
+        order = ['K1', 'K2', 'K3', 'K4', 'K5', 'K6', 'K7', 'K8', 'K9', 'K10', 'K11']
+        kk = min((kn for kd, kn, _ in kinds if kd == k), key=order.index)
+        first = sorted(sws, key=lambda d: d['path'])[0]
+        control_info[n] = {'kind': k, 'K': kk, 'why': sorted({w for _, _, w in kinds}), 'bundle_type': sorted(btypes),
+                           'switches': [d['path'] for d in sws], 'endpoint': first['path'] + '.g',
+                           'source': 'port' if n in top_ports else 'internal'}
         netclass[n] = ['important_control' if k == 'important' else 'general_control']
     bias_why = {}
     for n in all_nets:
@@ -2490,8 +3864,20 @@ def group_role(cells, cname, members, croles, cn, F, prefix):
         n_p = sum(1 for m in members if el[m].get('type') == 'p')
         n_n = sum(1 for m in members if el[m].get('type') == 'n')
         if n_p == 1 and n_n == 1:
-            return {'role': 'inverter', 'conf': 'high', 'symbol': 'triangle (CMOS buffer)', 'why': 'complementary PMOS/NMOS with common gate and drain'}
-        return {'role': 'static_cmos_gate', 'conf': 'low', 'symbol': 'box (cell name)', 'why': 'static CMOS gate (pull-up gate set = pull-down gate set): NOT in the dictionary'}
+            return {'role': 'inverter', 'conf': 'high', 'symbol': 'inverter', 'why': 'complementary PMOS/NMOS with common gate and drain'}
+        ps = [el[m] for m in members if el[m].get('type') == 'p']; ns = [el[m] for m in members if el[m].get('type') == 'n']
+        outs = {e['terms']['d'] for e in ps} & {e['terms']['d'] for e in ns} | {e['terms']['s'] for e in ps} & {e['terms']['d'] for e in ns}
+        par_p = all(F.is_rail(F.eff[prefix + e['name']][0]) for e in ps)       # every PMOS from the supply = parallel pull-up
+        ser_n = sum(1 for e in ns if F.is_rail(F.eff[prefix + e['name']][0])) == 1 and len(ns) >= 2
+        par_n = all(F.is_rail(F.eff[prefix + e['name']][0]) for e in ns)
+        ser_p = sum(1 for e in ps if F.is_rail(F.eff[prefix + e['name']][0])) == 1 and len(ps) >= 2
+        if par_p and ser_n and n_p == n_n:
+            return {'role': 'nand', 'conf': 'high', 'symbol': 'box (cell name) + output bubble',
+                    'why': 'static CMOS gate: %d parallel PMOS pull-ups, %d series NMOS pull-downs (NAND, dictionary list §2.6-1)' % (n_p, n_n)}
+        if par_n and ser_p and n_p == n_n:
+            return {'role': 'nor', 'conf': 'high', 'symbol': 'box (cell name) + output bubble',
+                    'why': 'static CMOS gate: %d series PMOS, %d parallel NMOS (NOR, dictionary list §2.6-1)' % (n_p, n_n)}
+        return {'role': 'static_cmos_gate', 'conf': 'low', 'symbol': 'box (cell name)', 'why': 'static CMOS gate (pull-up gate set = pull-down gate set), stack shape not a dictionary gate'}
     inputs = [m for m in members if m in croles and croles[m]['role'] == 'input']
     if inputs:
         # pair inputs by structural source node
@@ -2710,14 +4096,22 @@ def main():
                 # identify clock pins structurally: pins that are clock-only in the latch cell
                 b = {'role': 'dff', 'conf': 'high' if ('DFF' in cname.upper() or 'FF' in cname.upper()) else 'low',
                      'symbol': 'box DFF', 'why': 'two latches in series (master->slave) with complementary clocks'}
+            elif sub in ('nand', 'nor') and (set(a['pins'].values()) & set(bb['pins'].values())):
+                # cross-coupled: each gate's output drives an input of the other
+                b = {'role': 'sr_latch', 'conf': 'high', 'symbol': 'box (cell name)',
+                     'why': 'two %s gates cross-coupled (output of each drives an input of the other): SR latch (dictionary list §2.6-1)' % sub.upper()}
             elif sub == 'static_cmos_gate':
                 b = {'role': 'cross_coupled_gates', 'conf': 'low', 'symbol': 'box (cell name)',
-                     'why': 'two static CMOS gates cross-coupled (SR latch); NOT in the dictionary'}
+                     'why': 'two static CMOS gates cross-coupled; NOT in the dictionary'}
             else:
                 b = {'role': 'composite', 'conf': 'high', 'symbol': 'box (cell name)', 'why': 'two sub-blocks'}
+        elif [g['role'] for g in ginfo] == ['strongarm'] and nondac and all(block[e['cell']]['role'] in ('sr_latch', 'inverter') for e in nondac):
+            b = {'role': 'comparator', 'conf': 'high', 'symbol': 'triangle "SA" + clock',
+                 'why': 'StrongARM core (clocked tail, input pair, cross-coupled NMOS/PMOS, reset PMOS) + output stage (%s): comparator row' %
+                        ', '.join(sorted({block[e['cell']]['role'] for e in nondac}))}
         else:
             b = {'role': 'composite', 'conf': 'high', 'symbol': 'box (cell name)',
-                 'why': 'hierarchical: %d sub-blocks + %d primitive unit(s); not itself a dictionary block' % (len(nondac), len(ginfo))}
+                 'why': 'hierarchical: %d sub-blocks + %d primitive unit(s); every sub-block is a dictionary block' % (len(nondac), len(ginfo))}
         block[cname] = b; done.add(cname)
         return b
     solve(top)
@@ -2772,7 +4166,36 @@ def main():
         nm, dm, un = mirror_partners(cells, cname, F, pre, seed)
         sym[cname] = {'seed': seed, 'unmatched_devices': un}
 
+    # undriven high-speed nets (plan §2.3-13): every channel on the net belongs to an always-off TG, no other driver
+    def off_tg(d):
+        p = F.tg_partner(d)
+        if p is None:
+            return False
+        own = lambda m: F.ground if m['type'] == 'n' else F.supply
+        return d['terms']['g'] == own(d) and p['terms']['g'] == own(p)
+    undriven = []
+    for n, cs in netclass.items():
+        if not ({'data', 'clock'} & set(cs)) or n in hs_inputs or n in C['clock_inputs']:
+            continue
+        chans = [(d, t) for d, t in F.by_net[n] if d['kind'] == 'mos' and t in 'ds']
+        passive = [d for d, t in F.by_net[n] if d['kind'] != 'mos']
+        if chans and all(off_tg(d) for d, t in chans) and not passive:
+            undriven.append(n)
+    # unused outputs (plan §3.5-4): a high-speed local net of a cell with a single connection
+    unused = collections.defaultdict(list)
+    for cname in cells:
+        if not cell_insts[cname]:
+            continue
+        cnt = collections.Counter()
+        for e in cells[cname]['elems']:
+            vals = e['pins'].values() if e['kind'] == 'inst' else [v for k, v in e['terms'].items() if not (e['kind'] == 'mos' and k == 'b')]
+            for v in vals:
+                cnt[v] += 1
+        for n, k in cnt.items():
+            if k == 1 and n not in cells[cname]['ports'] and ({'data', 'clock'} & cellnet[cname][n]):
+                unused[cname].append(n)
     res = {
+        'undriven_hs': sorted(undriven), 'unused_outputs': {c: sorted(v) for c, v in unused.items()},
         'top': top, 'rails': {'supply': F.supply, 'ground': F.ground},
         'hs_inputs': hs_inputs, 'clock_inputs': C['clock_inputs'], 'clock_evidence': C['clk_evidence'],
         'netclass': {k: v for k, v in sorted(netclass.items())},
@@ -2798,14 +4221,102 @@ def main():
 
 if __name__ == '__main__':
     main()
-````
+`````
+
+### FILE: reference/rx_afe/work/spec_rules.py
+<!-- sha256=d575276492dda3c4500beafdd1e5334b731797af8c529049d385d3c5c77a3df7 newline=1 -->
+`````python
+"""Spec-derived constants shared by analysis, report, layout and verification (DRAWING_PLAN v6 + v6.1 decisions).
+Nothing here names a net, cell or instance of a particular netlist."""
+
+# ---------------- signal classes (plan §2.5-4) -> label used in every table / panel ----------------
+CLASS_KO = {
+    'data': '고속 데이터', 'clock': '고속 클럭', 'important_control': '중요 제어', 'general_control': '일반 제어',
+    'bias': '바이어스', 'power': '전원', 'internal': '내부', 'unused': '미사용',
+}
+HIDDEN_CLASSES = {'general_control', 'bias', 'power'}
+VISIBLE_CLASSES = {'data', 'clock', 'important_control'}
+
+# endpoint table (plan §2.5-5) — K#: (class, drawing)
+K_TABLE = {
+    'K1': ('important_control', '버스'), 'K2': ('important_control', '선택 핀까지 선'), 'K3': ('important_control', '한 줄/버스'),
+    'K4': ('important_control', '버스'), 'K5': ('important_control', '버스'), 'K6': ('important_control', '버스'),
+    'K7L': ('important_control', '버스'), 'K7': ('general_control', '숨김'), 'K8': ('command', '한 줄'),
+    'K9': ('test', '한 줄'), 'K10': ('general_control', '숨김'), 'K11': ('bias', '숨김'),
+}
+
+# ---------------- block dictionary (plan §2.6-1) ----------------
+# analysis role -> (dictionary row, block symbol)
+DICT_ROWS = {
+    'termination': ('RX 종단 · ESD', '입력선 위 R/ESD 표시'),
+    'termination_esd': ('RX 종단 · ESD', '입력선 위 R/ESD 표시'),
+    'ctle': ('RX CTLE', '삼각형 "CTLE"'),
+    'vga': ('RX VGA', '삼각형 "VGA"'),
+    'tia': ('RX TIA', '삼각형 "TIA"'),
+    'summer': ('RX/TX Summer (DFE·FFE)', 'Σ'),
+    'strongarm': ('RX 비교기 · 샘플러 (StrongARM)', '삼각형 + 클럭'),
+    'comparator': ('RX 비교기 · 샘플러 (StrongARM)', '삼각형 + 클럭'),
+    'latch': ('공통 Latch · DFF (latch)', '박스 LATCH'),
+    'dff': ('공통 Latch · DFF (DFF)', '박스 DFF'),
+    'cml_buffer': ('Clock 버퍼 (CML)', '삼각형 "BUF"'),
+    'inverter': ('공통 논리 게이트 (INV)', '인버터'),
+    'nand': ('공통 논리 게이트 (NAND)', '박스(셀 이름) + 출력 동그라미'),
+    'nor': ('공통 논리 게이트 (NOR)', '박스(셀 이름) + 출력 동그라미'),
+    'sr_latch': ('공통 SR latch', '박스(셀 이름)'),
+    'dac': ('공통 바이어스 · DAC · 디지털 제어 (전류 DAC → 개념 기호 가변 전류원, §3.4-3)', '가변 전류원(부모 유닛 화면)'),
+    'bias': ('공통 바이어스 · DAC · 디지털 제어', '생략'),
+    'composite': ('공통 복합 블록', '박스(셀 이름)'),
+    'tg': ('(기본 소자) 전달 게이트 — 항상 꺼짐 (§2.2)', '열린 스위치'),
+}
+# §2.6-1 "다음도 사전에 있다 — 묻지 않는다"
+DICT_LISTED = {'inverter', 'nand', 'nor', 'and', 'or', 'xor', 'sr_latch', 'icg', 'dly', 'ls', 'c2c', 'ota'}
+IN_DICTIONARY = set(DICT_ROWS) | DICT_LISTED
+
+# V19: polarity bubbles / per-output polarity only on logic outputs. Linear amplifier / analog rows are exempt.
+ANALOG_ROLES = {'ctle', 'vga', 'tia', 'summer', 'ota', 'lpf', 'dac', 'bias', 'charge_pump'}
+
+# ---------------- questions (plan §2.7-2..4) ----------------
+QUESTION_TEMPLATES = {
+    'name_vs_structure': {
+        'rule': '§2.6-2, §2.7-2',
+        'text': '`{item}`: 구조는 {structure}인데 이름/기능은 {name}입니다. ({opt_structure}로 / {opt_name}로)'},
+    'netlist_error_confirm': {
+        'rule': '§2.7-4',
+        'text': '`{item}`: {fact}. netlist 오류일 수 있습니다. 의도된 것입니까? (의도됨 / netlist 오류)'},
+    'bus_notation_guess': {
+        'rule': '§2.5-7',
+        'text': '`{item}`: 비트 표기가 `<n>`이 아니어서 이름 끝 숫자를 비트 번호로 읽어 {buses}로 묶었습니다. 맞습니까? (예 / 표기 지정)'},
+    'not_in_dictionary': {
+        'rule': '§2.6-3, §2.7-3',
+        'text': '`{item}`: 블록 역할 사전에 없는 구조입니다 ({structure}). 일반 박스로 그릴까요? (예 / 역할 지정)'},
+    'port_role': {
+        'rule': '§2.7-2, §2.7-3',
+        'text': '포트 `{item}`는 {guess}입니까? ({options})'},
+    'control_class': {
+        'rule': '§2.7-3',
+        'text': '`{item}`: 중요 제어와 일반 제어 중 어느 쪽인지 구조로 정할 수 없습니다 ({why}). (중요 / 일반)'},
+}
+# topics a rule already decides (plan §2.7-4): a question about one of these is an error
+RULE_DECIDED_TOPICS = {
+    'unused_output': '§3.5-4, §2.7-4 (미사용 출력: 짧은 선 + 이름표)',
+    'bus_grouping': '§2.5-7 (같은 기능의 비트는 버스 하나)',
+    'dictionary_listed_block': '§2.6-1 (논리 게이트·SR latch·ICG·DLY·LS·C2C·OTA는 사전에 있음)',
+    'always_on_tg': '§2.2 (항상 켜진 전달 게이트 = 연결, 질문 없음)',
+}
+
+
+def render_question(tid, fields):
+    return QUESTION_TEMPLATES[tid]['text'].format(**fields)
+`````
 
 ### FILE: reference/rx_afe/work/classify_report.py
-<!-- sha256=4b6521d30c1648c8fcc482725e49222872dd02e83ea5d871b4d8ecbed6b5652b newline=1 -->
-````python
-"""Plan section 8 step 2: classification confirmation table + questions -> annotations.json, classification.md"""
+<!-- sha256=b204323c5914134197f6e3cd46b5459b4d68094aa3d187d29ca04ba90888a6ff newline=1 -->
+`````python
+"""Plan §1.5 step 2: classification confirmation table + questions -> annotations.json, classification.md,
+block_dictionary.json (plan §2.5-9, §2.6-4, §2.7). Usage: classify_report.py <workdir> <outdir> <netlist>"""
 import json, sys, re, collections
-from netlist import parse
+from netlist import parse, group_bus, Polarity
+from spec_rules import CLASS_KO, DICT_ROWS, QUESTION_TEMPLATES, RULE_DECIDED_TOPICS, render_question
 
 W = sys.argv[1]
 OUT = sys.argv[2]
@@ -2817,10 +4328,16 @@ nc = A['netclass']
 tp = cells[top]['ports']
 topnets = sorted({n for n in nc if '/' not in n})
 internal_top = [n for n in topnets if n not in tp]
+blocks = A['block']
+CI = A['control_info']
 
 
 def cls(n):
     return nc.get(n, ['?'])
+
+
+def el(cell, name):
+    return [e for e in cells[cell]['elems'] if e['name'] == name][0]
 
 
 hs_in = A['hs_inputs']
@@ -2832,91 +4349,157 @@ bias_ports = [p for p in tp if 'bias' in cls(p)]
 bias_int = [n for n in internal_top if 'bias' in cls(n)]
 power = [p for p in tp if 'power' in cls(p)]
 
-
-def bus_name(names):
-    # group names like W1_0..W4_3 into W<4:1>_<3:0> (structure: same switch type, same function)
-    pat = collections.defaultdict(list)
-    for n in names:
-        m = re.match(r'^(\D*?)(\d+)_(\d+)$', n)
-        if m:
-            pat[m.group(1)].append((int(m.group(2)), int(m.group(3))))
-    out = []
-    for k, v in pat.items():
-        a = sorted({x for x, _ in v}); b = sorted({y for _, y in v})
-        out.append('%s<%d:%d>_<%d:%d>' % (k, a[-1], a[0], b[-1], b[0]))
-    return out
+# ---------------- control buses (plan §2.5-7) with K#, endpoint pin (instance.pin) and source (plan §2.5-9) -------
+def bus_rows(names):
+    rows = []
+    for bn, bits, notation in group_bus(names):
+        ks = sorted({CI[b]['K'] for b in bits})
+        assert len(ks) == 1, (bn, ks)          # §2.5-7: bits with different endpoint classes would be split
+        rows.append({'bus': bn, 'bits': bits, 'notation': notation, 'K': ks[0], 'class': cls(bits[0])[0],
+                     'endpoint_pin': CI[bits[0]]['endpoint'], 'source': CI[bits[0]]['source'],
+                     'why': CI[bits[0]]['why']})
+    return rows
 
 
-imp_bus = bus_name(imp)
-blocks = A['block']
+def describe(row):
+    ep_inst = row['endpoint_pin'].rsplit('.', 1)[0]
+    # role of the cell that owns the endpoint device's group (structural, from the analysis)
+    path = ep_inst.split('/')
+    cell = top
+    roles = []
+    for comp in path[:-1]:
+        e = [x for x in cells[cell]['elems'] if x['name'] == comp][0]
+        cell = e['cell']
+        roles.append(blocks[cell]['role'])
+    role = [r for r in roles if r not in ('composite', 'dac')]
+    role = role[-1] if role else roles[-1] if roles else '?'
+    if row['K'] == 'K1':
+        return '%s 가중치 — 스위치(전류 DAC) → 탭 쌍 꼬리 전류, 탭 입력 = 귀환 고속 데이터, %s 출력에서 합산' % (
+            'DFE 탭 계수' if role == 'summer' else '합산 가지', 'Σ' if role == 'summer' else role)
+    if row['K'] == 'K6':
+        sh = re.search(r'shared by (.*)$', row['why'][0])
+        return '%s 이득 코드 — 스위치 → 이득 쌍 꼬리 전류, 출력을 여러 비트 경로가 공유 (%s)' % (role.upper(), sh.group(1) if sh else '')
+    if row['K'] == 'K7':
+        return '%s 안쪽 노드의 정적 트림 (소스 degeneration 뱅크: 피킹·이득), 출처 = 최상위 포트' % role.upper()
+    return ''
+
+
+imp_rows = bus_rows(imp)
+gen_rows = bus_rows(gen)
+for r in imp_rows + gen_rows:
+    r['function'] = describe(r)
+    r['drawing'] = '버스 (사선 + 이름, 비트 수 없음; 받는 블록 위에서)' if r['class'] == 'important_control' else '숨김 (생략 목록에 한 줄)'
+
 omitted_blocks = []
-for prefix_list in [A['cell_insts']]:
-    pass
-# omitted blocks at top level: instances whose cell has no HS net
 for e in cells[top]['elems']:
     if e['kind'] == 'inst' and blocks[e['cell']]['symbol'] == 'omit':
-        omitted_blocks.append('%s (%s: %s)' % (e['name'], e['cell'], blocks[e['cell']]['role']))
+        omitted_blocks.append({'inst': e['name'], 'cell': e['cell'], 'role': blocks[e['cell']]['role']})
 
-# ---------------- questions (low confidence only) ----------------
+# ---------------- questions: low confidence only, template sentences, nothing a rule decides (plan §2.7) -------
 Q = []
-# control name vs structure
-for n, ci in sorted(A['control_info'].items()):
-    pass
-cmis = [n for n in gen if A['control_info'][n]['bundle_type'] == ['R'] and n[0].upper() == 'C']
+
+
+def ask(tid, fields, assumed, confidence):
+    Q.append({'id': 'Q%d' % (len(Q) + 1), 'template': tid, 'kind': tid, 'rule': QUESTION_TEMPLATES[tid]['rule'],
+              'fields': fields, 'item': fields['item'], 'question': render_question(tid, fields),
+              'assumed': assumed, 'confidence': confidence})
+
+
+# (1) name vs structure: a control named like a C bank whose switches form a resistive path (plan §2.6-2)
+cmis = [n for n in gen if CI[n]['bundle_type'] == ['R'] and n[0].upper() == 'C']
 if cmis:
-    Q.append({'id': 'Q1', 'item': ', '.join(cmis) + ' (CTLE_STAGE)',
-              'question': '이름(C*)은 커패시터 뱅크 제어처럼 보이지만, 구조상 스위치 MC*P/MC*N은 SP-C*_MID-SN 직렬 경로(저항 경로)이고 C*_CAP은 SP-SN에 항상 연결된 고정 C입니다. 구조대로 그릴까요? (예: 가변 R + 고정 C / 아니오: 가변 C로)',
-              'assumed': '예 — 구조를 따름. C0..C2 스위치는 가변 R 묶음에 포함, C_DEG_BASE+C0_CAP+C1_CAP+C2_CAP은 고정 C 하나(합계 330f)로 그림. C0..C2는 일반 제어(그리지 않음).',
-              'confidence': 'low (이름-구조 불일치)'})
+    cell = [c for c, b in blocks.items() if b['role'] == 'ctle'][0]
+    sws = sorted({p.split('/')[-1] for n in cmis for p in CI[n]['switches']})
+    caps = [e['name'] for e in cells[cell]['elems'] if e['kind'] == 'cap']
+    capv = ' + '.join(el(cell, c)['value'] for c in caps)
+    ask('name_vs_structure', {
+        'item': '%s (%s)' % (', '.join(cmis), cell),
+        'structure': '두 소스 사이 직렬 스위치 쌍(%s = 저항 경로)과 항상 연결된 C(%s)' % (', '.join(sws), ', '.join(caps)),
+        'name': 'C 뱅크 제어(가변 C)', 'opt_structure': '가변 R + 고정 C', 'opt_name': '가변 C'},
+        '가변 R + 고정 C로 — 구조를 따름(§2.6-2). 스위치 쌍은 가변 R_S 묶음, %s는 고정 C_S 하나(%s)로 그림. %s는 K7 정적 = 일반 제어(숨김).' % (
+            ' ∥ '.join(caps), capv, group_bus(cmis)[0][0]),
+        'low (이름-구조 불일치)')
+# (2) name says divider, structure has no feedback loop (plan §2.6-2 example)
 for f in A['latch_pairs']:
     if f['name_hint_divider'] and not f['feedback_loop']:
-        Q.append({'id': 'Q2', 'item': '%s / %s in %s' % (f['master'], f['slave'], f['cell']),
-                  'question': '인스턴스 이름은 ÷2 분주기(DIV)이지만 구조상 귀환 루프가 없습니다 (master의 D 입력 = 자기 클럭 B1N/B1P, slave 출력은 어디로도 되돌아가지 않음). 구조대로 "LATCH 2개 직렬"로 그릴까요? (예 / ÷2로 그림 / netlist 오류)',
-                  'assumed': '예 — 구조대로 LATCH 박스 2개와 실제 연결을 그림. ÷2 기호는 쓰지 않음. netlist 오류 가능성을 보고서에 남김.',
-                  'confidence': 'low (이름-구조 불일치, 사전의 ÷2 = latch 루프와 불일치)'})
+        ask('name_vs_structure', {
+            'item': '%s / %s (%s)' % (f['master'], f['slave'], f['cell']),
+            'structure': 'latch 2개 직렬, 귀환 루프 없음(master D 입력 = 자기 클럭 넷)',
+            'name': '÷2 분주기(인스턴스 이름 DIV)', 'opt_structure': 'LATCH 2개', 'opt_name': '÷2'},
+            'LATCH 2개로 — 구조대로 LATCH 박스 2개와 실제 연결을 그림. ÷2 기호는 쓰지 않음.',
+            'low (이름-구조 불일치, 사전의 ÷2 = latch 루프와 불일치)')
+# (3) possible netlist errors: always-off TG + undriven high-speed nets (plan §2.7-4, §2.3-2, §2.3-13)
 tgs = [g for g in A['groups'].get(top, []) if g['role'] == 'tg']
 if tgs:
-    Q.append({'id': 'Q3', 'item': ', '.join('/'.join(g['members']) for g in tgs),
-              'question': '전달 게이트(NMOS 게이트=VSS, PMOS 게이트=VDD)라 항상 꺼져 있습니다. 그러면 O_DOUTP/N(= X_DFE_EVEN의 탭1 귀환 입력 T1_FB)은 떠 있습니다. 의도된 것입니까? (의도됨 / 연결(항상 ON)이어야 함)',
-              'assumed': '끊긴 것으로 처리(계획서 §3.2): TG는 열린 스위치 기호 + "(off)". O_DOUTP/N은 구동이 없지만 X_DFE_EVEN의 고속 핀(T1_FB)에 붙어 있어 고속 데이터로 그리고 이름표로 끝냄.',
-              'confidence': 'low (구조상 항상 OFF)'})
+    und = A['undriven_hs']
+    loads = []
+    for n in und:
+        for e in cells[top]['elems']:
+            if e['kind'] == 'inst':
+                for p, v in e['pins'].items():
+                    if v == n:
+                        loads.append('%s.%s' % (e['name'], p))
+    ask('netlist_error_confirm', {
+        'item': ', '.join('/'.join(g['members']) for g in tgs),
+        'fact': '전달 게이트의 NMOS 게이트=%s, PMOS 게이트=%s라 항상 꺼져 있고, 그래서 %s는 구동원 없이 고속 핀(%s)에만 닿습니다(미구동)' % (
+            A['rails']['ground'], A['rails']['supply'], ', '.join(und), ', '.join(loads))},
+        '의도됨으로 가정하고 규칙대로 그림(§2.3-2, §2.3-13): TG는 열린 스위치 "(off)", %s는 고속(미구동)으로 그리고 이름표(블록 화면)·화면 밖 연결 기호(유닛 화면)로 끝냄.' % ', '.join(und),
+        'low (구조상 항상 OFF — netlist 오류 가능)')
 for c, s in A['symmetry'].items():
-    if s['unmatched_devices']:
-        Q.append({'id': 'Q4', 'item': '%s: %s' % (c, ', '.join(s['unmatched_devices'])),
-                  'question': '%s에 거울 짝이 없는 소자가 있습니다 (M11: PMOS, S=VDD, D=DP, G=DN; 반대쪽 D=DN, G=DP 소자 없음). 차동 회로가 비대칭이 됩니다. 의도된 것입니까? (의도됨 / netlist 오류)' % c,
-                  'assumed': '그대로 그림 (정확성 > 대칭, 계획서 §5.2-7). M11은 연결된 노드(DP) 쪽 바깥에 두고, 게이트(DN)는 이름표로 연결, "비대칭" 표시.' % (),
-                  'confidence': 'low (대칭 위반이 netlist에 있음)'})
-unknown = [c for c, b in blocks.items() if b['conf'] == 'low' and A['cell_insts'].get(c)]
-if unknown:
-    Q.append({'id': 'Q5', 'item': ', '.join('%s (%s)' % (c, blocks[c]['role']) for c in unknown),
-              'question': '블록 역할 사전에 없는 구조입니다 (정적 CMOS 게이트, 교차 결합 게이트 = SR latch). 박스(셀 이름)로 그릴까요? (예 / 역할 지정)',
-              'assumed': '예 — 사전 규칙대로 박스(셀 이름) + 보이는 핀. 유닛 레벨은 소자 그대로.',
-              'confidence': 'low (사전에 없음)'})
-dang = sorted({n.split('/')[-1] for n in A.get('dangling_hs_nets', [])})
-# dangling at the top level: HS nets with a single connection
-topconn = collections.Counter()
-for e in cells[top]['elems']:
-    vals = e['pins'].values() if e['kind'] == 'inst' else e['terms'].values()
-    for v in vals:
-        topconn[v] += 1
-dtop = [n for n in internal_top if ('data' in cls(n) or 'clock' in cls(n)) and topconn[n] == 1]
-Q.append({'id': 'Q6', 'item': 'top: %s; CLK_DIST_TREE: CLKI_BUF, CLKIB_BUF, CLKQ_BUF, CLKQB_BUF; STRONGARM_SLICER: QPB, QNB' % ', '.join(dtop),
-          'question': '추적상 고속 넷이지만 아무 곳에도 연결되지 않은(부하 없는) 출력입니다. 그릴까요? (그림 / 생략)',
-          'assumed': '그림 — 분류가 고속이므로 §6.3(생략은 분류대로만)에 따라 생략하지 않고, 끝에 넷 이름표만 둔 짧은 선으로 표시.',
-          'confidence': 'low (계획서에 규칙 없음)'})
-Q.append({'id': 'Q7', 'item': ', '.join(imp_bus),
-          'question': '중요 제어 16비트(W1_0..W4_3)를 "DFE 탭 계수" 기능 하나의 버스로 묶을까요, 탭별 4비트 버스 4개로 나눌까요? (16b 1개 / 4b×4)',
-          'assumed': '16b 버스 1개 (W<4:1>_<3:0>) — §4.4 "기능별 버스 하나"를 "DFE 탭 계수" 기능으로 해석.',
-          'confidence': 'low (계획서 해석)'})
+    for m in s['unmatched_devices']:
+        e = el(c, m)
+        ask('netlist_error_confirm', {
+            'item': '%s: %s' % (c, m),
+            'fact': '%s(%s, S=%s, D=%s, G=%s)의 거울 짝(D=%s, G=%s)이 없어 차동 회로가 비대칭입니다' % (
+                m, 'PMOS' if e['type'] == 'p' else 'NMOS', e['terms']['s'], e['terms']['d'], e['terms']['g'],
+                e['terms']['g'], e['terms']['d'])},
+            '의도됨으로 가정하고 그대로 그림(§3.3-6): %s는 연결된 노드(%s) 쪽 바깥, 게이트(%s)는 이름표, "비대칭" 주석.' % (m, e['terms']['d'], e['terms']['g']),
+            'low (대칭 위반이 netlist에 있음)')
+# (4) guessed bit notation (plan §2.5-7: notation guessed -> low confidence)
+guessed = [(bn, bits) for bn, bits, nt in group_bus(imp + gen) if nt in ('suffix', 'underscore2')]
+if guessed:
+    ask('bus_notation_guess', {
+        'item': ', '.join('%s…%s' % (b[0], b[-1]) for _, b in guessed),
+        'buses': ', '.join('`%s`' % bn for bn, _ in guessed)},
+        '예 — %s.' % ', '.join(bn for bn, _ in guessed),
+        'low (비트 표기 추측, §2.5-7)')
+
+# what a rule decides (not asked, plan §2.7-4) — listed so the reader sees why there is no question
+rule_decided = []
+listed = [c for c, b in blocks.items() if A['cell_insts'].get(c) and b['role'] in ('nand', 'nor', 'sr_latch', 'inverter')]
+rule_decided.append({'topic': 'dictionary_listed_block', 'items': listed, 'rule': RULE_DECIDED_TOPICS['dictionary_listed_block'],
+                     'decision': '사전 행으로 그림 (논리 게이트: 출력 동그라미, SR latch: 박스)'})
+uo = A['unused_outputs']
+rule_decided.append({'topic': 'unused_output', 'items': ['%s: %s' % (c, ', '.join(v)) for c, v in uo.items()],
+                     'rule': RULE_DECIDED_TOPICS['unused_output'], 'decision': '지우지 않고 짧은 선 + 넷 이름표'})
+rule_decided.append({'topic': 'bus_grouping', 'items': [r['bus'] for r in imp_rows + gen_rows],
+                     'rule': RULE_DECIDED_TOPICS['bus_grouping'], 'decision': '기능별 버스 하나 (`W<4:1>_<3:0>` 16비트 하나)'})
+
+# ---------------- non-high-speed categories (plan §2.5-9 second sentence) ----------------
+nonhs = [
+    ('기준 전압 (P1·VREF)', '없음 — ESD 붙은 비교기 기준 패드 없음, 비교기·샘플러 한쪽 입력으로 들어가는 추적 안 된 넷 없음'),
+    ('상태 출력 (O1) · 명령 (K8) · 시험 (K9)', '없음 — 상태 소자가 구동하는 출력 포트·상태 소자 동기 입력·모니터 출력 없음'),
+    ('워드 속도 디지털', '없음 — 직렬화기·디시리얼라이저 워드 경계 없음'),
+    ('이득·VREF 코드 (K6)', ', '.join('%s (%s)' % (r['bus'], r['K']) for r in imp_rows if r['K'] == 'K6') or '없음'),
+]
 
 ann = {
     'hs_inputs': hs_in, 'clock_inputs': clk_in, 'hs_outputs': hs_out,
     'important_controls': imp, 'show_bias': [], 'hide': [],
     'block_roles': {c: b['role'] for c, b in blocks.items() if A['cell_insts'].get(c)},
     '_sources': {'hs_inputs': 'user answer (given)', 'others': 'automatic structural analysis + assumed answers below'},
-    '_important_control_buses': {imp_bus[0]: {'bits': imp, 'function': 'DFE tap 1-4 coefficients (IDAC_4BIT switches -> tap-pair tail current)'}} if imp_bus else {},
-    '_general_controls': gen, '_bias': bias_ports + bias_int, '_power': power,
+    '_important_control_buses': {r['bus']: {'bits': r['bits'], 'K': r['K'], 'function': r['function'], 'endpoint_pin': r['endpoint_pin'],
+                                            'source': r['source']} for r in imp_rows},
+    '_general_controls': gen,
+    '_general_control_buses': {r['bus']: {'bits': r['bits'], 'K': r['K'], 'function': r['function'], 'endpoint_pin': r['endpoint_pin'],
+                                          'source': r['source']} for r in gen_rows},
+    '_controls': [{k: r[k] for k in ('bus', 'bits', 'class', 'K', 'endpoint_pin', 'source', 'function', 'drawing')} for r in imp_rows + gen_rows],
+    '_bias': bias_ports + bias_int, '_power': power,
+    '_undriven_hs': A['undriven_hs'],
+    '_omitted_blocks': omitted_blocks,
+    '_non_hs_categories': [{'category': a, 'result': b} for a, b in nonhs],
     '_questions_and_assumed_answers': Q,
+    '_not_asked_rule_decided': rule_decided,
 }
 json.dump(ann, open(OUT + '/annotations.json', 'w'), indent=1, ensure_ascii=False)
 
@@ -2927,19 +4510,42 @@ L.append('```')
 L.append('고속 데이터 입력 : %-40s (확신 높음 — 사용자 지정, 구조 일치: CTLE 입력쌍 게이트 + 종단/ESD 패드)' % ', '.join(hs_in))
 L.append('클럭 입력        : %-40s (확신 높음 — 구조: latch 클럭 스티어링·StrongARM 꼬리/리셋 게이트까지 도달, 이름 일치)' % ', '.join(clk_in))
 L.append('고속 출력        : %s' % ', '.join(hs_out))
-L.append('중요 제어 (버스) : %s (16b) — DFE 탭1~4 계수 (IDAC 스위치 → 탭 쌍 꼬리 전류, 탭 입력 = 귀환 데이터, summer 출력에서 합산)  (확신 높음; 묶음 방식은 Q7)' % ', '.join(imp_bus))
-L.append('생략             : 제어 %d개 (%s), 바이어스 %d개 (%s), 전원 %d개 (%s), 블록 %d개 (%s)' % (
-    len(gen), ', '.join(gen), len(bias_ports + bias_int), ', '.join(bias_ports + bias_int), len(power), ', '.join(power),
-    len(omitted_blocks), ', '.join(omitted_blocks)))
+L.append('중요 제어 (버스) : %s' % ' / '.join('%s — %s %s (확신 높음)' % (r['bus'], r['K'], r['function'].split(' — ')[0]) for r in imp_rows))
+L.append('생략             : 제어 %d개 (%s — K7 정적 트림), 바이어스 %d개 (%s), 전원 %d개 (%s), 블록 %d개 (%s)' % (
+    len(gen), ', '.join(r['bus'] for r in gen_rows), len(bias_ports + bias_int), ', '.join(bias_ports + bias_int), len(power), ', '.join(power),
+    len(omitted_blocks), ', '.join('%s (%s)' % (b['inst'], b['cell']) for b in omitted_blocks)))
 L.append('질문             : %s' % ' / '.join('%s %s' % (q['id'], q['item']) for q in Q))
 L.append('```\n')
 L.append('## 질문과 가정한 답 (실행 중 답할 사람이 없어 가장 그럴듯한 답을 선택하여 annotations.json에 저장)\n')
 for q in Q:
-    L.append('- **%s** `%s` — %s\n  - 확신: %s\n  - 가정한 답: %s' % (q['id'], q['item'], q['question'], q['confidence'], q['assumed']))
+    L.append('- **%s** [%s, %s] %s\n  - 확신: %s\n  - 가정한 답: %s' % (q['id'], q['template'], q['rule'], q['question'], q['confidence'], q['assumed']))
+L.append('\n## 규칙이 정한 것 (묻지 않음, §2.7-4)\n')
+for r in rule_decided:
+    L.append('- %s: %s — %s → %s' % (r['topic'], '; '.join(r['items']), r['rule'], r['decision']))
+L.append('\n## 제어 분류 (§2.5-9: 그린 제어마다, 숨긴 다비트 제어마다 K#·끝점 핀·출처)\n')
+L.append('| 제어 | 비트 | 분류 | K# | 끝점 핀 (인스턴스.핀) | 출처 | 기능 | 그림 |')
+L.append('|---|---|---|---|---|---|---|---|')
+for r in imp_rows + gen_rows:
+    L.append('| %s | %s | %s | %s | %s | %s | %s | %s |' % (r['bus'], ', '.join(r['bits']), r['class'], r['K'], r['endpoint_pin'],
+                                                       '최상위 포트 (정적)' if r['source'] == 'port' else r['source'], r['function'], r['drawing']))
+L.append('')
+L.append('- 비트 표기: %s — 표기 추측(§2.5-7), 확신 낮음 → %s.' % (
+    ', '.join('%s → %s' % ('/'.join([b[0], b[-1]]), bn) for bn, b in guessed), [q['id'] for q in Q if q['template'] == 'bus_notation_guess'][0] if guessed else '-'))
+k6 = [r for r in imp_rows if r['K'] == 'K6']
+for r in k6:
+    L.append('- %s: 끝점 = 이득 쌍 꼬리 스위치(VGA 행 §2.6-1), 출력을 여러 비트 경로가 공유 → K6(부록 A, C.8 D6, V1). '
+             '같은 다리는 "코드로 켜는 병렬 다리"(V4, K5)의 특징도 가진다 — 분류 이름만 다르고 그림(버스)은 같다.' % r['bus'])
+for r in gen_rows:
+    L.append('- %s: 끝점 = 고속 경로 안쪽 노드(소스 사이)의 degeneration 스위치 → K7, 출처 = 포트(정적) → 일반 제어, 숨김 (V7).' % r['bus'])
+L.append('\n## 비고속 분류 점검 (§2.5-9)\n')
+for a, b in nonhs:
+    L.append('- %s: %s' % (a, b))
 L.append('\n## 최상위 포트 분류\n')
-L.append('| 포트 | 분류 | 근거 |')
-L.append('|---|---|---|')
+L.append('| 포트 | 분류 | K# | 근거 |')
+L.append('|---|---|---|---|')
 dt = A['data_trace']; ct = A['clock_trace']
+
+
 def reason(n):
     c = cls(n)
     if n in hs_in:
@@ -2947,25 +4553,32 @@ def reason(n):
     if n in clk_in:
         return '클럭 입력: 구조 추적이 latch 클럭 스티어링/StrongARM 꼬리·리셋 게이트에 도달 (+ 이름 힌트 CLK)'
     if 'data' in c:
-        return '고속 데이터: %s 에서 추적 (via %s)' % ('RX_INP/RX_INN', dt[n]['via'])
+        s = '고속 데이터: %s 에서 추적 (via %s)' % ('/'.join(hs_in), dt[n]['via'])
+        if n in A['undriven_hs']:
+            s += ' — **미구동** (항상 꺼진 TG 뒤, §2.3-13, Q3)'
+        return s
     if 'clock' in c:
-        return '고속 클럭: CLK_INP/N 에서 추적 (via %s)' % ct[n]['via']
-    if 'important_control' in c:
-        return '중요 제어: ' + '; '.join(A['control_info'][n]['why'])
-    if 'general_control' in c:
-        return '일반 제어: ' + '; '.join(A['control_info'][n]['why'][:2]) + (' (이름-구조 불일치 → Q1)' if n in cmis else '')
+        return '고속 클럭: %s 에서 추적 (via %s)' % ('/'.join(clk_in), ct[n]['via'])
+    if 'important_control' in c or 'general_control' in c:
+        return '%s %s: %s; 끝점 %s' % (CLASS_KO[c[0]], CI[n]['K'], '; '.join(CI[n]['why'][:2]), CI[n]['endpoint'])
     if 'bias' in c:
         return '바이어스: ' + A['bias_why'].get(n, '')
     if 'power' in c:
         return '전원 (구조: PMOS/NMOS 벌크 최다 넷)'
     return '?'
+
+
+def kcol(n):
+    return CI[n]['K'] if n in CI else ('K11' if 'bias' in cls(n) else '')
+
+
 for p in tp:
-    L.append('| %s | %s | %s |' % (p, '/'.join(cls(p)), reason(p)))
+    L.append('| %s | %s | %s | %s |' % (p, '/'.join(cls(p)), kcol(p), reason(p)))
 L.append('\n## 최상위 내부 넷 분류\n')
-L.append('| 넷 | 분류 | 근거 |')
-L.append('|---|---|---|')
+L.append('| 넷 | 분류 | K# | 근거 |')
+L.append('|---|---|---|---|')
 for n in internal_top:
-    L.append('| %s | %s | %s |' % (n, '/'.join(cls(n)), reason(n)))
+    L.append('| %s | %s | %s | %s |' % (n, '/'.join(cls(n)), kcol(n), reason(n)))
 L.append('\n## 블록 역할 (셀별)\n')
 L.append('| 셀 | 역할 | 기호 | 확신 | 근거 |')
 L.append('|---|---|---|---|---|')
@@ -2982,21 +4595,125 @@ L.append('\n## 참고: 데이터·클럭 겸용 셀\n')
 for c, d in A['cellnet'].items():
     mixed = [n for n, v in d.items() if 'data' in v and 'clock' in v]
     if mixed:
-        L.append('- %s: 핀 %s 는 DFE 경로에서는 데이터, CLK_DIST_TREE에서는 클럭 (선 굵기는 데이터 기준, 패널에 주석)' % (c, ', '.join(mixed)))
+        L.append('- %s: 핀 %s 는 DFE 경로에서는 데이터, CLK_DIST_TREE에서는 클럭 (평탄 넷 중 데이터·클럭 양쪽에서 닿는 넷은 없음)' % (c, ', '.join(mixed)))
 L.append('\n## 추적 중 멈춘 곳 (요약)\n')
 ev = collections.Counter()
 for d, why in A['data_events'] + A['clock_events']:
-    k = re.sub(r'X_[A-Z0-9_/]+/', '', why)
     ev[(d.split('/')[-1], re.sub(r'(gate|drain|node) \S+', r'\1 *', why))] += 1
 for (d, w), k in sorted(ev.items()):
     L.append('- %s: %s (×%d)' % (d, w, k))
 open(OUT + '/classification.md', 'w').write('\n'.join(L) + '\n')
+
+# ---------------- block dictionary record (plan §2.6-4) ----------------
+P = Polarity(cells, top)
+
+
+def roles_of(cell, members=None):
+    r = A['roles'].get(cell, {})
+    out = collections.defaultdict(list)
+    for m, v in r.items():
+        if members is None or m in members:
+            out[v['role']].append(m)
+    return out
+
+
+def feats(role, cell, members=None):
+    R = roles_of(cell, members)
+    f = []
+    if role == 'ctle':
+        f.append('차동 입력쌍 %s' % '/'.join(R['input']))
+        f.append('소스 분리 (꼬리 %s) + 소스 사이 degeneration R: %s ∥ 스위치 %s' % ('/'.join(R['tail']),
+                 ', '.join(e['name'] for e in cells[cell]['elems'] if e['kind'] == 'res' and e['name'] in R['series_res']),
+                 ', '.join(R['switch'])))
+        caps = [e for e in cells[cell]['elems'] if e['kind'] == 'cap']
+        f.append('소스 사이 C가 영점을 만듦 (피킹용 C, 고정): %s = %s' % (' ∥ '.join(e['name'] for e in caps), ' + '.join(e['value'] for e in caps)))
+    elif role == 'vga':
+        f.append('주 차동쌍 + 같은 입력의 추가 이득 쌍 %d개 (%s), 출력 공유' % (len(R['input']) // 2 - 1, ', '.join(R['input'])))
+        f.append('이득 단을 스위치로 더함: 이득 쌍 꼬리의 스위치 %s' % ', '.join(R['switch']))
+        f.append('소스 사이 C 없음 (C는 고정·작음 조건 만족)')
+    elif role == 'summer':
+        f.append('입력이 다른 차동쌍 %d개가 같은 출력에 합산 (%s)' % (len(R['input']) // 2, ', '.join(R['input'])))
+        f.append('탭 쌍 꼬리 = 전류 DAC 인스턴스 (%s)' % ', '.join(e['name'] for e in cells[cell]['elems'] if e['kind'] == 'inst'))
+    elif role == 'dac':
+        f.append('(스위치 %s + 전류원 %s) 반복, 출력 하나 공유 → 개념 기호 "가변 전류원" (§3.4-3)' % ('/'.join(R['switch']), '/'.join(R.get('switched_current_source', []) + R.get('tail', []))))
+    elif role in ('comparator', 'strongarm'):
+        f.append('클럭 꼬리 %s' % '/'.join(R['clocked_tail']))
+        f.append('입력쌍 %s' % '/'.join(m for m in R['input'] if el(cell, m)['type'] == 'n'))
+        cn = [m for m in R['cross'] if el(cell, m)['type'] == 'n']; cp = [m for m in R['cross'] if el(cell, m)['type'] == 'p']
+        f.append('입력쌍 드레인 위 cross-coupled NMOS %s + cross-coupled PMOS %s' % ('/'.join(cn), '/'.join(cp)))
+        f.append('리셋 PMOS %s' % '/'.join(R['reset']))
+        if role == 'comparator':
+            subs = [e for e in cells[cell]['elems'] if e['kind'] == 'inst']
+            f.append('출력단: %s' % ', '.join('%s (%s)' % (e['name'], blocks[e['cell']]['role']) for e in subs))
+    elif role == 'latch':
+        f.append('입력쌍 %s' % '/'.join(R['input']))
+        f.append('cross-coupled 쌍 %s' % '/'.join(R['cross']))
+        f.append('클럭 스티어링 %s (상보 클럭으로 두 꼬리를 번갈아)' % '/'.join(R['clock_steering']))
+    elif role == 'dff':
+        subs = [e for e in cells[cell]['elems'] if e['kind'] == 'inst']
+        f.append('latch 2개 직렬 %s → %s' % (subs[0]['name'], subs[1]['name']))
+        f.append('반대 클럭: %s.CLK=%s, %s.CLK=%s' % (subs[0]['name'], subs[0]['pins']['CLK'], subs[1]['name'], subs[1]['pins']['CLK']))
+    elif role == 'inverter':
+        f.append('PMOS/NMOS 하나씩, 게이트·드레인 공통 (정적 CMOS)')
+    elif role in ('nand', 'nor'):
+        f.append(blocks[cell]['why'])
+    elif role == 'sr_latch':
+        subs = [e for e in cells[cell]['elems'] if e['kind'] == 'inst']
+        f.append('%s 2개 교차 결합: %s' % (subs[0]['cell'], '; '.join('%s.%s=%s' % (e['name'], cells[e['cell']]['ports'][2], e['pins'][cells[e['cell']]['ports'][2]]) for e in subs)))
+    elif role == 'cml_buffer':
+        f.append('차동쌍 하나 %s, 공통 꼬리 %s, 부하 %s' % ('/'.join(R['input']), '/'.join(R['tail']), '/'.join(R['load'])))
+    elif role in ('termination', 'termination_esd'):
+        f.append('고속 입력에서 공통모드 노드로 R: %s' % '/'.join(R['termination']))
+        if R.get('cap_to_rail'):
+            f.append('공통모드 노드에서 접지로 C: %s' % '/'.join(R['cap_to_rail']))
+        if R.get('esd'):
+            f.append('패드에서 전원으로 MOS 클램프(게이트가 자기 레일): %s' % '/'.join(R['esd']))
+    elif role == 'tg':
+        f.append('같은 두 넷 사이 NMOS+PMOS, 게이트가 끄는 레일(NMOS→접지, PMOS→전원)에 묶임 → 항상 꺼짐')
+    elif role == 'composite':
+        subs = [e for e in cells[cell]['elems'] if e['kind'] == 'inst']
+        f.append('하위 블록이 모두 사전에 있음: %s' % ', '.join('%s (%s)' % (e['name'], blocks[e['cell']]['role']) for e in subs))
+        for g in A['groups'].get(cell, []):
+            f.append('기본 소자 묶음(가상 블록)도 사전 행: %s (%s)' % (g['role'], ', '.join(g['members'])))
+    return f
+
+
+drawn_cells = [c for c in order if A['cell_insts'].get(c) and blocks[c]['symbol'] != 'omit']
+qby = collections.defaultdict(list)
+for q in Q:
+    for c in drawn_cells:
+        if c in q['item'] or any(inst in q['item'] for inst in [e['name'] for e in cells[top]['elems'] if e['kind'] == 'inst' and e['cell'] == c]):
+            qby[c].append(q['id'])
+rows = []
+for c in drawn_cells:
+    b = blocks[c]
+    row, sym = DICT_ROWS.get(b['role'], ('general', 'box (cell name)'))
+    insts = sorted({pre.rstrip('/').split('/')[-1] for pre in A['cell_insts'][c] if pre})
+    rows.append({'cell': c, 'instances': insts, 'virtual': False, 'role': b['role'], 'row': row, 'symbol': sym,
+                 'matched_features': feats(b['role'], c), 'missing_features': [], 'confidence': b['conf'],
+                 'questions': qby.get(c, [])})
+for c, gs in A['groups'].items():
+    if not A['cell_insts'].get(c) or blocks[c]['symbol'] == 'omit':
+        continue
+    if len(gs) == 1 and blocks[c]['role'] == gs[0]['role']:
+        continue          # the cell itself is the group (already one row)
+    for g in gs:
+        row, sym = DICT_ROWS.get(g['role'], ('general', 'box (cell name)'))
+        qs = [q['id'] for q in Q if any(m in q['item'] for m in g['members'])]
+        rows.append({'cell': c, 'virtual_block': '%s: %s' % (c, ', '.join(g['members'])), 'virtual': True, 'role': g['role'], 'row': row,
+                     'symbol': sym, 'matched_features': feats(g['role'], c, set(g['members'])), 'missing_features': [],
+                     'confidence': g['conf'], 'questions': qs})
+not_drawn = [{'cell': c, 'role': blocks[c]['role'], 'row': DICT_ROWS.get(blocks[c]['role'], ('general',))[0], 'reason': '생략 (고속 신호와 무관)'}
+             for c in order if A['cell_insts'].get(c) and blocks[c]['symbol'] == 'omit']
+json.dump({'_rule': 'plan §2.6-3/4: a dictionary row is drawn only when every structure feature of the row is present; '
+                    'missing_features non-empty + dictionary symbol = fail',
+           'rows': rows, 'not_drawn': not_drawn}, open(OUT + '/block_dictionary.json', 'w'), indent=1, ensure_ascii=False)
 print('\n'.join(L[:12]))
-````
+`````
 
 ### FILE: reference/rx_afe/work/scene.py
-<!-- sha256=6d495d8266147526abd4ecc88d7684837273f7880bed05631adb22ee7effb374 newline=1 -->
-````python
+<!-- sha256=2c056600e54aefab8314703fd32a2060099ff5d9c44a19de81cccd058e029153 newline=1 -->
+`````python
 """Scene model: every view = drawing primitives + semantic objects (symbols with pins, wires, dots, labels, ports).
 Renderers (HTML/PPTX) only use 'draw' primitives + hotspots; the checker only uses semantic objects + geometry."""
 import math
@@ -3009,8 +4726,7 @@ BUS_W = 1.6
 SYM_W = 1.6
 
 
-def fmt_si(v):
-    return v
+from netlist import fmt_si      # SI-prefixed values (plan §3.5-6); the v3 placeholder returned the netlist string
 
 
 class View:
@@ -3119,9 +4835,12 @@ class View:
         return s
 
 
-def pin(name, x, y, terms):
+def pin(name, x, y, terms, side=None):
     """terms: list (per slice) of list of (element, terminal). For block instances element=inst name, terminal=port."""
-    return {'name': name, 'x': float(x), 'y': float(y), 'terms': terms}
+    p = {'name': name, 'x': float(x), 'y': float(y), 'terms': terms}
+    if side:
+        p['side'] = side
+    return p
 
 
 # ============================ device symbols ============================
@@ -3298,42 +5017,63 @@ def gray_gate(V, p, name, side):
 
 # ============================ block symbols ============================
 def tri(V, sid, x0, yc, label, inst, w=80, h=90, ins=None, outs=None, bottom=None, top=None, link=None,
-        clock_mark=False, members=None, sub='', cls='data'):
-    """amplifier triangle pointing right. ins/outs: list of (pinname, dy, terms). bottom/top: list of (pinname, dx, terms, cls)"""
+        clock_mark=False, members=None, sub='', cls='data', bubbles=(), pm=None, out_names=True, vblock=False):
+    """amplifier triangle pointing right. ins/outs: list of (pinname, dy, terms). bottom/top: list of (pinname, dx, terms, cls).
+    bubbles: output pin names drawn with a polarity bubble (plan §3.4-6, V19). pm: {input pin name: '+' | '−'} (V21).
+    out_names: write the output pin names when there are two or more outputs (plan §3.4-7)."""
     V.poly([(x0, yc - h / 2), (x0 + w, yc), (x0, yc + h / 2)], fill='#fff', stroke=BLACK, w=SYM_W, owner=sid)
     V.text(x0 + w * 0.36, yc, label, size=12, anchor='middle', weight='bold', cls='blk', owner=sid)
     pins = []
     lw = CLK_W if cls == 'clock' else SYM_W
     for (pn, dy, terms) in (ins or []):
         V.line([(x0 - 20, yc + dy), (x0, yc + dy)], w=lw, owner=sid)
-        pins.append(pin(pn, x0 - 20, yc + dy, terms))
+        pins.append(pin(pn, x0 - 20, yc + dy, terms, side='left'))
+        if pm and pn in pm:
+            V.text(x0 + 7, yc + dy, pm[pn], size=10, anchor='middle', weight='bold', cls='pm', owner=sid)
     for (pn, dy, terms) in (outs or []):
         xe = x0 + w * (1 - abs(dy) / (h / 2))
-        V.line([(xe, yc + dy), (x0 + w + 20, yc + dy)], w=lw, owner=sid)
-        pins.append(pin(pn, x0 + w + 20, yc + dy, terms))
+        if pn in bubbles:
+            # bubble tangent to the slope (perpendicular distance r = 4 from the slanted edge)
+            sl = (h / 2) / math.hypot(w, h / 2)
+            bx = xe + 4.0 / sl
+            V.circle(bx, yc + dy, 4, fill='#fff', owner=sid)
+            V.line([(bx + 4, yc + dy), (x0 + w + 20, yc + dy)], w=lw, owner=sid)
+            tx = bx + 6
+        else:
+            V.line([(xe, yc + dy), (x0 + w + 20, yc + dy)], w=lw, owner=sid)
+            tx = xe + 4
+        pins.append(pin(pn, x0 + w + 20, yc + dy, terms, side='right'))
+        if out_names and len(outs) >= 2:
+            V.text(tx, yc + dy + (-8 if dy < 0 else 9), pn, size=9, anchor='start', color='#555', cls='pintext', owner=sid)
     for (pn, dx, terms, cl) in (bottom or []):
         ye = yc + (h / 2) * (1 - dx / w)
         V.line([(x0 + dx, ye), (x0 + dx, yc + h / 2 + 20)], w=CLK_W if cl == 'clock' else SYM_W, owner=sid)
-        pins.append(pin(pn, x0 + dx, yc + h / 2 + 20, terms))
+        pins.append(pin(pn, x0 + dx, yc + h / 2 + 20, terms, side='bottom'))
         if clock_mark:
             V.poly([(x0 + dx - 6, ye), (x0 + dx, ye - 8), (x0 + dx + 6, ye)], fill='none', stroke=BLACK, w=1.2, owner=sid)
     for (pn, dx, terms, cl) in (top or []):
         ye = yc - (h / 2) * (1 - dx / w)
         V.line([(x0 + dx, ye), (x0 + dx, yc - h / 2 - 20)], w=BUS_W if cl == 'bus' else SYM_W, owner=sid)
-        pins.append(pin(pn, x0 + dx, yc - h / 2 - 20, terms))
+        pins.append(pin(pn, x0 + dx, yc - h / 2 - 20, terms, side='top'))
+    icls = 'vblk' if vblock else 'inst'
     if inst:
-        V.text(x0 + w / 2 - 6, yc - h / 2 - 10, inst, size=10, anchor='middle', italic=True, color='#444', cls='inst', owner=sid)
+        if top:
+            # a control pin enters from the top: the instance name moves to the right of its lead
+            dx0 = max(dx for _, dx, _, _ in top)
+            V.text(x0 + dx0 + 6, yc - h / 2 - 10, inst, size=10, anchor='start', italic=True, color='#444', cls=icls, owner=sid)
+        else:
+            V.text(x0 + w / 2 - 6, yc - h / 2 - 10, inst, size=10, anchor='middle', italic=True, color='#444', cls=icls, owner=sid)
     if sub:
         if bottom:
-            V.text(x0 + w / 2 - 6, yc - h / 2 - 23, sub, size=10, anchor='middle', color='#444', cls='inst', owner=sid)
+            V.text(x0 + w / 2 - 6, yc - h / 2 - 23, sub, size=10, anchor='middle', color='#444', cls=icls, owner=sid)
         else:
-            V.text(x0 + w / 2 - 6, yc + h / 2 + 12, sub, size=10, anchor='middle', color='#444', cls='inst', owner=sid)
+            V.text(x0 + w / 2 - 6, yc + h / 2 + 12, sub, size=10, anchor='middle', color='#444', cls=icls, owner=sid)
     body = [[x0, yc - h / 2, x0 + w * 0.5, yc + h / 2], [x0 + w * 0.5, yc - h / 4, x0 + w * 0.85, yc + h / 4]]
-    return V.add_symbol(sid, 'tri', body, pins, members or [], link, dict(x0=x0, yc=yc, w=w, h=h))
+    return V.add_symbol(sid, 'tri', body, pins, members or [], link, dict(x0=x0, yc=yc, w=w, h=h, outline=[[x0, yc - h / 2], [x0 + w, yc], [x0, yc + h / 2]]))
 
 
 def box(V, sid, x0, y0, w, h, label, inst, left=None, right=None, bottom=None, top=None, link=None, members=None,
-        big=False, pin_text=True, sub=None):
+        big=False, pin_text=True, sub=None, bubbles=()):
     """block box. left/right: list of (pinname, y, terms, cls); bottom/top: list of (pinname, x, terms, cls). pins at 20px from edge."""
     V.rect(x0, y0, w, h, fill='#fff', stroke=BLACK, sw=SYM_W, owner=sid)
     V.text(x0 + w / 2, y0 + h / 2 - (8 if sub else 0), label, size=22 if big else 13, anchor='middle', weight='bold', cls='blk', owner=sid)
@@ -3346,22 +5086,26 @@ def box(V, sid, x0, y0, w, h, label, inst, left=None, right=None, bottom=None, t
         return CLK_W if cl in ('clock', 'bus') else SYM_W
     for (pn, y, terms, cl) in (left or []):
         V.line([(x0 - 20, y), (x0, y)], w=lw(cl), owner=sid)
-        pins.append(pin(pn, x0 - 20, y, terms))
+        pins.append(pin(pn, x0 - 20, y, terms, side='left'))
         if pin_text:
             V.text(x0 + 4, y, pn, size=9, anchor='start', color='#555', cls='pintext', owner=sid)
     for (pn, y, terms, cl) in (right or []):
-        V.line([(x0 + w, y), (x0 + w + 20, y)], w=lw(cl), owner=sid)
-        pins.append(pin(pn, x0 + w + 20, y, terms))
+        if pn in bubbles:
+            V.circle(x0 + w + 4, y, 4, fill='#fff', owner=sid)
+            V.line([(x0 + w + 8, y), (x0 + w + 20, y)], w=lw(cl), owner=sid)
+        else:
+            V.line([(x0 + w, y), (x0 + w + 20, y)], w=lw(cl), owner=sid)
+        pins.append(pin(pn, x0 + w + 20, y, terms, side='right'))
         if pin_text:
             V.text(x0 + w - 4, y, pn, size=9, anchor='end', color='#555', cls='pintext', owner=sid)
     for (pn, x, terms, cl) in (bottom or []):
         V.line([(x, y0 + h), (x, y0 + h + 20)], w=lw(cl), owner=sid)
-        pins.append(pin(pn, x, y0 + h + 20, terms))
+        pins.append(pin(pn, x, y0 + h + 20, terms, side='bottom'))
         if pin_text:
             V.text(x, y0 + h - 8, pn, size=9, anchor='middle', color='#555', cls='pintext', owner=sid)
     for (pn, x, terms, cl) in (top or []):
         V.line([(x, y0), (x, y0 - 20)], w=lw(cl), owner=sid)
-        pins.append(pin(pn, x, y0 - 20, terms))
+        pins.append(pin(pn, x, y0 - 20, terms, side='top'))
         if pin_text:
             V.text(x, y0 + 9, pn, size=9, anchor='middle', color='#555', cls='pintext', owner=sid)
     return V.add_symbol(sid, 'box', [[x0, y0, x0 + w, y0 + h]], pins, members or [], link, dict(x0=x0, y0=y0, w=w, h=h))
@@ -3420,16 +5164,39 @@ def term_marker(V, sid, x, y, up, label, terms, esd=False, link=None, members=No
 
 def sorted_box(x0, y0, x1, y1):
     return [min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)]
-````
+
+
+def offpage(V, name, x, y, d='left'):
+    """off-page connector (plan §3.5-1 화면 밖 연결 기호): small pentagon arrow pointing out of the view, attached at
+    (x, y) (wire end); the name sits beyond the tip in 11 px regular type (ports are 12 px bold)."""
+    L, H = 14, 8
+    if d == 'left':
+        pts = [(x, y - H / 2), (x - L + 5, y - H / 2), (x - L, y), (x - L + 5, y + H / 2), (x, y + H / 2)]
+        tid = V.text(x - L - 4, y, name, size=11, anchor='end', cls='offpage')
+    elif d == 'right':
+        pts = [(x, y - H / 2), (x + L - 5, y - H / 2), (x + L, y), (x + L - 5, y + H / 2), (x, y + H / 2)]
+        tid = V.text(x + L + 4, y, name, size=11, anchor='start', cls='offpage')
+    elif d == 'up':
+        pts = [(x - H / 2, y), (x - H / 2, y - L + 5), (x, y - L), (x + H / 2, y - L + 5), (x + H / 2, y)]
+        tid = V.text(x, y - L - 9, name, size=11, anchor='middle', cls='offpage')
+    else:
+        pts = [(x - H / 2, y), (x - H / 2, y + L - 5), (x, y + L), (x + H / 2, y + L - 5), (x + H / 2, y)]
+        tid = V.text(x, y + L + 9, name, size=11, anchor='middle', cls='offpage')
+    V.poly(pts, fill='#fff', stroke=BLACK, w=1.2, owner='offpage')
+    xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
+    V.labels.append({'name': name, 'at': [float(x), float(y)], 'kind': 'offpage', 'tid': tid})
+    V.symbols.append({'id': 'off_' + name + '_%d' % len(V.symbols), 'kind': 'offpageglyph', 'body': [[min(xs), min(ys), max(xs), max(ys)]], 'pins': [], 'members': []})
+`````
 
 ### FILE: reference/rx_afe/work/layouts.py
-<!-- sha256=70dd702f2bb6e639cc14bc8f47346f6da46818535b79e5eafa94911878a24ae1 newline=1 -->
-````python
+<!-- sha256=d37008f47136d6d59d16d370f0877d2c1869cffcf0c7668208d2d5b455d1e418 newline=1 -->
+`````python
 """Step 3 (plan sections 4, 5): concept-diagram views. Writes scenes.json
 Every template takes element names from the structural analysis (roles), not from the netlist text."""
 import json, sys, collections, re
-from netlist import parse, num
+from netlist import parse, num, fmt_si, group_bus, Polarity
 from scene import *
+from spec_rules import ANALOG_ROLES, CLASS_KO
 
 W = sys.argv[1]
 NL = sys.argv[2]
@@ -3437,6 +5204,54 @@ cells, order = parse(NL)
 A = json.load(open(W + '/analysis.json'))
 ROLES = A['roles']; CN = A['cellnet']; EFF = A['eff']; INST = A['cell_insts']
 VIEWS = []
+POL = Polarity(cells, A['top'])
+# view ids (plan §1.3-1): virtual blocks are u_<parent short name>_<role>
+VID = {'top': 'b_top', 'slice': 'b_slice', 'clk': 'b_clk', 'top_term': 'u_top_term', 'top_tg': 'u_top_tg', 'ctle': 'u_ctle',
+       'vga': 'u_vga', 'summer': 'u_summer', 'sa': 'b_sa', 'sa_core': 'u_sa_strongarm', 'sr': 'b_sr', 'nand': 'u_nand',
+       'inv': 'u_inv', 'latch': 'u_latch', 'dff': 'b_dff', 'clk_term': 'u_clk_term', 'clk_buf': 'u_clk_buf'}
+
+
+def is_logic_out(cell, port, group_role=None):
+    """V19: polarity bubbles only on logic outputs. Linear amplifier rows are analog; a CML buffer is logic when it
+    carries a clock; a composite block inherits the kind of the sub-block that drives the port."""
+    role = group_role or A['block'][cell]['role']
+    if role in ANALOG_ROLES:
+        return False
+    if role == 'cml_buffer':
+        return 'clock' in CN[cell].get(port, [])
+    if role == 'composite' and group_role is None:
+        for e in cells[cell]['elems']:
+            if e['kind'] == 'inst':
+                for q, n in e['pins'].items():
+                    if n == port and any(t == q for (_, t) in POL.port_map(e['cell'])):
+                        return is_logic_out(e['cell'], q)
+        for g in A['groups'].get(cell, []):
+            for m in g['members']:
+                e = el(cell, m)
+                if e['kind'] == 'mos' and port in (e['terms']['d'], e['terms']['s']):
+                    return is_logic_out(cell, port, g['role'])
+        return True
+    return True
+
+
+def polarity_marks(cell, ins, outs, members=None, group_role=None, kinds=None):
+    """(bubbles, pm) for a drawn block (plan §3.4-6, §4.1-13, V19, V21).
+    ins/outs: (pin name, local net) in drawn order. bubbles = logic outputs that invert w.r.t. their main input.
+    pm: '+' on the input in phase with the first output before any bubble (for analog outputs the inversion,
+    which V19 does not draw as a bubble, is carried by the +/- marks)."""
+    pol = POL.outputs(cell, [n for _, n in ins], [n for _, n in outs], members)
+    bub = set()
+    logic = {}
+    for pn, n in outs:
+        logic[pn] = is_logic_out(cell, n, group_role)
+        if logic[pn] and pol[n] == 'inv':
+            bub.add(pn)
+    pm = {}
+    if len(ins) >= 2:
+        p0, n0 = outs[0]
+        flip = pol[n0] == 'inv' and not logic[p0]
+        pm = {ins[0][0]: '−' if flip else '+', ins[1][0]: '+' if flip else '−'}
+    return bub, pm
 
 
 def el(cell, name):
@@ -3491,8 +5306,8 @@ def wl(cell, devs):
     if isinstance(devs, str):
         devs = [devs]
     es = [el(cell, d) for d in devs]
-    Ws = [e['params'].get('w', '?') for e in es]
-    Ls = sorted({e['params'].get('l', '?') for e in es}, key=lambda x: num(x) or 0)
+    Ws = [fmt_si(e['params'].get('w', '?')) for e in es]
+    Ls = sorted({fmt_si(e['params'].get('l', '?')) for e in es}, key=lambda x: num(x) or 0)
     ms = [e['params'].get('m') for e in es]
     if len(es) == 1:
         s = '%s/%s' % (Ws[0], Ls[0])
@@ -3514,7 +5329,7 @@ def cls_of(cell, net):
 
 
 def hidden_list(cell, shown=None):
-    """omitted (hidden) nets of the cell by class"""
+    """omitted (hidden) nets of the cell by class (finalised per view by finalize_omitted)"""
     out = []
     for n, c in sorted(CN[cell].items()):
         k = [x for x in c if x in ('general_control', 'bias', 'power')]
@@ -3523,17 +5338,81 @@ def hidden_list(cell, shown=None):
     return out
 
 
+def expand_bus(name):
+    m = list(re.finditer(r'<(\d+):(\d+)>', name))
+    if not m:
+        return [name]
+    import itertools
+    parts, last, rng = [], 0, []
+    for g in m:
+        parts.append(name[last:g.start()]); last = g.end()
+        a, b = int(g.group(1)), int(g.group(2))
+        rng.append(range(a, b - 1, -1) if a >= b else range(a, b + 1))
+    parts.append(name[last:])
+    out = []
+    for combo in itertools.product(*rng):
+        x = parts[0]
+        for k, v in enumerate(combo):
+            x += str(v) + parts[k + 1]
+        out.append(x)
+    return out
+
+
+def class_label(cell, nets):
+    c = CN[cell].get(nets[0], [])
+    k = [x for x in c if x in ('general_control', 'bias', 'power')][0]
+    lab = CLASS_KO[k]
+    if k == 'general_control':
+        ks = sorted({A['control_info'][A['l2g'][INST[cell][0]][n]]['K'] for n in nets if A['l2g'][INST[cell][0]].get(n) in A['control_info']})
+        if ks:
+            lab += ' (%s 정적 트림)' % '/'.join(ks)
+    return lab
+
+
+def finalize_omitted(V):
+    """plan §3.5-5: the omitted list holds every hidden net of the view that is not drawn with a line, a black label,
+    a port or a power symbol; a bus is one <MSB:LSB> line; same classes together; blocks keep their sentence."""
+    drawn = set()
+    for lb in V.labels:
+        if lb['kind'] in ('net', 'port', 'power', 'offpage'):
+            drawn |= set(expand_bus(lb['name']))
+    for s_ in V.symbols:
+        for p_ in s_.get('pins', []):
+            on = any(any(abs(p_['x'] - a[0]) < 0.6 and abs(p_['y'] - a[1]) < 0.6 for a in (w['pts'][0], w['pts'][-1])) for w in V.wires)
+            if on:
+                for sl in p_['terms'] or []:
+                    for e, t in sl:
+                        f = el(V.cell, e)
+                        drawn.add(f['pins'][t] if f['kind'] == 'inst' else f['terms'][t])
+    blocks = [o for o in V.omitted if 'block' in o]
+    nets = [o for o in V.omitted if 'net' in o and o['net'] not in drawn]
+    bycls = collections.defaultdict(list)
+    for o in nets:
+        bycls[o['class']].append(o['net'])
+    out = []
+    for k in ('general_control', 'bias', 'power'):
+        if k not in bycls:
+            continue
+        for bn, bits, _ in sorted(group_bus(bycls[k]), key=lambda t: t[0]):
+            out.append({'net': bn, 'bits': bits, 'class': class_label(V.cell, bits)})
+    for o in blocks:
+        out.append(o)
+    V.omitted = out
+
+
 def gnd_at(V, x, y, net='VSS', l=12):
     V.wire([(x, y), (x, y + l)], cls='power')
     gnd(V, x, y + l, net)
 
 
-def busslash(V, x, y, n, vertical=True):
+def busslash(V, x, y, name, n, vertical=True):
+    """bus mark (plan §3.5-2): a slash; the bit count only when the name has no <a:b>"""
+    V.line([(x - 7, y + 7), (x + 7, y - 7)], w=1.4, owner='bus')
+    if re.search(r'<\d+:\d+>', name):
+        return
     if vertical:
-        V.line([(x - 7, y + 7), (x + 7, y - 7)], w=1.4, owner='bus')
         V.text(x + 9, y + 4, str(n), size=10, anchor='start', cls='buswidth')
     else:
-        V.line([(x - 7, y + 7), (x + 7, y - 7)], w=1.4, owner='bus')
         V.text(x, y + 16, str(n), size=10, anchor='middle', cls='buswidth')
 
 
@@ -3635,7 +5514,7 @@ def view_ctle(cell):
         xR = AX + side * 260       # gate resistor x
         A_ = ai(o); P_ = pl(o); Rg = gate_r[el(cell, A_)['terms']['g']]
         # gate resistor from VDD to the active-inductor gate
-        rr = res(V, 'R_' + Rg, xR, 110, 'v', name=Rg, size=el(cell, Rg)['value'], a=T(Rg, 'p' if el(cell, Rg)['terms']['p'] == 'VDD' else 'n'),
+        rr = res(V, 'R_' + Rg, xR, 110, 'v', name=Rg, size=fmt_si(el(cell, Rg)['value']), a=T(Rg, 'p' if el(cell, Rg)['terms']['p'] == 'VDD' else 'n'),
                  b=T(Rg, 'n' if el(cell, Rg)['terms']['p'] == 'VDD' else 'p'), label_side='left' if side < 0 else 'right', members=[Rg])
         V.wire([(xR, 70), (xR, 80)], cls='power'); V.dot(xR, 70)
         tA, bA, gA = mosT(cell, A_)
@@ -3685,10 +5564,10 @@ def view_ctle(cell):
     rfix = [m for m in deg_r if el(cell, m)['kind'] == 'res']
     rsw = [m for m in deg_r if el(cell, m)['kind'] == 'mos']
     single = [m for m in rsw if not re.search(r'C\d', el(cell, m)['terms']['g'])]
-    lines = ['R_S (가변 R) = %s %sΩ ∥ 스위치 MOS 묶음 %s' % (', '.join(rfix), ', '.join(el(cell, m)['value'] for m in rfix),
+    lines = ['R_S (가변 R) = %s %sΩ ∥ 스위치 MOS 묶음 %s' % (', '.join(rfix), ', '.join(fmt_si(el(cell, m)['value']) for m in rfix),
                                                     ', '.join('%s(%s)' % (m, wl(cell, m)) for m in rsw[:3])),
              '      ∥ 직렬 스위치 쌍 %s' % ', '.join('%s(%s)' % (m, wl(cell, m)) for m in rsw[3:]),
-             'C_S (고정 C) = %s = %s (스위치와 직렬 아님 → 고정, Q1)' % (' ∥ '.join(deg_c), ' + '.join(el(cell, m)['value'] for m in deg_c))]
+             'C_S (고정 C) = %s = %s (스위치와 직렬 아님 → 고정, Q1)' % (' ∥ '.join(deg_c), ' + '.join(fmt_si(el(cell, m)['value']) for m in deg_c))]
     V.notes.append('R_S 스위치 게이트 %s: 일반 제어 → 그리지 않음 (가변 화살표가 "조절 가능"을 뜻함)' % ', '.join(sorted({el(cell, m)['terms']['g'] for m in rsw})))
     legend(V, 60, 585, lines)
     V.symmetry.append({'axis': AX, 'orient': 'v', 'pairs': [[ai(oP), ai(oN)], [pl(oP), pl(oN)], [mP, mN], [tails[sP], tails[sN]],
@@ -3799,6 +5678,8 @@ def view_multipair(cell, vid, kind):
             stub_label(V, gp, bn, 'left' if side < 0 else 'right', cls='data', L=24)
         else:
             V.wire([(gp['x'], yM), (gp['x'] + side * 24, yM)], cls='data')
+            if re.search(r'<\d+:\d+>', bn):
+                busslash(V, gp['x'] + side * 12, yM, bn, len(devs), vertical=False)     # merged gates = bus (plan §3.5-2)
             V.port(bn, gp['x'] + side * 24, yM, d='right' if side < 0 else 'left', io='in')
     # tails
     V.wire([(xPm, yM + 30), (xPm, yM + 50), (xNm, yM + 50), (xNm, yM + 30)], cls='plain')
@@ -3845,7 +5726,7 @@ def view_multipair(cell, vid, kind):
         vs['info']['bus_order'] = busnets
         bx = A2 + 40
         V.wire([(bx, yM + 110), (A2 + 170, yM + 110)], cls='bus')
-        busslash(V, A2 + 110, yM + 110, len(busnets), vertical=False)
+        busslash(V, A2 + 110, yM + 110, bn, len(busnets), vertical=False)
         V.port(bn, A2 + 170, yM + 110, d='left', io='in', cls='bus')
         dsub = cells[dac_cell]
         dr = ROLES[dac_cell]
@@ -3853,16 +5734,31 @@ def view_multipair(cell, vid, kind):
         lines = ['%s 탭 쌍 %d개 병합 (게이트 %s / %s), W/L 나열' % (mname(exP), n, busname(exP), busname(exN)),
                  '가변 전류원 = %s (%s ×%d, 전류 DAC): 스위치 %s %s, 전류원 %s %s' % (mname(allmem), dac_cell, len(allmem), '/'.join(sw), wl(dac_cell, sw)[0] if isinstance(wl(dac_cell, sw), list) else wl(dac_cell, sw),
                                                                                     '/'.join(cs), ' '.join(wl(dac_cell, cs)) if isinstance(wl(dac_cell, cs), list) else wl(dac_cell, cs)),
-                 '중요 제어 %s (%db, DFE 탭 계수) = 가변 전류원으로 들어가는 버스' % (bn, len(busnets))]
+                 '중요 제어 %s (%db, %s, DFE 탭 계수) = 가변 전류원으로 들어가는 버스' % (bn, len(busnets), A['control_info'][A['l2g'][pre][busnets[0]]]['K'])]
         V.notes.append('DAC 바이어스 입력 %s 는 그리지 않음 (바이어스)' % ', '.join(sorted({nn for m in allmem for p, nn in el(cell, m)['pins'].items() if 'bias' in CN[cell].get(nn, [])})))
     else:
         sws = [m for m in allmem if r[m]['role'] == 'switch']
         css = [m for m in allmem if r[m]['role'] != 'switch']
-        vs = visrc(V, 'ISRC', A2, yM + 110, name=mname(css).replace('MB', 'I'), size='', top=topT, bot=botT, members=allmem, label_side='left')
+        # gain-code switches whose gate is an important control (K6): the code enters the concept symbol as a bus (plan §3.4-4)
+        ctl = [m for m in sws if 'important_control' in CN[cell].get(el(cell, m)['terms']['g'], [])]
+        gnets = [el(cell, m)['terms']['g'] for m in ctl]
+        gbus = group_bus(gnets)[0] if ctl else None
+        bus_terms = [[(ctl[gnets.index(b)], 'g')] for b in gbus[1]] if ctl else None
+        vs = visrc(V, 'ISRC', A2, yM + 110, name=mname(css).replace('MB', 'I'), size='', top=topT, bot=botT, bus=bus_terms,
+                   bus_side='right', members=allmem, label_side='left')
         lines = ['%s 이득 쌍 %d개 병합 (게이트 = 주 쌍과 같은 %s/%s)' % (mname(exP), n, busname(exP), busname(exN)),
                  '가변 전류원 = 스위치 %s (%s) + 전류원 %s (%s)' % (mname(sws), ', '.join(wl(cell, sws)), mname(css), ', '.join(wl(cell, css)))]
-        V.notes.append('이득 스위치 게이트 %s: 일반 제어(이득) → 그리지 않음 (가변 화살표로 표시); 전류원 게이트 %s: 바이어스' % (
-            ', '.join(el(cell, m)['terms']['g'] for m in sws), ', '.join(sorted({el(cell, m)['terms']['g'] for m in css}))))
+        if ctl:
+            gk = A['control_info'][A['l2g'][pre][gnets[0]]]['K']
+            V.wire([(A2 + 40, yM + 110), (A2 + 170, yM + 110)], cls='bus')
+            busslash(V, A2 + 110, yM + 110, gbus[0], len(gbus[1]), vertical=False)
+            V.port(gbus[0], A2 + 170, yM + 110, d='left', io='in', cls='bus')
+            lines.append('중요 제어 %s (%s, 이득 코드 — 출력을 여러 비트 경로가 공유) = 가변 전류원으로 들어가는 버스' % (gbus[0], gk))
+            V.notes.append('이득 스위치 게이트 %s: 중요 제어 %s → 가변 전류원의 버스 핀으로 그림; 전류원 게이트 %s: 바이어스(회색 이름표 없음, 묶음 안)' % (
+                gbus[0], gk, ', '.join(sorted({el(cell, m)['terms']['g'] for m in css}))))
+        else:
+            V.notes.append('이득 스위치 게이트 %s: 일반 제어(이득) → 그리지 않음 (가변 화살표로 표시); 전류원 게이트 %s: 바이어스' % (
+                ', '.join(el(cell, m)['terms']['g'] for m in sws), ', '.join(sorted({el(cell, m)['terms']['g'] for m in css}))))
     gnd_at(V, A2, yM + 140)
     legend(V, 60, 520, lines)
     V.symmetry.append({'axis': A1, 'orient': 'v', 'pairs': [[loadP, loadN], [main[0], main[1]]], 'self': [mtail], 'x0': 150, 'x1': A1 + (A1 - 150),
@@ -3901,7 +5797,7 @@ def view_strongarm(cell, members):
     rsD = {o: [m for m in resets if o in (E(m)['terms']['d'], E(m)['terms']['s'])][0] for o in (dP, dN)}
     odd = [m for m in members if m not in [tail, iP, iN, cnP, cnN, cpP, cpN] + resets]
     clk = E(tail)['terms']['g']
-    V = new_view('u_strongarm', cell, 'unit', '%s — unit level (StrongARM core, 대칭)' % cell, 820, 700,
+    V = new_view(VID['sa_core'], cell, 'unit', '%s — unit level (StrongARM core, 대칭)' % cell, 820, 700,
                  scope=members)
     AX = 410; L, R = 330, 490
     rail(V, 180, 640, 60, 'VDD')
@@ -3932,7 +5828,7 @@ def view_strongarm(cell, members):
         xe = x + side * 190
         V.wire([(xe, 180), (x, 180)], cls='data'); V.dot(x, 180)
         V.wire([(xr, 160), (xr, 180)], cls='data'); V.dot(xr, 180)
-        V.netlabel(o, xe, 180, tx=xe + (2 if side < 0 else -2), ty=172, anchor='start' if side < 0 else 'end')
+        offpage(V, o, xe, 180, d='left' if side < 0 else 'right')
         # reset of DP/DN (local VDD)
         m = rsD[d]
         t_, b_, g_ = mosT(cell, m)
@@ -4089,7 +5985,7 @@ def view_cml_buffer(cell, members, vid):
         V.wire([(x, 170), (x, 270)], cls='clock')
         xe = AX + side * 250
         V.wire([(xe, 220), (x, 220)], cls='clock'); V.dot(x, 220)
-        V.netlabel(o, xe, 220, tx=xe + (2 if side < 0 else -2), ty=211, anchor='start' if side < 0 else 'end')
+        offpage(V, o, xe, 220, d='left' if side < 0 else 'right')
         gx = mi['pins'][2]['x']
         V.wire([(gx, 300), (gx + side * 60, 300)], cls='clock')
         V.port(E(inp)['terms']['g'], gx + side * 60, 300, d='right' if side < 0 else 'left', io='in', cls='clock')
@@ -4189,14 +6085,14 @@ def view_tg(cell, groups, vid):
         V.wire([(xn, 230), (xn, 270), (xp, 270), (xp, 230)], cls='data')
         V.dot(cx, 130); V.dot(cx, 270)
         V.wire([(cx, 130), (cx, 100)], cls='data')
-        V.netlabel(a, cx, 100, tx=cx, ty=90, anchor='middle')
+        offpage(V, a, cx, 100, d='up')
         V.wire([(cx, 270), (cx, 310)], cls='data')
         V.port(b, cx, 310, d='down', io='out')
         gxn = xn - 40 if xn < cx else xn + 40
         V.wire([(gxn, 200), (gxn, 225)], cls='power'); gnd(V, gxn, 225, E(nm)['terms']['g'])
         gxp = xp + 40 if xp > cx else xp - 40
         V.wire([(gxp, 200), (gxp, 175)], cls='power'); vdd_tee(V, gxp, 175, E(pm)['terms']['g'])
-    V.text(40, 400, '두 TG 모두 NMOS 게이트=VSS, PMOS 게이트=VDD → 항상 OFF. O_DOUTP/N 은 사실상 떠 있음 (Q3).', size=11, color='#a33', cls='note')
+    V.text(40, 400, '두 TG 모두 NMOS 게이트=VSS, PMOS 게이트=VDD → 항상 OFF. O_DOUTP/N 은 구동원 없음(미구동, §2.3-13, Q3).', size=11, color='#a33', cls='note')
     V.symmetry.append({'axis': 380, 'orient': 'v', 'pairs': [[groups[0][0], groups[1][0]], [groups[0][1], groups[1][1]]], 'self': [], 'x0': 60, 'x1': 700, 'exempt_wires': []})
     V.omitted = []
     return V
@@ -4234,7 +6130,7 @@ def view_nand(cell):
     ps.sort(key=lambda m: ports.index(E(m)['terms']['g']))
     y = [n for n in E(ps[0])['terms'].values() if n in ports and n not in ('VDD', 'VSS') and n != E(ps[0])['terms']['g']][0]
     nTop = [m for m in ns if y in E(m)['terms'].values()][0]; nBot = [m for m in ns if m != nTop][0]
-    V = new_view('u_nand', cell, 'unit', '%s — unit level (정적 CMOS 게이트, 사전에 없음 → 소자 그대로)' % cell, 560, 520)
+    V = new_view('u_nand', cell, 'unit', '%s — unit level (정적 CMOS %s)' % (cell, A['block'][cell]['role'].upper()), 560, 520)
     rail(V, 160, 420, 70, 'VDD')
     xs = [220, 340]
     for x, m in zip(xs, ps):
@@ -4283,10 +6179,11 @@ def view_top(cell):
     # input ports + termination/ESD markers
     V.port(P, 110, yP, d='right', io='in'); V.port(N, 110, yN, d='right', io='in')
     term = [g for g in groups if g['role'].startswith('termination')][0]
-    term_marker(V, 'TERM_P', 160, yP, True, 'R_T 50Ω', [[(m, t) for m in term['members'] for t, n in el(cell, m)['terms'].items() if n == P and t != 'b']], esd=True,
-                link='u_rxterm', members=term['members'])
-    term_marker(V, 'TERM_N', 160, yN, False, 'R_T 50Ω', [[(m, t) for m in term['members'] for t, n in el(cell, m)['terms'].items() if n == N and t != 'b']], esd=True,
-                link='u_rxterm', members=[])
+    rt = 'R_T %sΩ' % fmt_si([el(cell, m)['value'] for m in term['members'] if el(cell, m)['kind'] == 'res'][0])
+    term_marker(V, 'TERM_P', 160, yP, True, rt, [[(m, t) for m in term['members'] for t, n in el(cell, m)['terms'].items() if n == P and t != 'b']], esd=True,
+                link=VID['top_term'], members=term['members'])
+    term_marker(V, 'TERM_N', 160, yN, False, rt, [[(m, t) for m in term['members'] for t, n in el(cell, m)['terms'].items() if n == N and t != 'b']], esd=True,
+                link=VID['top_term'], members=[])
     V.dot(160, yP); V.dot(160, yN)
     V.wire([(160, yP), (160, yP - 12)], cls='data'); V.wire([(160, yN), (160, yN + 12)], cls='data')
     # chain of amplifier stages from the HS input: follow instance connectivity
@@ -4305,9 +6202,21 @@ def view_top(cell):
     for k, (i, a, b_, o1, o2) in enumerate(chain):
         e = insts[i]
         lab = {'ctle': 'CTLE', 'vga': 'VGA', 'cml_buffer': 'BUF'}[B[e['cell']]['role']]
+        bub, pm = polarity_marks(e['cell'], [(a, a), (b_, b_)], [(o1, o1), (o2, o2)])
+        # important control of the stage (e.g. the shared gain code, K6) enters from the top (plan §3.2-3, V18)
+        ictl = [p for p in sp if 'important_control' in CN[e['cell']].get(p, [])]
+        topp = []
+        if ictl:
+            gbn, gbits, _ = group_bus(ictl)[0]
+            topp = [(gbn, 30, [[(i, q)] for q in gbits], 'bus')]
         tri(V, i, x0, 160, lab, i, ins=[(a, -10, inst_terms(i, a)), (b_, 10, inst_terms(i, b_))],
             outs=[(o1, -10, inst_terms(i, o1)), (o2, 10, inst_terms(i, o2))], link={'ctle': 'u_ctle', 'vga': 'u_vga'}[B[e['cell']]['role']],
-            members=[i], sub=e['cell'])
+            members=[i], sub=e['cell'], top=topp, bubbles=bub, pm=pm)
+        if ictl:
+            gx, gy = x0 + 30, 160 - 45 - 20
+            V.wire([(gx, 50), (gx, gy)], cls='bus')
+            V.port(gbn, gx, 50, d='down', io='in', cls='bus', label_side='right')
+            busslash(V, gx, (50 + gy) / 2, gbn, len(gbits))
         if prev is None:
             V.wire([(110, yP), (x0 - 20, yP)], cls='data'); V.wire([(110, yN), (x0 - 20, yN)], cls='data')
         else:
@@ -4349,8 +6258,9 @@ def view_top(cell):
         lefts = [(left_main[0], y0 + 25), (left_main[1], y0 + 45)] + [(p, y0 + 85 + 20 * k) for k, p in enumerate(fb_in)]
         rights = [(p, y0 + 25 + 20 * k + (20 if k >= 2 else 0)) for k, p in enumerate(outs_s)]
         h = max(y for _, y in lefts) - y0 + 25
+        sbub, _ = polarity_marks(scell, [(left_main[0], left_main[0]), (left_main[1], left_main[1])], [(p, p) for p in outs_s])
         sym = box(V, si, bx, y0, bw, h, scell, si, left=[(p, y, inst_terms(si, p), 'data') for p, y in lefts],
-                  right=[(p, y, inst_terms(si, p), 'data') for p, y in rights],
+                  right=[(p, y, inst_terms(si, p), 'data') for p, y in rights], bubbles=sbub,
                   bottom=[(clocks[0], bx + 60, inst_terms(si, clocks[0]), 'clock'), (clocks[1], bx + 120, inst_terms(si, clocks[1]), 'clock')],
                   top=[('W<4:1>_<3:0>', bx + 200, [[(si, p)] for p in bus], 'bus')], link='b_slice', members=[si])
         pinpos[si] = {p['name']: p for p in sym['pins']}
@@ -4383,9 +6293,10 @@ def view_top(cell):
     wp = pinpos[s0]['W<4:1>_<3:0>']
     V.wire([(wp['x'], 50), (wp['x'], wp['y'])], cls='bus')
     V.port(bnm, wp['x'], 50, d='down', io='in', cls='bus', label_side='right')
-    busslash(V, wp['x'], 78, len(bus))
+    busslash(V, wp['x'], 78, bnm, len(bus))
     wp1 = pinpos[s1]['W<4:1>_<3:0>']
-    stub_label(V, wp1, bnm, 'up', cls='bus', L=20, side='right')
+    stub_label(V, wp1, bnm, 'up', cls='bus', L=30, side='right')
+    busslash(V, wp1['x'], wp1['y'] - 12, bnm, len(bus))        # plan §3.5-1: a bus label carries the bus mark too
     # TG (always-off) between the odd slice output and O_DOUT
     tg = [g for g in groups if g['role'] == 'tg']
     e1 = insts[s1]
@@ -4400,7 +6311,7 @@ def view_top(cell):
         yc = pp['y'] - 40 if up else pp['y'] + 40
         ta = [[(m, t) for m in g['members'] for t in ('d', 's') if el(cell, m)['terms'][t] == (inner if up else portnet)]]
         tb_ = [[(m, t) for m in g['members'] for t in ('d', 's') if el(cell, m)['terms'][t] == (portnet if up else inner)]]
-        switch_open(V, 'TG%d' % k, xt, yc, 'v', ta, tb_, 'TG', '/'.join(g['members']) + ' (off)', link='u_tg', members=g['members'])
+        switch_open(V, 'TG%d' % k, xt, yc, 'v', ta, tb_, 'TG', '/'.join(g['members']) + ' (off)', link=VID['top_tg'], members=g['members'])
         if up:
             V.wire([(xt, yc + 30), (xt, pp['y'])], cls='data'); V.dot(xt, pp['y'])
             stub_label(V, {'x': xt, 'y': yc - 30}, inner, 'up', L=16, side='right')
@@ -4413,8 +6324,10 @@ def view_top(cell):
     cin = [p for p in cp if 'clock' in CN[ce['cell']][p] and ce['pins'][p] in c['ports']]
     cout = [p for p in cp if 'clock' in CN[ce['cell']][p] and p not in cin]
     bx0, by0 = 380, 630
+    cbub, _ = polarity_marks(ce['cell'], [(p, p) for p in cin], [(p, p) for p in cout])
     sym = box(V, ck, bx0, by0, 200, 140, ce['cell'], ck, left=[(p, by0 + 40 + 20 * k, inst_terms(ck, p), 'clock') for k, p in enumerate(cin)],
-              right=[(p, by0 + 40 + 20 * k + (20 if k >= 2 else 0), inst_terms(ck, p), 'clock') for k, p in enumerate(cout)], link='b_clk', members=[ck])
+              right=[(p, by0 + 40 + 20 * k + (20 if k >= 2 else 0), inst_terms(ck, p), 'clock') for k, p in enumerate(cout)], link='b_clk', members=[ck],
+              bubbles=cbub)
     for p in sym['pins']:
         if p['name'] in cin:
             V.wire([(110, p['y']), (p['x'], p['y'])], cls='clock')
@@ -4425,7 +6338,7 @@ def view_top(cell):
     om = []
     for i, e in insts.items():
         if B[e['cell']]['symbol'] == 'omit':
-            om.append({'block': i, 'cell': e['cell'], 'reason': '고속 신호와 연결 없음 (%s)' % B[e['cell']]['role']})
+            om.append({'block': i, 'cell': e['cell'], 'reason': '고속 신호와 무관'})
     V.omitted = hidden_list(cell) + om
     V.text(40, 800, '연결 규칙: 블록을 돌아가야 하는 넷(귀환 탭, 클럭 분배, 두 번째 슬라이스의 계수 버스)은 같은 이름의 넷 이름표로 연결 (Virtuoso 방식)', size=10, color='#555', cls='note')
     return V
@@ -4451,34 +6364,37 @@ def view_slice(cell):
     taps = [p for p in sports if 'data' in CN[se['cell']].get(p, []) and p not in main_in and p not in souts]
     bus = [p for p in sports if 'important_control' in CN[se['cell']].get(p, [])]
     # summer box
-    sx, sy, sw, sh = 200, 150, 200, 110
-    sym = box(V, summ, sx, sy, sw, sh, 'Σ', summ, left=[(main_in[0], 200, inst_terms(summ, main_in[0]), 'data'), (main_in[1], 220, inst_terms(summ, main_in[1]), 'data')],
+    tap_y = [260 + 20 * k for k in range(len(taps))]
+    sx, sy, sw = 200, 150, 200
+    sh = tap_y[-1] + 20 - sy
+    sym = box(V, summ, sx, sy, sw, sh, 'Σ', summ, left=[(main_in[0], 200, inst_terms(summ, main_in[0]), 'data'), (main_in[1], 220, inst_terms(summ, main_in[1]), 'data')]
+              + [(p, y, inst_terms(summ, p), 'data') for p, y in zip(taps, tap_y)],
               right=[(souts[0], 200, inst_terms(summ, souts[0]), 'data'), (souts[1], 220, inst_terms(summ, souts[1]), 'data')],
-              bottom=[(p, sx + 30 + 20 * k, inst_terms(summ, p), 'data') for k, p in enumerate(taps)],
               top=[('W<4:1>_<3:0>', sx + 100, [[(summ, p)] for p in bus], 'bus')], link='u_summer', members=[summ], big=True, sub=se['cell'])
     pp = {p['name']: p for p in sym['pins']}
     # main inputs
     for k, p in enumerate(main_in):
         V.wire([(110, pp[p]['y']), (pp[p]['x'], pp[p]['y'])], cls='data')
         V.port(se['pins'][p], 110, pp[p]['y'], d='right', io='in')
-    # tap inputs from ports at left-bottom (nested L shapes, no crossing)
+    # tap (feedback) inputs: data pins on the left below the main input (V18), straight from the left ports
     for k, p in enumerate(taps):
-        y = 300 + 20 * k
-        V.wire([(110, y), (pp[p]['x'], y), (pp[p]['x'], pp[p]['y'])], cls='data')
+        y = pp[p]['y']
+        V.wire([(110, y), (pp[p]['x'], y)], cls='data')
         V.port(se['pins'][p], 110, y, d='right', io='in')
     # W bus
     wp = pp['W<4:1>_<3:0>']
     V.wire([(wp['x'], 80), (wp['x'], wp['y'])], cls='bus')
     V.port('W<4:1>_<3:0>', wp['x'], 80, d='down', io='in', cls='bus', label_side='right')
-    busslash(V, wp['x'], 105, len(bus))
+    busslash(V, wp['x'], 105, 'W<4:1>_<3:0>', len(bus))
     # slicer
-    sl = [i for i in insts if rl[i] == 'composite' and insts[i]['pins'].get(cells[insts[i]['cell']]['ports'][0]) == se['pins'][souts[0]]][0]
+    sl = [i for i in insts if rl[i] in ('composite', 'comparator') and insts[i]['pins'].get(cells[insts[i]['cell']]['ports'][0]) == se['pins'][souts[0]]][0]
     le = insts[sl]; lp = cells[le['cell']]['ports']
     lclk = [p for p in lp if 'clock' in CN[le['cell']].get(p, [])]
     louts = [p for p in lp if 'data' in CN[le['cell']].get(p, []) and p not in lp[:2]]
+    sbub, spm = polarity_marks(le['cell'], [(lp[0], lp[0]), (lp[1], lp[1])], [(louts[0], louts[0]), (louts[1], louts[1])])
     tri(V, sl, 520, 210, 'SA', sl, ins=[(lp[0], -10, inst_terms(sl, lp[0])), (lp[1], 10, inst_terms(sl, lp[1]))],
         outs=[(louts[0], -10, inst_terms(sl, louts[0])), (louts[1], 10, inst_terms(sl, louts[1]))],
-        bottom=[(lclk[0], 30, inst_terms(sl, lclk[0]), 'clock')], link='b_sa', members=[sl], clock_mark=True, sub=le['cell'])
+        bottom=[(lclk[0], 30, inst_terms(sl, lclk[0]), 'clock')], link='b_sa', members=[sl], clock_mark=True, sub=le['cell'], bubbles=sbub, pm=spm)
     for k, p in enumerate(souts):
         y = pp[p]['y']
         V.wire([(420, y), (500, y)], cls='data')
@@ -4497,7 +6413,8 @@ def view_slice(cell):
         ck = [p for p in ip if CN[e['cell']].get(p, []) == ['clock']]
         qo = [p for p in ip if ('data' in CN[e['cell']].get(p, []) or 'clock' in CN[e['cell']].get(p, [])) and p not in ip[:2] and p not in ck]
         lab = 'LATCH' if rl[i] == 'latch' else 'DFF'
-        sym = box(V, i, x, 160, 100, 100, lab, i, left=[(ip[0], 200, inst_terms(i, ip[0]), 'data'), (ip[1], 220, inst_terms(i, ip[1]), 'data')],
+        lbub, _ = polarity_marks(e['cell'], [(ip[0], ip[0]), (ip[1], ip[1])], [(qo[0], qo[0]), (qo[1], qo[1])])
+        sym = box(V, i, x, 160, 100, 100, lab, i, bubbles=lbub, left=[(ip[0], 200, inst_terms(i, ip[0]), 'data'), (ip[1], 220, inst_terms(i, ip[1]), 'data')],
                   right=[(qo[0], 200, inst_terms(i, qo[0]), 'data'), (qo[1], 220, inst_terms(i, qo[1]), 'data')],
                   bottom=[(ck[0], x + 30, inst_terms(i, ck[0]), 'clock'), (ck[1], x + 70, inst_terms(i, ck[1]), 'clock')],
                   link='u_latch' if rl[i] == 'latch' else 'b_dff', members=[i], sub=e['cell'])
@@ -4563,8 +6480,9 @@ def view_clk(cell):
     V.port(cin[0], 110, yP, d='right', io='in', cls='clock'); V.port(cin[1], 110, yN, d='right', io='in', cls='clock')
     term = [g for g in groups if g['role'] == 'termination'][0]
     tm = lambda net: [[(m, t) for m in term['members'] for t, n in el(cell, m)['terms'].items() if n == net]]
-    term_marker(V, 'TERM_P', 160, yP, True, 'R_T 50Ω', tm(cin[0]), link='u_clkterm', members=term['members'])
-    term_marker(V, 'TERM_N', 160, yN, False, 'R_T 50Ω', tm(cin[1]), link='u_clkterm', members=[])
+    rt = 'R_T %sΩ' % fmt_si([el(cell, m)['value'] for m in term['members'] if el(cell, m)['kind'] == 'res'][0])
+    term_marker(V, 'TERM_P', 160, yP, True, rt, tm(cin[0]), link=VID['clk_term'], members=term['members'])
+    term_marker(V, 'TERM_N', 160, yN, False, rt, tm(cin[1]), link=VID['clk_term'], members=[])
     V.dot(160, yP); V.dot(160, yN)
     V.wire([(160, yP), (160, yP - 12)], cls='clock'); V.wire([(160, yN), (160, yN + 12)], cls='clock')
     buf = [g for g in groups if g['role'] == 'cml_buffer'][0]
@@ -4574,8 +6492,9 @@ def view_clk(cell):
     oP = E(ins[0])['terms'][topbot(cell, ins[0])[0]]; oN = E(ins[1])['terms'][topbot(cell, ins[1])[0]]
     def gt(net):
         return [[(m, t) for m in bm for t, n in E(m)['terms'].items() if n == net and t != 'b']]
-    tri(V, 'BUF', 240, 210, 'BUF', '', ins=[('INP', -10, gt(cin[0])), ('INN', 10, gt(cin[1]))], outs=[(oP, -10, gt(oP)), (oN, 10, gt(oN))],
-        link='u_clkbuf', members=bm, sub='CML buffer (MP/MN_B1*, MB_B1)', cls='clock')
+    bbub, bpm = polarity_marks(cell, [(cin[0], cin[0]), (cin[1], cin[1])], [(oP, oP), (oN, oN)], members=set(bm), group_role='cml_buffer')
+    tri(V, 'BUF', 240, 210, 'BUF', '', ins=[(cin[0], -10, gt(cin[0])), (cin[1], 10, gt(cin[1]))], outs=[(oP, -10, gt(oP)), (oN, 10, gt(oN))],
+        link=VID['clk_buf'], members=bm, sub='CML buffer (MP/MN_B1*, MB_B1)', cls='clock', bubbles=bbub, pm=bpm, vblock=True)
     V.wire([(110, yP), (220, yP)], cls='clock'); V.wire([(110, yN), (220, yN)], cls='clock')
     # latches: master fed by buffer output
     lat = [i for i in insts if rl[i] == 'latch']
@@ -4588,7 +6507,8 @@ def view_clk(cell):
     me = insts[m_]; se_ = insts[s_]
     for i, x in ((m_, 460), (s_, 700)):
         e = insts[i]
-        box(V, i, x, 160, 100, 100, 'LATCH', i, left=[(lp[0], 200, inst_terms(i, lp[0]), 'clock'), (lp[1], 220, inst_terms(i, lp[1]), 'clock')],
+        lbub, _ = polarity_marks(e['cell'], [(lp[0], lp[0]), (lp[1], lp[1])], [(lq[0], lq[0]), (lq[1], lq[1])])
+        box(V, i, x, 160, 100, 100, 'LATCH', i, bubbles=lbub, left=[(lp[0], 200, inst_terms(i, lp[0]), 'clock'), (lp[1], 220, inst_terms(i, lp[1]), 'clock')],
             right=[(lq[0], 200, inst_terms(i, lq[0]), 'clock'), (lq[1], 220, inst_terms(i, lq[1]), 'clock')],
             bottom=[(lck[0], x + 30, inst_terms(i, lck[0]), 'clock'), (lck[1], x + 70, inst_terms(i, lck[1]), 'clock')], link='u_latch', members=[i],
             sub=e['cell'])
@@ -4603,9 +6523,10 @@ def view_clk(cell):
         if ys == ytarget:
             V.wire([(340, ys), (440, ys)], cls='clock')
         else:
-            V.wire([(340, ys), (380, ys)], cls='clock')
+            # plan §1.4-7: line ends of different nets on one straight line stay >= 40 px apart
+            V.wire([(340, ys), (360, ys)], cls='clock')
             stub_label(V, {'x': 440, 'y': ytarget}, net, 'left', cls='clock', L=40)
-    V.netlabel(oP, 350, yP, tx=352, ty=yP - 8, anchor='start'); V.netlabel(oN, 350, yN, tx=352, ty=yN + 9, anchor='start')
+    V.netlabel(oP, 350, yP, tx=342, ty=yP - 8, anchor='start'); V.netlabel(oN, 350, yN, tx=342, ty=yN + 9, anchor='start')
     # master Q -> slave D, branches to ports + INV chains
     invs = [i for i in insts if rl[i] == 'inverter']
     def chain_from(net):
@@ -4656,7 +6577,7 @@ def view_clk(cell):
                 V.wire([(xx - 40, yi), (xx - 20, yi)], cls='clock')
             xx += 102
         stub_label(V, {'x': xx - 40, 'y': yi}, endnet, 'right', cls='clock', L=24, side='above' if up else 'below')
-    V.text(40, 455, '주의: 이름은 DIV(÷2)이지만 구조상 귀환 루프 없음 → LATCH 2개 직렬로 그대로 그림 (Q2). INV 체인 출력은 연결 없음 (Q6).', size=10, color='#a33', cls='note')
+    V.text(40, 455, '주의: 이름은 DIV(÷2)이지만 구조상 귀환 루프 없음 → LATCH 2개 직렬로 그대로 그림 (Q2). INV 체인 출력은 연결 없음 — 미사용 출력, 짧은 선 + 이름표 (§3.5-4).', size=10, color='#a33', cls='note')
     V.omitted = hidden_list(cell)
     return V
 
@@ -4686,14 +6607,16 @@ def view_sa_block(cell, core_members):
         return [[(m, t) for m in core_members for t, n in E(m)['terms'].items() if n == net and t != 'b']]
     inP, inN = E(ins[0])['terms']['g'], E(ins[1])['terms']['g']
     ck = E(clk)['terms']['g']
+    cbub, cpm = polarity_marks(cell, [(inP, inP), (inN, inN)], [(outs[0], outs[0]), (outs[1], outs[1])], members=set(core_members), group_role='strongarm')
     tri(V, 'SA_CORE', 200, 210, 'SA', 'StrongARM core', ins=[(inP, -10, gt(inP)), (inN, 10, gt(inN))], outs=[(outs[0], -10, gt(outs[0])), (outs[1], 10, gt(outs[1]))],
-        bottom=[(ck, 30, gt(ck), 'clock')], link='u_strongarm', members=core_members, clock_mark=True)
+        bottom=[(ck, 30, gt(ck), 'clock')], link=VID['sa_core'], members=core_members, clock_mark=True, bubbles=cbub, pm=cpm, vblock=True)
     V.wire([(110, 200), (180, 200)], cls='data'); V.port(inP, 110, 200, d='right', io='in')
     V.wire([(110, 220), (180, 220)], cls='data'); V.port(inN, 110, 220, d='right', io='in')
     V.wire([(230, 275), (230, 300)], cls='clock'); V.port(ck, 230, 300, d='up', io='in', cls='clock')
     srq = [p for p in srp if 'data' in CN[insts[sr]['cell']][p] and insts[sr]['pins'][p] not in outs]
+    rbub, _ = polarity_marks(insts[sr]['cell'], [(srp[0], srp[0]), (srp[1], srp[1])], [(srq[0], srq[0]), (srq[1], srq[1])])
     box(V, sr, 380, 160, 110, 100, insts[sr]['cell'], sr, left=[(srp[0], 200, inst_terms(sr, srp[0]), 'data'), (srp[1], 220, inst_terms(sr, srp[1]), 'data')],
-        right=[(srq[0], 200, inst_terms(sr, srq[0]), 'data'), (srq[1], 220, inst_terms(sr, srq[1]), 'data')], link='b_sr', members=[sr])
+        right=[(srq[0], 200, inst_terms(sr, srq[0]), 'data'), (srq[1], 220, inst_terms(sr, srq[1]), 'data')], link='b_sr', members=[sr], bubbles=rbub)
     for k, n in enumerate(outs):
         y = 200 + 20 * k
         V.wire([(300, y), (360, y)], cls='data')
@@ -4707,7 +6630,7 @@ def view_sa_block(cell, core_members):
         iv = [i for i in invs if insts[i]['pins']['A'] == net][0]
         inv(V, iv, 600, yi, iv, inst_terms(iv, 'A'), inst_terms(iv, 'Y'), link='u_inv', members=[iv], flip_label=up)
         stub_label(V, {'x': 662, 'y': yi}, insts[iv]['pins']['Y'], 'right', L=30, side='above' if up else 'below')
-    V.text(40, 370, '출력 버퍼 %s 의 출력은 연결 없음 (Q6)' % ', '.join(invs), size=10, color='#555', cls='note')
+    V.text(40, 370, '출력 버퍼 %s 의 출력은 연결 없음 — 미사용 출력, 짧은 선 + 이름표 (§3.5-4)' % ', '.join(invs), size=10, color='#555', cls='note')
     V.omitted = hidden_list(cell)
     return V
 
@@ -4723,7 +6646,8 @@ def view_dff(cell):
     m_ = [e for e in insts if e['pins'][lp[0]] in cp][0]; s_ = [e for e in insts if e is not m_][0]
     V = new_view('b_dff', cell, 'block', '%s — 블록 레벨 (master-slave)' % cell, 760, 420)
     for e, x in ((m_, 200), (s_, 420)):
-        box(V, e['name'], x, 160, 100, 100, 'LATCH', e['name'], left=[(lp[0], 200, inst_terms(e['name'], lp[0]), 'data'), (lp[1], 220, inst_terms(e['name'], lp[1]), 'data')],
+        lbub, _ = polarity_marks(sub, [(lp[0], lp[0]), (lp[1], lp[1])], [(lq[0], lq[0]), (lq[1], lq[1])])
+        box(V, e['name'], x, 160, 100, 100, 'LATCH', e['name'], bubbles=lbub, left=[(lp[0], 200, inst_terms(e['name'], lp[0]), 'data'), (lp[1], 220, inst_terms(e['name'], lp[1]), 'data')],
             right=[(lq[0], 200, inst_terms(e['name'], lq[0]), 'data'), (lq[1], 220, inst_terms(e['name'], lq[1]), 'data')],
             bottom=[(lck[0], x + 30, inst_terms(e['name'], lck[0]), 'clock'), (lck[1], x + 70, inst_terms(e['name'], lck[1]), 'clock')], link='u_latch',
             members=[e['name']], sub=sub)
@@ -4763,12 +6687,14 @@ def view_sr(cell):
     sub = insts[0]['cell']; gp = cells[sub]['ports']
     gin = [p for p in gp if 'data' in CN[sub][p]][:2]; gout = [p for p in gp if 'data' in CN[sub][p]][2]
     x1 = [e for e in insts if e['pins'][gin[0]] == cp[0]][0]; x2 = [e for e in insts if e is not x1][0]
-    V = new_view('b_sr', cell, 'block', '%s — 블록 레벨 (교차 결합 게이트; 사전에 없음 → 박스)' % cell, 640, 420)
-    # x1 on top (A upper, B lower); x2 mirrored (B upper, A lower)
+    V = new_view('b_sr', cell, 'block', '%s — 블록 레벨 (교차 결합 %s)' % (cell, sub), 640, 420)
+    # x1 on top (A upper, B lower); x2 mirrored (B upper, A lower); NAND output bubble from the structural polarity (§3.4-6)
+    nb1, _ = polarity_marks(sub, [(gin[0], gin[0]), (gin[1], gin[1])], [(gout, gout)])
+    nb2, _ = polarity_marks(sub, [(gin[1], gin[1]), (gin[0], gin[0])], [(gout, gout)])
     box(V, x1['name'], 250, 130, 90, 70, sub, x1['name'], left=[(gin[0], 150, inst_terms(x1['name'], gin[0]), 'data'), (gin[1], 180, inst_terms(x1['name'], gin[1]), 'data')],
-        right=[(gout, 165, inst_terms(x1['name'], gout), 'data')], link='u_nand', members=[x1['name']])
+        right=[(gout, 165, inst_terms(x1['name'], gout), 'data')], link='u_nand', members=[x1['name']], bubbles=nb1)
     box(V, x2['name'], 250, 260, 90, 70, sub, x2['name'], left=[(gin[1], 280, inst_terms(x2['name'], gin[1]), 'data'), (gin[0], 310, inst_terms(x2['name'], gin[0]), 'data')],
-        right=[(gout, 295, inst_terms(x2['name'], gout), 'data')], link='u_nand', members=[x2['name']])
+        right=[(gout, 295, inst_terms(x2['name'], gout), 'data')], link='u_nand', members=[x2['name']], bubbles=nb2)
     V.wire([(110, 150), (230, 150)], cls='data'); V.port(x1['pins'][gin[0]], 110, 150, d='right', io='in')
     V.wire([(110, 310), (230, 310)], cls='data'); V.port(x2['pins'][gin[0]], 110, 310, d='right', io='in')
     V.wire([(360, 165), (520, 165)], cls='data'); V.port(x1['pins'][gout], 520, 165, d='right', io='out')
@@ -4796,7 +6722,7 @@ def main():
         if b['role'] == 'ctle':
             view_ctle(c)
         elif b['role'] == 'vga':
-            view_multipair(c, 'u_vga', 'vga')
+            view_multipair(c, VID['vga'], 'vga')
         elif b['role'] == 'summer':
             view_multipair(c, 'u_summer', 'summer')
         elif b['role'] == 'latch':
@@ -4805,9 +6731,9 @@ def main():
             view_dff(c)
         elif b['role'] == 'inverter':
             view_inv(c)
-        elif b['role'] == 'static_cmos_gate':
+        elif b['role'] in ('nand', 'nor', 'static_cmos_gate'):
             view_nand(c)
-        elif b['role'] == 'cross_coupled_gates':
+        elif b['role'] in ('sr_latch', 'cross_coupled_gates'):
             view_sr(c)
     for c, gs in G.items():
         for g in gs:
@@ -4815,17 +6741,19 @@ def main():
                 view_sa_block(c, g['members'])
                 view_strongarm(c, g['members'])
             if g['role'] == 'cml_buffer' and B[c]['role'] == 'composite':
-                view_cml_buffer(c, g['members'], 'u_clkbuf')
+                view_cml_buffer(c, g['members'], VID['clk_buf'])
             if g['role'] == 'termination' and c != top:
-                view_termination(c, g['members'], 'u_clkterm', '%s — unit level (클럭 입력 종단, 소자 그대로)' % c)
+                view_termination(c, g['members'], VID['clk_term'], '%s — unit level (클럭 입력 종단, 소자 그대로)' % c)
             if g['role'] == 'termination_esd':
-                view_termination(c, g['members'], 'u_rxterm', '%s — unit level (입력 종단 + ESD, 소자 그대로)' % c)
+                view_termination(c, g['members'], VID['top_term'], '%s — unit level (입력 종단 + ESD, 소자 그대로)' % c)
         tgs = [g['members'] for g in gs if g['role'] == 'tg']
         if tgs:
-            view_tg(c, tgs, 'u_tg')
-    order_ids = ['b_top', 'b_slice', 'b_clk', 'u_rxterm', 'u_tg', 'u_ctle', 'u_vga', 'u_summer', 'b_sa', 'u_strongarm', 'b_sr', 'u_nand', 'u_inv',
-                 'u_latch', 'b_dff', 'u_clkterm', 'u_clkbuf']
+            view_tg(c, tgs, VID['top_tg'])
+    order_ids = [VID[k] for k in ('top', 'slice', 'clk', 'top_term', 'top_tg', 'ctle', 'vga', 'summer', 'sa', 'sa_core', 'sr', 'nand', 'inv',
+                                  'latch', 'dff', 'clk_term', 'clk_buf')]
     vs = sorted(VIEWS, key=lambda v: order_ids.index(v.id) if v.id in order_ids else 99)
+    for v in vs:
+        finalize_omitted(v)
     out = []
     for v in vs:
         d = dict(v.__dict__)
@@ -4837,11 +6765,11 @@ def main():
 
 if __name__ == '__main__':
     main()
-````
+`````
 
 ### FILE: reference/rx_afe/work/render_html.py
-<!-- sha256=7be17cdfcfc71b9f618e7707931ca3d9c16f61f595be93847e678a2d35c5c5ab newline=1 -->
-````python
+<!-- sha256=28e68ee7a726730e104c03f5e1d9c99a6a0c78640e1d5507323c23cc1acfb28d newline=1 -->
+`````python
 """Single offline HTML: click a block to go down a level, view only, W/L·m toggle, side panel with the omitted list,
 PPTX download (embedded). Usage: render_html.py <workdir> <outdir>"""
 import json, sys, base64, os, html
@@ -4867,7 +6795,8 @@ for v in scenes:
                  'children': sorted({(h['link']) for h in v['hot']})})
 summary = {
     'hs_inputs': ann['hs_inputs'], 'clock_inputs': ann['clock_inputs'], 'hs_outputs': ann['hs_outputs'],
-    'buses': ann.get('_important_control_buses', {}), 'general': ann['_general_controls'], 'bias': ann['_bias'],
+    'buses': ann.get('_important_control_buses', {}), 'general': ann['_general_controls'],
+    'general_buses': ann.get('_general_control_buses', {}), 'bias': ann['_bias'],
     'questions': [{'id': q['id'], 'item': q['item'], 'assumed': q['assumed']} for q in ann['_questions_and_assumed_answers']],
 }
 data = {'views': slim, 'parent': parent, 'summary': summary}
@@ -4959,8 +6888,9 @@ function show(id){
   h += '</ul>';
   if (v.notes.length) h += '<h2>주석</h2><ul>' + v.notes.map(n => `<li>${n}</li>`).join('') + '</ul>';
   h += `<h2>분류 요약 (전체)</h2><ul><li>고속 데이터 입력: ${S.hs_inputs.join(', ')}</li><li>클럭 입력: ${S.clock_inputs.join(', ')}</li><li>고속 출력: ${S.hs_outputs.join(', ')}</li>`;
-  for (const b in S.buses) h += `<li>중요 제어 버스: ${b} (${S.buses[b].bits.length}b) — ${S.buses[b].function}</li>`;
-  h += `<li>일반 제어(생략): ${S.general.join(', ')}</li><li>바이어스(생략): ${S.bias.join(', ')}</li></ul>`;
+  for (const b in S.buses) h += `<li>중요 제어 버스 (${S.buses[b].K}): ${b} — ${S.buses[b].function}</li>`;
+  const gb = Object.keys(S.general_buses || {});
+  h += `<li>일반 제어(생략): ${gb.length ? gb.map(b => b + ' (' + S.general_buses[b].K + ')').join(', ') : S.general.join(', ')}</li><li>바이어스(생략): ${S.bias.join(', ')}</li></ul>`;
   h += '<h2>가정한 답 (질문)</h2><ul>' + S.questions.map(q => `<li><b>${q.id}</b> ${q.item}: ${q.assumed}</li>`).join('') + '</ul>';
   h += '<h2>모든 화면</h2><ul id="views">' + DATA.views.map(x => `<li><a onclick="go('${x.id}')">${x.title}</a></li>`).join('') + '</ul>';
   sd.innerHTML = h;
@@ -4977,11 +6907,11 @@ show(location.hash.slice(1) || DATA.views[0].id);
 page = page.replace('__DATA__', json.dumps(data, ensure_ascii=False)).replace('__PPTX__', pptx_b64)
 open(OUT + '/concept.html', 'w').write(page)
 print('html bytes', len(page))
-````
+`````
 
 ### FILE: reference/rx_afe/work/make_pptx.py
-<!-- sha256=48e47eeaf53d9b86f5bccf0547e8117f2716cb40e669208da6ec7b181542c2c2 newline=1 -->
-````python
+<!-- sha256=135acf3a007f56a0b55a1b0a4c4096cab29171af88257ad1a4c372b65f2d4d56 newline=1 -->
+`````python
 """Editable PPTX: one slide per view built from native shapes (freeform lines, ovals, rectangles, text boxes),
 click on a block jumps to its child slide, slide notes hold the omitted list. Usage: make_pptx.py <workdir> <outdir>"""
 import json, sys, copy
@@ -5053,7 +6983,8 @@ add_text(s0, Inches(0.4), y, Inches(12), Inches(0.3), '가정한 답 (질문에 
 for q in ann['_questions_and_assumed_answers']:
     s = '%s %s: %s' % (q['id'], q['item'], q['assumed'])
     tb = add_text(s0, Inches(0.4), y, Inches(12.5), Inches(0.3), s, 9, valign='t', wrap=True)
-    y += Inches(0.42) if len(s) > 170 else Inches(0.27)
+    units = sum(2 if ord(ch) > 0x2E80 else 1 for ch in s)          # CJK glyphs are about twice as wide
+    y += Inches(0.1) + Inches(0.17) * (1 + units // 190)
 s0.notes_slide.notes_text_frame.text = '분류 확인 표와 질문/가정한 답 전문은 classification.md, annotations.json 참조.'
 
 for v in scenes:
@@ -5156,11 +7087,11 @@ for v in scenes:
 
 prs.save(OUT + '/concept.pptx')
 print('slides', len(prs.slides))
-````
+`````
 
 ### FILE: reference/rx_afe/work/measure.js
 <!-- sha256=0fa8be3455b0813b8688239633226821f434784bf777ff3c60e35428d76be3aa newline=1 -->
-````javascript
+`````javascript
 // measure text boxes of every view (for the overlap checker) and take one screenshot per view
 // usage: node measure.js <concept.html> <texts.json> <screenshot dir> [mobile]
 const { chromium } = require('playwright');
@@ -5200,17 +7131,23 @@ const fs = require('fs');
   console.log(JSON.stringify({ click_from: before, click_to: after, size_text_display_after_toggle: hidden, horizontal_overflow_px: sw }));
   await browser.close();
 })();
-````
+`````
 
 ### FILE: reference/rx_afe/work/verify.py
-<!-- sha256=ae5d156944190a0b14c93abd372ebddab7a265ed3f6623ce1804e2ef3ce2896c newline=1 -->
-````python
+<!-- sha256=2a9f44501706dd2bf58988c11fc6fcd5cc35e259da43a32d3e5283d197aa3e3a newline=1 -->
+`````python
 """Plan section 6: verification.
 Re-reads connectivity ONLY from drawn geometry (wire polylines, pin coordinates, junction dots, labels/ports/power
 symbols) and compares it with the netlist; then runs the quality checks.
+v6.1 extension (plan §4.1 + V24/V25): symbol strokes are read too (SHORT through a symbol stroke), label pairing and
+off-page connectors, omitted list = classification, per-output polarity, pin names, pin sides (V18), gray-label scope,
+name match, block pin names = cell ports, R/C/W/L value = instance value, text inside box/view, legends, description
+numbers, questions, endpoint (landing) pins, cross-table class consistency, block dictionary, scene_sha; every check
+is run against injected errors (self-test) and written to self_checklist.json (auto_checks).
 Usage: verify.py <workdir> <netlist> <out verify_report.json>"""
-import json, sys, re, math, itertools, collections
-from netlist import parse
+import json, sys, re, math, itertools, collections, copy, hashlib, os
+from netlist import parse, flatten, instance_tree, num, fmt_si, si_equal, group_bus, Polarity
+from spec_rules import (ANALOG_ROLES, CLASS_KO, QUESTION_TEMPLATES, RULE_DECIDED_TOPICS, IN_DICTIONARY, render_question)
 
 W, NL, OUTF = sys.argv[1], sys.argv[2], sys.argv[3]
 cells, order = parse(NL)
@@ -5220,6 +7157,11 @@ scenes = json.load(open(W + '/scenes.json'))
 texts = json.load(open(W + '/texts.json'))
 EPS = 0.6
 HIDDEN = {'general_control', 'bias', 'power', 'unused', 'internal'}
+VISIBLE = {'data', 'clock', 'important_control'}
+OUTD = os.path.dirname(os.path.abspath(OUTF))
+TOP = A['top']
+POL = Polarity(cells, TOP)
+ALL_ELEMS = {e['name'] for c in cells.values() for e in c['elems']}
 
 
 def expand(name):
@@ -5330,7 +7272,478 @@ def elem_of(cell, name):
     return None
 
 
-def check_view(v):
+# ======================================================================================
+# v6.1 helpers
+# ======================================================================================
+def seg_bbox(pts, pad=0.0):
+    xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
+    return (min(xs) - pad, min(ys) - pad, max(xs) + pad, max(ys) + pad)
+
+
+def bbox_near(a, b, tol=1.0):
+    return not (a[2] + tol < b[0] or b[2] + tol < a[0] or a[3] + tol < b[1] or b[3] + tol < a[1])
+
+
+def touch(a, b, c, d, tol=EPS):
+    if seg_intersection(a, b, c, d):
+        return True
+    return on_seg(a, c, d, tol) or on_seg(b, c, d, tol) or on_seg(c, a, b, tol) or on_seg(d, a, b, tol)
+
+
+def stroke_items(v):
+    """strokes owned by symbols, without the device body (plan §4.1-1 exception list)"""
+    sids = {s['id'] for s in v['symbols']}
+    items = []
+    for d in v['draw']:
+        own = d.get('owner')
+        if own not in sids:
+            continue
+        if d['t'] == 'rect':
+            continue                                  # block box outline
+        if d['t'] == 'poly':
+            if d.get('fill') == '#fff':
+                continue                              # triangle / inverter body
+            pts = [tuple(p) for p in d['pts']] + [tuple(d['pts'][0])]
+        elif d['t'] == 'line':
+            if d['w'] in (2.6, 2.4) or len(d['pts']) > 4:
+                continue                              # MOS channel, capacitor plate, resistor zigzag (with its leads)
+            pts = [tuple(p) for p in d['pts']]
+        elif d['t'] == 'circle':
+            if d['r'] >= 10:
+                continue                              # current-source circle
+            pts = [(d['cx'] + d['r'] * math.cos(2 * math.pi * k / 16), d['cy'] + d['r'] * math.sin(2 * math.pi * k / 16)) for k in range(17)]
+        else:
+            continue
+        items.append({'owner': own, 'pts': pts, 'bb': seg_bbox(pts)})
+    return items
+
+
+def expected_vec(cell, p):
+    vec = []
+    for sl in p['terms'] or []:
+        nets = {local_net(cell, e, t) for e, t in sl}
+        if len(nets) != 1:
+            return None
+        vec.append(sorted(nets)[0])
+    return collapse(vec) if vec else None
+
+
+def scene_sha(v):
+    """plan §1.2 / §4.1-16: SHA-256 of the view's picture data (size, title, primitives, click areas)"""
+    d = {'w': v['w'], 'h': v['h'], 'title': v['title'],
+         'draw': [{k: x for k, x in it.items() if k != 'tid'} for it in v['draw']],
+         'hot': [{k: h[k] for k in ('x', 'y', 'w', 'h', 'link')} for h in v['hot']]}
+    return hashlib.sha256(json.dumps(d, sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode()).hexdigest()
+
+
+def sym_bbox(s):
+    if s['kind'] == 'tri':
+        i = s['info']
+        return (i['x0'], i['yc'] - i['h'] / 2, i['x0'] + i['w'], i['yc'] + i['h'] / 2)
+    b = s['body']
+    return (min(x[0] for x in b), min(x[1] for x in b), max(x[2] for x in b), max(x[3] for x in b))
+
+
+def pin_side(s, p):
+    x0, y0, x1, y1 = sym_bbox(s)
+    if p['x'] < x0 - 0.5:
+        return 'left'
+    if p['x'] > x1 + 0.5:
+        return 'right'
+    if p['y'] < y0 - 0.5:
+        return 'top'
+    if p['y'] > y1 + 0.5:
+        return 'bottom'
+    return 'inside'
+
+
+def sym_context(v, s):
+    """(cell, members or None, group role, pin -> local net of that cell) for a drawn block symbol"""
+    cell = v['cell']
+    mem = s.get('members') or []
+    if len(mem) == 1:
+        e = elem_of(cell, mem[0])
+        if e is not None and e['kind'] == 'inst':
+            return e['cell'], None, None, (lambda p: p['terms'][0][0][1]), e
+    if mem and all(elem_of(cell, m) is not None and elem_of(cell, m)['kind'] != 'inst' for m in mem):
+        g = [g for g in A['groups'].get(cell, []) if set(mem) <= set(g['members'])]
+        return cell, set(mem), (g[0]['role'] if g else None), (lambda p: local_net(cell, p['terms'][0][0][0], p['terms'][0][0][1])), None
+    return None
+
+
+def is_logic(cell, port, grole=None):
+    """V19: logic output? (independent re-implementation of the generator's rule)"""
+    role = grole or A['block'][cell]['role']
+    if role in ANALOG_ROLES:
+        return False
+    if role == 'cml_buffer':
+        return 'clock' in CN[cell].get(port, [])
+    if role == 'composite' and grole is None:
+        for e in cells[cell]['elems']:
+            if e['kind'] == 'inst':
+                for q, n in e['pins'].items():
+                    if n == port and any(t == q for (_, t) in POL.port_map(e['cell'])):
+                        return is_logic(e['cell'], q)
+        for g in A['groups'].get(cell, []):
+            for m in g['members']:
+                e = elem_of(cell, m)
+                if e['kind'] == 'mos' and port in (e['terms']['d'], e['terms']['s']):
+                    return is_logic(cell, port, g['role'])
+    return True
+
+
+def block_outputs(cell, mem, nets):
+    if mem is None:
+        return {q for (_, q) in POL.port_map(cell)}
+    out = set()
+    for n in nets:
+        r = POL.reach(cell, {n: 0}, mem)
+        out |= {m for m in nets if m != n and m in r}
+    return out
+
+
+def texts_of(v, sid, cls=None):
+    return [d for d in v['draw'] if d['t'] == 'text' and d.get('owner') == sid and (cls is None or d['cls'] == cls)]
+
+
+def chk_polarity(v):
+    """plan §3.4-6 / §4.1-13 per-output polarity, V19 logic outputs only, V21 +/- marks on differential inputs"""
+    errs = []
+    if v['level'] != 'block':
+        return errs
+    for s in v['symbols']:
+        if s['kind'] not in ('tri', 'box', 'inv'):
+            continue
+        ctx = sym_context(v, s)
+        if not ctx:
+            continue
+        cell, mem, grole, portof, _ = ctx
+        L = sorted([p for p in s['pins'] if pin_side(s, p) == 'left'], key=lambda p: p['y'])
+        R = sorted([p for p in s['pins'] if pin_side(s, p) == 'right'], key=lambda p: p['y'])
+        if not L or not R:
+            continue
+        ins = [portof(p) for p in L[:2]]
+        outs = [portof(p) for p in R]
+        pol = POL.outputs(cell, ins, outs, mem)
+        logic = {}
+        for p, o in zip(R, outs):
+            logic[o] = is_logic(cell, o, grole)
+            bub = any(d['t'] == 'circle' and d.get('owner') == s['id'] and abs(d['r'] - 4) < 0.5 and abs(d['cy'] - p['y']) < 0.6
+                      and p['x'] - 30 < d['cx'] < p['x'] for d in v['draw'])
+            if pol[o] is None:
+                continue
+            want = logic[o] and pol[o] == 'inv'
+            if bub != want:
+                errs.append('%s.%s: netlist polarity %s, %s output, bubble drawn=%s' % (s['id'], p['name'], pol[o], 'logic' if logic[o] else 'analog', bub))
+        if s['kind'] == 'tri' and len(L) >= 2:
+            flip = pol[outs[0]] == 'inv' and not logic[outs[0]]
+            want = {L[0]['name']: '−' if flip else '+', L[1]['name']: '+' if flip else '−'}
+            for p in L[:2]:
+                got = [d['s'] for d in texts_of(v, s['id'], 'pm') if abs(d['y'] - p['y']) < 1]
+                if got != [want[p['name']]]:
+                    errs.append('%s.%s: differential input mark %s, expected %s (V21)' % (s['id'], p['name'], got, want[p['name']]))
+    return errs
+
+
+def chk_pin_names(v):
+    """plan §3.4-7: every output of a symbol with two or more outputs carries its pin name"""
+    errs = []
+    for s in v['symbols']:
+        if s['kind'] not in ('tri', 'box'):
+            continue
+        R = [p for p in s['pins'] if pin_side(s, p) == 'right']
+        if len(R) < 2:
+            continue
+        for p in R:
+            ok = any(d['s'] == p['name'] and abs(d['y'] - p['y']) <= 12 and abs(d['x'] - p['x']) <= 60 for d in texts_of(v, s['id'], 'pintext'))
+            if not ok:
+                errs.append('%s.%s: output pin name missing' % (s['id'], p['name']))
+    return errs
+
+
+def chk_pin_sides(v):
+    """V18 (plan §3.2 pin side table): control/command/test top, clock bottom (left if the block passes clocks),
+    data left, outputs right; inverter (fixed pins), switches and markers are exceptions"""
+    errs = []
+    if v['level'] != 'block':
+        return errs
+    for s in v['symbols']:
+        if s['kind'] not in ('tri', 'box'):
+            continue
+        ctx = sym_context(v, s)
+        if not ctx:
+            continue
+        cell, mem, grole, portof, inst = ctx
+        nets = [portof(p) for p in s['pins']]
+        outs = block_outputs(cell, mem, nets)
+        def pcls(p):
+            q = portof(p)
+            pn = inst['pins'][q] if inst else q
+            return set(CN[v['cell']].get(pn, []))
+        passes_clock = any(portof(p) in outs and 'clock' in pcls(p) for p in s['pins'])
+        for p in s['pins']:
+            c = pcls(p)
+            side = pin_side(s, p)
+            if portof(p) in outs:
+                exp = {'right'}
+            elif 'important_control' in c:
+                exp = {'top'}
+            elif 'clock' in c:
+                exp = {'bottom', 'left'} if passes_clock else {'bottom'}
+            elif 'data' in c:
+                exp = {'left'}
+            else:
+                continue
+            if side not in exp:
+                errs.append('%s.%s: on %s, expected %s' % (s['id'], p['name'], side, '/'.join(sorted(exp))))
+    return errs
+
+
+def chk_gray(v, pins):
+    """plan §3.5-3 gray-label scope: gate of a hidden net in a unit view; in block views only constants, hidden select
+    pins of switches and hidden logic-gate inputs. Gray labels never name a visible net."""
+    errs = []
+    for lb in v['labels']:
+        if lb['kind'] != 'gray':
+            continue
+        at = [(s, p) for s, p in pins if same(lb['at'], (p['x'], p['y']))]
+        nets = expand(lb['name'])
+        cls = set()
+        for n in nets:
+            cls |= set(CN[v['cell']].get(n, []))
+        if cls & VISIBLE:
+            errs.append('%s: gray label on a visible net' % lb['name'])
+            continue
+        col = [d['color'] for d in v['draw'] if d.get('tid') == lb.get('tid')]
+        if col and col[0] != '#777':
+            errs.append('%s: gray label not gray' % lb['name'])
+        if v['level'] == 'unit':
+            if not at or at[0][0]['kind'] not in ('nmos', 'pmos') or at[0][1]['name'] != 'G':
+                errs.append('%s: gray label not at a MOS gate' % lb['name'])
+        else:
+            const = cls <= {'power'}
+            sel = at and at[0][0]['kind'] in ('selswitch',)
+            logic_in = at and at[0][0]['kind'] in ('inv', 'gate') and pin_side(at[0][0], at[0][1]) == 'left'
+            if not (const or sel or logic_in):
+                errs.append('%s: gray label outside its scope in a block view' % lb['name'])
+    return errs
+
+
+def chk_names(v):
+    """plan §4.1-14: instance names, cell-name subtitles, net labels, port names exist in the netlist"""
+    errs = []
+    cell = v['cell']
+    nets = set(CN[cell]) | set(cells[cell]['ports'])
+    elems = {e['name'] for e in cells[cell]['elems']}
+    sym = {s['id']: s for s in v['symbols']}
+    for d in v['draw']:
+        if d['t'] != 'text':
+            continue
+        c, txt = d['cls'], d['s']
+        own = sym.get(d.get('owner'))
+        if c == 'inst':
+            bad = [x for x in expand(txt) if x not in ALL_ELEMS and x not in cells]
+        elif c == 'devname':
+            if own and (own['kind'] in ('varres', 'varcap', 'visrc') or (own['kind'] in ('res', 'cap') and len(own['members']) > 1)):
+                continue                      # concept symbol name (R_S, C_S, I_G<3:0>): its legend lists the members
+            bad = [x for x in expand(txt) if x not in elems]
+        elif c in ('netlabel', 'offpage', 'gray', 'port', 'power'):
+            if c == 'power' and txt == 'VDD' and own is None and any(lb['kind'] == 'power' for lb in v['labels']):
+                bad = [x for x in [lb['name'] for lb in v['labels'] if lb['kind'] == 'power' and lb.get('tid') == d['tid']] if x not in nets]
+            else:
+                bad = [x for x in expand(txt) if x not in nets]
+        elif c == 'blk' and own and own['kind'] == 'box' and d['size'] == 10:
+            bad = [txt] if txt not in cells else []
+        elif c == 'blk' and own and own['kind'] == 'switch' and d['size'] == 9:
+            bad = [x for x in txt.replace(' (off)', '').split('/') if x not in elems]
+        else:
+            continue
+        if bad:
+            errs.append('"%s" (%s): %s not in the netlist' % (txt, c, ', '.join(bad)))
+    return errs
+
+
+def chk_block_pins(v):
+    """V24: block pin names = ports of the instance's cell (virtual block: nets of its devices); pin texts = pin names"""
+    errs = []
+    for s in v['symbols']:
+        if s['kind'] not in ('tri', 'box'):
+            continue
+        ctx = sym_context(v, s)
+        if not ctx:
+            continue
+        cell, mem, grole, portof, inst = ctx
+        if inst:
+            allowed = set(cells[inst['cell']]['ports'])
+        else:
+            allowed = set()
+            for m in mem:
+                e = elem_of(cell, m)
+                allowed |= {x for k, x in e['terms'].items() if k != 'b'}
+        for p in s['pins']:
+            names = expand(p['name'])
+            if not set(names) <= allowed:
+                errs.append('%s: pin "%s" is not a %s' % (s['id'], p['name'], 'port of ' + inst['cell'] if inst else 'net of the virtual block'))
+                continue
+            if inst:
+                tset = {t for sl in p['terms'] for (_, t) in sl}
+                if tset != set(names):
+                    errs.append('%s: pin "%s" name does not match its terminals %s' % (s['id'], p['name'], sorted(tset)))
+        pn = {p['name'] for p in s['pins']}
+        for d in texts_of(v, s['id'], 'pintext'):
+            if d['s'] not in pn:
+                errs.append('%s: pin text "%s" names no pin' % (s['id'], d['s']))
+    return errs
+
+
+def chk_values(v):
+    """V24 R/C value = instance value, W/L = instance size; plan §3.5-6 SI notation; no nf / model name (M10)"""
+    errs = []
+    cell = v['cell']
+    for s in v['symbols']:
+        mem = s.get('members') or []
+        sz = [d['s'] for d in texts_of(v, s['id'], 'size')]
+        es = [elem_of(cell, m) for m in mem]
+        if s['kind'] == 'term':            # the marker on the N line carries no members: read its pin terminals
+            es = [elem_of(cell, e) for p in s['pins'] for sl in (p['terms'] or []) for e, t in sl]
+        if any(e is None for e in es):
+            continue
+        if s['kind'] in ('res', 'cap') and len(es) == 1:
+            want = fmt_si(es[0]['value'])
+            if sz != [want]:
+                errs.append('%s: value text %s, netlist %s (SI %s)' % (s['id'], sz, es[0]['value'], want))
+        elif s['kind'] in ('nmos', 'pmos') and es:
+            if len(es) == 1:
+                e = es[0]
+                want = '%s/%s' % (fmt_si(e['params'].get('w')), fmt_si(e['params'].get('l')))
+                if e['params'].get('m') not in (None, '1'):
+                    want += ' ×%s' % e['params']['m']
+                if sz != [want]:
+                    errs.append('%s: size text %s, netlist %s' % (s['id'], sz, want))
+            else:
+                ws = 'W ' + ','.join(fmt_si(e['params'].get('w')) for e in es)
+                ls = 'L ' + '/'.join(sorted({fmt_si(e['params'].get('l')) for e in es}, key=lambda x: num(x) or 0))
+                if sz != [ws, ls]:
+                    errs.append('%s: size text %s, netlist %s' % (s['id'], sz, [ws, ls]))
+        elif s['kind'] == 'term':
+            rv = [e['value'] for e in es if e['kind'] == 'res']
+            for d in texts_of(v, s['id']):
+                m = re.search(r'(\d+(?:\.\d+)?(?:meg|[fpnumk])?)Ω', d['s'])
+                if m and not any(si_equal(m.group(1), x) for x in rv):
+                    errs.append('%s: "%s" but the resistor is %s' % (s['id'], d['s'], rv))
+        for t in sz:
+            if re.search(r'\bnf\b|nf=|NCH|PCH', t):
+                errs.append('%s: size text shows nf / model (%s)' % (s['id'], t))
+    return errs
+
+
+def chk_text_inside(v, tb):
+    """V24: no text outside the view; box titles / pin names inside their box; triangle title inside the triangle"""
+    errs = []
+    for t in tb.values():
+        if t['x0'] < -0.5 or t['y0'] < -0.5 or t['x1'] > v['w'] + 0.5 or t['y1'] > v['h'] + 0.5:
+            errs.append('"%s" outside the view' % t['s'])
+    sym = {s['id']: s for s in v['symbols']}
+    for d in v['draw']:
+        if d['t'] != 'text' or d.get('owner') not in sym or d['tid'] not in tb:
+            continue
+        s, b = sym[d['owner']], tb[d['tid']]
+        if s['kind'] == 'box' and d['cls'] in ('blk', 'pintext'):
+            x0, y0, x1, y1 = sym_bbox(s)
+            if b['x0'] < x0 - 0.5 or b['x1'] > x1 + 0.5 or b['y0'] < y0 - 0.5 or b['y1'] > y1 + 0.5:
+                errs.append('"%s" leaves box %s' % (d['s'], s['id']))
+        elif s['kind'] == 'tri' and d['cls'] == 'blk':
+            i_ = s['info']
+            poly = i_.get('outline') or [[i_['x0'], i_['yc'] - i_['h'] / 2], [i_['x0'] + i_['w'], i_['yc']], [i_['x0'], i_['yc'] + i_['h'] / 2]]
+            for P in ((b['x0'], b['y0']), (b['x1'], b['y0']), (b['x0'], b['y1']), (b['x1'], b['y1'])):
+                if not in_poly(P, poly):
+                    errs.append('"%s" leaves triangle %s' % (d['s'], s['id'])); break
+    return errs
+
+
+def in_poly(P, poly):
+    x, y = P
+    ins = False
+    for i in range(len(poly)):
+        (x1, y1), (x2, y2) = poly[i], poly[(i + 1) % len(poly)]
+        if (y1 > y) != (y2 > y) and x < (x2 - x1) * (y - y1) / (y2 - y1) + x1:
+            ins = not ins
+    return ins
+
+
+def chk_legend(v):
+    """plan §3.1-7 / §4.1-8: a view with merged or bundled symbols has the bundles/merged legend"""
+    merged = [s['id'] for s in v['symbols'] if (s.get('info') or {}).get('merged') or s['kind'] in ('varres', 'varcap', 'visrc')
+              or (s['kind'] in ('res', 'cap') and len(s.get('members') or []) > 1)]
+    if merged and not any(d['t'] == 'text' and d['cls'] == 'legend' for d in v['draw']):
+        return ['merged symbols %s without legend' % ', '.join(merged)]
+    return []
+
+
+_SUBV = {}
+
+
+def subtree_values(cell):
+    if cell in _SUBV:
+        return _SUBV[cell]
+    vals = []
+    for e in cells[cell]['elems']:
+        if e['kind'] in ('res', 'cap', 'ind'):
+            vals.append(num(e['value']))
+        elif e['kind'] == 'mos':
+            vals += [num(e['params'][k]) for k in ('w', 'l') if k in e['params']]
+        elif e['kind'] == 'inst':
+            vals += subtree_values(e['cell'])
+    _SUBV[cell] = [x for x in vals if x is not None]
+    return _SUBV[cell]
+
+
+NUMTOK = re.compile(r'(?<![\w.])(\d+(?:\.\d+)?)(meg|[fpnumk])?(Ω)?(?![\w])')
+
+
+def chk_numerics(v):
+    """plan §3.5-7 / §4.1-9: every value in titles, notes and legends is a netlist value; bit counts match the bus"""
+    errs = []
+    vals = subtree_values(v['cell'])
+    sym = {s['id'] for s in v['symbols']}
+    lines = [v['title']] + [d['s'] for d in v['draw'] if d['t'] == 'text' and (d['cls'] in ('note', 'legend') or (d['cls'] == 'size' and d.get('owner') not in sym)
+                                                                                 or (d['cls'] == 'blk' and 'Ω' in d['s']))]
+    for txt in lines:
+        for m in NUMTOK.finditer(txt):
+            if not (m.group(2) or m.group(3)):
+                continue
+            x = num(m.group(1) + (m.group(2) or ''))
+            if not any(abs(x - y) <= 1e-9 * max(abs(x), abs(y), 1e-30) for y in vals):
+                errs.append('"%s%s%s" in "%s" is not a netlist value' % (m.group(1), m.group(2) or '', m.group(3) or '', txt[:60]))
+        for m in re.finditer(r'(?<![\w])(\d+)b(?![\w])', txt):
+            widths = {len(expand(b)) for b in re.findall(r'[\w]*(?:<\d+:\d+>[\w]*)+', txt)}
+            if int(m.group(1)) not in widths:
+                errs.append('"%sb" in "%s" matches no bus width %s' % (m.group(1), txt[:60], sorted(widths)))
+    return errs
+
+
+def chk_unit_size(v):
+    """plan §3.1-8 / M10: at most 20 drawn symbols on a unit view"""
+    if v['level'] != 'unit':
+        return []
+    n = sum(1 for s in v['symbols'] if s['kind'] in ('nmos', 'pmos', 'res', 'cap', 'varres', 'varcap', 'visrc', 'switch', 'tri', 'box', 'inv'))
+    return ['%d symbols > 20' % n] if n > 20 else []
+
+
+def chk_cci(v):
+    """plan §3.3-7 / §4.1-12: a cross-coupled inverter pair is drawn with both inverters turned 90°.
+    Inverter symbols of this generator are horizontal, so any cross-coupled pair of them is a violation."""
+    invs = [s for s in v['symbols'] if s['kind'] == 'inv']
+    errs = []
+    for a, b in itertools.combinations(invs, 2):
+        ya, aa = expected_vec(v['cell'], [p for p in a['pins'] if p['name'] == 'Y'][0]), expected_vec(v['cell'], [p for p in a['pins'] if p['name'] == 'A'][0])
+        yb, ab = expected_vec(v['cell'], [p for p in b['pins'] if p['name'] == 'Y'][0]), expected_vec(v['cell'], [p for p in b['pins'] if p['name'] == 'A'][0])
+        if ya == ab and yb == aa:
+            errs.append('%s/%s cross-coupled inverters drawn horizontally' % (a['id'], b['id']))
+    return errs
+
+
+def check_view(v, tx=None):
     cell = v['cell']
     cn = CN[cell]
     errs = []
@@ -5343,11 +7756,14 @@ def check_view(v):
             pins.append((s, p))
     dots = [tuple(d) for d in v['dots']]
     labels = v['labels']
+    for lb in labels:                 # attachments are recomputed from geometry on every run
+        lb.pop('_node', None); lb.pop('_root0', None)
     # ---------------- 1. geometry -> nets ----------------
     uf = UF()
     W_ = ['w%d' % i for i in range(len(wires))]
     for i in range(len(wires)):
         uf.f(W_[i])
+    wbb = [seg_bbox(w['pts']) for w in wires]
     # wire-wire connections (endpoint on other wire / shared vertex)
     junction_pts = collections.defaultdict(lambda: 0)
     for i, w in enumerate(wires):
@@ -5417,6 +7833,58 @@ def check_view(v):
                 uf.u(key, 'p%d' % jdx); hit = True
         if not hit:
             open_pins.append(idx)
+    # ---------------- 1-1. symbol strokes (plan §4.1-1, SKILL §9-1-1) ----------------
+    # every stroke a symbol draws, except the device body (MOS channel, resistor zigzag, current-source circle,
+    # capacitor plates, block outline), is read like a wire: a stroke that joins two pins of different nets is a SHORT
+    items = stroke_items(v)
+    suf = UF()
+    for k in range(len(items)):
+        suf.f(k)
+    for i, j in itertools.combinations(range(len(items)), 2):
+        a, b = items[i], items[j]
+        if not bbox_near(a['bb'], b['bb']):
+            continue
+        same_owner = a['owner'] == b['owner']
+        hit = False
+        for s1 in segs(a['pts']):
+            for s2 in segs(b['pts']):
+                if same_owner and touch(s1[0], s1[1], s2[0], s2[1]):
+                    hit = True
+                elif not same_owner and (any(on_seg(e, s2[0], s2[1]) for e in (a['pts'][0], a['pts'][-1])) or
+                                         any(on_seg(e, s1[0], s1[1]) for e in (b['pts'][0], b['pts'][-1]))):
+                    hit = True
+                if hit:
+                    break
+            if hit:
+                break
+        if hit:
+            suf.u(i, j)
+    comp_pins = collections.defaultdict(set)
+    comp_wires = collections.defaultdict(set)
+    for k, it in enumerate(items):
+        r = suf.f(k)
+        for idx, (s, p) in enumerate(pins):
+            P = (p['x'], p['y'])
+            if bbox_near(it['bb'], (P[0], P[1], P[0], P[1])) and any(on_seg(P, q1, q2) for q1, q2 in segs(it['pts'])):
+                comp_pins[r].add(idx)
+        for i, w in enumerate(wires):
+            if not bbox_near(it['bb'], wbb[i]):
+                continue
+            if any(on_seg(e, q1, q2) for e in (w['pts'][0], w['pts'][-1]) for q1, q2 in segs(it['pts'])) or \
+               any(on_seg(e, q1, q2) for e in (it['pts'][0], it['pts'][-1]) for q1, q2 in segs(w['pts'])):
+                comp_wires[r].add(i)
+    stroke_short = []
+    for r in set(comp_pins) | set(comp_wires):
+        vecs = {}
+        for i in comp_pins[r]:
+            ev = expected_vec(cell, pins[i][1])
+            if ev is not None:
+                vecs.setdefault(ev, []).append('%s.%s' % (pins[i][0]['id'], pins[i][1]['name']))
+        if len(vecs) > 1:
+            stroke_short.append({'symbol': sorted({items[k]['owner'] for k in range(len(items)) if suf.f(k) == r}), 'pins': sorted(sum(vecs.values(), []))})
+        nodes = ['p%d' % i for i in comp_pins[r]] + [W_[i] for i in comp_wires[r]]
+        for n in nodes[1:]:
+            uf.u(nodes[0], n)
     # names
     names = collections.defaultdict(set)   # root -> names
     label_unattached = []
@@ -5438,6 +7906,10 @@ def check_view(v):
             label_unattached.append(lb['name'])
             continue
         lb['_node'] = attached
+    for lb in labels:
+        if '_node' in lb:
+            lb['_root0'] = uf.f(lb['_node'])
+    pins_root0 = {idx: uf.f(pinnode[idx]) for idx in pinnode}
     # merge by name
     byname = collections.defaultdict(list)
     for lb in labels:
@@ -5581,7 +8053,10 @@ def check_view(v):
     missing_ports = [p for p in vis_ports if p not in portnames]
     hidden_ports_drawn = [p for p in portnames if p in cn and not (set(cn[p]) & {'data', 'clock', 'important_control'})]
     # omitted list = hidden classification (block views)
-    om_nets = {o['net'] for o in v['omitted'] if 'net' in o}
+    om_nets = set()
+    for o in v['omitted']:
+        if 'net' in o:
+            om_nets |= set(expand(o['net']))
     drawn_nets = set()
     for idx in pin_vec:
         drawn_nets |= set(pin_vec[idx])
@@ -5606,7 +8081,72 @@ def check_view(v):
                 om_bad.append('visible net %s not drawn' % n)
             elif n not in om_nets and not (set(c) <= {'internal'}):
                 om_bad.append('hidden net %s missing from omitted list' % n)
+    # ---- v6.1: omitted list (plan §3.5-5) for every view: drawn nets (line, black label, port, power symbol) are not
+    # in it, every undrawn hidden net of the view is, and a bus is one <MSB:LSB> line
+    drawn_black = set()
+    for lb in labels:
+        if lb['kind'] in ('net', 'port', 'power', 'offpage'):
+            drawn_black |= set(expand(lb['name']))
+    for idx in pin_vec:
+        if idx not in open_pins:
+            drawn_black |= set(pin_vec[idx])
+    om_bad += ['drawn net %s is in the omitted list' % n for n in sorted(om_nets & drawn_black)]
+    if v['level'] != 'block':
+        sc = set()
+        for e in elems:
+            sc |= set(e['pins'].values() if e['kind'] == 'inst' else [x for k, x in e['terms'].items() if not (e['kind'] == 'mos' and k == 'b')])
+        for n in sorted(sc):
+            c = set(cn.get(n, []))
+            if (c & {'general_control', 'bias', 'power'}) and not (c & VISIBLE) and n not in drawn_black and n not in group_internal and n not in om_nets:
+                om_bad.append('hidden net %s missing from omitted list' % n)
+    singles = [o['net'] for o in v['omitted'] if 'net' in o and not re.search(r'<\d+:\d+>', o['net'])]
+    om_bad += ['bus %s not written as one <MSB:LSB> line' % bn for bn, bits, _ in group_bus(singles) if len(bits) > 1]
+    # ---- v6.1: label pairing (plan §3.5-1, §4.1-2): a connection label needs a partner or a port; exceptions: an
+    # unused output, a name on a wire that already joins the pins, an off-page connector on a boundary net
+    def conn_count(n):
+        k = sum(1 for e in cells[cell]['elems'] if n in (e['pins'].values() if e['kind'] == 'inst' else
+                                                          [x for t_, x in e['terms'].items() if not (e['kind'] == 'mos' and t_ == 'b')]))
+        return k + (1 if n in cells[cell]['ports'] else 0)
+    comps = collections.defaultdict(set); kinds = collections.defaultdict(set)
+    for lb in labels:
+        if '_root0' in lb and lb['kind'] in ('net', 'port', 'offpage'):
+            comps[lb['name']].add(lb['_root0']); kinds[lb['name']].add(lb['kind'])
+    npins = collections.Counter(pins_root0.values())
+    unpaired = []
+    for lb in labels:
+        if lb['kind'] != 'net' or '_root0' not in lb:
+            continue
+        nm = lb['name']
+        if len(comps[nm]) >= 2 or (kinds[nm] & {'port', 'offpage'}) or npins[lb['_root0']] >= 2:
+            continue
+        if npins[lb['_root0']] == 1:
+            idx = [i for i, r in pins_root0.items() if r == lb['_root0']][0]
+            if all(conn_count(n) <= 1 for n in pin_vec.get(idx, ())):
+                continue          # unused output (plan §3.5-4)
+        unpaired.append(nm)
+    # boundary nets of a virtual-block / unit view: off-page connector (or the cell port) required (plan §3.5-1)
+    boundary_bad, offpage_bad = [], []
+    if scope:
+        for root, idxs in groups.items():
+            nets = set()
+            for i in idxs:
+                nets |= set(pin_vec[i])
+            kk = {lb['kind'] for lb in labels if '_node' in lb and uf.f(lb['_node']) == root}
+            for n in nets:
+                if not (set(cn.get(n, [])) & VISIBLE):
+                    continue
+                if any(e['name'] not in scope and n in (e['pins'].values() if e['kind'] == 'inst' else e['terms'].values()) for e in cells[cell]['elems']):
+                    if not (kk & {'offpage', 'port'}) or (n not in cells[cell]['ports'] and 'offpage' not in kk):
+                        boundary_bad.append(n)
+    for lb in labels:
+        if lb['kind'] == 'offpage':
+            for n in expand(lb['name']):
+                if not scope or not any(e['name'] not in scope and n in (e['pins'].values() if e['kind'] == 'inst' else e['terms'].values())
+                                        for e in cells[cell]['elems']):
+                    offpage_bad.append(lb['name'])
     conn_errors = {
+        'symbol_stroke_joins_pins': stroke_short, 'unpaired_labels': unpaired, 'boundary_net_without_offpage': boundary_bad,
+        'offpage_on_non_boundary_net': offpage_bad,
         'declaration_errors': decl_err, 'net_mismatch': mismatch, 'split_nets': split, 'open_pins': bad_open,
         'open_wire_ends': [list(map(lambda z: round(z, 1), e)) for e in open_ends], 'pin_on_wire_interior': pin_mid,
         'missing_junction_dot': [list(p) for p in missing_dot], 'superfluous_dot': [list(p) for p in extra_dot],
@@ -5670,7 +8210,7 @@ def check_view(v):
         if math.hypot(p[0] - q[0], p[1] - q[1]) < 20 - 1e-6:
             close.append([list(p), list(q)])
     # text overlap (measured bboxes)
-    tb = {t['tid']: t for t in texts.get(v['id'], [])}
+    tb = {t['tid']: t for t in (tx if tx is not None else texts.get(v['id'], []))}
     tlist = [t for t in tb.values()]
     overlaps = []
     for a, b in itertools.combinations(tlist, 2):
@@ -5777,161 +8317,1014 @@ def check_view(v):
                     ok = all(any(on_seg((ma[0] + t / 10 * (mb[0] - ma[0]), ma[1] + t / 10 * (mb[1] - ma[1])), c, d, tol=0.8) for _, c, d in allsegs) for t in range(11))
                     if not ok:
                         sym_v.append('wire %d has no mirror image about y=%s' % (i, ax))
+    # ---- v6.1 quality (plan §1.4-1, §1.4-7): 4-way junctions, collinear line ends of different nets < 40 px,
+    # dashed lines, wire width
+    four_way = [list(d) for d in dots if branches(d) >= 4]
+    def free_end(i, P):
+        # a line end that stops on another wire (T junction) or at a pin is not a free end
+        if any(j != i and any(on_seg(P, a, b) for a, b in segs(w2['pts'])) for j, w2 in enumerate(wires)):
+            return False
+        return not any(same(P, (p['x'], p['y'])) for s, p in pins)
+    ends = []
+    for i, w in enumerate(wires):
+        if free_end(i, w['pts'][0]):
+            ends.append((i, tuple(w['pts'][0]), tuple(w['pts'][1])))
+        if free_end(i, w['pts'][-1]):
+            ends.append((i, tuple(w['pts'][-1]), tuple(w['pts'][-2])))
+    collinear = []
+    for (i, P, Q), (j, P2, Q2) in itertools.combinations(ends, 2):
+        if i == j or uf.f(W_[i]) == uf.f(W_[j]):
+            continue
+        for ax in (0, 1):
+            o = 1 - ax
+            if abs(P[o] - Q[o]) < EPS and abs(P2[o] - Q2[o]) < EPS and abs(P[o] - P2[o]) < EPS:
+                d1, d2 = P[ax] - Q[ax], P2[ax] - Q2[ax]
+                if d1 * d2 < 0 and (P2[ax] - P[ax]) * d1 > 0 and abs(P2[ax] - P[ax]) < 40 - 1e-6:
+                    collinear.append({'ends': [list(P), list(P2)], 'gap': round(abs(P2[ax] - P[ax]), 1)})
+    dashed = [k for k, d in enumerate(v['draw']) if d['t'] in ('line', 'rect') and d.get('dash') not in (None, '', 'none')]
+    wire_w = [k for k, d in enumerate(v['draw']) if d.get('owner') == 'wire' and abs(d['w'] - 1.6) > 1e-6]
     quality = {
+        'four_way_junctions': four_way, 'collinear_end_gap': collinear, 'dashed_lines': dashed, 'wire_width': wire_w,
         'text_overlap': len(overlaps) + len(text_line), 'text_text_overlap': overlaps, 'text_line_overlap': text_line,
         'wire_through_symbol': through, 'symmetry_violations': sym_v, 'twisted_lines': twisted, 'short_jogs': jogs,
         'close_junctions': close, 'avoidable_crossings': avoidable, 'structural_crossings': allowed,
     }
     counts = {'text_overlap': len(overlaps) + len(text_line), 'wire_through_symbol': len(through), 'symmetry_violations': len(sym_v),
               'twisted_lines': len(twisted), 'short_jogs': len(jogs), 'close_junctions': len(close),
-              'avoidable_crossings': len(avoidable), 'structural_crossings_allowed': len(allowed)}
-    return {'view': v['id'], 'cell': cell, 'level': v['level'], 'title': v['title'],
+              'avoidable_crossings': len(avoidable), 'structural_crossings_allowed': len(allowed),
+              'four_way_junctions': len(four_way), 'collinear_end_gap': len(collinear), 'dashed_lines': len(dashed), 'wire_width': len(wire_w)}
+    # ---- v6.1 rule checks (plan §4.1-6..15, V24)
+    floating = [lb['name'] for lb in labels if lb['kind'] == 'port' and not str(lb.get('_node', '')).startswith('w')]
+    unattached = ['%s.%s' % (pins[i][0]['id'], pins[i][1]['name']) for i in open_pins
+                  if pins[i][0]['kind'] in ('tri', 'box', 'inv') and pin_side(pins[i][0], pins[i][1]) == 'right']
+    # plan §3.5-2 / §1.4-3: every bus label / bus port sits on a wire with a slash; no bit count when the name has <a:b>;
+    # names are <MSB:LSB>
+    busmark = []
+    slashes = [d for d in v['draw'] if d['t'] == 'line' and d.get('owner') == 'bus']
+    def slash_on(i):
+        return [d for d in slashes if any(on_seg(((d['pts'][0][0] + d['pts'][1][0]) / 2, (d['pts'][0][1] + d['pts'][1][1]) / 2), a, b, tol=1.0)
+                                          for a, b in segs(wires[i]['pts']))]
+    for lb in labels:
+        if lb['kind'] in ('net', 'port', 'offpage') and re.search(r'<\d+:\d+>', lb['name']) and str(lb.get('_node', '')).startswith('w'):
+            for a_, b_ in re.findall(r'<(\d+):(\d+)>', lb['name']):
+                if int(a_) < int(b_):
+                    busmark.append('%s: not <MSB:LSB>' % lb['name'])
+            i = int(lb['_node'][1:])
+            if not slash_on(i):
+                busmark.append('%s: bus without slash' % lb['name'])
+            for d in slash_on(i):
+                cx, cy = (d['pts'][0][0] + d['pts'][1][0]) / 2, (d['pts'][0][1] + d['pts'][1][1]) / 2
+                if any(t['t'] == 'text' and t['cls'] == 'buswidth' and math.hypot(t['x'] - cx, t['y'] - cy) < 25 for t in v['draw']):
+                    busmark.append('%s: bit count written although the name has <a:b>' % lb['name'])
+    checks = {
+        'bus_marks': sorted(set(busmark)),
+        'floating_ports': floating, 'unattached_output_pins': unattached,
+        'polarity': chk_polarity(v), 'pin_names': chk_pin_names(v), 'pin_sides': chk_pin_sides(v), 'gray_scope': chk_gray(v, pins),
+        'names': chk_names(v), 'block_pins': chk_block_pins(v), 'values': chk_values(v), 'text_inside': chk_text_inside(v, tb),
+        'legend': chk_legend(v), 'numerics': chk_numerics(v), 'unit_size': chk_unit_size(v), 'cci': chk_cci(v),
+    }
+    # line kind per net (plan §4.1-7), for the cross-view comparison
+    wdraw = [d for d in v['draw'] if d.get('owner') == 'wire']
+    net_kinds = collections.defaultdict(set)
+    for i, w in enumerate(wires):
+        r = uf.f(W_[i])
+        nms = set(names.get(r, set()))
+        for idx in groups.get(r, []):
+            nms |= set(pin_vec[idx])
+        for n in nms:
+            net_kinds[n].add((wdraw[i]['w'], wdraw[i].get('dash')))
+    return {'view': v['id'], 'cell': cell, 'level': v['level'], 'title': v['title'], 'scene_sha': scene_sha(v),
             'connectivity': {'pass': n_err == 0, 'error_count': n_err, 'errors': {k: x for k, x in conn_errors.items() if x},
                              'drawn_nets': len(groups), 'drawn_pins': len(pins)},
             'quality_counts': counts, 'quality_details': {k: x for k, x in quality.items() if x and k != 'text_overlap'},
-            'quality_pass': all(counts[k] == 0 for k in counts if k != 'structural_crossings_allowed')}
+            'quality_pass': all(counts[k] == 0 for k in counts if k != 'structural_crossings_allowed'),
+            'checks': {k: x for k, x in checks.items() if x}, 'checks_pass': not any(checks.values()),
+            '_net_line_kinds': {n: sorted(map(list, k), key=str) for n, k in net_kinds.items()}}
 
 
+# ======================================================================================
+# v6.1 global checks (plan §4.1, V24) — they read the out/ files, so a mutated copy can be passed in
+# ======================================================================================
+FLAT = {d['path']: d for d in flatten(cells, TOP)}
+INSTP = {pre.rstrip('/'): (cname, nm) for pre, cname, nm in instance_tree(cells, TOP) if pre}
+
+
+def html_data(html):
+    i = html.index('const DATA = ') + len('const DATA = ')
+    j = html.index(';\nconst PPTX')
+    return json.loads(html[i:j])
+
+
+def md_tables(md):
+    """{'port': {port: (class, K)}, 'control': [(bus, bits, class, K, endpoint)], 'summary': {...}}"""
+    port, ctrl = {}, []
+    sec = None
+    for ln in md.splitlines():
+        if ln.startswith('## '):
+            sec = ln[3:]
+        if not ln.startswith('|') or ln.startswith('|---'):
+            continue
+        c = [x.strip() for x in ln.strip('|').split('|')]
+        if sec and sec.startswith('최상위 포트') and len(c) >= 3 and c[0] != '포트':
+            port[c[0]] = (c[1], c[2])
+        if sec and sec.startswith('제어 분류') and len(c) >= 5 and c[0] != '제어':
+            ctrl.append((c[0], [b.strip() for b in c[1].split(',')], c[2], c[3], c[4]))
+    summ = {}
+    block = md.split('```')[1] if '```' in md else ''
+    for ln in block.splitlines():
+        if ':' not in ln:
+            continue
+        k, val = ln.split(':', 1)
+        summ[k.strip()] = val.strip()
+    return {'port': port, 'control': ctrl, 'summary': summ}
+
+
+def chk_questions(ann):
+    """V24 질문 검사: low confidence only, built from a template, never about something a rule decides (plan §2.7)"""
+    errs = []
+    for q in ann.get('_questions_and_assumed_answers', []):
+        tid = q.get('template')
+        if q.get('kind') in RULE_DECIDED_TOPICS:
+            errs.append('%s: asks about %s, which a rule decides (%s)' % (q.get('id'), q.get('kind'), RULE_DECIDED_TOPICS[q['kind']]))
+            continue
+        if tid not in QUESTION_TEMPLATES:
+            errs.append('%s: not built from a question template' % q.get('id'))
+            continue
+        try:
+            txt = render_question(tid, q.get('fields', {}))
+        except (KeyError, IndexError):
+            errs.append('%s: template fields missing' % q.get('id'))
+            continue
+        if txt != q.get('question'):
+            errs.append('%s: text is not the template sentence' % q.get('id'))
+        if not str(q.get('confidence', '')).startswith('low'):
+            errs.append('%s: confidence "%s" is not low' % (q.get('id'), q.get('confidence')))
+        if tid == 'not_in_dictionary':
+            cell = q['fields']['item'].split()[0]
+            if A['block'].get(cell, {}).get('role') in IN_DICTIONARY:
+                errs.append('%s: %s is a dictionary block (%s), nothing to ask' % (q.get('id'), cell, A['block'][cell]['role']))
+    return errs
+
+
+def chk_landing(ann, md):
+    """V24 끝점 핀 검사: instance.pin form, exists, reached from the control net (through static logic), not a driver"""
+    errs = []
+    mdc = {r[0]: r[4] for r in md_tables(md)['control']}
+    for r in ann.get('_controls', []):
+        ep = r.get('endpoint_pin', '')
+        m = re.match(r'^([A-Za-z_]\w*(?:/[A-Za-z_]\w*)*)\.(\w+)$', ep)
+        if not m:
+            errs.append('%s: "%s" is not instance.pin' % (r['bus'], ep)); continue
+        path, pinname = m.groups()
+        d = FLAT.get(path)
+        if d is None:
+            if path in INSTP and pinname in cells[INSTP[path][0]]['ports']:
+                net, kind = INSTP[path][1][pinname], 'inst'
+            else:
+                errs.append('%s: %s does not exist in the netlist' % (r['bus'], ep)); continue
+        else:
+            if (d['kind'] == 'mos' and pinname not in ('d', 'g', 's')) or (d['kind'] != 'mos' and pinname not in d['terms']):
+                errs.append('%s: %s has no pin %s' % (r['bus'], path, pinname)); continue
+            net, kind = d['terms'][pinname], d['kind']
+        reached = set(r['bits'])
+        for _ in range(8):           # through static CMOS logic: a node pulled up and down by gates of reached nets
+            new = set()
+            for x in FLAT.values():
+                if x['kind'] == 'mos' and x['terms']['g'] in reached:
+                    for t in ('d', 's'):
+                        n = x['terms'][t]
+                        both = {y['type'] for y in FLAT.values() if y['kind'] == 'mos' and y['terms']['g'] in reached and n in (y['terms']['d'], y['terms']['s'])}
+                        if both == {'n', 'p'}:
+                            new.add(n)
+            if new <= reached:
+                break
+            reached |= new
+        if net not in reached:
+            errs.append('%s: %s (net %s) is not reached from %s' % (r['bus'], ep, net, r['bus']))
+        if kind == 'mos' and pinname in ('d', 's'):
+            errs.append('%s: %s is a channel (driver) pin, not an endpoint' % (r['bus'], ep))
+        if r['bus'] in mdc and mdc[r['bus']] != ep:
+            errs.append('%s: endpoint differs between classification.md (%s) and annotations (%s)' % (r['bus'], mdc[r['bus']], ep))
+    return errs
+
+
+def chk_cross_table(ann, md, html, scenes_):
+    """V24 / M14 표 간 분류 일치: classification.md (summary, port table, control table), annotations.json,
+    the side panel (HTML) and the top view's omitted list give every top port the same class and K#"""
+    tp = cells[TOP]['ports']
+    hs_in, ck_in = set(A['hs_inputs']), set(A['clock_inputs'])
+    def cat(c, k, p):
+        if c in ('data', 'clock'):
+            return 'hs_in' if p in hs_in else 'clock_in' if p in ck_in else 'hs_out'
+        if c == 'important_control':
+            return 'imp:%s' % k
+        if c == 'general_control':
+            return 'gen:%s' % k
+        return c
+    src = collections.defaultdict(dict)
+    for p in tp:
+        src['analysis'][p] = cat(A['netclass'][p][0], A['control_info'].get(p, {}).get('K'), p)
+    T = md_tables(md)
+    for p, (c, k) in T['port'].items():
+        src['classification.md 포트 표'][p] = cat(c.split('/')[0], k, p)
+    for bus, bits, c, k, ep in T['control']:
+        for b in bits:
+            src['classification.md 제어 표'][b] = cat(c, k, b)
+    S = T['summary']
+    def names_of(txt):
+        txt = re.sub(r'\(확신.*$', '', txt)
+        return [x.strip() for x in txt.split(',') if x.strip()]
+    for k_, lab in (('고속 데이터 입력', 'hs_in'), ('클럭 입력', 'clock_in'), ('고속 출력', 'hs_out')):
+        for n in names_of(S.get(k_, '')):
+            src['classification.md 요약'][n] = lab
+    for seg in S.get('중요 제어 (버스)', '').split(' / '):
+        m = re.match(r'\s*(\S+) — (K\d+)', seg)
+        if m:
+            for b in expand(m.group(1)):
+                src['classification.md 요약'][b] = 'imp:' + m.group(2)
+    om = S.get('생략', '')
+    m = re.search(r'제어 \d+개 \(([^)]*?) — (K\d+)', om)
+    if m:
+        for bn in m.group(1).split(','):
+            for b in expand(bn.strip()):
+                src['classification.md 요약'][b] = 'gen:' + m.group(2)
+    for lab, key in (('바이어스', 'bias'), ('전원', 'power')):
+        m = re.search(lab + r' \d+개 \(([^)]*)\)', om)
+        if m:
+            for n in m.group(1).split(','):
+                src['classification.md 요약'][n.strip()] = key
+    for p in ann.get('hs_inputs', []):
+        src['annotations'][p] = 'hs_in'
+    for p in ann.get('clock_inputs', []):
+        src['annotations'][p] = 'clock_in'
+    for p in ann.get('hs_outputs', []):
+        src['annotations'][p] = 'hs_out'
+    errs = []
+    ib = {b for x in ann.get('_important_control_buses', {}).values() for b in x['bits']}
+    gb = {b for x in ann.get('_general_control_buses', {}).values() for b in x['bits']}
+    if set(ann.get('important_controls', [])) != ib:
+        errs.append('annotations: important_controls %s != bits of _important_control_buses %s' % (sorted(set(ann.get('important_controls', [])) ^ ib), ''))
+    if set(ann.get('_general_controls', [])) != gb:
+        errs.append('annotations: _general_controls differs from _general_control_buses by %s' % sorted(set(ann.get('_general_controls', [])) ^ gb))
+    for bn, x in ann.get('_important_control_buses', {}).items():
+        for b in x['bits']:
+            src['annotations'][b] = 'imp:' + x['K']
+    for bn, x in ann.get('_general_control_buses', {}).items():
+        for b in x['bits']:
+            src['annotations'][b] = 'gen:' + x['K']
+    for p in ann.get('_bias', []):
+        src['annotations'][p] = 'bias'
+    for p in ann.get('_power', []):
+        src['annotations'][p] = 'power'
+    D = html_data(html)['summary']
+    for p in D['hs_inputs']:
+        src['side panel'][p] = 'hs_in'
+    for p in D['clock_inputs']:
+        src['side panel'][p] = 'clock_in'
+    for p in D['hs_outputs']:
+        src['side panel'][p] = 'hs_out'
+    for bn, x in D.get('buses', {}).items():
+        for b in x['bits']:
+            src['side panel'][b] = 'imp:' + x['K']
+    for bn, x in D.get('general_buses', {}).items():
+        for b in x['bits']:
+            src['side panel'][b] = 'gen:' + x['K']
+    for p in D.get('bias', []):
+        src['side panel'][p] = 'bias'
+    topv = [v for v in scenes_ if v['cell'] == TOP and v['level'] == 'block'][0]
+    inv = {v_: k for k, v_ in CLASS_KO.items()}
+    for o in topv['omitted']:
+        if 'net' not in o:
+            continue
+        base = o['class'].split(' (')[0]
+        k = re.search(r'(K\d+)', o['class'])
+        key = inv.get(base, base)
+        lab = ('gen:' + k.group(1)) if key == 'general_control' and k else key
+        for b in expand(o['net']):
+            src['%s 생략 목록' % topv['id']][b] = lab
+    for p in tp:
+        seen = {s_: d[p] for s_, d in src.items() if p in d}
+        if len(set(seen.values())) > 1:
+            errs.append('%s: %s' % (p, ', '.join('%s=%s' % kv for kv in sorted(seen.items()))))
+    return errs
+
+
+def chk_block_dictionary(bd, scenes_):
+    """plan §2.6-4: one row per drawn cell; a row with missing features must not use the dictionary symbol"""
+    errs = []
+    rows = bd.get('rows', [])
+    for r in rows:
+        for k in ('row', 'matched_features', 'missing_features', 'confidence'):
+            if k not in r:
+                errs.append('%s: field %s missing' % (r.get('cell'), k))
+        if r.get('missing_features') and r.get('symbol') not in ('box (cell name)', 'general'):
+            errs.append('%s: missing features %s but drawn with the dictionary symbol "%s"' % (r['cell'], r['missing_features'], r.get('symbol')))
+    drawn = {v['cell'] for v in scenes_}
+    for v in scenes_:
+        for s in v['symbols']:
+            for m in s.get('members') or []:
+                e = elem_of(v['cell'], m)
+                if e is not None and e['kind'] == 'inst':
+                    drawn.add(e['cell'])
+    have = {r['cell'] for r in rows if not r.get('virtual')}
+    errs += ['%s: drawn but no dictionary row' % c for c in sorted(drawn - have)]
+    return errs
+
+
+def chk_files(scenes_, present=None):
+    """M1: out/ files, view ids, titles, side-panel order"""
+    errs = []
+    need = ['concept.html', 'concept.pptx', 'classification.md', 'annotations.json', 'block_dictionary.json']
+    have = present if present is not None else {f for f in need if os.path.exists(os.path.join(OUTD, f))}
+    errs += ['out/%s missing' % f for f in need if f not in have]
+    for v in scenes_:
+        if present is None and not os.path.exists(os.path.join(OUTD, 'screenshots', v['id'] + '.png')):
+            errs.append('screenshots/%s.png missing' % v['id'])
+        if v['level'] == 'block' and not re.match(r'^b_[a-z0-9]+(_loop)?$', v['id']):
+            errs.append('%s: block view id' % v['id'])
+        if v['level'] == 'unit':
+            if v.get('scope') and not re.match(r'^u_[a-z0-9]+_[a-z0-9]+$', v['id']):
+                errs.append('%s: virtual-block view id must be u_<parent>_<role>' % v['id'])
+            if not v.get('scope') and not re.match(r'^u_[a-z0-9]+$', v['id']):
+                errs.append('%s: unit view id' % v['id'])
+        if v['level'] == 'block' and not re.match(r'^%s — 블록 레벨( \(.+\))?$' % re.escape(v['cell']), v['title']):
+            errs.append('%s: title "%s"' % (v['id'], v['title']))
+        if v['level'] == 'unit' and not re.match(r'^%s — unit level \(.+\)$' % re.escape(v['cell']), v['title']):
+            errs.append('%s: title "%s"' % (v['id'], v['title']))
+    if present is None:
+        page = open(os.path.join(OUTD, 'concept.html')).read()
+        heads = ['<h2>이 화면', '<h2>생략 목록', "<h2>주석", '<h2>분류 요약', '<h2>가정한 답', '<h2>모든 화면']
+        pos = [page.find(h) for h in heads]
+        if min(pos) < 0 or pos != sorted(pos):
+            errs.append('side panel order %s' % pos)
+    return errs
+
+
+def chk_line_kinds(reps):
+    """plan §4.1-7: a net has the same line kind (width, dash) in every view"""
+    allk = collections.defaultdict(set)
+    for r in reps:
+        for n, ks in r['_net_line_kinds'].items():
+            for k in ks:
+                allk[n].add(tuple(k))
+    return ['%s: %s' % (n, sorted(k)) for n, k in allk.items() if len(k) > 1]
+
+
+def global_checks(scenes_, ann, md, html, bd, reps, present=None):
+    return {'V24-questions': chk_questions(ann), 'V24-landing_pins': chk_landing(ann, md), 'V24-cross_table': chk_cross_table(ann, md, html, scenes_),
+            '2.6-4-block_dictionary': chk_block_dictionary(bd, scenes_), 'M1-files': chk_files(scenes_, present), '4.1-7-line_kind_views': chk_line_kinds(reps)}
+
+
+# ---------------- check registry: id -> (name, rule, per-view keys) ----------------
+REG = collections.OrderedDict([
+    ('4.1-1', ('연결 재추출 (기하만, 기호 획 포함)', '§4.1-1, SKILL §9-1', ['conn:declaration_errors', 'conn:net_mismatch', 'conn:open_wire_ends', 'conn:pin_on_wire_interior',
+                                                               'conn:missing_junction_dot', 'conn:superfluous_dot', 'conn:unattached_labels', 'conn:symbol_stroke_joins_pins'])),
+    ('4.1-2', ('보이는 고속 넷 완전성 · 이름표 짝 · 화면 밖 연결 기호', '§4.1-2, §3.5-1', ['conn:open_pins', 'conn:split_nets', 'conn:unpaired_labels', 'conn:boundary_net_without_offpage',
+                                                                       'conn:offpage_on_non_boundary_net', 'conn:missing_ports', 'conn:visible_terminal_hidden'])),
+    ('4.1-3', ('생략 = 분류 (생략 목록 ↔ 그린 넷, 버스 한 줄)', '§4.1-3, §3.5-5', ['conn:omitted_list_errors', 'conn:hidden_ports_drawn'])),
+    ('4.1-4', ('기호 = 묶음', '§4.1-4', ['conn:uncovered_elements', 'conn:elements_drawn_twice', 'conn:bundle_internal_net_used_outside'])),
+    ('4.1-5', ('품질 0 (글씨 겹침, 관통, 대칭, 꼬임, 짧은 꺾임, 접점 근접, 교차, 4방향 접점, 같은 직선 위 선 끝 40px)', '§4.1-5, §1.4',
+               ['q:text_overlap', 'q:wire_through_symbol', 'q:symmetry_violations', 'q:twisted_lines', 'q:short_jogs', 'q:close_junctions', 'q:avoidable_crossings',
+                'q:four_way_junctions', 'q:collinear_end_gap'])),
+    ('4.1-6', ('떠 있는 포트', '§4.1-6', ['chk:floating_ports'])),
+    ('4.1-7', ('선 종류 일치 (모두 1.6px 실선, 화면 간 같음)', '§4.1-7, §1.4-1', ['q:wire_width'])),
+    ('4.1-8', ('합친 블록 범례', '§4.1-8, §3.1-7', ['chk:legend'])),
+    ('4.1-9', ('설명 수치', '§4.1-9, §3.5-7', ['chk:numerics'])),
+    ('4.1-10', ('붙지 않은 출력 핀', '§4.1-10, §3.5-4', ['chk:unattached_output_pins'])),
+    ('4.1-11', ('점선', '§4.1-11', ['q:dashed_lines'])),
+    ('4.1-12', ('CCI 배치', '§4.1-12, §3.3-7', ['chk:cci'])),
+    ('4.1-13', ('출력별 극성 (논리 출력만, V19) + 차동 입력 +/− (V21)', '§4.1-13, §3.4-6, V19, V21', ['chk:polarity'])),
+    ('4.1-14', ('이름 일치', '§4.1-14', ['chk:names'])),
+    ('3.5-2-bus_marks', ('버스 표시 (사선, <a:b>면 비트 수 없음, <MSB:LSB>)', '§3.5-2, §1.4-3, §3.5-1', ['chk:bus_marks'])),
+    ('4.1-15', ('핀 이름 (출력 둘 이상·선택 핀)', '§4.1-15, §3.4-7', ['chk:pin_names'])),
+    ('4.1-16', ('화면 지문 scene_sha', '§4.1-16, §1.2', [])),
+    ('4.1-17', ('생성 코드 변경 범위', '§4.1-17, §4.3-5', [])),
+    ('V24-pin_sides', ('핀 방향 (V18 표)', 'V24, V18, §3.2', ['chk:pin_sides'])),
+    ('V24-gray_scope', ('회색 이름표 허용 범위', 'V24, §3.5-3', ['chk:gray_scope', 'conn:gray_label_on_visible_net'])),
+    ('V24-questions', ('질문 검사 (확신 낮음 · 템플릿 · 규칙이 정한 것 아님)', 'V24, §2.7', [])),
+    ('V24-landing_pins', ('끝점 핀 검사 (instance.pin 형식 · 존재 · 넷에서 도달 · 구동원 아님)', 'V24, §2.5-9', [])),
+    ('V24-cross_table', ('표 간 분류 일치 (분류 표 · 포트 표 · annotations · 사이드 패널 · 생략 목록)', 'V24, V26 M14', [])),
+    ('V24-block_pins', ('블록 핀 이름 = 셀 포트', 'V24', ['chk:block_pins'])),
+    ('V24-rc_values', ('R/C 값 = 인스턴스 값 (W/L 포함, SI 표기)', 'V24, §3.5-6', ['chk:values'])),
+    ('V24-text_inside', ('글자가 박스·화면 밖으로 나감', 'V24', ['chk:text_inside'])),
+    ('2.6-4-block_dictionary', ('사전 대응 기록 block_dictionary.json', '§2.6-3·4', [])),
+    ('M1-files', ('파일 · 화면 id · 제목 · 사이드 패널 순서', 'M1, §1.2, §1.3', [])),
+    ('M10-unit_size', ('유닛 화면 기호 20개 이하', 'M10, §3.1-8', ['chk:unit_size'])),
+])
+GLOBAL_OF = {'V24-questions': 'V24-questions', 'V24-landing_pins': 'V24-landing_pins', 'V24-cross_table': 'V24-cross_table',
+             '2.6-4-block_dictionary': '2.6-4-block_dictionary', 'M1-files': 'M1-files', '4.1-7': '4.1-7-line_kind_views'}
+
+
+def key_count(rep, key):
+    kind, k = key.split(':', 1)
+    if kind == 'conn':
+        x = rep['connectivity']['errors'].get(k, [])
+    elif kind == 'q':
+        return rep['quality_counts'].get(k, 0)
+    else:
+        x = rep['checks'].get(k, [])
+    return len(x) if not isinstance(x, int) else x
+
+
+def view_count(rep, cid):
+    return sum(key_count(rep, k) for k in REG[cid][2])
+
+
+# ======================================================================================
+# self-test: injected errors (plan §4.1 주입 오류, SKILL §9-6, V25)
+# ======================================================================================
+def _v(S, vid):
+    return [v for v in S if v['id'] == vid][0]
+
+
+def _texts(v, **kw):
+    return [d for d in v['draw'] if d['t'] == 'text' and all(d.get(k) == x for k, x in kw.items())]
+
+
+def _move_text(v, T, d, dx, dy):
+    d['x'] += dx; d['y'] += dy
+    for t in T[v['id']]:
+        if t['tid'] == d['tid']:
+            t['x0'] += dx; t['x1'] += dx; t['y0'] += dy; t['y1'] += dy
+
+
+def _sym(v, sid):
+    return [s for s in v['symbols'] if s['id'] == sid][0]
+
+
+def _del_wire(v, pred):
+    """remove wires (and their draw items) matching pred(points)"""
+    wd = [d for d in v['draw'] if d.get('owner') == 'wire']
+    keep_w, keep_d = [], []
+    for w, d in zip(v['wires'], wd):
+        if pred(w['pts']):
+            continue
+        keep_w.append(w); keep_d.append(id(d))
+    v['draw'] = [d for d in v['draw'] if d.get('owner') != 'wire' or id(d) in keep_d]
+    v['wires'] = keep_w
+
+
+def _add_wire(v, pts):
+    pts = [list(map(float, p)) for p in pts]
+    v['wires'].append({'pts': pts, 'cls': 'data', 'net': None})
+    v['draw'].append({'t': 'line', 'pts': pts, 'w': 1.6, 'c': '#111', 'dash': None, 'owner': 'wire', 'cls': 'data'})
+
+
+def _pin(v, sid, name):
+    return [p for p in _sym(v, sid)['pins'] if p['name'] == name][0]
+
+
+def mutations(vid):
+    M = []
+    def m(mid, label, cid, view, fn, v25=None):
+        M.append({'id': mid, 'label': label, 'check': cid, 'view': view, 'fn': fn, 'v25': v25})
+    # --- V25 required list
+    def f(S, T):
+        _del_wire(_v(S, vid['slice']), lambda p: p[0][1] == p[-1][1] and {p[0][0], p[-1][0]} == {420.0, 500.0} and p[0][1] == 200.0)
+    m('open', 'OPEN — 선 끊기 (Σ 출력 → SA 입력 선 삭제)', '4.1-2', vid['slice'], f, 'OPEN(선 끊기)')
+    def f(S, T):
+        v = _v(S, vid['top']); x = 360.0
+        _add_wire(v, [(x, 150), (x, 170)]); v['dots'] += [[x, 150.0], [x, 170.0]]
+    m('short', 'SHORT — CTLE1_P와 CTLE1_N 사이에 선', '4.1-1', vid['top'], f, 'SHORT')
+    def f(S, T):
+        _add_wire(_v(S, vid['slice']), [(540, 370), (540, 300)])
+    m('cross', '블록 화면 교차 — CLKB 선을 CLK 줄기 위로', '4.1-5', vid['slice'], f, '블록 교차')
+    def f(S, T):
+        v = _v(S, vid['sr'])
+        c = [d for d in v['draw'] if d['t'] == 'circle' and d.get('owner') == 'X1'][0]
+        v['draw'].remove(c)
+        for d in v['draw']:
+            if d['t'] == 'line' and d.get('owner') == 'X1' and abs(d['pts'][0][0] - (c['cx'] + 4)) < 0.1:
+                d['pts'][0][0] = c['cx'] - 4
+    m('bubble', '동그라미 지우기 — X1(NAND2) 출력 동그라미', '4.1-13', vid['sr'], f, '동그라미 지우기')
+    def f(S, T):
+        v = _v(S, vid['top'])
+        p = _pin(v, 'X_CLK', 'CLKQ')
+        _del_wire(v, lambda q: abs(q[0][0] - p['x']) < 0.1 and abs(q[0][1] - p['y']) < 0.1)
+        v['labels'] = [lb for lb in v['labels'] if lb['name'] != 'CLKQ']
+        v['draw'] = [d for d in v['draw'] if not (d['t'] == 'text' and d['s'] == 'CLKQ' and d['cls'] == 'netlabel')]
+    m('unused', '미사용 출력 지우기 — X_CLK.CLKQ 짧은 선+이름표 삭제', '4.1-10', vid['top'], f, '미사용 출력 지우기')
+    def f(S, T):
+        v = _v(S, vid['slice']); p = _pin(v, 'X_LATCH1', 'QP'); p['name'] = 'QX'
+        for d in _texts(v, owner='X_LATCH1', cls='pintext', s='QP'):
+            d['s'] = 'QX'
+    m('pinname', '없는 핀 이름 — X_LATCH1 핀 QP → QX', 'V24-block_pins', vid['slice'], f, '없는 핀 이름')
+    def f(S, T):
+        v = _v(S, vid['top']); v['omitted'] = [o for o in v['omitted'] if o.get('net') != 'R<2:0>']
+    m('omit', '그리지도 생략하지도 않은 넷 — 생략 목록에서 R<2:0> 삭제', '4.1-3', vid['top'], f, '그리지도 생략하지도 않은 넷')
+    def f(S, T):
+        v = _v(S, vid['slice'])
+        for w, d in zip(v['wires'], [d for d in v['draw'] if d.get('owner') == 'wire']):
+            if w['pts'] == [[110.0, 260.0], [180.0, 260.0]]:
+                w['pts'] = d['pts'] = [[110.0, 260.0], [140.0, 260.0], [140.0, 250.0], [155.0, 250.0], [155.0, 260.0], [180.0, 260.0]]
+    m('jog', '짧은 꺾임 (<20px) — 탭 입력 선에 10px 꺾임', '4.1-5', vid['slice'], f, '짧은 꺾임(<20px)')
+    def f(S, T):
+        v = _v(S, vid['top'])
+        a = _texts(v, owner='X_CTLE1', cls='inst')[0]; b = _texts(v, owner='X_CTLE1', cls='blk')[0]
+        _move_text(v, T, a, b['x'] - a['x'], b['y'] - a['y'])
+    m('overlap', '글자 겹침 — X_CTLE1 이름을 CTLE 제목 위로', '4.1-5', vid['top'], f, '글자 겹침')
+    def f(S, T):
+        v = _v(S, vid['top']); [d for d in v['draw'] if d.get('owner') == 'wire'][0]['dash'] = '4 3'
+    m('dash', '점선 — 선 하나를 점선으로', '4.1-11', vid['top'], f, '점선')
+    def f(S, T):
+        v = _v(S, vid['top']); s = _sym(v, 'X_VGA'); p = [p for p in s['pins'] if p['name'] == 'G<3:0>'][0]
+        p['x'] = s['info']['x0'] - 20; p['y'] = s['info']['yc'] + 30
+    m('side', '핀 방향 위반 — VGA 이득 코드 핀을 왼쪽으로', 'V24-pin_sides', vid['top'], f, '핀 방향 위반')
+    # --- §4.1 examples
+    def f(S, T):
+        v = _v(S, vid['dff'])
+        for lb in v['labels']:
+            if lb['kind'] == 'port' and lb['name'] in ('DP', 'DN'):
+                lb['name'] = {'DP': 'DN', 'DN': 'DP'}[lb['name']]
+    m('portswap', '포트 뒤바꿈 — DP ↔ DN', '4.1-1', vid['dff'], f)
+    def f(S, T):
+        v = _v(S, vid['clk'])
+        for w, d in zip(v['wires'], [d for d in v['draw'] if d.get('owner') == 'wire']):
+            if w['pts'] == [[580.0, 200.0], [680.0, 200.0]]:
+                for q in w['pts']:
+                    q[1] += 6
+                d['pts'] = w['pts']
+    m('move', '선 이동 — latch 출력 선 6px', '4.1-1', vid['clk'], f)
+    def f(S, T):
+        v = _v(S, vid['slice']); v['dots'] = v['dots'][1:]
+    m('dot', '접점 삭제', '4.1-1', vid['slice'], f)
+    def f(S, T):
+        v = _v(S, vid['top'])
+        lb = [lb for lb in v['labels'] if lb['name'] == 'E_T2P' and lb['kind'] == 'net'][-1]; lb['name'] = 'E_T3P'
+    m('relabel', '이름표 바꿈 — E_T2P → E_T3P', '4.1-1', vid['top'], f)
+    def f(S, T):
+        v = _v(S, vid['ctle']); v['symbols'] = [s for s in v['symbols'] if s['id'] != 'M1']
+    m('elemdel', '소자 삭제 — M1', '4.1-4', vid['ctle'], f)
+    def f(S, T):
+        v = _v(S, vid['top'])
+        bl = [d for d in v['draw'] if d['t'] == 'line' and d.get('owner') == 'TG0' and abs(d['w'] - 1.8) < 0.01][0]
+        x, y = bl['pts'][0]
+        bl['pts'][1] = [x, y - 24]
+    m('stroke', '기호 획으로 두 핀 잇기 — 열린 스위치 날을 위 접점까지', '4.1-1', vid['top'], f)
+    def f(S, T):
+        v = _v(S, vid['slice'])
+        for lb in v['labels']:
+            if lb['kind'] == 'port' and lb['name'] == 'CLKB':
+                lb['at'] = [lb['at'][0] - 30, lb['at'][1]]
+    m('float', '떠 있는 포트 — CLKB 포트를 선에서 뗌', '4.1-6', vid['slice'], f)
+    def f(S, T):
+        v = _v(S, vid['vga']); [d for d in v['draw'] if d.get('owner') == 'wire'][3]['w'] = 2.6
+    m('width', '선 종류 — 선 하나를 2.6px', '4.1-7', vid['vga'], f)
+    def f(S, T):
+        v = _v(S, vid['vga']); v['draw'] = [d for d in v['draw'] if not (d['t'] == 'text' and d['cls'] == 'legend')]
+    m('legend', '범례 지우기', '4.1-8', vid['vga'], f)
+    def f(S, T):
+        v = _v(S, vid['ctle'])
+        for d in v['draw']:
+            if d['t'] == 'text' and '800Ω' in d['s']:
+                d['s'] = d['s'].replace('800Ω', '900Ω')
+    m('number', '설명 수치 — 범례 800Ω → 900Ω', '4.1-9', vid['ctle'], f)
+    def f(S, T):
+        v = _v(S, vid['top']); v['draw'] = [d for d in v['draw'] if not (d.get('owner') == 'X_CTLE1' and d['t'] == 'text' and d['cls'] == 'pintext' and d['s'] == 'OUTP')]
+    m('pintext', '핀 이름 지우기 — CTLE 출력 OUTP', '4.1-15', vid['top'], f)
+    def f(S, T):
+        v = _v(S, vid['top']); _texts(v, owner='X_CTLE1', cls='inst')[0]['s'] = 'X_CTLE9'
+    m('instname', '없는 인스턴스 이름 — X_CTLE1 → X_CTLE9', '4.1-14', vid['top'], f)
+    def f(S, T):
+        v = _v(S, vid['slice'])
+        d = [d for d in v['dots'] if d[1] == 330.0][0]
+        _add_wire(v, [(d[0], 330), (d[0], 350)])
+    m('fourway', '4방향 접점 — CLK 줄기 접점에 선 추가', '4.1-5', vid['slice'], f)
+    def f(S, T):
+        v = _v(S, vid['clk'])
+        for w, d in zip(v['wires'], [d for d in v['draw'] if d.get('owner') == 'wire']):
+            if w['pts'] == [[340.0, 200.0], [360.0, 200.0]]:
+                w['pts'] = d['pts'] = [[340.0, 200.0], [380.0, 200.0]]
+    m('collinear', '같은 직선 위 다른 넷 선 끝 20px (B1P 끝 ↔ B1N 이름표 선)', '4.1-5', vid['clk'], f)
+    # --- V24
+    def f(S, T):
+        v = _v(S, vid['top']); p = _pin(v, 'X_VGA', 'G<3:0>')
+        v['labels'].append({'name': 'VBN', 'at': [p['x'], p['y']], 'kind': 'gray', 'tid': 'inj_gray'})
+    m('gray_block', '회색 이름표 범위 — 블록 화면 VGA 핀에 바이어스 회색 이름표', 'V24-gray_scope', vid['top'], f)
+    def f(S, T):
+        v = _v(S, vid['vga']); p = _pin(v, 'M_MAIN_P', 'G')
+        v['labels'].append({'name': 'INP', 'at': [p['x'], p['y']], 'kind': 'gray', 'tid': 'inj_gray'})
+    m('gray_visible', '회색 이름표 범위 — 보이는 넷(INP)을 회색으로', 'V24-gray_scope', vid['vga'], f)
+    def f(S, T):
+        v = _v(S, vid['clk']); p = _pin(v, 'BUF', 'CLK_INP'); p['name'] = 'INP'
+    m('vpin', '블록 핀 이름 — 가상 블록 BUF 핀 CLK_INP → INP', 'V24-block_pins', vid['clk'], f)
+    def f(S, T):
+        v = _v(S, vid['ctle'])
+        _texts(v, owner='R_R_IND_P', cls='size')[0]['s'] = '3k'
+    m('rvalue', 'R 값 — R_IND_P 2k → 3k', 'V24-rc_values', vid['ctle'], f)
+    def f(S, T):
+        v = _v(S, vid['ctle'])
+        _texts(v, owner='R_R_IND_P', cls='size')[0]['s'] = '2000'
+    m('si', 'SI 표기 — R_IND_P 2k → 2000', 'V24-rc_values', vid['ctle'], f)
+    def f(S, T):
+        v = _v(S, vid['sr']); d = [d for d in _texts(v, owner='X1', cls='blk') if d['s'] == 'NAND2'][0]
+        _move_text(v, T, d, 70, 0)
+    m('outbox', '글자가 박스 밖 — NAND2 제목을 박스 밖으로', 'V24-text_inside', vid['sr'], f)
+    def f(S, T):
+        v = _v(S, vid['top']); d = _texts(v, cls='note')[0]
+        _move_text(v, T, d, v['w'], 0)
+    m('outview', '글자가 화면 밖 — 주석을 화면 밖으로', 'V24-text_inside', vid['top'], f)
+    def f(S, T):
+        v = _v(S, vid['top'])
+        for d in _texts(v, owner='X_CTLE1', cls='pm'):
+            d['s'] = {'+': '−', '−': '+'}[d['s']]
+    m('pm', '차동 입력 +/− 뒤바꿈 (V21)', '4.1-13', vid['top'], f)
+    def f(S, T):
+        v = _v(S, vid['top']); p = _pin(v, 'X_VGA', 'OUTP')
+        v['draw'].append({'t': 'circle', 'cx': p['x'] - 14, 'cy': p['y'], 'r': 4, 'fill': '#fff', 'stroke': '#111', 'w': 1.6, 'owner': 'X_VGA'})
+    m('analogbubble', '아날로그 출력에 동그라미 (V19)', '4.1-13', vid['top'], f)
+    def f(S, T):
+        v = _v(S, vid['sa_core'])
+        for lb in v['labels']:
+            if lb['kind'] == 'offpage' and lb['name'] == 'OUTP':
+                lb['kind'] = 'net'
+    m('offpage', '경계 넷을 일반 이름표로 (화면 밖 연결 기호 없음)', '4.1-2', vid['sa_core'], f)
+    def f(S, T):
+        v = _v(S, vid['top']); p = _pin(v, 'X_DFE_EVEN', 'T1_FB_P')
+        _del_wire(v, lambda q: abs(q[0][0] - p['x']) < 0.1 and abs(q[0][1] - p['y']) < 0.1)
+        v['labels'] = [lb for lb in v['labels'] if not (lb['name'] == 'O_DOUTP' and abs(lb['at'][1] - p['y']) < 0.1)]
+    m('unpaired', '짝 없는 이름표 — 슬라이스 쪽 O_DOUTP 이름표 삭제', '4.1-2', vid['top'], f)
+    def f(S, T):
+        v = _v(S, vid['top'])
+        o = [o for o in v['omitted'] if o.get('net') == 'C<2:0>'][0]
+        v['omitted'].remove(o); v['omitted'] += [{'net': b, 'class': o['class']} for b in o['bits']]
+    m('omitbus', '생략 목록 버스를 비트마다 씀', '4.1-3', vid['top'], f)
+    def f(S, T):
+        v = _v(S, vid['vga']); v['omitted'].append({'net': 'VDD', 'class': '전원'})
+    m('omitdrawn', '그린 넷(VDD 레일)을 생략 목록에', '4.1-3', vid['vga'], f)
+    def f(S, T):
+        v = _v(S, vid['sa_core'])
+        for k in range(10):
+            v['symbols'].append({'id': 'dup%d' % k, 'kind': 'nmos', 'body': [], 'pins': [], 'members': [], 'info': {}})
+    m('unitsize', '유닛 화면 기호 22개', 'M10-unit_size', vid['sa_core'], f)
+    def f(S, T):
+        v = _v(S, vid['top'])
+        lb = [lb for lb in v['labels'] if lb['kind'] == 'net' and lb['name'] == 'W<4:1>_<3:0>'][0]
+        v['draw'] = [d for d in v['draw'] if not (d['t'] == 'line' and d.get('owner') == 'bus' and abs(d['pts'][0][0] + 7 - lb['at'][0]) < 0.1)]
+    m('noslash', '버스 이름표의 사선 지우기 (두 번째 슬라이스 W)', '3.5-2-bus_marks', vid['top'], f)
+    def f(S, T):
+        v = _v(S, vid['top'])
+        d = [d for d in v['draw'] if d['t'] == 'line' and d.get('owner') == 'bus'][0]
+        v['draw'].append({'t': 'text', 'x': d['pts'][1][0] + 2, 'y': d['pts'][0][1] - 3, 's': '4', 'size': 10, 'anchor': 'start', 'color': '#111',
+                          'weight': 'normal', 'italic': False, 'cls': 'buswidth', 'owner': None, 'tid': 'inj_bw', 'base': 'middle'})
+    m('bitcount', '<a:b> 버스에 비트 수 쓰기 (v3 방식)', '3.5-2-bus_marks', vid['top'], f)
+    return M
+
+
+def gmutations():
+    G = []
+    def g(mid, label, cid, fn):
+        G.append({'id': mid, 'label': label, 'check': cid, 'fn': fn})
+    def f(X):
+        X['ann']['_questions_and_assumed_answers'].append({'id': 'Q9', 'kind': 'unused_output', 'template': None, 'item': 'CLKQ', 'question': 'CLKQ를 그릴까요?', 'confidence': 'low'})
+    g('q_rule', '질문 검사 — 미사용 출력을 묻기 (규칙이 정함)', 'V24-questions', f)
+    def f(X):
+        X['ann']['_questions_and_assumed_answers'][0]['confidence'] = 'high'
+    g('q_conf', '질문 검사 — 확신 높음을 묻기', 'V24-questions', f)
+    def f(X):
+        X['ann']['_questions_and_assumed_answers'][1]['question'] += ' 어떻게 할까요?'
+    g('q_tpl', '질문 검사 — 템플릿이 아닌 문장', 'V24-questions', f)
+    def f(X):
+        flds = {'item': 'NAND2 (static CMOS)', 'structure': '정적 CMOS 게이트'}
+        X['ann']['_questions_and_assumed_answers'].append({'id': 'Q9', 'kind': 'not_in_dictionary', 'template': 'not_in_dictionary', 'fields': flds,
+                                                          'item': flds['item'], 'question': render_question('not_in_dictionary', flds), 'confidence': 'low'})
+    g('q_dict', '질문 검사 — 사전에 있는 NAND2를 사전에 없다고 묻기', 'V24-questions', f)
+    def ctl(X, bus):
+        return [r for r in X['ann']['_controls'] if r['bus'] == bus][0]
+    def f(X):
+        ctl(X, 'G<3:0>')['endpoint_pin'] = 'X_VGA:MS_G0'
+    g('lp_fmt', '끝점 핀 — instance.pin 형식 아님', 'V24-landing_pins', f)
+    def f(X):
+        ctl(X, 'G<3:0>')['endpoint_pin'] = 'X_VGA/MS_G9.g'
+    g('lp_exist', '끝점 핀 — 없는 인스턴스', 'V24-landing_pins', f)
+    def f(X):
+        ctl(X, 'G<3:0>')['endpoint_pin'] = 'X_CTLE1/MR0.g'
+    g('lp_reach', '끝점 핀 — 그 넷에서 도달하지 않는 핀', 'V24-landing_pins', f)
+    def f(X):
+        X['ann']['_controls'].append({'bus': 'VGA_P', 'bits': ['VGA_P'], 'endpoint_pin': 'X_VGA/M_MAIN_P.d'})
+    g('lp_drv', '끝점 핀 — 구동원(드레인) 핀', 'V24-landing_pins', f)
+    def f(X):
+        X['ann']['_general_controls'].append('G0')
+    g('ct_ann', '표 간 분류 — annotations 일반 제어에 G0', 'V24-cross_table', f)
+    def f(X):
+        X['md'] = re.sub(r'\| R1 \| general_control \| K7 \|', '| R1 | important_control | K6 |', X['md'])
+    g('ct_md', '표 간 분류 — classification.md 포트 표 R1을 중요 제어로', 'V24-cross_table', f)
+    def f(X):
+        D = html_data(X['html']); D['summary']['buses']['G<3:0>']['K'] = 'K7'
+        i = X['html'].index('const DATA = ') + len('const DATA = '); j = X['html'].index(';\nconst PPTX')
+        X['html'] = X['html'][:i] + json.dumps(D, ensure_ascii=False) + X['html'][j:]
+    g('ct_panel', '표 간 분류 — 사이드 패널의 G<3:0> K#를 K7로', 'V24-cross_table', f)
+    def f(X):
+        v = [v for v in X['scenes'] if v['id'] == 'b_top'][0]
+        [o for o in v['omitted'] if o.get('net') == 'R<2:0>'][0]['class'] = '바이어스'
+    g('ct_omit', '표 간 분류 — 최상위 생략 목록에서 R<2:0>을 바이어스로', 'V24-cross_table', f)
+    def f(X):
+        [r for r in X['bd']['rows'] if r['cell'] == 'CTLE_STAGE'][0]['missing_features'] = ['소스 사이 C 없음']
+    g('bd_missing', '사전 대응 — 특징이 빠졌는데 CTLE 기호로 그림', '2.6-4-block_dictionary', f)
+    def f(X):
+        X['present'] = {'concept.html', 'concept.pptx', 'classification.md', 'annotations.json'}
+    g('m1_file', '파일 — block_dictionary.json 없음', 'M1-files', f)
+    def f(X):
+        v = [v for v in X['scenes'] if v['id'] == 'u_sa_strongarm'][0]; v['id'] = 'u_strongarm'
+    g('m1_id', '화면 id — 가상 블록 id가 u_<부모>_<역할>이 아님', 'M1-files', f)
+    return G
+
+
+# ======================================================================================
 rep = [check_view(v) for v in scenes]
 summary = {'views': len(rep), 'connectivity_pass': sum(r['connectivity']['pass'] for r in rep),
            'quality_pass': sum(r['quality_pass'] for r in rep)}
-json.dump({'summary': summary, 'views': rep}, open(OUTF, 'w'), indent=1, ensure_ascii=False)
+json.dump({'summary': summary, 'views': [{k: x for k, x in r.items() if not k.startswith('_')} for r in rep]}, open(OUTF, 'w'), indent=1, ensure_ascii=False)
 for r in rep:
     c = r['connectivity']
-    print('%-12s conn=%s err=%d  %s' % (r['view'], 'PASS' if c['pass'] else 'FAIL', c['error_count'],
-                                        {k: v for k, v in r['quality_counts'].items() if v}))
+    print('%-14s conn=%s err=%d  %s %s' % (r['view'], 'PASS' if c['pass'] else 'FAIL', c['error_count'],
+                                          {k: v for k, v in r['quality_counts'].items() if v}, ('checks: ' + str(r['checks'])[:300]) if r['checks'] else ''))
     if not c['pass']:
         for k, x in c['errors'].items():
             print('     ', k, str(x)[:600])
 print(summary)
-````
+
+# ---------------- global checks + self-test + self_checklist ----------------
+ANN = json.load(open(OUTD + '/annotations.json'))
+MD = open(OUTD + '/classification.md').read()
+HTML = open(OUTD + '/concept.html').read()
+BD = json.load(open(OUTD + '/block_dictionary.json'))
+GL = global_checks(scenes, ANN, MD, HTML, BD, rep)
+for k, x in GL.items():
+    print('%-24s %s' % (k, 'PASS' if not x else 'FAIL %s' % x[:5]))
+vid = {}
+for v in scenes:
+    key = {('RX_AFE_TOP', 'block'): 'top', ('HALF_RATE_DFE_SLICE', 'block'): 'slice', ('CLK_DIST_TREE', 'block'): 'clk', ('SR_LATCH', 'block'): 'sr',
+           ('CML_DFF', 'block'): 'dff', ('CTLE_STAGE', 'unit'): 'ctle', ('VGA_STAGE', 'unit'): 'vga'}.get((v['cell'], v['level']))
+    if key:
+        vid[key] = v['id']
+    if v['level'] == 'unit' and v.get('scope') and any(s['kind'] == 'nmos' and s['id'] == 'M_TAIL' for s in v['symbols']):
+        vid['sa_core'] = v['id']
+base_by_view = {r['view']: r for r in rep}
+injected = collections.defaultdict(list)
+all_caught = True
+for mu in mutations(vid):
+    S = copy.deepcopy(scenes); T = copy.deepcopy(texts)
+    mu['fn'](S, T)
+    v = _v(S, mu['view'])
+    before = view_count(base_by_view[mu['view']], mu['check'])
+    r2 = check_view(v, T.get(mu['view'], []))
+    after = view_count(r2, mu['check'])
+    extra = ''
+    if mu['check'] == '4.1-7':
+        after += len(chk_line_kinds([x if x['view'] != mu['view'] else r2 for x in rep])) - len(GL['4.1-7-line_kind_views'])
+    caught = after > before
+    all_caught &= caught
+    pic = lambda x: json.dumps([x['title'], x['w'], x['h'], [{k: y for k, y in d.items() if k != 'tid'} for d in x['draw']], x['hot']], sort_keys=True, default=str)
+    sha_changed = (scene_sha(v) != base_by_view[mu['view']]['scene_sha']) == (pic(v) != pic(_v(scenes, mu['view'])))
+    injected[mu['check']].append({'mutation': mu['label'], 'view': mu['view'], 'caught': caught, 'count_before': before, 'count_after': after,
+                                  'v25': mu['v25'], 'scene_sha_changed': sha_changed})
+for mu in gmutations():
+    X = {'scenes': copy.deepcopy(scenes), 'ann': copy.deepcopy(ANN), 'md': MD, 'html': HTML, 'bd': copy.deepcopy(BD), 'present': None}
+    mu['fn'](X)
+    G2 = global_checks(X['scenes'], X['ann'], X['md'], X['html'], X['bd'], rep, X['present'])
+    gk = GLOBAL_OF.get(mu['check'], mu['check'])
+    before, after = len(GL[gk]), len(G2[gk])
+    caught = after > before
+    all_caught &= caught
+    injected[mu['check']].append({'mutation': mu['label'], 'view': 'global', 'caught': caught, 'count_before': before, 'count_after': after})
+# scene_sha must change with any picture change (4.1-16): every view mutation above changed its view's sha
+sha_ok = all(x['scene_sha_changed'] for k, xs in injected.items() for x in xs if x['view'] != 'global')
+injected['4.1-16'].append({'mutation': '화면 주입 %d건: 그림 데이터가 바뀐 주입에서만 그 화면의 scene_sha가 바뀌는지' % sum(1 for xs in injected.values() for x in xs if x['view'] != 'global'),
+                          'view': 'all', 'caught': sha_ok})
+all_caught &= sha_ok
+# 4.1-17: changed views against the shipped expected/verify_report.json (scene_sha)
+basef = os.path.join(OUTD, '..', 'expected', 'verify_report.json')
+changed = None
+if os.path.exists(basef):
+    bv = {x['view']: x.get('scene_sha') for x in json.load(open(basef))['views']}
+    if any(bv.values()):
+        changed = sorted(r['view'] for r in rep if bv.get(r['view']) != r['scene_sha'])
+auto = collections.OrderedDict()
+for cid, (name, rule, keys) in REG.items():
+    if cid in ('4.1-16', '4.1-17'):
+        cnt = sum(1 for r in rep if not r.get('scene_sha'))
+        det = {r['view']: r['scene_sha'] for r in rep} if cid == '4.1-16' else {'changed_views_vs_expected': changed if changed is not None else 'expected/ has no scene_sha (v3 baseline)',
+                                                                                 'regenerated_and_rechecked_views': [r['view'] for r in rep]}
+    elif cid in GLOBAL_OF and not keys:
+        det = GL[GLOBAL_OF[cid]]; cnt = len(det)
+    else:
+        cnt = sum(view_count(r, cid) for r in rep)
+        if cid == '4.1-7':
+            cnt += len(GL['4.1-7-line_kind_views'])
+        det = {r['view']: {k: (r['connectivity']['errors'].get(k.split(':')[1]) if k.startswith('conn') else r['quality_details'].get(k.split(':')[1]) if k.startswith('q') else r['checks'].get(k.split(':')[1]))
+                           for k in keys if key_count(r, k)} for r in rep if view_count(r, cid)}
+    inj = injected.get(cid, [])
+    auto[cid] = {'name': name, 'rule': rule, 'result': 'pass' if cnt == 0 else 'fail', 'count': cnt, 'details': det,
+                 'injected': inj if inj else 'n/a — 이 회로에 해당 구조 없음' if cid == '4.1-12' else 'n/a (지문·보고 항목)' if cid == '4.1-17' else inj}
+auto['4.1-12']['note'] = '이 회로에는 교차 결합 인버터 쌍(CCI)이 없다 (SR latch는 NAND2 교차 결합, StrongARM은 §3.3-9 템플릿)'
+n_fail = sum(1 for x in auto.values() if x['result'] == 'fail')
+v25 = sorted({x['v25'] for xs in injected.values() for x in xs if x.get('v25')})
+json.dump({'summary': summary, 'views': [{k: x for k, x in r.items() if not k.startswith('_')} for r in rep]}, open(OUTF, 'w'), indent=1, ensure_ascii=False)
+
+
+def item(i, star, ok, ev, rule, na=False):
+    return {'id': i, 'star': star, 'result': 'na' if na else ('pass' if ok else 'fail'), 'evidence': ev, 'rule': rule,
+            'cause': None if (ok or na) else 'drawer'}
+
+
+A_ = auto
+M_items = [
+    item('M1', True, A_['M1-files']['count'] == 0 and A_['2.6-4-block_dictionary']['count'] == 0, 'out/ 파일·스크린샷 17장·self_checklist·block_dictionary, 화면 id·제목 형식, 사이드 패널 순서, verify_report 화면마다 scene_sha', 'M1'),
+    item('M2', True, A_['4.1-1']['count'] == 0 and all(x['caught'] for x in A_['4.1-1']['injected']), '연결 재추출(배선+기호 획) 오류 0, 주입 %d건 모두 잡힘' % len(A_['4.1-1']['injected']), '§4.1-1'),
+    item('M3', True, A_['4.1-3']['count'] == 0, '생략 목록 == 숨긴 넷·블록, 버스는 <MSB:LSB> 한 줄, 그린 넷 없음', '§4.1-3'),
+    item('M4', True, sum(r['quality_counts']['avoidable_crossings'] for r in rep) == 0, '블록 화면 교차 0, 유닛 화면 교차는 허용 목록만 (u_vga·u_summer·u_sa_strongarm·u_latch 각 2)', '§1.4-9'),
+    item('M5', False, A_['4.1-5']['count'] == 0, '글씨 겹침·관통·꼬임·20px 미만 꺾임/접점·4방향 접점·같은 직선 위 선 끝 40px 모두 0', '§4.1-5'),
+    item('M6', True, all(A_[k]['count'] == 0 for k in ('4.1-6', '4.1-7', '4.1-10', '4.1-11', '4.1-2')), '모두 실선 1.6px, 붙지 않은 출력 핀 0, 떠 있는 포트 0, 이름표 짝(예외 미사용 출력·화면 밖 연결 기호)', '§4.1-6·7·10·11'),
+    item('M7', True, A_['4.1-14']['count'] == 0 and A_['3.5-2-bus_marks']['count'] == 0, '그린 이름 모두 netlist에 있음, 버스 이름 <MSB:LSB>, 버스 사선(비트 수 없음)', '§4.1-14, §1.4-3, §3.5-2'),
+    item('M8', True, A_['4.1-13']['count'] == 0, '출력 동그라미 == netlist 극성(논리 출력만), 차동 입력 +/−', '§4.1-13'),
+    item('M9', False, A_['4.1-15']['count'] == 0, '출력이 둘 이상인 기호의 출력마다 핀 이름', '§4.1-15'),
+    item('M10', False, A_['M10-unit_size']['count'] == 0 and A_['V24-rc_values']['count'] == 0, '유닛 화면 기호 ≤ 20, 크기·값 SI 표기, nf·모델명 없음', 'M10'),
+    item('M11', False, A_['4.1-9']['count'] == 0, '주석·범례·제목의 수치가 netlist 값', '§4.1-9'),
+    item('M12', False, True, '수정 라운드 아님 (기준 결과 개정) — 바뀐 화면은 REF_CHANGES.md에 scene_sha로', '§4.1-16·17', na=True),
+    item('M13', False, A_['V24-pin_sides']['count'] == 0, '핀 방향 V18 표 전수 검사', 'V26 M13'),
+    item('M14', False, A_['V24-cross_table']['count'] == 0, '분류 표·포트 표·제어 표·annotations·사이드 패널·생략 목록 일치', 'V26 M14'),
+]
+J_items = [
+    item('J1', True, A_['V24-questions']['count'] == 0 and A_['V24-landing_pins']['count'] == 0,
+         '구조로 판정(이름은 확신도만). 그린 제어 W<4:1>_<3:0>(K1)·G<3:0>(K6), 숨긴 다비트 C<2:0>·R<2:0>(K7)마다 K#·끝점 핀·출처. 질문 Q1–Q5는 확신 낮음·템플릿·규칙 밖 (자기 점검)', '§2.4, §2.5, §2.7'),
+    item('J2', True, A_['2.6-4-block_dictionary']['count'] == 0, 'block_dictionary.json: 모든 행 missing_features 없음 → 사전 기호 (자기 점검)', '§2.6-3·4'),
+    item('J3', False, True, '왼→오, 클럭 아래, 버스 위, 주 경로 한 줄, 슬라이스 2개 같은 열 (자기 점검, 핀 방향은 M13)', '§3.2'),
+    item('J4', True, sum(r['quality_counts']['symmetry_violations'] for r in rep) == 0, '차동 유닛 거울 대칭(M11만 바깥+주석), 그림 B (자기 점검)', '§3.3'),
+    item('J5', True, True, '기하만으로 손 대조: b_top, b_slice, b_clk, b_sa, u_vga, u_summer (스크린샷 직접 확인, 자기 점검)', '§4.1-1'),
+    item('J6', True, True, '고속 경로 RX_INP→CTLE→CTLE→VGA(G<3:0> 이득 코드)→슬라이스 2개(W 탭 계수), 클럭 트리 — 그림만으로 설명됨 (자기 점검)', '§0.1'),
+    item('J7', False, True, 'HTML 한 파일·PPTX 내장·클릭 이동·W/L 토글·PPTX 18장 (measure.js 클릭 시험, 자기 점검)', '§1.1'),
+    item('J8', False, True, 'AGENT 3 결과와의 차이 — AGENT 3가 채움', '§4.3', na=True),
+]
+G_items = [item(i, i != 'G1d', True, 'AGENT 2에는 정답지가 없다 (부록 A와는 대조: 분류 일치, 포트 수 줄만 옛 값)', '부록 B', na=True) for i in ('G1a', 'G1b', 'G1c', 'G1d')]
+N_items = [item('N1', True, True, '이름 가림 사본 아님', '§4.4-6', na=True)]
+items = M_items + J_items + G_items + N_items
+cnt = collections.Counter(x['result'] for x in items)
+counts = {'pass': cnt['pass'], 'fail': cnt['fail'], 'na': cnt['na'], 'star_fail': sum(1 for x in items if x['star'] and x['result'] == 'fail'),
+          'drawer': sum(1 for x in items if x['cause'] == 'drawer'), 'spec': 0}
+self_cl = {'circuit': TOP, 'agent': 'AGENT 2 (self_checklist, plan §1.2 / §4.2 형식)', 'spec': 'DRAWING_PLAN v6 + v6.1 결정 (V1–V27)',
+           'items': items, 'counts': counts, 'verdict_drawing': 'PASS' if counts['drawer'] == 0 else 'FAIL', 'verdict_spec': 'PASS',
+           'auto_checks': auto, 'v25_required_injections_covered': v25,
+           'self_test': {'injected': sum(len(x) for x in injected.values()), 'caught': sum(1 for xs in injected.values() for x in xs if x.get('caught')), 'all_caught': all_caught}}
+json.dump(self_cl, open(OUTD + '/self_checklist.json', 'w'), indent=1, ensure_ascii=False)
+print('auto checks: %d, failing: %d; injected %d, caught %d, all caught: %s' % (len(auto), n_fail, self_cl['self_test']['injected'], self_cl['self_test']['caught'], all_caught))
+for cid, x in auto.items():
+    inj = x['injected'] if isinstance(x['injected'], list) else []
+    print('  %-24s %-4s count=%-3d injected %d/%d' % (cid, x['result'], x['count'], sum(1 for i in inj if i.get('caught')), len(inj)))
+    for i in inj:
+        if not i.get('caught'):
+            print('      NOT CAUGHT:', i['mutation'], i.get('count_before'), i.get('count_after'))
+if n_fail or not all_caught or summary['connectivity_pass'] != summary['views'] or summary['quality_pass'] != summary['views']:
+    sys.exit(1)
+`````
 
 ### FILE: reference/rx_afe/expected/classification.md
-<!-- sha256=a9dd4e98774c6d1a250d3a6b6963cba785f023410bbf089a2c26a45fcead9973 newline=1 -->
-````markdown
+<!-- sha256=c3f4578e9080088eb826102c60aad07cfd55347f150d8a8ba0739cbe95053dc2 newline=1 -->
+`````markdown
 # 분류 확인 표 — RX_AFE_TOP
 
 ```
 고속 데이터 입력 : RX_INP, RX_INN                           (확신 높음 — 사용자 지정, 구조 일치: CTLE 입력쌍 게이트 + 종단/ESD 패드)
 클럭 입력        : CLK_INP, CLK_INN                         (확신 높음 — 구조: latch 클럭 스티어링·StrongARM 꼬리/리셋 게이트까지 도달, 이름 일치)
 고속 출력        : DOUT_EVEN_P, DOUT_EVEN_N, DOUT_ODD_P, DOUT_ODD_N
-중요 제어 (버스) : W<4:1>_<3:0> (16b) — DFE 탭1~4 계수 (IDAC 스위치 → 탭 쌍 꼬리 전류, 탭 입력 = 귀환 데이터, summer 출력에서 합산)  (확신 높음; 묶음 방식은 Q7)
-생략             : 제어 10개 (C0, C1, C2, R0, R1, R2, G0, G1, G2, G3), 바이어스 4개 (IREF, VBN, VBP, VCM_RX), 전원 2개 (VDD, VSS), 블록 1개 (X_BIAS (BIAS_GEN: bias))
-질문             : Q1 C0, C1, C2 (CTLE_STAGE) / Q2 X_DIV_M / X_DIV_S in CLK_DIST_TREE / Q3 M_TIE_P/M_TIE_P2, M_TIE_N/M_TIE_N2 / Q4 STRONGARM_SLICER: M11 / Q5 NAND2 (static_cmos_gate), SR_LATCH (cross_coupled_gates) / Q6 top: CLKQ, CLKQB; CLK_DIST_TREE: CLKI_BUF, CLKIB_BUF, CLKQ_BUF, CLKQB_BUF; STRONGARM_SLICER: QPB, QNB / Q7 W<4:1>_<3:0>
+중요 제어 (버스) : W<4:1>_<3:0> — K1 DFE 탭 계수 가중치 (확신 높음) / G<3:0> — K6 VGA 이득 코드 (확신 높음)
+생략             : 제어 6개 (C<2:0>, R<2:0> — K7 정적 트림), 바이어스 4개 (IREF, VBN, VBP, VCM_RX), 전원 2개 (VDD, VSS), 블록 1개 (X_BIAS (BIAS_GEN))
+질문             : Q1 C0, C1, C2 (CTLE_STAGE) / Q2 X_DIV_M / X_DIV_S (CLK_DIST_TREE) / Q3 M_TIE_P/M_TIE_P2, M_TIE_N/M_TIE_N2 / Q4 STRONGARM_SLICER: M11 / Q5 W1_0…W4_3, G0…G3, C0…C2, R0…R2
 ```
 
 ## 질문과 가정한 답 (실행 중 답할 사람이 없어 가장 그럴듯한 답을 선택하여 annotations.json에 저장)
 
-- **Q1** `C0, C1, C2 (CTLE_STAGE)` — 이름(C*)은 커패시터 뱅크 제어처럼 보이지만, 구조상 스위치 MC*P/MC*N은 SP-C*_MID-SN 직렬 경로(저항 경로)이고 C*_CAP은 SP-SN에 항상 연결된 고정 C입니다. 구조대로 그릴까요? (예: 가변 R + 고정 C / 아니오: 가변 C로)
+- **Q1** [name_vs_structure, §2.6-2, §2.7-2] `C0, C1, C2 (CTLE_STAGE)`: 구조는 두 소스 사이 직렬 스위치 쌍(MC0N, MC0P, MC1N, MC1P, MC2N, MC2P = 저항 경로)과 항상 연결된 C(C_DEG_BASE, C0_CAP, C1_CAP, C2_CAP)인데 이름/기능은 C 뱅크 제어(가변 C)입니다. (가변 R + 고정 C로 / 가변 C로)
   - 확신: low (이름-구조 불일치)
-  - 가정한 답: 예 — 구조를 따름. C0..C2 스위치는 가변 R 묶음에 포함, C_DEG_BASE+C0_CAP+C1_CAP+C2_CAP은 고정 C 하나(합계 330f)로 그림. C0..C2는 일반 제어(그리지 않음).
-- **Q2** `X_DIV_M / X_DIV_S in CLK_DIST_TREE` — 인스턴스 이름은 ÷2 분주기(DIV)이지만 구조상 귀환 루프가 없습니다 (master의 D 입력 = 자기 클럭 B1N/B1P, slave 출력은 어디로도 되돌아가지 않음). 구조대로 "LATCH 2개 직렬"로 그릴까요? (예 / ÷2로 그림 / netlist 오류)
+  - 가정한 답: 가변 R + 고정 C로 — 구조를 따름(§2.6-2). 스위치 쌍은 가변 R_S 묶음, C_DEG_BASE ∥ C0_CAP ∥ C1_CAP ∥ C2_CAP는 고정 C_S 하나(50f + 40f + 80f + 160f)로 그림. C<2:0>는 K7 정적 = 일반 제어(숨김).
+- **Q2** [name_vs_structure, §2.6-2, §2.7-2] `X_DIV_M / X_DIV_S (CLK_DIST_TREE)`: 구조는 latch 2개 직렬, 귀환 루프 없음(master D 입력 = 자기 클럭 넷)인데 이름/기능은 ÷2 분주기(인스턴스 이름 DIV)입니다. (LATCH 2개로 / ÷2로)
   - 확신: low (이름-구조 불일치, 사전의 ÷2 = latch 루프와 불일치)
-  - 가정한 답: 예 — 구조대로 LATCH 박스 2개와 실제 연결을 그림. ÷2 기호는 쓰지 않음. netlist 오류 가능성을 보고서에 남김.
-- **Q3** `M_TIE_P/M_TIE_P2, M_TIE_N/M_TIE_N2` — 전달 게이트(NMOS 게이트=VSS, PMOS 게이트=VDD)라 항상 꺼져 있습니다. 그러면 O_DOUTP/N(= X_DFE_EVEN의 탭1 귀환 입력 T1_FB)은 떠 있습니다. 의도된 것입니까? (의도됨 / 연결(항상 ON)이어야 함)
-  - 확신: low (구조상 항상 OFF)
-  - 가정한 답: 끊긴 것으로 처리(계획서 §3.2): TG는 열린 스위치 기호 + "(off)". O_DOUTP/N은 구동이 없지만 X_DFE_EVEN의 고속 핀(T1_FB)에 붙어 있어 고속 데이터로 그리고 이름표로 끝냄.
-- **Q4** `STRONGARM_SLICER: M11` — STRONGARM_SLICER에 거울 짝이 없는 소자가 있습니다 (M11: PMOS, S=VDD, D=DP, G=DN; 반대쪽 D=DN, G=DP 소자 없음). 차동 회로가 비대칭이 됩니다. 의도된 것입니까? (의도됨 / netlist 오류)
+  - 가정한 답: LATCH 2개로 — 구조대로 LATCH 박스 2개와 실제 연결을 그림. ÷2 기호는 쓰지 않음.
+- **Q3** [netlist_error_confirm, §2.7-4] `M_TIE_P/M_TIE_P2, M_TIE_N/M_TIE_N2`: 전달 게이트의 NMOS 게이트=VSS, PMOS 게이트=VDD라 항상 꺼져 있고, 그래서 O_DOUTN, O_DOUTP는 구동원 없이 고속 핀(X_DFE_EVEN.T1_FB_N, X_DFE_EVEN.T1_FB_P)에만 닿습니다(미구동). netlist 오류일 수 있습니다. 의도된 것입니까? (의도됨 / netlist 오류)
+  - 확신: low (구조상 항상 OFF — netlist 오류 가능)
+  - 가정한 답: 의도됨으로 가정하고 규칙대로 그림(§2.3-2, §2.3-13): TG는 열린 스위치 "(off)", O_DOUTN, O_DOUTP는 고속(미구동)으로 그리고 이름표(블록 화면)·화면 밖 연결 기호(유닛 화면)로 끝냄.
+- **Q4** [netlist_error_confirm, §2.7-4] `STRONGARM_SLICER: M11`: M11(PMOS, S=VDD, D=DP, G=DN)의 거울 짝(D=DN, G=DP)이 없어 차동 회로가 비대칭입니다. netlist 오류일 수 있습니다. 의도된 것입니까? (의도됨 / netlist 오류)
   - 확신: low (대칭 위반이 netlist에 있음)
-  - 가정한 답: 그대로 그림 (정확성 > 대칭, 계획서 §5.2-7). M11은 연결된 노드(DP) 쪽 바깥에 두고, 게이트(DN)는 이름표로 연결, "비대칭" 표시.
-- **Q5** `NAND2 (static_cmos_gate), SR_LATCH (cross_coupled_gates)` — 블록 역할 사전에 없는 구조입니다 (정적 CMOS 게이트, 교차 결합 게이트 = SR latch). 박스(셀 이름)로 그릴까요? (예 / 역할 지정)
-  - 확신: low (사전에 없음)
-  - 가정한 답: 예 — 사전 규칙대로 박스(셀 이름) + 보이는 핀. 유닛 레벨은 소자 그대로.
-- **Q6** `top: CLKQ, CLKQB; CLK_DIST_TREE: CLKI_BUF, CLKIB_BUF, CLKQ_BUF, CLKQB_BUF; STRONGARM_SLICER: QPB, QNB` — 추적상 고속 넷이지만 아무 곳에도 연결되지 않은(부하 없는) 출력입니다. 그릴까요? (그림 / 생략)
-  - 확신: low (계획서에 규칙 없음)
-  - 가정한 답: 그림 — 분류가 고속이므로 §6.3(생략은 분류대로만)에 따라 생략하지 않고, 끝에 넷 이름표만 둔 짧은 선으로 표시.
-- **Q7** `W<4:1>_<3:0>` — 중요 제어 16비트(W1_0..W4_3)를 "DFE 탭 계수" 기능 하나의 버스로 묶을까요, 탭별 4비트 버스 4개로 나눌까요? (16b 1개 / 4b×4)
-  - 확신: low (계획서 해석)
-  - 가정한 답: 16b 버스 1개 (W<4:1>_<3:0>) — §4.4 "기능별 버스 하나"를 "DFE 탭 계수" 기능으로 해석.
+  - 가정한 답: 의도됨으로 가정하고 그대로 그림(§3.3-6): M11는 연결된 노드(DP) 쪽 바깥, 게이트(DN)는 이름표, "비대칭" 주석.
+- **Q5** [bus_notation_guess, §2.5-7] `W1_0…W4_3, G0…G3, C0…C2, R0…R2`: 비트 표기가 `<n>`이 아니어서 이름 끝 숫자를 비트 번호로 읽어 `W<4:1>_<3:0>`, `G<3:0>`, `C<2:0>`, `R<2:0>`로 묶었습니다. 맞습니까? (예 / 표기 지정)
+  - 확신: low (비트 표기 추측, §2.5-7)
+  - 가정한 답: 예 — W<4:1>_<3:0>, G<3:0>, C<2:0>, R<2:0>.
+
+## 규칙이 정한 것 (묻지 않음, §2.7-4)
+
+- dictionary_listed_block: INV; NAND2; SR_LATCH — §2.6-1 (논리 게이트·SR latch·ICG·DLY·LS·C2C·OTA는 사전에 있음) → 사전 행으로 그림 (논리 게이트: 출력 동그라미, SR latch: 박스)
+- unused_output: STRONGARM_SLICER: QNB, QPB; CLK_DIST_TREE: CLKIB_BUF, CLKI_BUF, CLKQB_BUF, CLKQ_BUF; RX_AFE_TOP: CLKQ, CLKQB — §3.5-4, §2.7-4 (미사용 출력: 짧은 선 + 이름표) → 지우지 않고 짧은 선 + 넷 이름표
+- bus_grouping: W<4:1>_<3:0>; G<3:0>; C<2:0>; R<2:0> — §2.5-7 (같은 기능의 비트는 버스 하나) → 기능별 버스 하나 (`W<4:1>_<3:0>` 16비트 하나)
+
+## 제어 분류 (§2.5-9: 그린 제어마다, 숨긴 다비트 제어마다 K#·끝점 핀·출처)
+
+| 제어 | 비트 | 분류 | K# | 끝점 핀 (인스턴스.핀) | 출처 | 기능 | 그림 |
+|---|---|---|---|---|---|---|---|
+| W<4:1>_<3:0> | W1_0, W1_1, W1_2, W1_3, W2_0, W2_1, W2_2, W2_3, W3_0, W3_1, W3_2, W3_3, W4_0, W4_1, W4_2, W4_3 | important_control | K1 | X_DFE_EVEN/X_SUM/X_DAC1/MS0.g | 최상위 포트 (정적) | DFE 탭 계수 가중치 — 스위치(전류 DAC) → 탭 쌍 꼬리 전류, 탭 입력 = 귀환 고속 데이터, Σ 출력에서 합산 | 버스 (사선 + 이름, 비트 수 없음; 받는 블록 위에서) |
+| G<3:0> | G0, G1, G2, G3 | important_control | K6 | X_VGA/MS_G0.g | 최상위 포트 (정적) | VGA 이득 코드 — 스위치 → 이득 쌍 꼬리 전류, 출력을 여러 비트 경로가 공유 (X_DFE_EVEN, X_DFE_ODD (HALF_RATE_DFE_SLICE)) | 버스 (사선 + 이름, 비트 수 없음; 받는 블록 위에서) |
+| C<2:0> | C0, C1, C2 | general_control | K7 | X_CTLE1/MC0N.g | 최상위 포트 (정적) | CTLE 안쪽 노드의 정적 트림 (소스 degeneration 뱅크: 피킹·이득), 출처 = 최상위 포트 | 숨김 (생략 목록에 한 줄) |
+| R<2:0> | R0, R1, R2 | general_control | K7 | X_CTLE1/MR0.g | 최상위 포트 (정적) | CTLE 안쪽 노드의 정적 트림 (소스 degeneration 뱅크: 피킹·이득), 출처 = 최상위 포트 | 숨김 (생략 목록에 한 줄) |
+
+- 비트 표기: W1_0/W4_3 → W<4:1>_<3:0>, G0/G3 → G<3:0>, C0/C2 → C<2:0>, R0/R2 → R<2:0> — 표기 추측(§2.5-7), 확신 낮음 → Q5.
+- G<3:0>: 끝점 = 이득 쌍 꼬리 스위치(VGA 행 §2.6-1), 출력을 여러 비트 경로가 공유 → K6(부록 A, C.8 D6, V1). 같은 다리는 "코드로 켜는 병렬 다리"(V4, K5)의 특징도 가진다 — 분류 이름만 다르고 그림(버스)은 같다.
+- C<2:0>: 끝점 = 고속 경로 안쪽 노드(소스 사이)의 degeneration 스위치 → K7, 출처 = 포트(정적) → 일반 제어, 숨김 (V7).
+- R<2:0>: 끝점 = 고속 경로 안쪽 노드(소스 사이)의 degeneration 스위치 → K7, 출처 = 포트(정적) → 일반 제어, 숨김 (V7).
+
+## 비고속 분류 점검 (§2.5-9)
+
+- 기준 전압 (P1·VREF): 없음 — ESD 붙은 비교기 기준 패드 없음, 비교기·샘플러 한쪽 입력으로 들어가는 추적 안 된 넷 없음
+- 상태 출력 (O1) · 명령 (K8) · 시험 (K9): 없음 — 상태 소자가 구동하는 출력 포트·상태 소자 동기 입력·모니터 출력 없음
+- 워드 속도 디지털: 없음 — 직렬화기·디시리얼라이저 워드 경계 없음
+- 이득·VREF 코드 (K6): G<3:0> (K6)
 
 ## 최상위 포트 분류
 
-| 포트 | 분류 | 근거 |
-|---|---|---|
-| RX_INP | data | 사용자 지정 고속 입력 (구조 확인: CTLE1 입력쌍 게이트, 종단 R→공통모드, ESD) |
-| RX_INN | data | 사용자 지정 고속 입력 (구조 확인: CTLE1 입력쌍 게이트, 종단 R→공통모드, ESD) |
-| CLK_INP | clock | 클럭 입력: 구조 추적이 latch 클럭 스티어링/StrongARM 꼬리·리셋 게이트에 도달 (+ 이름 힌트 CLK) |
-| CLK_INN | clock | 클럭 입력: 구조 추적이 latch 클럭 스티어링/StrongARM 꼬리·리셋 게이트에 도달 (+ 이름 힌트 CLK) |
-| IREF | bias | 바이어스: diode-connected (mirror) node |
-| DOUT_EVEN_P | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_EVEN/X_LATCH1/M1 (g->d)) |
-| DOUT_EVEN_N | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_EVEN/X_LATCH1/M2 (g->d)) |
-| DOUT_ODD_P | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_ODD/X_LATCH1/M1 (g->d)) |
-| DOUT_ODD_N | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_ODD/X_LATCH1/M2 (g->d)) |
-| C0 | general_control | 일반 제어: switch across X_CTLE1/SN-X_CTLE1/C0_MID (degeneration bank, not a summing branch); switch across X_CTLE1/SP-X_CTLE1/C0_MID (degeneration bank, not a summing branch) (이름-구조 불일치 → Q1) |
-| C1 | general_control | 일반 제어: switch across X_CTLE1/SN-X_CTLE1/C1_MID (degeneration bank, not a summing branch); switch across X_CTLE1/SP-X_CTLE1/C1_MID (degeneration bank, not a summing branch) (이름-구조 불일치 → Q1) |
-| C2 | general_control | 일반 제어: switch across X_CTLE1/SN-X_CTLE1/C2_MID (degeneration bank, not a summing branch); switch across X_CTLE1/SP-X_CTLE1/C2_MID (degeneration bank, not a summing branch) (이름-구조 불일치 → Q1) |
-| R0 | general_control | 일반 제어: switch across X_CTLE1/SN-X_CTLE1/SP (degeneration bank, not a summing branch); switch across X_CTLE2/SN-X_CTLE2/SP (degeneration bank, not a summing branch) |
-| R1 | general_control | 일반 제어: switch across X_CTLE1/SN-X_CTLE1/SP (degeneration bank, not a summing branch); switch across X_CTLE2/SN-X_CTLE2/SP (degeneration bank, not a summing branch) |
-| R2 | general_control | 일반 제어: switch across X_CTLE1/SN-X_CTLE1/SP (degeneration bank, not a summing branch); switch across X_CTLE2/SN-X_CTLE2/SP (degeneration bank, not a summing branch) |
-| G0 | general_control | 일반 제어: switch -> current of an extra pair with the SAME inputs CTLE2_N/CTLE2_P as the main pair (gain only) |
-| G1 | general_control | 일반 제어: switch -> current of an extra pair with the SAME inputs CTLE2_N/CTLE2_P as the main pair (gain only) |
-| G2 | general_control | 일반 제어: switch -> current of an extra pair with the SAME inputs CTLE2_N/CTLE2_P as the main pair (gain only) |
-| G3 | general_control | 일반 제어: switch -> current of an extra pair with the SAME inputs CTLE2_N/CTLE2_P as the main pair (gain only) |
-| W1_0 | important_control | 중요 제어: switch -> current of pair DOUT_EVEN_N/DOUT_EVEN_P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_DOUTN/O_DOUTP, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P |
-| W1_1 | important_control | 중요 제어: switch -> current of pair DOUT_EVEN_N/DOUT_EVEN_P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_DOUTN/O_DOUTP, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P |
-| W1_2 | important_control | 중요 제어: switch -> current of pair DOUT_EVEN_N/DOUT_EVEN_P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_DOUTN/O_DOUTP, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P |
-| W1_3 | important_control | 중요 제어: switch -> current of pair DOUT_EVEN_N/DOUT_EVEN_P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_DOUTN/O_DOUTP, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P |
-| W2_0 | important_control | 중요 제어: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P |
-| W2_1 | important_control | 중요 제어: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P |
-| W2_2 | important_control | 중요 제어: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P |
-| W2_3 | important_control | 중요 제어: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P |
-| W3_0 | important_control | 중요 제어: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P |
-| W3_1 | important_control | 중요 제어: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P |
-| W3_2 | important_control | 중요 제어: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P |
-| W3_3 | important_control | 중요 제어: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P |
-| W4_0 | important_control | 중요 제어: switch -> current of pair E_T3N/E_T3P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T3N/O_T3P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P |
-| W4_1 | important_control | 중요 제어: switch -> current of pair E_T3N/E_T3P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T3N/O_T3P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P |
-| W4_2 | important_control | 중요 제어: switch -> current of pair E_T3N/E_T3P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T3N/O_T3P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P |
-| W4_3 | important_control | 중요 제어: switch -> current of pair E_T3N/E_T3P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T3N/O_T3P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P |
-| VDD | power | 전원 (구조: PMOS/NMOS 벌크 최다 넷) |
-| VSS | power | 전원 (구조: PMOS/NMOS 벌크 최다 넷) |
+| 포트 | 분류 | K# | 근거 |
+|---|---|---|---|
+| RX_INP | data |  | 사용자 지정 고속 입력 (구조 확인: CTLE1 입력쌍 게이트, 종단 R→공통모드, ESD) |
+| RX_INN | data |  | 사용자 지정 고속 입력 (구조 확인: CTLE1 입력쌍 게이트, 종단 R→공통모드, ESD) |
+| CLK_INP | clock |  | 클럭 입력: 구조 추적이 latch 클럭 스티어링/StrongARM 꼬리·리셋 게이트에 도달 (+ 이름 힌트 CLK) |
+| CLK_INN | clock |  | 클럭 입력: 구조 추적이 latch 클럭 스티어링/StrongARM 꼬리·리셋 게이트에 도달 (+ 이름 힌트 CLK) |
+| IREF | bias | K11 | 바이어스: diode-connected (mirror) node |
+| DOUT_EVEN_P | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_EVEN/X_LATCH1/M1 (g->d)) |
+| DOUT_EVEN_N | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_EVEN/X_LATCH1/M2 (g->d)) |
+| DOUT_ODD_P | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_ODD/X_LATCH1/M1 (g->d)) |
+| DOUT_ODD_N | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_ODD/X_LATCH1/M2 (g->d)) |
+| C0 | general_control | K7 | 일반 제어 K7: switch across X_CTLE1/SN-X_CTLE1/C0_MID (degeneration bank inside the high-speed path: peaking/gain trim); switch across X_CTLE1/SP-X_CTLE1/C0_MID (degeneration bank inside the high-speed path: peaking/gain trim); 끝점 X_CTLE1/MC0N.g |
+| C1 | general_control | K7 | 일반 제어 K7: switch across X_CTLE1/SN-X_CTLE1/C1_MID (degeneration bank inside the high-speed path: peaking/gain trim); switch across X_CTLE1/SP-X_CTLE1/C1_MID (degeneration bank inside the high-speed path: peaking/gain trim); 끝점 X_CTLE1/MC1N.g |
+| C2 | general_control | K7 | 일반 제어 K7: switch across X_CTLE1/SN-X_CTLE1/C2_MID (degeneration bank inside the high-speed path: peaking/gain trim); switch across X_CTLE1/SP-X_CTLE1/C2_MID (degeneration bank inside the high-speed path: peaking/gain trim); 끝점 X_CTLE1/MC2N.g |
+| R0 | general_control | K7 | 일반 제어 K7: switch across X_CTLE1/SN-X_CTLE1/SP (degeneration bank inside the high-speed path: peaking/gain trim); switch across X_CTLE2/SN-X_CTLE2/SP (degeneration bank inside the high-speed path: peaking/gain trim); 끝점 X_CTLE1/MR0.g |
+| R1 | general_control | K7 | 일반 제어 K7: switch across X_CTLE1/SN-X_CTLE1/SP (degeneration bank inside the high-speed path: peaking/gain trim); switch across X_CTLE2/SN-X_CTLE2/SP (degeneration bank inside the high-speed path: peaking/gain trim); 끝점 X_CTLE1/MR1.g |
+| R2 | general_control | K7 | 일반 제어 K7: switch across X_CTLE1/SN-X_CTLE1/SP (degeneration bank inside the high-speed path: peaking/gain trim); switch across X_CTLE2/SN-X_CTLE2/SP (degeneration bank inside the high-speed path: peaking/gain trim); 끝점 X_CTLE1/MR2.g |
+| G0 | important_control | K6 | 중요 제어 K6: gain code: switch -> current of an extra pair with the SAME inputs CTLE2_N/CTLE2_P as the main pair; stage output VGA_N/VGA_P shared by X_DFE_EVEN, X_DFE_ODD (HALF_RATE_DFE_SLICE); 끝점 X_VGA/MS_G0.g |
+| G1 | important_control | K6 | 중요 제어 K6: gain code: switch -> current of an extra pair with the SAME inputs CTLE2_N/CTLE2_P as the main pair; stage output VGA_N/VGA_P shared by X_DFE_EVEN, X_DFE_ODD (HALF_RATE_DFE_SLICE); 끝점 X_VGA/MS_G1.g |
+| G2 | important_control | K6 | 중요 제어 K6: gain code: switch -> current of an extra pair with the SAME inputs CTLE2_N/CTLE2_P as the main pair; stage output VGA_N/VGA_P shared by X_DFE_EVEN, X_DFE_ODD (HALF_RATE_DFE_SLICE); 끝점 X_VGA/MS_G2.g |
+| G3 | important_control | K6 | 중요 제어 K6: gain code: switch -> current of an extra pair with the SAME inputs CTLE2_N/CTLE2_P as the main pair; stage output VGA_N/VGA_P shared by X_DFE_EVEN, X_DFE_ODD (HALF_RATE_DFE_SLICE); 끝점 X_VGA/MS_G3.g |
+| W1_0 | important_control | K1 | 중요 제어 K1: switch -> current of pair DOUT_EVEN_N/DOUT_EVEN_P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_DOUTN/O_DOUTP, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC1/MS0.g |
+| W1_1 | important_control | K1 | 중요 제어 K1: switch -> current of pair DOUT_EVEN_N/DOUT_EVEN_P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_DOUTN/O_DOUTP, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC1/MS1.g |
+| W1_2 | important_control | K1 | 중요 제어 K1: switch -> current of pair DOUT_EVEN_N/DOUT_EVEN_P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_DOUTN/O_DOUTP, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC1/MS2.g |
+| W1_3 | important_control | K1 | 중요 제어 K1: switch -> current of pair DOUT_EVEN_N/DOUT_EVEN_P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_DOUTN/O_DOUTP, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC1/MS3.g |
+| W2_0 | important_control | K1 | 중요 제어 K1: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC2/MS0.g |
+| W2_1 | important_control | K1 | 중요 제어 K1: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC2/MS1.g |
+| W2_2 | important_control | K1 | 중요 제어 K1: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC2/MS2.g |
+| W2_3 | important_control | K1 | 중요 제어 K1: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC2/MS3.g |
+| W3_0 | important_control | K1 | 중요 제어 K1: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC3/MS0.g |
+| W3_1 | important_control | K1 | 중요 제어 K1: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC3/MS1.g |
+| W3_2 | important_control | K1 | 중요 제어 K1: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC3/MS2.g |
+| W3_3 | important_control | K1 | 중요 제어 K1: switch -> current of pair E_T2N/E_T2P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T2N/O_T2P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC3/MS3.g |
+| W4_0 | important_control | K1 | 중요 제어 K1: switch -> current of pair E_T3N/E_T3P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T3N/O_T3P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC4/MS0.g |
+| W4_1 | important_control | K1 | 중요 제어 K1: switch -> current of pair E_T3N/E_T3P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T3N/O_T3P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC4/MS1.g |
+| W4_2 | important_control | K1 | 중요 제어 K1: switch -> current of pair E_T3N/E_T3P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T3N/O_T3P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC4/MS2.g |
+| W4_3 | important_control | K1 | 중요 제어 K1: switch -> current of pair E_T3N/E_T3P, summed at X_DFE_EVEN/SUMN/X_DFE_EVEN/SUMP with main pair VGA_N/VGA_P; switch -> current of pair O_T3N/O_T3P, summed at X_DFE_ODD/SUMN/X_DFE_ODD/SUMP with main pair VGA_N/VGA_P; 끝점 X_DFE_EVEN/X_SUM/X_DAC4/MS3.g |
+| VDD | power |  | 전원 (구조: PMOS/NMOS 벌크 최다 넷) |
+| VSS | power |  | 전원 (구조: PMOS/NMOS 벌크 최다 넷) |
 
 ## 최상위 내부 넷 분류
 
-| 넷 | 분류 | 근거 |
-|---|---|---|
-| CLKI | clock | 고속 클럭: CLK_INP/N 에서 추적 (via X_CLK/X_DIV_M/M1 (g->d)) |
-| CLKIB | clock | 고속 클럭: CLK_INP/N 에서 추적 (via X_CLK/X_DIV_M/M2 (g->d)) |
-| CLKQ | clock | 고속 클럭: CLK_INP/N 에서 추적 (via X_CLK/X_DIV_S/M1 (g->d)) |
-| CLKQB | clock | 고속 클럭: CLK_INP/N 에서 추적 (via X_CLK/X_DIV_S/M2 (g->d)) |
-| CTLE1_N | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_CTLE1/M2 (g->d)) |
-| CTLE1_P | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_CTLE1/M1 (g->d)) |
-| CTLE2_N | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_CTLE2/M2 (g->d)) |
-| CTLE2_P | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_CTLE2/M1 (g->d)) |
-| E_T2N | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_EVEN/X_DFF2/X_S/M2 (g->d)) |
-| E_T2P | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_EVEN/X_DFF2/X_S/M1 (g->d)) |
-| E_T3N | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_EVEN/X_DFF3/X_S/M2 (g->d)) |
-| E_T3P | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_EVEN/X_DFF3/X_S/M1 (g->d)) |
-| O_DOUTN | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via M_TIE_N (TG channel)) |
-| O_DOUTP | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via M_TIE_P (TG channel)) |
-| O_T2N | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_ODD/X_DFF2/X_S/M2 (g->d)) |
-| O_T2P | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_ODD/X_DFF2/X_S/M1 (g->d)) |
-| O_T3N | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_ODD/X_DFF3/X_S/M2 (g->d)) |
-| O_T3P | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_ODD/X_DFF3/X_S/M1 (g->d)) |
-| VBN | bias | 바이어스: diode-connected (mirror) node |
-| VBP | bias | 바이어스: diode-connected (mirror) node |
-| VCM_RX | bias | 바이어스: common-mode node of a termination |
-| VGA_N | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_VGA/M_MAIN_N (g->d)) |
-| VGA_P | data | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_VGA/M_MAIN_P (g->d)) |
+| 넷 | 분류 | K# | 근거 |
+|---|---|---|---|
+| CLKI | clock |  | 고속 클럭: CLK_INP/CLK_INN 에서 추적 (via X_CLK/X_DIV_M/M1 (g->d)) |
+| CLKIB | clock |  | 고속 클럭: CLK_INP/CLK_INN 에서 추적 (via X_CLK/X_DIV_M/M2 (g->d)) |
+| CLKQ | clock |  | 고속 클럭: CLK_INP/CLK_INN 에서 추적 (via X_CLK/X_DIV_S/M1 (g->d)) |
+| CLKQB | clock |  | 고속 클럭: CLK_INP/CLK_INN 에서 추적 (via X_CLK/X_DIV_S/M2 (g->d)) |
+| CTLE1_N | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_CTLE1/M2 (g->d)) |
+| CTLE1_P | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_CTLE1/M1 (g->d)) |
+| CTLE2_N | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_CTLE2/M2 (g->d)) |
+| CTLE2_P | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_CTLE2/M1 (g->d)) |
+| E_T2N | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_EVEN/X_DFF2/X_S/M2 (g->d)) |
+| E_T2P | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_EVEN/X_DFF2/X_S/M1 (g->d)) |
+| E_T3N | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_EVEN/X_DFF3/X_S/M2 (g->d)) |
+| E_T3P | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_EVEN/X_DFF3/X_S/M1 (g->d)) |
+| O_DOUTN | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via M_TIE_N (TG channel)) — **미구동** (항상 꺼진 TG 뒤, §2.3-13, Q3) |
+| O_DOUTP | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via M_TIE_P (TG channel)) — **미구동** (항상 꺼진 TG 뒤, §2.3-13, Q3) |
+| O_T2N | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_ODD/X_DFF2/X_S/M2 (g->d)) |
+| O_T2P | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_ODD/X_DFF2/X_S/M1 (g->d)) |
+| O_T3N | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_ODD/X_DFF3/X_S/M2 (g->d)) |
+| O_T3P | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_DFE_ODD/X_DFF3/X_S/M1 (g->d)) |
+| VBN | bias | K11 | 바이어스: diode-connected (mirror) node |
+| VBP | bias | K11 | 바이어스: diode-connected (mirror) node |
+| VCM_RX | bias | K11 | 바이어스: common-mode node of a termination |
+| VGA_N | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_VGA/M_MAIN_N (g->d)) |
+| VGA_P | data |  | 고속 데이터: RX_INP/RX_INN 에서 추적 (via X_VGA/M_MAIN_P (g->d)) |
 
 ## 블록 역할 (셀별)
 
 | 셀 | 역할 | 기호 | 확신 | 근거 |
 |---|---|---|---|---|
-| INV | inverter | triangle (CMOS buffer) | high | complementary PMOS/NMOS with common gate and drain |
-| NAND2 | static_cmos_gate | box (cell name) | low | static CMOS gate (pull-up gate set = pull-down gate set): NOT in the dictionary |
-| SR_LATCH | cross_coupled_gates | box (cell name) | low | two static CMOS gates cross-coupled (SR latch); NOT in the dictionary |
-| STRONGARM_SLICER | composite | box (cell name) | high | hierarchical: 3 sub-blocks + 1 primitive unit(s); not itself a dictionary block |
+| INV | inverter | inverter | high | complementary PMOS/NMOS with common gate and drain |
+| NAND2 | nand | box (cell name) + output bubble | high | static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list §2.6-1) |
+| SR_LATCH | sr_latch | box (cell name) | high | two NAND gates cross-coupled (output of each drives an input of the other): SR latch (dictionary list §2.6-1) |
+| STRONGARM_SLICER | comparator | triangle "SA" + clock | high | StrongARM core (clocked tail, input pair, cross-coupled NMOS/PMOS, reset PMOS) + output stage (inverter, sr_latch): comparator row |
 | CML_LATCH | latch | box LATCH | high | input pair + cross-coupled pair, tails steered by complementary clocks |
 | CML_DFF | dff | box DFF | high | two latches in series (master->slave) with complementary clocks |
 | IDAC_4BIT | dac | variable current source (concept symbol in parent) | high | repeated (bias current source + series switch) units sharing one output |
 | CTLE_STAGE | ctle | triangle "CTLE" | high | differential pair with separate sources joined by R/C (source degeneration) |
 | VGA_STAGE | vga | triangle "VGA" | high | 5 pairs share outputs, all with the same inputs; extra pairs switched in |
 | DFE_SUMMER | summer | Σ | high | 5 pairs with different inputs summed at shared outputs |
-| HALF_RATE_DFE_SLICE | composite | box (cell name) | high | hierarchical: 5 sub-blocks + 0 primitive unit(s); not itself a dictionary block |
-| CLK_DIST_TREE | composite | box (cell name) | high | hierarchical: 10 sub-blocks + 2 primitive unit(s); not itself a dictionary block |
+| HALF_RATE_DFE_SLICE | composite | box (cell name) | high | hierarchical: 5 sub-blocks + 0 primitive unit(s); every sub-block is a dictionary block |
+| CLK_DIST_TREE | composite | box (cell name) | high | hierarchical: 10 sub-blocks + 2 primitive unit(s); every sub-block is a dictionary block |
 | BIAS_GEN | bias | omit | high | diode/mirror devices only; no high-speed net |
-| RX_AFE_TOP | composite | box (cell name) | high | hierarchical: 7 sub-blocks + 3 primitive unit(s); not itself a dictionary block |
+| RX_AFE_TOP | composite | box (cell name) | high | hierarchical: 7 sub-blocks + 3 primitive unit(s); every sub-block is a dictionary block |
 
 ## 셀 안의 기본 소자 묶음 (유닛)
 
@@ -5942,7 +9335,7 @@ print(summary)
 - CTLE_STAGE: **ctle** — MP_LP, MP_LN, M_IND_P, M_IND_N, R_IND_P, R_IND_N, M1, M2, MBP, MBN, R_DEG_BASE, MR0, MR1, MR2, C_DEG_BASE, MC0P, MC0N, C0_CAP, MC1P, MC1N, C1_CAP, MC2P, MC2N, C2_CAP — differential pair with separate sources joined by R/C (source degeneration)
 - VGA_STAGE: **vga** — MP_LP, MP_LN, M_MAIN_P, M_MAIN_N, MB_M, M_G0_P, M_G0_N, MS_G0, MB_G0, M_G1_P, M_G1_N, MS_G1, MB_G1, M_G2_P, M_G2_N, MS_G2, MB_G2, M_G3_P, M_G3_N, MS_G3, MB_G3 — 5 pairs share outputs, all with the same inputs; extra pairs switched in
 - DFE_SUMMER: **summer** — MP_LP, MP_LN, M_MP, M_MN, MB_M, M_T1P, M_T1N, X_DAC1, M_T2P, M_T2N, X_DAC2, M_T3P, M_T3N, X_DAC3, M_T4P, M_T4N, X_DAC4 — 5 pairs with different inputs summed at shared outputs
-- NAND2: **static_cmos_gate** — MP1, MP2, MN1, MN2 — static CMOS gate (pull-up gate set = pull-down gate set): NOT in the dictionary
+- NAND2: **nand** — MP1, MP2, MN1, MN2 — static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list §2.6-1)
 - STRONGARM_SLICER: **strongarm** — M_TAIL, M1, M2, M3, M4, M5, M6, M7, M8, M9, M10, M11 — clocked tail, input pair, cross-coupled NMOS on input drains + cross-coupled PMOS, reset PMOS
 - RX_AFE_TOP: **termination_esd** — R_RX_P, R_RX_N, C_RX_VCM, M_ESD_P1, M_ESD_N1, M_ESD_P2, M_ESD_N2 — termination + ESD: R from HS input to a common-mode node, MOS pad clamps with gate tied to own rail
 - RX_AFE_TOP: **tg** — M_TIE_P, M_TIE_P2 — NMOS+PMOS between the same two nets, gates tied to rails
@@ -5950,8 +9343,8 @@ print(summary)
 
 ## 참고: 데이터·클럭 겸용 셀
 
-- CML_LATCH: 핀 DP, DN, QP, QN 는 DFE 경로에서는 데이터, CLK_DIST_TREE에서는 클럭 (선 굵기는 데이터 기준, 패널에 주석)
-- INV: 핀 A, Y 는 DFE 경로에서는 데이터, CLK_DIST_TREE에서는 클럭 (선 굵기는 데이터 기준, 패널에 주석)
+- CML_LATCH: 핀 DP, DN, QP, QN 는 DFE 경로에서는 데이터, CLK_DIST_TREE에서는 클럭 (평탄 넷 중 데이터·클럭 양쪽에서 닿는 넷은 없음)
+- INV: 핀 A, Y 는 DFE 경로에서는 데이터, CLK_DIST_TREE에서는 클럭 (평탄 넷 중 데이터·클럭 양쪽에서 닿는 넷은 없음)
 
 ## 추적 중 멈춘 곳 (요약)
 
@@ -5967,11 +9360,11 @@ print(summary)
 - R_RX_P: common-mode node * stop (×1)
 - R_TERM_N: common-mode node * stop (×1)
 - R_TERM_P: common-mode node * stop (×1)
-````
+`````
 
 ### FILE: reference/rx_afe/expected/annotations.json
-<!-- sha256=85f106f3be52e255c6f015a8d9e95b54c11a368845c26e3fd3fab8203e1259bc newline=0 -->
-````json
+<!-- sha256=e9567216df9373dd5c687aa7ce740bbc8811a717211cee1c21b046f853a7bdf3 newline=0 -->
+`````json
 {
  "hs_inputs": [
   "RX_INP",
@@ -5988,6 +9381,10 @@ print(summary)
   "DOUT_ODD_N"
  ],
  "important_controls": [
+  "G0",
+  "G1",
+  "G2",
+  "G3",
   "W1_0",
   "W1_1",
   "W1_2",
@@ -6016,9 +9413,9 @@ print(summary)
   "VGA_STAGE": "vga",
   "IDAC_4BIT": "dac",
   "DFE_SUMMER": "summer",
-  "NAND2": "static_cmos_gate",
-  "SR_LATCH": "cross_coupled_gates",
-  "STRONGARM_SLICER": "composite",
+  "NAND2": "nand",
+  "SR_LATCH": "sr_latch",
+  "STRONGARM_SLICER": "comparator",
   "CML_DFF": "dff",
   "HALF_RATE_DFE_SLICE": "composite",
   "RX_AFE_TOP": "composite"
@@ -6047,7 +9444,22 @@ print(summary)
     "W4_2",
     "W4_3"
    ],
-   "function": "DFE tap 1-4 coefficients (IDAC_4BIT switches -> tap-pair tail current)"
+   "K": "K1",
+   "function": "DFE 탭 계수 가중치 — 스위치(전류 DAC) → 탭 쌍 꼬리 전류, 탭 입력 = 귀환 고속 데이터, Σ 출력에서 합산",
+   "endpoint_pin": "X_DFE_EVEN/X_SUM/X_DAC1/MS0.g",
+   "source": "port"
+  },
+  "G<3:0>": {
+   "bits": [
+    "G0",
+    "G1",
+    "G2",
+    "G3"
+   ],
+   "K": "K6",
+   "function": "VGA 이득 코드 — 스위치 → 이득 쌍 꼬리 전류, 출력을 여러 비트 경로가 공유 (X_DFE_EVEN, X_DFE_ODD (HALF_RATE_DFE_SLICE))",
+   "endpoint_pin": "X_VGA/MS_G0.g",
+   "source": "port"
   }
  },
  "_general_controls": [
@@ -6056,11 +9468,103 @@ print(summary)
   "C2",
   "R0",
   "R1",
-  "R2",
-  "G0",
-  "G1",
-  "G2",
-  "G3"
+  "R2"
+ ],
+ "_general_control_buses": {
+  "C<2:0>": {
+   "bits": [
+    "C0",
+    "C1",
+    "C2"
+   ],
+   "K": "K7",
+   "function": "CTLE 안쪽 노드의 정적 트림 (소스 degeneration 뱅크: 피킹·이득), 출처 = 최상위 포트",
+   "endpoint_pin": "X_CTLE1/MC0N.g",
+   "source": "port"
+  },
+  "R<2:0>": {
+   "bits": [
+    "R0",
+    "R1",
+    "R2"
+   ],
+   "K": "K7",
+   "function": "CTLE 안쪽 노드의 정적 트림 (소스 degeneration 뱅크: 피킹·이득), 출처 = 최상위 포트",
+   "endpoint_pin": "X_CTLE1/MR0.g",
+   "source": "port"
+  }
+ },
+ "_controls": [
+  {
+   "bus": "W<4:1>_<3:0>",
+   "bits": [
+    "W1_0",
+    "W1_1",
+    "W1_2",
+    "W1_3",
+    "W2_0",
+    "W2_1",
+    "W2_2",
+    "W2_3",
+    "W3_0",
+    "W3_1",
+    "W3_2",
+    "W3_3",
+    "W4_0",
+    "W4_1",
+    "W4_2",
+    "W4_3"
+   ],
+   "class": "important_control",
+   "K": "K1",
+   "endpoint_pin": "X_DFE_EVEN/X_SUM/X_DAC1/MS0.g",
+   "source": "port",
+   "function": "DFE 탭 계수 가중치 — 스위치(전류 DAC) → 탭 쌍 꼬리 전류, 탭 입력 = 귀환 고속 데이터, Σ 출력에서 합산",
+   "drawing": "버스 (사선 + 이름, 비트 수 없음; 받는 블록 위에서)"
+  },
+  {
+   "bus": "G<3:0>",
+   "bits": [
+    "G0",
+    "G1",
+    "G2",
+    "G3"
+   ],
+   "class": "important_control",
+   "K": "K6",
+   "endpoint_pin": "X_VGA/MS_G0.g",
+   "source": "port",
+   "function": "VGA 이득 코드 — 스위치 → 이득 쌍 꼬리 전류, 출력을 여러 비트 경로가 공유 (X_DFE_EVEN, X_DFE_ODD (HALF_RATE_DFE_SLICE))",
+   "drawing": "버스 (사선 + 이름, 비트 수 없음; 받는 블록 위에서)"
+  },
+  {
+   "bus": "C<2:0>",
+   "bits": [
+    "C0",
+    "C1",
+    "C2"
+   ],
+   "class": "general_control",
+   "K": "K7",
+   "endpoint_pin": "X_CTLE1/MC0N.g",
+   "source": "port",
+   "function": "CTLE 안쪽 노드의 정적 트림 (소스 degeneration 뱅크: 피킹·이득), 출처 = 최상위 포트",
+   "drawing": "숨김 (생략 목록에 한 줄)"
+  },
+  {
+   "bus": "R<2:0>",
+   "bits": [
+    "R0",
+    "R1",
+    "R2"
+   ],
+   "class": "general_control",
+   "K": "K7",
+   "endpoint_pin": "X_CTLE1/MR0.g",
+   "source": "port",
+   "function": "CTLE 안쪽 노드의 정적 트림 (소스 degeneration 뱅크: 피킹·이득), 출처 = 최상위 포트",
+   "drawing": "숨김 (생략 목록에 한 줄)"
+  }
  ],
  "_bias": [
   "IREF",
@@ -6072,63 +9576,515 @@ print(summary)
   "VDD",
   "VSS"
  ],
+ "_undriven_hs": [
+  "O_DOUTN",
+  "O_DOUTP"
+ ],
+ "_omitted_blocks": [
+  {
+   "inst": "X_BIAS",
+   "cell": "BIAS_GEN",
+   "role": "bias"
+  }
+ ],
+ "_non_hs_categories": [
+  {
+   "category": "기준 전압 (P1·VREF)",
+   "result": "없음 — ESD 붙은 비교기 기준 패드 없음, 비교기·샘플러 한쪽 입력으로 들어가는 추적 안 된 넷 없음"
+  },
+  {
+   "category": "상태 출력 (O1) · 명령 (K8) · 시험 (K9)",
+   "result": "없음 — 상태 소자가 구동하는 출력 포트·상태 소자 동기 입력·모니터 출력 없음"
+  },
+  {
+   "category": "워드 속도 디지털",
+   "result": "없음 — 직렬화기·디시리얼라이저 워드 경계 없음"
+  },
+  {
+   "category": "이득·VREF 코드 (K6)",
+   "result": "G<3:0> (K6)"
+  }
+ ],
  "_questions_and_assumed_answers": [
   {
    "id": "Q1",
+   "template": "name_vs_structure",
+   "kind": "name_vs_structure",
+   "rule": "§2.6-2, §2.7-2",
+   "fields": {
+    "item": "C0, C1, C2 (CTLE_STAGE)",
+    "structure": "두 소스 사이 직렬 스위치 쌍(MC0N, MC0P, MC1N, MC1P, MC2N, MC2P = 저항 경로)과 항상 연결된 C(C_DEG_BASE, C0_CAP, C1_CAP, C2_CAP)",
+    "name": "C 뱅크 제어(가변 C)",
+    "opt_structure": "가변 R + 고정 C",
+    "opt_name": "가변 C"
+   },
    "item": "C0, C1, C2 (CTLE_STAGE)",
-   "question": "이름(C*)은 커패시터 뱅크 제어처럼 보이지만, 구조상 스위치 MC*P/MC*N은 SP-C*_MID-SN 직렬 경로(저항 경로)이고 C*_CAP은 SP-SN에 항상 연결된 고정 C입니다. 구조대로 그릴까요? (예: 가변 R + 고정 C / 아니오: 가변 C로)",
-   "assumed": "예 — 구조를 따름. C0..C2 스위치는 가변 R 묶음에 포함, C_DEG_BASE+C0_CAP+C1_CAP+C2_CAP은 고정 C 하나(합계 330f)로 그림. C0..C2는 일반 제어(그리지 않음).",
+   "question": "`C0, C1, C2 (CTLE_STAGE)`: 구조는 두 소스 사이 직렬 스위치 쌍(MC0N, MC0P, MC1N, MC1P, MC2N, MC2P = 저항 경로)과 항상 연결된 C(C_DEG_BASE, C0_CAP, C1_CAP, C2_CAP)인데 이름/기능은 C 뱅크 제어(가변 C)입니다. (가변 R + 고정 C로 / 가변 C로)",
+   "assumed": "가변 R + 고정 C로 — 구조를 따름(§2.6-2). 스위치 쌍은 가변 R_S 묶음, C_DEG_BASE ∥ C0_CAP ∥ C1_CAP ∥ C2_CAP는 고정 C_S 하나(50f + 40f + 80f + 160f)로 그림. C<2:0>는 K7 정적 = 일반 제어(숨김).",
    "confidence": "low (이름-구조 불일치)"
   },
   {
    "id": "Q2",
-   "item": "X_DIV_M / X_DIV_S in CLK_DIST_TREE",
-   "question": "인스턴스 이름은 ÷2 분주기(DIV)이지만 구조상 귀환 루프가 없습니다 (master의 D 입력 = 자기 클럭 B1N/B1P, slave 출력은 어디로도 되돌아가지 않음). 구조대로 \"LATCH 2개 직렬\"로 그릴까요? (예 / ÷2로 그림 / netlist 오류)",
-   "assumed": "예 — 구조대로 LATCH 박스 2개와 실제 연결을 그림. ÷2 기호는 쓰지 않음. netlist 오류 가능성을 보고서에 남김.",
+   "template": "name_vs_structure",
+   "kind": "name_vs_structure",
+   "rule": "§2.6-2, §2.7-2",
+   "fields": {
+    "item": "X_DIV_M / X_DIV_S (CLK_DIST_TREE)",
+    "structure": "latch 2개 직렬, 귀환 루프 없음(master D 입력 = 자기 클럭 넷)",
+    "name": "÷2 분주기(인스턴스 이름 DIV)",
+    "opt_structure": "LATCH 2개",
+    "opt_name": "÷2"
+   },
+   "item": "X_DIV_M / X_DIV_S (CLK_DIST_TREE)",
+   "question": "`X_DIV_M / X_DIV_S (CLK_DIST_TREE)`: 구조는 latch 2개 직렬, 귀환 루프 없음(master D 입력 = 자기 클럭 넷)인데 이름/기능은 ÷2 분주기(인스턴스 이름 DIV)입니다. (LATCH 2개로 / ÷2로)",
+   "assumed": "LATCH 2개로 — 구조대로 LATCH 박스 2개와 실제 연결을 그림. ÷2 기호는 쓰지 않음.",
    "confidence": "low (이름-구조 불일치, 사전의 ÷2 = latch 루프와 불일치)"
   },
   {
    "id": "Q3",
+   "template": "netlist_error_confirm",
+   "kind": "netlist_error_confirm",
+   "rule": "§2.7-4",
+   "fields": {
+    "item": "M_TIE_P/M_TIE_P2, M_TIE_N/M_TIE_N2",
+    "fact": "전달 게이트의 NMOS 게이트=VSS, PMOS 게이트=VDD라 항상 꺼져 있고, 그래서 O_DOUTN, O_DOUTP는 구동원 없이 고속 핀(X_DFE_EVEN.T1_FB_N, X_DFE_EVEN.T1_FB_P)에만 닿습니다(미구동)"
+   },
    "item": "M_TIE_P/M_TIE_P2, M_TIE_N/M_TIE_N2",
-   "question": "전달 게이트(NMOS 게이트=VSS, PMOS 게이트=VDD)라 항상 꺼져 있습니다. 그러면 O_DOUTP/N(= X_DFE_EVEN의 탭1 귀환 입력 T1_FB)은 떠 있습니다. 의도된 것입니까? (의도됨 / 연결(항상 ON)이어야 함)",
-   "assumed": "끊긴 것으로 처리(계획서 §3.2): TG는 열린 스위치 기호 + \"(off)\". O_DOUTP/N은 구동이 없지만 X_DFE_EVEN의 고속 핀(T1_FB)에 붙어 있어 고속 데이터로 그리고 이름표로 끝냄.",
-   "confidence": "low (구조상 항상 OFF)"
+   "question": "`M_TIE_P/M_TIE_P2, M_TIE_N/M_TIE_N2`: 전달 게이트의 NMOS 게이트=VSS, PMOS 게이트=VDD라 항상 꺼져 있고, 그래서 O_DOUTN, O_DOUTP는 구동원 없이 고속 핀(X_DFE_EVEN.T1_FB_N, X_DFE_EVEN.T1_FB_P)에만 닿습니다(미구동). netlist 오류일 수 있습니다. 의도된 것입니까? (의도됨 / netlist 오류)",
+   "assumed": "의도됨으로 가정하고 규칙대로 그림(§2.3-2, §2.3-13): TG는 열린 스위치 \"(off)\", O_DOUTN, O_DOUTP는 고속(미구동)으로 그리고 이름표(블록 화면)·화면 밖 연결 기호(유닛 화면)로 끝냄.",
+   "confidence": "low (구조상 항상 OFF — netlist 오류 가능)"
   },
   {
    "id": "Q4",
+   "template": "netlist_error_confirm",
+   "kind": "netlist_error_confirm",
+   "rule": "§2.7-4",
+   "fields": {
+    "item": "STRONGARM_SLICER: M11",
+    "fact": "M11(PMOS, S=VDD, D=DP, G=DN)의 거울 짝(D=DN, G=DP)이 없어 차동 회로가 비대칭입니다"
+   },
    "item": "STRONGARM_SLICER: M11",
-   "question": "STRONGARM_SLICER에 거울 짝이 없는 소자가 있습니다 (M11: PMOS, S=VDD, D=DP, G=DN; 반대쪽 D=DN, G=DP 소자 없음). 차동 회로가 비대칭이 됩니다. 의도된 것입니까? (의도됨 / netlist 오류)",
-   "assumed": "그대로 그림 (정확성 > 대칭, 계획서 §5.2-7). M11은 연결된 노드(DP) 쪽 바깥에 두고, 게이트(DN)는 이름표로 연결, \"비대칭\" 표시.",
+   "question": "`STRONGARM_SLICER: M11`: M11(PMOS, S=VDD, D=DP, G=DN)의 거울 짝(D=DN, G=DP)이 없어 차동 회로가 비대칭입니다. netlist 오류일 수 있습니다. 의도된 것입니까? (의도됨 / netlist 오류)",
+   "assumed": "의도됨으로 가정하고 그대로 그림(§3.3-6): M11는 연결된 노드(DP) 쪽 바깥, 게이트(DN)는 이름표, \"비대칭\" 주석.",
    "confidence": "low (대칭 위반이 netlist에 있음)"
   },
   {
    "id": "Q5",
-   "item": "NAND2 (static_cmos_gate), SR_LATCH (cross_coupled_gates)",
-   "question": "블록 역할 사전에 없는 구조입니다 (정적 CMOS 게이트, 교차 결합 게이트 = SR latch). 박스(셀 이름)로 그릴까요? (예 / 역할 지정)",
-   "assumed": "예 — 사전 규칙대로 박스(셀 이름) + 보이는 핀. 유닛 레벨은 소자 그대로.",
-   "confidence": "low (사전에 없음)"
+   "template": "bus_notation_guess",
+   "kind": "bus_notation_guess",
+   "rule": "§2.5-7",
+   "fields": {
+    "item": "W1_0…W4_3, G0…G3, C0…C2, R0…R2",
+    "buses": "`W<4:1>_<3:0>`, `G<3:0>`, `C<2:0>`, `R<2:0>`"
+   },
+   "item": "W1_0…W4_3, G0…G3, C0…C2, R0…R2",
+   "question": "`W1_0…W4_3, G0…G3, C0…C2, R0…R2`: 비트 표기가 `<n>`이 아니어서 이름 끝 숫자를 비트 번호로 읽어 `W<4:1>_<3:0>`, `G<3:0>`, `C<2:0>`, `R<2:0>`로 묶었습니다. 맞습니까? (예 / 표기 지정)",
+   "assumed": "예 — W<4:1>_<3:0>, G<3:0>, C<2:0>, R<2:0>.",
+   "confidence": "low (비트 표기 추측, §2.5-7)"
+  }
+ ],
+ "_not_asked_rule_decided": [
+  {
+   "topic": "dictionary_listed_block",
+   "items": [
+    "INV",
+    "NAND2",
+    "SR_LATCH"
+   ],
+   "rule": "§2.6-1 (논리 게이트·SR latch·ICG·DLY·LS·C2C·OTA는 사전에 있음)",
+   "decision": "사전 행으로 그림 (논리 게이트: 출력 동그라미, SR latch: 박스)"
   },
   {
-   "id": "Q6",
-   "item": "top: CLKQ, CLKQB; CLK_DIST_TREE: CLKI_BUF, CLKIB_BUF, CLKQ_BUF, CLKQB_BUF; STRONGARM_SLICER: QPB, QNB",
-   "question": "추적상 고속 넷이지만 아무 곳에도 연결되지 않은(부하 없는) 출력입니다. 그릴까요? (그림 / 생략)",
-   "assumed": "그림 — 분류가 고속이므로 §6.3(생략은 분류대로만)에 따라 생략하지 않고, 끝에 넷 이름표만 둔 짧은 선으로 표시.",
-   "confidence": "low (계획서에 규칙 없음)"
+   "topic": "unused_output",
+   "items": [
+    "STRONGARM_SLICER: QNB, QPB",
+    "CLK_DIST_TREE: CLKIB_BUF, CLKI_BUF, CLKQB_BUF, CLKQ_BUF",
+    "RX_AFE_TOP: CLKQ, CLKQB"
+   ],
+   "rule": "§3.5-4, §2.7-4 (미사용 출력: 짧은 선 + 이름표)",
+   "decision": "지우지 않고 짧은 선 + 넷 이름표"
   },
   {
-   "id": "Q7",
-   "item": "W<4:1>_<3:0>",
-   "question": "중요 제어 16비트(W1_0..W4_3)를 \"DFE 탭 계수\" 기능 하나의 버스로 묶을까요, 탭별 4비트 버스 4개로 나눌까요? (16b 1개 / 4b×4)",
-   "assumed": "16b 버스 1개 (W<4:1>_<3:0>) — §4.4 \"기능별 버스 하나\"를 \"DFE 탭 계수\" 기능으로 해석.",
-   "confidence": "low (계획서 해석)"
+   "topic": "bus_grouping",
+   "items": [
+    "W<4:1>_<3:0>",
+    "G<3:0>",
+    "C<2:0>",
+    "R<2:0>"
+   ],
+   "rule": "§2.5-7 (같은 기능의 비트는 버스 하나)",
+   "decision": "기능별 버스 하나 (`W<4:1>_<3:0>` 16비트 하나)"
   }
  ]
 }
-````
+`````
+
+### FILE: reference/rx_afe/expected/block_dictionary.json
+<!-- sha256=9f21f5b8e6fd98d247135db22e7c51b3f7b6fc2f8acfefa0bd6ac642b696000a newline=0 -->
+`````json
+{
+ "_rule": "plan §2.6-3/4: a dictionary row is drawn only when every structure feature of the row is present; missing_features non-empty + dictionary symbol = fail",
+ "rows": [
+  {
+   "cell": "INV",
+   "instances": [
+    "X_BUFN",
+    "X_BUFP",
+    "X_INV_I1",
+    "X_INV_I2",
+    "X_INV_IB1",
+    "X_INV_IB2",
+    "X_INV_Q1",
+    "X_INV_Q2",
+    "X_INV_QB1",
+    "X_INV_QB2"
+   ],
+   "virtual": false,
+   "role": "inverter",
+   "row": "공통 논리 게이트 (INV)",
+   "symbol": "인버터",
+   "matched_features": [
+    "PMOS/NMOS 하나씩, 게이트·드레인 공통 (정적 CMOS)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "NAND2",
+   "instances": [
+    "X1",
+    "X2"
+   ],
+   "virtual": false,
+   "role": "nand",
+   "row": "공통 논리 게이트 (NAND)",
+   "symbol": "박스(셀 이름) + 출력 동그라미",
+   "matched_features": [
+    "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list §2.6-1)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "SR_LATCH",
+   "instances": [
+    "X_SR"
+   ],
+   "virtual": false,
+   "role": "sr_latch",
+   "row": "공통 SR latch",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "NAND2 2개 교차 결합: X1.Y=Q; X2.Y=QB"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "STRONGARM_SLICER",
+   "instances": [
+    "X_SLICER"
+   ],
+   "virtual": false,
+   "role": "comparator",
+   "row": "RX 비교기 · 샘플러 (StrongARM)",
+   "symbol": "삼각형 + 클럭",
+   "matched_features": [
+    "클럭 꼬리 M_TAIL",
+    "입력쌍 M1/M2",
+    "입력쌍 드레인 위 cross-coupled NMOS M3/M4 + cross-coupled PMOS M5/M6",
+    "리셋 PMOS M7/M8/M9/M10",
+    "출력단: X_SR (sr_latch), X_BUFP (inverter), X_BUFN (inverter)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q4"
+   ]
+  },
+  {
+   "cell": "CML_LATCH",
+   "instances": [
+    "X_DIV_M",
+    "X_DIV_S",
+    "X_LATCH1",
+    "X_M",
+    "X_S"
+   ],
+   "virtual": false,
+   "role": "latch",
+   "row": "공통 Latch · DFF (latch)",
+   "symbol": "박스 LATCH",
+   "matched_features": [
+    "입력쌍 M1/M2",
+    "cross-coupled 쌍 M3/M4",
+    "클럭 스티어링 M5/M6 (상보 클럭으로 두 꼬리를 번갈아)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "CML_DFF",
+   "instances": [
+    "X_DFF2",
+    "X_DFF3"
+   ],
+   "virtual": false,
+   "role": "dff",
+   "row": "공통 Latch · DFF (DFF)",
+   "symbol": "박스 DFF",
+   "matched_features": [
+    "latch 2개 직렬 X_M → X_S",
+    "반대 클럭: X_M.CLK=CLKB, X_S.CLK=CLK"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "IDAC_4BIT",
+   "instances": [
+    "X_DAC1",
+    "X_DAC2",
+    "X_DAC3",
+    "X_DAC4"
+   ],
+   "virtual": false,
+   "role": "dac",
+   "row": "공통 바이어스 · DAC · 디지털 제어 (전류 DAC → 개념 기호 가변 전류원, §3.4-3)",
+   "symbol": "가변 전류원(부모 유닛 화면)",
+   "matched_features": [
+    "(스위치 MS0/MS1/MS2/MS3 + 전류원 MB0/MB1/MB2/MB3) 반복, 출력 하나 공유 → 개념 기호 \"가변 전류원\" (§3.4-3)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "CTLE_STAGE",
+   "instances": [
+    "X_CTLE1",
+    "X_CTLE2"
+   ],
+   "virtual": false,
+   "role": "ctle",
+   "row": "RX CTLE",
+   "symbol": "삼각형 \"CTLE\"",
+   "matched_features": [
+    "차동 입력쌍 M1/M2",
+    "소스 분리 (꼬리 MBP/MBN) + 소스 사이 degeneration R: R_DEG_BASE ∥ 스위치 MR0, MR1, MR2, MC0P, MC0N, MC1P, MC1N, MC2P, MC2N",
+    "소스 사이 C가 영점을 만듦 (피킹용 C, 고정): C_DEG_BASE ∥ C0_CAP ∥ C1_CAP ∥ C2_CAP = 50f + 40f + 80f + 160f"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q1"
+   ]
+  },
+  {
+   "cell": "VGA_STAGE",
+   "instances": [
+    "X_VGA"
+   ],
+   "virtual": false,
+   "role": "vga",
+   "row": "RX VGA",
+   "symbol": "삼각형 \"VGA\"",
+   "matched_features": [
+    "주 차동쌍 + 같은 입력의 추가 이득 쌍 4개 (M_MAIN_P, M_MAIN_N, M_G0_P, M_G0_N, M_G1_P, M_G1_N, M_G2_P, M_G2_N, M_G3_P, M_G3_N), 출력 공유",
+    "이득 단을 스위치로 더함: 이득 쌍 꼬리의 스위치 MS_G0, MS_G1, MS_G2, MS_G3",
+    "소스 사이 C 없음 (C는 고정·작음 조건 만족)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "DFE_SUMMER",
+   "instances": [
+    "X_SUM"
+   ],
+   "virtual": false,
+   "role": "summer",
+   "row": "RX/TX Summer (DFE·FFE)",
+   "symbol": "Σ",
+   "matched_features": [
+    "입력이 다른 차동쌍 5개가 같은 출력에 합산 (M_MP, M_MN, M_T1P, M_T1N, M_T2P, M_T2N, M_T3P, M_T3N, M_T4P, M_T4N)",
+    "탭 쌍 꼬리 = 전류 DAC 인스턴스 (X_DAC1, X_DAC2, X_DAC3, X_DAC4)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "HALF_RATE_DFE_SLICE",
+   "instances": [
+    "X_DFE_EVEN",
+    "X_DFE_ODD"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: X_SUM (summer), X_SLICER (comparator), X_LATCH1 (latch), X_DFF2 (dff), X_DFF3 (dff)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "CLK_DIST_TREE",
+   "instances": [
+    "X_CLK"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: X_DIV_M (latch), X_DIV_S (latch), X_INV_I1 (inverter), X_INV_I2 (inverter), X_INV_IB1 (inverter), X_INV_IB2 (inverter), X_INV_Q1 (inverter), X_INV_Q2 (inverter), X_INV_QB1 (inverter), X_INV_QB2 (inverter)",
+    "기본 소자 묶음(가상 블록)도 사전 행: termination (R_TERM_P, R_TERM_N, C_VCM)",
+    "기본 소자 묶음(가상 블록)도 사전 행: cml_buffer (MP_B1P, MP_B1N, MN_B1P, MN_B1N, MB_B1)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q2"
+   ]
+  },
+  {
+   "cell": "RX_AFE_TOP",
+   "instances": [],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: X_BIAS (bias), X_CLK (composite), X_CTLE1 (ctle), X_CTLE2 (ctle), X_VGA (vga), X_DFE_EVEN (composite), X_DFE_ODD (composite)",
+    "기본 소자 묶음(가상 블록)도 사전 행: termination_esd (R_RX_P, R_RX_N, C_RX_VCM, M_ESD_P1, M_ESD_N1, M_ESD_P2, M_ESD_N2)",
+    "기본 소자 묶음(가상 블록)도 사전 행: tg (M_TIE_P, M_TIE_P2)",
+    "기본 소자 묶음(가상 블록)도 사전 행: tg (M_TIE_N, M_TIE_N2)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "CLK_DIST_TREE",
+   "virtual_block": "CLK_DIST_TREE: R_TERM_P, R_TERM_N, C_VCM",
+   "virtual": true,
+   "role": "termination",
+   "row": "RX 종단 · ESD",
+   "symbol": "입력선 위 R/ESD 표시",
+   "matched_features": [
+    "고속 입력에서 공통모드 노드로 R: R_TERM_P/R_TERM_N",
+    "공통모드 노드에서 접지로 C: C_VCM"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "CLK_DIST_TREE",
+   "virtual_block": "CLK_DIST_TREE: MP_B1P, MP_B1N, MN_B1P, MN_B1N, MB_B1",
+   "virtual": true,
+   "role": "cml_buffer",
+   "row": "Clock 버퍼 (CML)",
+   "symbol": "삼각형 \"BUF\"",
+   "matched_features": [
+    "차동쌍 하나 MN_B1P/MN_B1N, 공통 꼬리 MB_B1, 부하 MP_B1P/MP_B1N"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "STRONGARM_SLICER",
+   "virtual_block": "STRONGARM_SLICER: M_TAIL, M1, M2, M3, M4, M5, M6, M7, M8, M9, M10, M11",
+   "virtual": true,
+   "role": "strongarm",
+   "row": "RX 비교기 · 샘플러 (StrongARM)",
+   "symbol": "삼각형 + 클럭",
+   "matched_features": [
+    "클럭 꼬리 M_TAIL",
+    "입력쌍 M1/M2",
+    "입력쌍 드레인 위 cross-coupled NMOS M3/M4 + cross-coupled PMOS M5/M6",
+    "리셋 PMOS M7/M8/M9/M10"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q4"
+   ]
+  },
+  {
+   "cell": "RX_AFE_TOP",
+   "virtual_block": "RX_AFE_TOP: R_RX_P, R_RX_N, C_RX_VCM, M_ESD_P1, M_ESD_N1, M_ESD_P2, M_ESD_N2",
+   "virtual": true,
+   "role": "termination_esd",
+   "row": "RX 종단 · ESD",
+   "symbol": "입력선 위 R/ESD 표시",
+   "matched_features": [
+    "고속 입력에서 공통모드 노드로 R: R_RX_P/R_RX_N",
+    "공통모드 노드에서 접지로 C: C_RX_VCM",
+    "패드에서 전원으로 MOS 클램프(게이트가 자기 레일): M_ESD_P1/M_ESD_N1/M_ESD_P2/M_ESD_N2"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "RX_AFE_TOP",
+   "virtual_block": "RX_AFE_TOP: M_TIE_P, M_TIE_P2",
+   "virtual": true,
+   "role": "tg",
+   "row": "(기본 소자) 전달 게이트 — 항상 꺼짐 (§2.2)",
+   "symbol": "열린 스위치",
+   "matched_features": [
+    "같은 두 넷 사이 NMOS+PMOS, 게이트가 끄는 레일(NMOS→접지, PMOS→전원)에 묶임 → 항상 꺼짐"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q3"
+   ]
+  },
+  {
+   "cell": "RX_AFE_TOP",
+   "virtual_block": "RX_AFE_TOP: M_TIE_N, M_TIE_N2",
+   "virtual": true,
+   "role": "tg",
+   "row": "(기본 소자) 전달 게이트 — 항상 꺼짐 (§2.2)",
+   "symbol": "열린 스위치",
+   "matched_features": [
+    "같은 두 넷 사이 NMOS+PMOS, 게이트가 끄는 레일(NMOS→접지, PMOS→전원)에 묶임 → 항상 꺼짐"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q3"
+   ]
+  }
+ ],
+ "not_drawn": [
+  {
+   "cell": "BIAS_GEN",
+   "role": "bias",
+   "row": "공통 바이어스 · DAC · 디지털 제어",
+   "reason": "생략 (고속 신호와 무관)"
+  }
+ ]
+}
+`````
 
 ### FILE: reference/rx_afe/expected/verify_report.json
-<!-- sha256=4eab2aecc4428f69311ee57c61fcb1bc77b06b7a4b9bacd5181f092799c564ee newline=0 -->
-````json
+<!-- sha256=f71c69bfa65246df4a313568f268a69772e624056a509b00761b9c23d1f44a67 newline=0 -->
+`````json
 {
  "summary": {
   "views": 17,
@@ -6141,12 +10097,13 @@ print(summary)
    "cell": "RX_AFE_TOP",
    "level": "block",
    "title": "RX_AFE_TOP — 블록 레벨 (최상위)",
+   "scene_sha": "ae6d93472091bfa9352e1d006df5490559926ee4680ff3d0efcdad0c5d30533a",
    "connectivity": {
     "pass": true,
     "error_count": 0,
     "errors": {},
-    "drawn_nets": 29,
-    "drawn_pins": 62
+    "drawn_nets": 30,
+    "drawn_pins": 63
    },
    "quality_counts": {
     "text_overlap": 0,
@@ -6156,16 +10113,23 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "b_slice",
    "cell": "HALF_RATE_DFE_SLICE",
    "level": "block",
    "title": "HALF_RATE_DFE_SLICE — 블록 레벨",
+   "scene_sha": "54c5af376d1e1c30a023a91a59b63d710c98100a67882bdeda8c1cb29d0443c9",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6181,16 +10145,23 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "b_clk",
    "cell": "CLK_DIST_TREE",
    "level": "block",
    "title": "CLK_DIST_TREE — 블록 레벨",
+   "scene_sha": "237c3d82b8b4e864796d1d5eb5b476b85e22507938beebbb6f289afc1da985b1",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6206,16 +10177,23 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
-   "view": "u_rxterm",
+   "view": "u_top_term",
    "cell": "RX_AFE_TOP",
    "level": "unit",
    "title": "RX_AFE_TOP — unit level (입력 종단 + ESD, 소자 그대로)",
+   "scene_sha": "e12b89ba6817cb4962af84c3a4bc6a85642c1d52dee95d71e4ef507666d23d7a",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6231,16 +10209,23 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
-   "view": "u_tg",
+   "view": "u_top_tg",
    "cell": "RX_AFE_TOP",
    "level": "unit",
    "title": "RX_AFE_TOP — unit level (전달 게이트 M_TIE, 게이트가 VSS/VDD에 묶여 항상 OFF)",
+   "scene_sha": "61cc336bfd7d9da2c9bec1f591d8d199a34a12b43dbfe317d6cd924d1379e905",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6256,16 +10241,23 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "u_ctle",
    "cell": "CTLE_STAGE",
    "level": "unit",
    "title": "CTLE_STAGE — unit level (CTLE, 대칭)",
+   "scene_sha": "cb4a085bc76092fc94840c9dc14fa1e22030293a6c17110236418a9e0810c85d",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6281,22 +10273,29 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "u_vga",
    "cell": "VGA_STAGE",
    "level": "unit",
    "title": "VGA_STAGE — unit level (VGA, 쌍별 대칭 나란히: 그림 B)",
+   "scene_sha": "651b18801d5c978eabfbe9c4cde4ceded77a235a104125c4229b827e17a28dd5",
    "connectivity": {
     "pass": true,
     "error_count": 0,
     "errors": {},
-    "drawn_nets": 10,
-    "drawn_pins": 23
+    "drawn_nets": 11,
+    "drawn_pins": 24
    },
    "quality_counts": {
     "text_overlap": 0,
@@ -6306,7 +10305,11 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 2
+    "structural_crossings_allowed": 2,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {
     "structural_crossings": [
@@ -6326,13 +10329,16 @@ print(summary)
      }
     ]
    },
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "u_summer",
    "cell": "DFE_SUMMER",
    "level": "unit",
    "title": "DFE_SUMMER — unit level (DFE summer Σ, 쌍별 대칭 나란히: 그림 B)",
+   "scene_sha": "08288370106dff46cb516432f53ba5df4c7c3aacd9dac93258dfd78b90659c7c",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6348,7 +10354,11 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 2
+    "structural_crossings_allowed": 2,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {
     "structural_crossings": [
@@ -6368,13 +10378,16 @@ print(summary)
      }
     ]
    },
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "b_sa",
    "cell": "STRONGARM_SLICER",
    "level": "block",
    "title": "STRONGARM_SLICER — 블록 레벨",
+   "scene_sha": "0456ae1b9b2fbd296e3fa235b10857fd4a07a9dccb82201ca9a43f45602642da",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6390,16 +10403,23 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
-   "view": "u_strongarm",
+   "view": "u_sa_strongarm",
    "cell": "STRONGARM_SLICER",
    "level": "unit",
    "title": "STRONGARM_SLICER — unit level (StrongARM core, 대칭)",
+   "scene_sha": "3d0c3530645c3b63e07c500b390d28d4e5722af922454363499096cafc3ed37c",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6415,7 +10435,11 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 2
+    "structural_crossings_allowed": 2,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {
     "structural_crossings": [
@@ -6435,13 +10459,16 @@ print(summary)
      }
     ]
    },
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "b_sr",
    "cell": "SR_LATCH",
    "level": "block",
-   "title": "SR_LATCH — 블록 레벨 (교차 결합 게이트; 사전에 없음 → 박스)",
+   "title": "SR_LATCH — 블록 레벨 (교차 결합 NAND2)",
+   "scene_sha": "5a7148d9473a1865a610f6113087a03320280bc369f0fd63e4f8b188283c285f",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6457,16 +10484,23 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "u_nand",
    "cell": "NAND2",
    "level": "unit",
-   "title": "NAND2 — unit level (정적 CMOS 게이트, 사전에 없음 → 소자 그대로)",
+   "title": "NAND2 — unit level (정적 CMOS NAND)",
+   "scene_sha": "a954fec43af2d97acf507030a15bde1302ca15762b1a66835e83488ecd39023b",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6482,16 +10516,23 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "u_inv",
    "cell": "INV",
    "level": "unit",
    "title": "INV — unit level (CMOS 인버터 / 버퍼)",
+   "scene_sha": "95b59c1deb049d2f67339ede368d167ead6ce0df1a1a891be9f8b6c4a9ffabe6",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6507,16 +10548,23 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "u_latch",
    "cell": "CML_LATCH",
    "level": "unit",
    "title": "CML_LATCH — unit level (CML latch, 대칭)",
+   "scene_sha": "07a9669920c5b846dcc2cd8f602cc78329e73b7b78f23197715fa68a02eabf28",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6532,7 +10580,11 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 2
+    "structural_crossings_allowed": 2,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {
     "structural_crossings": [
@@ -6552,13 +10604,16 @@ print(summary)
      }
     ]
    },
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
    "view": "b_dff",
    "cell": "CML_DFF",
    "level": "block",
    "title": "CML_DFF — 블록 레벨 (master-slave)",
+   "scene_sha": "dd05f4068accd11e6c222728493c743ea744a9aa0d8a722f5dc9ad637685a11f",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6574,16 +10629,23 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
-   "view": "u_clkterm",
+   "view": "u_clk_term",
    "cell": "CLK_DIST_TREE",
    "level": "unit",
    "title": "CLK_DIST_TREE — unit level (클럭 입력 종단, 소자 그대로)",
+   "scene_sha": "fafb5703aca26abf9b3d4fbbd70d589aa7e2234afc96731a9852e05ed38b8a68",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6599,16 +10661,23 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   },
   {
-   "view": "u_clkbuf",
+   "view": "u_clk_buf",
    "cell": "CLK_DIST_TREE",
    "level": "unit",
    "title": "CLK_DIST_TREE — unit level (CML 클럭 버퍼, 대칭)",
+   "scene_sha": "9976b35cd47aec2c74276884e8284a08e94070a6fb1acc2dce0d8893a5073a49",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -6624,11 +10693,17 @@ print(summary)
     "short_jogs": 0,
     "close_junctions": 0,
     "avoidable_crossings": 0,
-    "structural_crossings_allowed": 0
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
    },
    "quality_details": {},
-   "quality_pass": true
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
   }
  ]
 }
-````
+`````

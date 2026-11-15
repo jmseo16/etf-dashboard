@@ -1,4 +1,4 @@
-# 넷리스트 기반 High-Speed IO 개념도 그리기 — 회귀 시험 세트 묶음 (TESTS_BUNDLE)
+# 넷리스트 기반 High-Speed IO 개념도 그리기 — 회귀 시험 세트 묶음
 
 `tests/regression/`의 시험 netlist·정답지·설계 메모 전부. 쓰는 법은 그 안의 `README.md`. **정답지·설계 메모·name_map은 검증 쪽에만 준다(그리는 쪽에는 netlist.sp만).**
 
@@ -8,11 +8,11 @@
 
 ### 복원 스크립트 (restore.py)
 
-````python
+`````python
 import hashlib, os, re, sys
 src = open(sys.argv[1], encoding="utf-8").read()
 dest = sys.argv[2] if len(sys.argv) > 2 else "netlist-hsio-concept-diagram"
-pat = re.compile(r"^### FILE: (\S+)\n<!-- sha256=([0-9a-f]{64}) newline=([01]) -->\n````\w*\n(.*?)\n````$", re.S | re.M)
+pat = re.compile(r"^### FILE: (\S+)\n<!-- sha256=([0-9a-f]{64}) newline=([01]) -->\n`{5}\w*\n(.*?)\n`{5}$", re.S | re.M)
 n = bad = 0
 for path, sha, nl, body in pat.findall(src):
     data = body + ("\n" if nl == "1" else "")
@@ -26,7 +26,7 @@ for path, sha, nl, body in pat.findall(src):
     print(("OK   " if ok else "BAD  ") + path)
 print("%d files restored, %d checksum mismatches" % (n, bad))
 sys.exit(1 if bad else 0)
-````
+`````
 
 ## 파일 목록
 
@@ -71,7 +71,7 @@ sys.exit(1 if bad else 0)
 
 ### FILE: tests/regression/README.md
 <!-- sha256=7c4a822d5f824471f6e03b0a30a240fb899701d8d9cf1c9ca0dbb6e66815126d newline=1 -->
-````markdown
+`````markdown
 # 회귀 시험 세트
 
 명세서(`DRAWING_PLAN.md`)나 도구를 고친 뒤 다시 돌려, 전에 맞던 것이 틀려지지 않았는지 보는 시험 netlist 모음이다.
@@ -101,11 +101,11 @@ sys.exit(1 if bad else 0)
 - 기준 결과(RX AFE)는 이 세트가 아니라 `reference/rx_afe/`에 있다(정답 그림까지 있음).
 - 이름 가림 시험(`t4_nameblind`): 같은 그리는 절차를 `t3_nand_io`와 `t4_nameblind`에 각각 돌린 뒤, `name_map.json`으로 분류·블록 역할을 맞대어 본다(체크리스트 N1). 이름 있는 판과 가림판이 다르면 명세서가 이름에 기대고 있다는 신호다.
 - 실업무 netlist에서 새 문제가 나오면, 사용자가 확인한 `annotations.json`을 그 netlist의 정답지로 올려 이 세트에 더할 수 있다(사내에만 보관).
-````
+`````
 
 ### FILE: tests/regression/t1_dcc/intent.md
 <!-- sha256=28fe7c285af0baf976e764c3215415ada9fcb1ebb4be18aa5593d74bd72947cc newline=1 -->
-````markdown
+`````markdown
 # Design intent notes
 
 Process assumed: generic 28 nm-class CMOS, core devices `nch`, `pch`, `nch_lvt` (models come from the PDK, not included). Nominal vdd = vddq = 0.9 V.
@@ -199,11 +199,11 @@ Process assumed: generic 28 nm-class CMOS, core devices `nch`, `pch`, `nch_lvt` 
   - an AND clock gate made of transistors;
   - an `sa_comp` StrongARM comparator with an `nch_lvt` input pair and a NAND SR latch (`dcc_nand2`).
 - `dcc_decap`: MOS decap cell (x2 at the top level).
-````
+`````
 
 ### FILE: tests/regression/t1_dcc/netlist.sp
 <!-- sha256=c434d97703b1c7ae6ec6d2cee90b00297449638ae858a6b75043efc37179d292 newline=1 -->
-````spice
+`````spice
 ** Generated for: hspiceD
 ** Generated on: Nov 13 10:05:44 2026
 ** Design library name: hsio_clk28
@@ -468,11 +468,11 @@ xi7 vdd vss dcc_decap
 xi8 vdd vss dcc_decap
 .ends dcc_top
 ** End of subcircuit definition.
-````
+`````
 
 ### FILE: tests/regression/t1_tx/intent.md
 <!-- sha256=28fe7c285af0baf976e764c3215415ada9fcb1ebb4be18aa5593d74bd72947cc newline=1 -->
-````markdown
+`````markdown
 # Design intent notes
 
 Process assumed: generic 28 nm-class CMOS, core devices `nch`, `pch`, `nch_lvt` (models come from the PDK, not included). Nominal vdd = vddq = 0.9 V.
@@ -566,11 +566,11 @@ Process assumed: generic 28 nm-class CMOS, core devices `nch`, `pch`, `nch_lvt` 
   - an AND clock gate made of transistors;
   - an `sa_comp` StrongARM comparator with an `nch_lvt` input pair and a NAND SR latch (`dcc_nand2`).
 - `dcc_decap`: MOS decap cell (x2 at the top level).
-````
+`````
 
 ### FILE: tests/regression/t1_tx/netlist.sp
 <!-- sha256=b861c554153664a7b38c9f8b56ae6e97fcf040444a935d5c3c18c3e3b7af6fdd newline=1 -->
-````spice
+`````spice
 ** Generated for: hspiceD
 ** Generated on: Nov 12 16:48:21 2026
 ** Design library name: hsio_tx28
@@ -1015,11 +1015,11 @@ m4 vss vdd vss vss nch l=1e-6 w=5e-6 m=40 nf=1
 m5 vss vddq vss vss nch l=1e-6 w=5e-6 m=80 nf=1
 .ends tx_top
 ** End of subcircuit definition.
-````
+`````
 
 ### FILE: tests/regression/t2_bist/answer_key.json
 <!-- sha256=c6c1bd26153903e127fa4903a05379a7f5705be90f3a86ec4b6e12ad2cc79338 newline=1 -->
-````json
+`````json
 {
  "top": "hsio_bist_top",
  "supplies": [
@@ -1995,11 +1995,11 @@ m5 vss vddq vss vss nch l=1e-6 w=5e-6 m=80 nf=1
   }
  }
 }
-````
+`````
 
 ### FILE: tests/regression/t2_bist/answer_key_README.md
 <!-- sha256=28d00da03242c175398dfdcb87509629faa82a82f4bdcb62ff545fcea4148cc9 newline=1 -->
-````markdown
+`````markdown
 # Answer keys
 
 There is one JSON file per netlist: `bist.json` (`../bist.sp`), `zqcal.json` (`../zqcal.sp`) and `dqs_rx.json` (`../dqs_rx.sp`). Each one is the ground truth for checking a block diagram drawn from that netlist.
@@ -2025,11 +2025,11 @@ The keys cover every cell that contains subcircuit instances, plus the leaf cell
 - `notes`: feedback loops, unused outputs, deliberate asymmetry and other things a reviewer needs to know.
 
 Every `from`/`to` pair in `signal_flow` was checked by script against the netlist. Both ends resolve to the stated net.
-````
+`````
 
 ### FILE: tests/regression/t2_bist/intent.md
 <!-- sha256=f10d339ce64990a4469ac36d7f167552ef1c739d4a201f49f1e86e4654eab048 newline=1 -->
-````markdown
+`````markdown
 # Designer intent notes
 
 All three netlists are HSPICE (hspiceD-style) schematic exports. The top cell of each one is a `.subckt` that nothing else instantiates. Device models (`nch`, `pch`, `nch_lvt`, `pch_lvt`, `nch_18`, `pch_18`) come from the PDK and are not included. Every subcircuit is defined in its own file. Bus pins are written MSB first.
@@ -2152,11 +2152,11 @@ No block is on a high-speed data path. The analog decision path is zq/npd/vref �
 **Data path, per bit (`dq_rx_bit`):** dq → `rx_esd` → `dq_preamp` (vs RC-filtered vref_buf) → `dq_vga` → two `dq_sampler` (`dq_sa` StrongARM + `sr_latch_nand` + driver). One is clocked by dqs_t_b and produces dq_r; the other is clocked by dqs_c_b and produces dq_f.
 
 **Blocks not on the high-speed path:** `rx_bias`; `vrefdq_gen` (`ls_vdd2vddq`, `vref_ladder16`, `vref_dec4to16`/`pdec2to4`, `vref_sw16`, `vref_ota_buf`); `wdca_dec` (static code decoder, though it controls a block that is on the strobe path); the enable gating inside `dqs_lcb` (static).
-````
+`````
 
 ### FILE: tests/regression/t2_bist/netlist.sp
 <!-- sha256=e4675f1a38778e6fb9f7e908d689eb5c5f53cebf49ae60816978b4d35efa5cbf newline=1 -->
-````spice
+`````spice
 ** Generated for: hspiceD
 ** Generated on: Nov 14 09:41:27 2026
 ** Design library name: hsio_bist_lib
@@ -2888,11 +2888,11 @@ c0 vdd vss c=20p
 c1 vddq vss c=20p
 .ends hsio_bist_top
 ** End of subcircuit definition.
-````
+`````
 
 ### FILE: tests/regression/t2_dqs_rx/answer_key.json
 <!-- sha256=31883d49db006e68ffa957f1678eaa1044c606c1d466e1436462e84c1df79b1b newline=1 -->
-````json
+`````json
 {
  "top": "dqs_dq_rx_top",
  "supplies": [
@@ -3544,11 +3544,11 @@ c1 vddq vss c=20p
   }
  }
 }
-````
+`````
 
 ### FILE: tests/regression/t2_dqs_rx/answer_key_README.md
 <!-- sha256=28d00da03242c175398dfdcb87509629faa82a82f4bdcb62ff545fcea4148cc9 newline=1 -->
-````markdown
+`````markdown
 # Answer keys
 
 There is one JSON file per netlist: `bist.json` (`../bist.sp`), `zqcal.json` (`../zqcal.sp`) and `dqs_rx.json` (`../dqs_rx.sp`). Each one is the ground truth for checking a block diagram drawn from that netlist.
@@ -3574,11 +3574,11 @@ The keys cover every cell that contains subcircuit instances, plus the leaf cell
 - `notes`: feedback loops, unused outputs, deliberate asymmetry and other things a reviewer needs to know.
 
 Every `from`/`to` pair in `signal_flow` was checked by script against the netlist. Both ends resolve to the stated net.
-````
+`````
 
 ### FILE: tests/regression/t2_dqs_rx/intent.md
 <!-- sha256=f10d339ce64990a4469ac36d7f167552ef1c739d4a201f49f1e86e4654eab048 newline=1 -->
-````markdown
+`````markdown
 # Designer intent notes
 
 All three netlists are HSPICE (hspiceD-style) schematic exports. The top cell of each one is a `.subckt` that nothing else instantiates. Device models (`nch`, `pch`, `nch_lvt`, `pch_lvt`, `nch_18`, `pch_18`) come from the PDK and are not included. Every subcircuit is defined in its own file. Bus pins are written MSB first.
@@ -3701,11 +3701,11 @@ No block is on a high-speed data path. The analog decision path is zq/npd/vref �
 **Data path, per bit (`dq_rx_bit`):** dq → `rx_esd` → `dq_preamp` (vs RC-filtered vref_buf) → `dq_vga` → two `dq_sampler` (`dq_sa` StrongARM + `sr_latch_nand` + driver). One is clocked by dqs_t_b and produces dq_r; the other is clocked by dqs_c_b and produces dq_f.
 
 **Blocks not on the high-speed path:** `rx_bias`; `vrefdq_gen` (`ls_vdd2vddq`, `vref_ladder16`, `vref_dec4to16`/`pdec2to4`, `vref_sw16`, `vref_ota_buf`); `wdca_dec` (static code decoder, though it controls a block that is on the strobe path); the enable gating inside `dqs_lcb` (static).
-````
+`````
 
 ### FILE: tests/regression/t2_dqs_rx/netlist.sp
 <!-- sha256=35eedcbcd666a4f6a3b0c59594010cf2cf7f244618cb0ee3936c53901b98e15d newline=1 -->
-````spice
+`````spice
 ** Generated for: hspiceD
 ** Generated on: Nov 14 12:16:45 2026
 ** Design library name: ddr_dqrx
@@ -4305,11 +4305,11 @@ c0 vdd vss c=20p
 c1 vddq vss c=20p
 .ends dqs_dq_rx_top
 ** End of subcircuit definition.
-````
+`````
 
 ### FILE: tests/regression/t2_zqcal/answer_key.json
 <!-- sha256=e2731e8a215bfa52f2921c1407d9a62955f810a73146dd2db42767714f639d0b newline=1 -->
-````json
+`````json
 {
  "top": "zqcal_top",
  "supplies": [
@@ -5046,11 +5046,11 @@ c1 vddq vss c=20p
   }
  }
 }
-````
+`````
 
 ### FILE: tests/regression/t2_zqcal/answer_key_README.md
 <!-- sha256=28d00da03242c175398dfdcb87509629faa82a82f4bdcb62ff545fcea4148cc9 newline=1 -->
-````markdown
+`````markdown
 # Answer keys
 
 There is one JSON file per netlist: `bist.json` (`../bist.sp`), `zqcal.json` (`../zqcal.sp`) and `dqs_rx.json` (`../dqs_rx.sp`). Each one is the ground truth for checking a block diagram drawn from that netlist.
@@ -5076,11 +5076,11 @@ The keys cover every cell that contains subcircuit instances, plus the leaf cell
 - `notes`: feedback loops, unused outputs, deliberate asymmetry and other things a reviewer needs to know.
 
 Every `from`/`to` pair in `signal_flow` was checked by script against the netlist. Both ends resolve to the stated net.
-````
+`````
 
 ### FILE: tests/regression/t2_zqcal/intent.md
 <!-- sha256=f10d339ce64990a4469ac36d7f167552ef1c739d4a201f49f1e86e4654eab048 newline=1 -->
-````markdown
+`````markdown
 # Designer intent notes
 
 All three netlists are HSPICE (hspiceD-style) schematic exports. The top cell of each one is a `.subckt` that nothing else instantiates. Device models (`nch`, `pch`, `nch_lvt`, `pch_lvt`, `nch_18`, `pch_18`) come from the PDK and are not included. Every subcircuit is defined in its own file. Bus pins are written MSB first.
@@ -5203,11 +5203,11 @@ No block is on a high-speed data path. The analog decision path is zq/npd/vref �
 **Data path, per bit (`dq_rx_bit`):** dq → `rx_esd` → `dq_preamp` (vs RC-filtered vref_buf) → `dq_vga` → two `dq_sampler` (`dq_sa` StrongARM + `sr_latch_nand` + driver). One is clocked by dqs_t_b and produces dq_r; the other is clocked by dqs_c_b and produces dq_f.
 
 **Blocks not on the high-speed path:** `rx_bias`; `vrefdq_gen` (`ls_vdd2vddq`, `vref_ladder16`, `vref_dec4to16`/`pdec2to4`, `vref_sw16`, `vref_ota_buf`); `wdca_dec` (static code decoder, though it controls a block that is on the strobe path); the enable gating inside `dqs_lcb` (static).
-````
+`````
 
 ### FILE: tests/regression/t2_zqcal/netlist.sp
 <!-- sha256=d7075ce575eaae34434f91e4441830e10f3621dd4f6de1d83889ccbc43c08b02 newline=1 -->
-````spice
+`````spice
 ** Generated for: hspiceD
 ** Generated on: Nov 14 10:58:02 2026
 ** Design library name: ddr_zqcal
@@ -5811,11 +5811,11 @@ c0 vdd vss c=10p
 c1 vddq vss c=20p
 .ends zqcal_top
 ** End of subcircuit definition.
-````
+`````
 
 ### FILE: tests/regression/t3_nand_io/answer_key.json
 <!-- sha256=0dd80b8e7a164f63a85547df55246db062e60b9f7f0dcead595928d6b066c543 newline=1 -->
-````json
+`````json
 {
  "netlist": "nand_io_full.sp",
  "top": "nf_io_top",
@@ -13996,11 +13996,11 @@ c1 vddq vss c=20p
   }
  }
 }
-````
+`````
 
 ### FILE: tests/regression/t3_nand_io/answer_key_README.md
 <!-- sha256=e01764bd29d2c7ef530f1dacd34b96861a1b8075682dbf216a34e3fc60745b9b newline=1 -->
-````markdown
+`````markdown
 # Answer key format
 
 `nand_io_full.json` is the designer's ground truth for `nand_io_full.sp`, the full NAND flash IO block. Its top cell is `nf_io_top`. The format is the same as the sub-block keys in `material/answer_key`. The class vocabulary is extended as described below.
@@ -14088,11 +14088,11 @@ c1 vddq vss c=20p
 - Every net exists in its cell.
 - Every endpoint, scalar or range, really connects to the net named for it (bit by bit for ranges).
 - Every `controls` key is a net of the cell.
-````
+`````
 
 ### FILE: tests/regression/t3_nand_io/intent.md
 <!-- sha256=0def8db02ea707671740d004480714513f192fcb34bdc66b6f95c0218c09982e newline=1 -->
-````markdown
+`````markdown
 # NAND flash IO, full block: designer's note
 
 `nand_io_full.sp` is a Virtuoso `hspiceD` export of one top cell, **`nf_io_top`**. It is the complete DDR (Toggle/ONFI-style) byte IO of a NAND die: 8 DQ pins, DQS/DQSB, RE/nRE, ZQ and VREF.
@@ -14357,11 +14357,11 @@ Inside `dcc_ctrl`:
 **Not simulated:** the analog cells (Bazes receivers, OTA, ZQ comparators, ESD, RC detector) were checked by inspection only.
 
 **`check_key.py`:** validates the answer key against the netlist.
-````
+`````
 
 ### FILE: tests/regression/t3_nand_io/netlist.sp
 <!-- sha256=afaedcdfae0e80a80b969ecb36d3eb77a0b1e1e54fc23162ff09e030893101a8 newline=1 -->
-````spice
+`````spice
 ** Generated for: hspiceD
 ** Generated on: Nov 14 09:12:44 2026
 ** Design library name: NFIO_IO
@@ -16097,11 +16097,11 @@ MM1 vssq vccq vssq vssq nch_hv W=5u L=1u m=40 nf=1
 ** End of subcircuit definition.
 
 .END
-````
+`````
 
 ### FILE: tests/regression/t4_fwdclk/answer_key.json
 <!-- sha256=f4e460cd7dbd531cf959e8b8c15bb59c310d3ff219b5591d6d5e238c6ddcdcc6 newline=0 -->
-````json
+`````json
 {
  "netlist": "netlist_g.sp",
  "top": "fcl_link_top",
@@ -20969,11 +20969,11 @@ MM1 vssq vccq vssq vssq nch_hv W=5u L=1u m=40 nf=1
   }
  }
 }
-````
+`````
 
 ### FILE: tests/regression/t4_fwdclk/answer_key_README.md
 <!-- sha256=a1492ae038eba3334e93860a1d8f9a26f43047b24a163ffb8888b8cec074a146 newline=1 -->
-````markdown
+`````markdown
 # Answer key format
 
 `netlist_g.json` is the designer's ground truth for `netlist_g.sp`, a forwarded-clock serial-link IO. Its top cell is `fcl_link_top`. The format is the same as the iter3 key (`nand_io_full.json`). This key adds a few fields and classes, all defined below.
@@ -21076,11 +21076,11 @@ Classes follow what a signal does, not its name. For example, `ld` is a capture 
 - Every `controls` key is a net of the cell.
 - `inverting` is a bool, `null`, or an object whose keys are pins of the cell.
 - A mutation test (wrong net, wrong pin, reversed bus, missing child, bad class, dropped port) was run once by hand, and the checker rejected each mutation.
-````
+`````
 
 ### FILE: tests/regression/t4_fwdclk/intent.md
 <!-- sha256=411fbcecca86f68a076bad9009a49587ad5f36609f5254caecc5488e7c597efe newline=1 -->
-````markdown
+`````markdown
 # netlist_g.sp: designer's note (for the verifier only)
 
 Top cell `fcl_link_top`, a forwarded-clock serial-link IO. There are 55 subckts, the hierarchy is 6 levels deep, and the flattened netlist has 3992 MOS (sum of m = 4687), 74 R and 20 C. The top has 111 pins.
@@ -21312,11 +21312,11 @@ The logic checks cover:
 CML and analog cells are not logic-simulated:
 - `fca_cmla`, `fca_cl`, `fca_clff`, `fca_c2c`, `fca_mix2w`;
 - `fca_isw`, `fca_lpf`, `fca_bias`, `fca_trm`, `fca_tleg`, `fcx_drv`, `fce_lv`.
-````
+`````
 
 ### FILE: tests/regression/t4_fwdclk/netlist.sp
 <!-- sha256=6e8d4ebfd8dc869ffdf5a05d22e07cc5f8de268b050d1973edde20651071db5e newline=1 -->
-````spice
+`````spice
 * HSPICE netlist
 * Generated by: Custom Compiler netlister (hspice), version W-2024.09-SP2
 * Top cell: FCL_TOP/fcl_link_top/schematic
@@ -22164,11 +22164,11 @@ C0 avdd avss 20p
 .ends fcl_link_top
 
 .end
-````
+`````
 
 ### FILE: tests/regression/t4_lpddr5/answer_key.json
 <!-- sha256=76b62b6f683946cc68ab9b6a27f6a5c6c83fb36b8c3ff499c3722f156d8bd322 newline=1 -->
-````json
+`````json
 {
  "netlist": "netlist_f.sp",
  "top": "LP5_DQ_BYTE",
@@ -29625,11 +29625,11 @@ C0 avdd avss 20p
   }
  }
 }
-````
+`````
 
 ### FILE: tests/regression/t4_lpddr5/answer_key_README.md
 <!-- sha256=f89c3376e7951d201b03c6840ad52d2b005862c7d49bbff24093ab70c2d29217 newline=1 -->
-````markdown
+`````markdown
 # Answer key format
 
 `netlist_f.json` is the designer's ground truth for `netlist_f.sp`, an LPDDR5-style x8 DQ byte IO (memory side). Its top cell is `LP5_DQ_BYTE`. The format and the class vocabulary are the same as the iter3 key (`nand_io_full.json`). Only the bus and instance notation changes, because this netlist uses bracket buses and individually written instances. No new classes are needed.
@@ -29725,11 +29725,11 @@ Controls are classed by their effect, not by their name.
 - Every net exists in its cell.
 - Every endpoint, scalar or range, really connects to the net named for it (bit by bit for ranges).
 - Every `controls` key is a net of the cell.
-````
+`````
 
 ### FILE: tests/regression/t4_lpddr5/intent.md
 <!-- sha256=cebf20ae22bdd37f46d12c6244348773dcfd448cd30154584f30cd6e9030eac7 newline=1 -->
-````markdown
+`````markdown
 # LPDDR5-style x8 DQ byte IO: designer's note (verifier only)
 
 `netlist_f.sp` is an `hspiceD`-style export of one top cell, **`LP5_DQ_BYTE`**: the memory-side IO of one LPDDR5-style byte (8 DQ pins, WCK/WCKB, ZQ). It is self-contained, with placeholder `.MODEL` cards and no `.include`. The top cell is a `.SUBCKT` that nothing instantiates.
@@ -30044,11 +30044,11 @@ Controls are classed by their effect, not by their name.
   - The strength codes reach the legs, ODT is interlocked with OE, the pads are terminated with OE=0, and `CAL_EN` gates the tap DAC.
 - `check_key.py` is the answer-key consistency check.
 - Not switch-level checked (analog): `CML_BUF`, `CML2CMOS` (5T), `CTLE_SC`, `DCC_OTA`, `ZQ_CMP`, `BIAS_GEN`, `RX_TRIM_DAC`, the ESD cells and the leg resistors. Their wiring and polarity are covered by the key and by the top-level check.
-````
+`````
 
 ### FILE: tests/regression/t4_lpddr5/netlist.sp
 <!-- sha256=4917c666ce98c05394d56a88110babc776192d91b2c80629672bdc94140d3ef1 newline=1 -->
-````spice
+`````spice
 ** Generated for: hspiceD
 ** Generated on: Nov 15 10:41:07 2026
 ** Design library name: LP5IO_TOP
@@ -30942,11 +30942,11 @@ C_DCQ VDDQ VSSQ 20p
 ** End of subcircuit definition.
 
 .END
-````
+`````
 
 ### FILE: tests/regression/t4_nameblind/answer_key.json
 <!-- sha256=7a5d230629e7d9f46a3908ae18cc4418351203ddcbec2f65dfb48f58ccafa98a newline=0 -->
-````json
+`````json
 {
  "netlist": "netlist_e.sp",
  "top": "udmp",
@@ -39127,11 +39127,11 @@ C_DCQ VDDQ VSSQ 20p
   }
  }
 }
-````
+`````
 
 ### FILE: tests/regression/t4_nameblind/answer_key_README.md
 <!-- sha256=e01764bd29d2c7ef530f1dacd34b96861a1b8075682dbf216a34e3fc60745b9b newline=1 -->
-````markdown
+`````markdown
 # Answer key format
 
 `nand_io_full.json` is the designer's ground truth for `nand_io_full.sp`, the full NAND flash IO block. Its top cell is `nf_io_top`. The format is the same as the sub-block keys in `material/answer_key`. The class vocabulary is extended as described below.
@@ -39219,11 +39219,11 @@ C_DCQ VDDQ VSSQ 20p
 - Every net exists in its cell.
 - Every endpoint, scalar or range, really connects to the net named for it (bit by bit for ranges).
 - Every `controls` key is a net of the cell.
-````
+`````
 
 ### FILE: tests/regression/t4_nameblind/intent.md
 <!-- sha256=d656f865bd813f39eee3dad578a8b118c9cce7da499ded7f90680f4478f71728 newline=1 -->
-````markdown
+`````markdown
 # Name-blind copy of nand_io_full.sp (for the verifier only)
 
 `netlist_e.sp` is the name-blind copy of `nand_io_full.sp` (iter3/agent1_full). It holds the same circuit, with every name replaced by a random token. RNG: Python `random.Random(583041)`, **seed 583041**. The top cell `nf_io_top` is now `udmp`.
@@ -39502,11 +39502,11 @@ Inside `dcc_ctrl`:
 **Not simulated:** the analog cells (Bazes receivers, OTA, ZQ comparators, ESD, RC detector) were checked by inspection only.
 
 **`check_key.py`:** validates the answer key against the netlist.
-````
+`````
 
 ### FILE: tests/regression/t4_nameblind/name_map.json
 <!-- sha256=9d3901dfe4e97ff646eace4f9accb5e70b306d40dbed367671303d7f5f145304 newline=0 -->
-````json
+`````json
 {
  "seed": 583041,
  "source": "iter3/agent1_full/nand_io_full.sp",
@@ -48241,11 +48241,11 @@ Inside `dcc_ctrl`:
   }
  }
 }
-````
+`````
 
 ### FILE: tests/regression/t4_nameblind/netlist.sp
 <!-- sha256=c41286f6b614e8dfdc804c3d6b33893262d787c02a29826065941deebc22878f newline=1 -->
-````spice
+`````spice
 ** Generated for: hspiceD
 ** Generated on: Nov 14 09:12:44 2026
 ** Design library name: wgdhcu
@@ -49961,4 +49961,4 @@ Mswdjq to2mwe biwe7 vss vss jil3gy W=1.5u L=0.2u m=1 nf=1
 ** End of subcircuit definition.
 
 .END
-````
+`````
