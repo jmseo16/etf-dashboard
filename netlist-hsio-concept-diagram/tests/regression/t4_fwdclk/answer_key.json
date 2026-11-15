@@ -1,0 +1,4867 @@
+{
+ "netlist": "netlist_g.sp",
+ "top": "fcl_link_top",
+ "supplies": [
+  "avdd",
+  "vddq"
+ ],
+ "grounds": [
+  "avss",
+  "vssq"
+ ],
+ "globals": {
+  "vddd": "core digital supply, .global (no pins in FCL_STD and in the digital cells that use it)",
+  "vssd": "core digital ground, .global"
+ },
+ "ports": {
+  "fck_p": {
+   "class": "clock_in",
+   "function": "forwarded clock pad, true (CML, terminated to vcm)"
+  },
+  "fck_n": {
+   "class": "clock_in",
+   "function": "forwarded clock pad, complement"
+  },
+  "rx_p[3:0]": {
+   "class": "hs_data_in",
+   "function": "data lane input pads, true (CML, 100 ohm differential termination)"
+  },
+  "rx_n[3:0]": {
+   "class": "hs_data_in",
+   "function": "data lane input pads, complement"
+  },
+  "tx_p": {
+   "class": "hs_data_out",
+   "function": "Tx CML output, true (50 ohm load to avdd is the termination)"
+  },
+  "tx_n": {
+   "class": "hs_data_out",
+   "function": "Tx CML output, complement"
+  },
+  "cmd_pad[3:0]": {
+   "class": "slow_signal",
+   "function": "slow single-ended CMOS command pads (vddq, Schmitt receivers)"
+  },
+  "cstb_pad": {
+   "class": "clock_in",
+   "function": "slow strobe pad: rising edge loads the command register (not a high-speed clock)"
+  },
+  "rxd[31:0]": {
+   "class": "word_rate_data",
+   "function": "deserialized words, rxd[8n+7:8n] = lane n, rxd[8n] = oldest bit"
+  },
+  "rx_wck[3:0]": {
+   "class": "clock_out",
+   "function": "per-lane recovered word clock (bit clock / 8)"
+  },
+  "rx_pic[19:0]": {
+   "class": "status_out",
+   "function": "per-lane CDR phase-interpolator code readback, rx_pic[5n+4:5n] = lane n"
+  },
+  "txd[7:0]": {
+   "class": "word_rate_data",
+   "function": "Tx word, txd[0] sent first"
+  },
+  "tx_wck": {
+   "class": "clock_out",
+   "function": "Tx word clock (DLL phase 0 / 8)"
+  },
+  "txffe_pre[1:0]": {
+   "class": "important_control",
+   "function": "pre-cursor tap weight (register input), subtracting"
+  },
+  "txffe_main[3:0]": {
+   "class": "important_control",
+   "function": "main-cursor tap weight (register input)"
+  },
+  "txffe_post[2:0]": {
+   "class": "important_control",
+   "function": "post-cursor tap weight (register input), subtracting"
+  },
+  "ro_div": {
+   "class": "test_digital",
+   "function": "ring-oscillator frequency / 8"
+  },
+  "ro_cnt[5:0]": {
+   "class": "test_digital",
+   "function": "frequency count: rising edges of ro_div during the cmd_q[2] window"
+  },
+  "cmd_q[3:0]": {
+   "class": "status_out",
+   "function": "command register readback; bit0 RO enable, bit1 CDR hold, bit2 count window, bit3 spare"
+  },
+  "rst_n": {
+   "class": "general_control",
+   "function": "active-low reset: CDR accumulators, Johnson dividers (word alignment), command register"
+  },
+  "dll_rst_n": {
+   "class": "general_control",
+   "function": "active-low DLL reset: PFD held, vctl pulled to avdd"
+  },
+  "fc_rst_n": {
+   "class": "test_digital",
+   "function": "clears the RO divider and frequency counter"
+  },
+  "ibias": {
+   "class": "bias",
+   "function": "reference bias current input"
+  },
+  "dll_vmon": {
+   "class": "test_analog",
+   "function": "DLL control voltage monitor through 20k"
+  },
+  "avdd": {
+   "class": "power",
+   "function": "analog/CML supply"
+  },
+  "avss": {
+   "class": "power",
+   "function": "analog ground"
+  },
+  "vddq": {
+   "class": "power",
+   "function": "slow-pad IO supply (thick oxide)"
+  },
+  "vssq": {
+   "class": "power",
+   "function": "slow-pad IO ground"
+  }
+ },
+ "cells": {
+  "fcd_inv": {
+   "role": "Static CMOS inverter, 1x",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MN0.g",
+     "a",
+     "clock"
+    ],
+    [
+     "MN0.d",
+     "PORT.y",
+     "y",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Supplies are the .global nets vddd/vssd (no supply pins). Generic cell; on the HS path as the c2c first output stage and the phase-select output buffers (net_class reflects that use). Also used in control logic."
+  },
+  "fcd_inv4": {
+   "role": "Static CMOS inverter, 4x (m=4 devices)",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MN0.g",
+     "a",
+     "clock"
+    ],
+    [
+     "MN0.d",
+     "PORT.y",
+     "y",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Supplies are the .global nets vddd/vssd (no supply pins). Driver strength via device m=4. Used as the DLL phase-distribution driver (instance m=2), c2c output driver and phase-select output buffers."
+  },
+  "fcd_nand2": {
+   "role": "Static 2-input NAND",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MN0.g",
+     "a",
+     "clock"
+    ],
+    [
+     "PORT.b",
+     "MN1.g",
+     "b",
+     "clock"
+    ],
+    [
+     "MN0.d",
+     "PORT.y",
+     "y",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Supplies are the .global nets vddd/vssd (no supply pins). On the HS clock path only as the Johnson-divider load-pulse decode (fcr_jdiv8/X4); elsewhere control logic (PFD reset, accumulator vote decode, RO count gate)."
+  },
+  "fcd_nor2": {
+   "role": "Static 2-input NOR",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MN0.g",
+     "a",
+     "loop_error"
+    ],
+    [
+     "PORT.b",
+     "MN1.g",
+     "b",
+     "loop_error"
+    ],
+    [
+     "MN0.d",
+     "PORT.y",
+     "y",
+     "loop_error"
+    ]
+   ],
+   "controls": {},
+   "notes": "Supplies are the .global nets vddd/vssd (no supply pins). PFD reset gating and accumulator vote decode."
+  },
+  "fcd_xor2": {
+   "role": "8T pass-transistor XOR: input inverters + two TGs steered by b (y = b ? ~a : a)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MN0.g",
+     "a",
+     "loop_error"
+    ],
+    [
+     "PORT.a",
+     "MN2.s",
+     "a",
+     "loop_error"
+    ],
+    [
+     "PORT.b",
+     "MN1.g",
+     "b",
+     "loop_error"
+    ],
+    [
+     "MN0.d",
+     "MN3.s",
+     "an",
+     "loop_error"
+    ],
+    [
+     "MN2.d",
+     "PORT.y",
+     "y",
+     "loop_error"
+    ]
+   ],
+   "controls": {
+    "b": "selects a (b=0) or ~a (b=1) onto y"
+   },
+   "notes": "Supplies are the .global nets vddd/vssd (no supply pins). Non-restoring output (y is driven through TGs, partly straight from input a). Used as the Alexander-PD XORs and as the toggle XOR of the counter bits; never on the mission data path. inverting=false refers to a with b=0."
+  },
+  "fcd_majb3": {
+   "role": "Inverting 3-input majority (mirror carry gate): y = NOT maj(a,b,c)",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MN0.g",
+     "a",
+     "loop_error"
+    ],
+    [
+     "PORT.b",
+     "MN1.g",
+     "b",
+     "loop_error"
+    ],
+    [
+     "PORT.c",
+     "MN2.g",
+     "c",
+     "loop_error"
+    ],
+    [
+     "MN0.d",
+     "PORT.y",
+     "y",
+     "loop_error"
+    ]
+   ],
+   "controls": {},
+   "notes": "Supplies are the .global nets vddd/vssd (no supply pins). 10T mirror structure (same as an adder carry stage, no output inverter). Used only as the CDR vote (fcr_vote)."
+  },
+  "fcd_tgmux": {
+   "role": "Transmission-gate 2:1 mux, external complementary select (y = s ? d1 : d0)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.d0",
+     "MN0.s",
+     "d0",
+     "clock"
+    ],
+    [
+     "PORT.d1",
+     "MN1.s",
+     "d1",
+     "clock"
+    ],
+    [
+     "PORT.s",
+     "MN1.g",
+     "s",
+     "pi_code"
+    ],
+    [
+     "PORT.sb",
+     "MN0.g",
+     "sb",
+     "pi_code"
+    ],
+    [
+     "MN0.d",
+     "PORT.y",
+     "y",
+     "clock"
+    ]
+   ],
+   "controls": {
+    "s/sb": "complementary select; s=1 passes d1"
+   },
+   "notes": "Supplies are the .global nets vddd/vssd (no supply pins). 4T, non-restoring. Used for the PI phase-select trees (clock) and the serializer load/shift select (data); net classes shown for the phase-select use."
+  },
+  "fcd_ckbuf": {
+   "role": "Clock buffer with true and complement outputs (two inverters)",
+   "on_high_speed_path": true,
+   "inverting": {
+    "y": false,
+    "yb": true
+   },
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MN0.g",
+     "a",
+     "clock"
+    ],
+    [
+     "MN0.d",
+     "MN1.g",
+     "yb",
+     "clock"
+    ],
+    [
+     "MN0.d",
+     "PORT.yb",
+     "yb",
+     "clock"
+    ],
+    [
+     "MN1.d",
+     "PORT.y",
+     "y",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Supplies are the .global nets vddd/vssd (no supply pins). yb is one inverter delay ahead of y (not a skew-matched pair). Used as local ck/ckb drivers (instance m=2 in the lanes), the strobe buffer, the RO clock buffer and the Tx FFE single-to-differential pre-drivers."
+  },
+  "fcd_dff": {
+   "role": "Positive-edge master-slave TG flip-flop with external ck/ckb (16T), q and qb",
+   "on_high_speed_path": true,
+   "inverting": {
+    "q": false,
+    "qb": true
+   },
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.d",
+     "MN0.s",
+     "d",
+     "hs_data"
+    ],
+    [
+     "MN0.d",
+     "MN1.g",
+     "m1",
+     "hs_data"
+    ],
+    [
+     "MN1.d",
+     "MN4.s",
+     "m2",
+     "hs_data"
+    ],
+    [
+     "MN4.d",
+     "MN5.g",
+     "s1",
+     "hs_data"
+    ],
+    [
+     "MN5.d",
+     "PORT.q",
+     "q",
+     "hs_data"
+    ],
+    [
+     "MN6.d",
+     "PORT.qb",
+     "qb",
+     "hs_data"
+    ],
+    [
+     "PORT.ck",
+     "MN4.g",
+     "ck",
+     "clock"
+    ],
+    [
+     "PORT.ckb",
+     "MN0.g",
+     "ckb",
+     "clock"
+    ]
+   ],
+   "controls": {
+    "ck/ckb": "complementary clock; master transparent while ck=0, captures on ck rising"
+   },
+   "notes": "Supplies are the .global nets vddd/vssd (no supply pins). Keepers: MN2/MP2 + TG MN3/MP3 (master, on while ck=1) and qb + TG MN7/MP7 (slave, on while ck=0), weak (lkp). qb also drives the slave keeper. A falling-edge flop is the same cell with ck/ckb swapped at the instance. Used for deser/serializer shift stages, PD retiming, vote history and FFE delays."
+  },
+  "fcd_dffr": {
+   "role": "Positive-edge TG flip-flop with active-low async reset (q=0), external ck/ckb (20T)",
+   "on_high_speed_path": true,
+   "inverting": {
+    "q": false,
+    "qb": true
+   },
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.d",
+     "MN0.s",
+     "d",
+     "hs_data"
+    ],
+    [
+     "MN0.d",
+     "MN1.g",
+     "m1",
+     "hs_data"
+    ],
+    [
+     "MN1.d",
+     "MN4.s",
+     "m2",
+     "hs_data"
+    ],
+    [
+     "MN4.d",
+     "MN5.g",
+     "s1",
+     "hs_data"
+    ],
+    [
+     "MN5.d",
+     "PORT.q",
+     "q",
+     "hs_data"
+    ],
+    [
+     "MN6.d",
+     "PORT.qb",
+     "qb",
+     "hs_data"
+    ],
+    [
+     "PORT.ck",
+     "MN4.g",
+     "ck",
+     "clock"
+    ],
+    [
+     "PORT.ckb",
+     "MN0.g",
+     "ckb",
+     "clock"
+    ],
+    [
+     "PORT.rb",
+     "MN8.g",
+     "rb",
+     "general_control"
+    ],
+    [
+     "PORT.rb",
+     "MN9.g",
+     "rb",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "rb": "0 forces m2=1 (master NAND) and qb=1 (slave NAND, fed back to s1) so q=0 in either clock phase"
+   },
+   "notes": "Supplies are the .global nets vddd/vssd (no supply pins). Same as fcd_dff with the two keeper-loop inverters replaced by NANDs with rb. Used in the Johnson dividers (HS clock path), PFD, CDR counter bits, ripple counters and command register."
+  },
+  "fcd_lat": {
+   "role": "TG D-latch, transparent while en=1 (8T)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.d",
+     "MN0.s",
+     "d",
+     "word_rate_data"
+    ],
+    [
+     "MN0.d",
+     "MN1.g",
+     "l1",
+     "word_rate_data"
+    ],
+    [
+     "MN2.d",
+     "PORT.q",
+     "q",
+     "word_rate_data"
+    ],
+    [
+     "PORT.en",
+     "MN0.g",
+     "en",
+     "clock"
+    ],
+    [
+     "PORT.enb",
+     "MN3.g",
+     "enb",
+     "clock"
+    ]
+   ],
+   "controls": {
+    "en/enb": "1/0 = transparent; 0/1 = hold via keeper TG MN3/MP3 (weak) from q"
+   },
+   "notes": "Supplies are the .global nets vddd/vssd (no supply pins). q drives the keeper. Used only as the deserializer capture latch, opened for one UI per word."
+  },
+  "fca_cmla": {
+   "role": "CML differential amplifier: resistor loads (subckt param rl, default 600), lvt input pair, NMOS tail biased by vbn",
+   "on_high_speed_path": true,
+   "inverting": {
+    "outp": false,
+    "outn": true
+   },
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.inp",
+     "MN0.g",
+     "inp",
+     "hs_data"
+    ],
+    [
+     "PORT.inn",
+     "MN1.g",
+     "inn",
+     "hs_data"
+    ],
+    [
+     "MN0.d",
+     "PORT.outn",
+     "outn",
+     "hs_data"
+    ],
+    [
+     "MN1.d",
+     "PORT.outp",
+     "outp",
+     "hs_data"
+    ],
+    [
+     "PORT.vbn",
+     "MN2.g",
+     "vbn",
+     "bias"
+    ],
+    [
+     "MN2.d",
+     "MN0.s",
+     "tl",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "vbn": "tail current"
+   },
+   "notes": "Loads R0/R1 to avdd. Used as the data-lane input buffer (rl=600) and the forwarded-clock receiver (instance override rl=450); in the clock lane its signals are clocks."
+  },
+  "fca_c2c": {
+   "role": "CML-to-CMOS converter: diff pair into PMOS mirror load (single-ended), then a two-inverter CMOS output stage on the global digital supply",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fcd_inv",
+     "role": "first output inverter (vddd)"
+    },
+    {
+     "inst": "X1",
+     "cell": "fcd_inv4",
+     "role": "output driver"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.inp",
+     "MN0.g",
+     "inp",
+     "clock"
+    ],
+    [
+     "PORT.inn",
+     "MN1.g",
+     "inn",
+     "clock"
+    ],
+    [
+     "MP0.d",
+     "MP1.g",
+     "x1",
+     "clock"
+    ],
+    [
+     "MN1.d",
+     "X0.a",
+     "x2",
+     "clock"
+    ],
+    [
+     "X0.y",
+     "X1.a",
+     "yb",
+     "clock"
+    ],
+    [
+     "X1.y",
+     "PORT.y",
+     "y",
+     "clock"
+    ],
+    [
+     "PORT.vbn",
+     "MN2.g",
+     "vbn",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "vbn": "tail current"
+   },
+   "notes": "Mixed cell: MOS + instances. Analog part on avdd/avss pins, output stage on the globals vddd/vssd (domain crossing at equal voltage). y follows inp. Used for the CMOS clocks (fwd lane, lane digital clock) and to convert the sampler outputs (hs_data) in fcr_smp."
+  },
+  "fca_cl": {
+   "role": "CML latch: lvt track pair + cross-coupled regeneration pair, tails steered by a clock diff pair; transparent while ckp is high",
+   "on_high_speed_path": true,
+   "inverting": {
+    "qp": false,
+    "qn": true
+   },
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.dp",
+     "MN0.g",
+     "dp",
+     "hs_data"
+    ],
+    [
+     "PORT.dn",
+     "MN1.g",
+     "dn",
+     "hs_data"
+    ],
+    [
+     "MN0.d",
+     "PORT.qn",
+     "qn",
+     "hs_data"
+    ],
+    [
+     "MN1.d",
+     "PORT.qp",
+     "qp",
+     "hs_data"
+    ],
+    [
+     "PORT.qp",
+     "MN2.g",
+     "qp",
+     "hs_data"
+    ],
+    [
+     "PORT.qn",
+     "MN3.g",
+     "qn",
+     "hs_data"
+    ],
+    [
+     "PORT.ckp",
+     "MN4.g",
+     "ckp",
+     "clock"
+    ],
+    [
+     "PORT.ckn",
+     "MN5.g",
+     "ckn",
+     "clock"
+    ],
+    [
+     "PORT.vbn",
+     "MN6.g",
+     "vbn",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "ckp/ckn": "ckp high: track (ta); ckn high: hold/regenerate (tb)",
+    "vbn": "tail current"
+   },
+   "notes": "Resistor loads (rl=800). Positive feedback MN2/MN3 is the latch's hold state, not a separate block."
+  },
+  "fca_clff": {
+   "role": "CML master-slave flip-flop (two fca_cl), samples on ckp rising",
+   "on_high_speed_path": true,
+   "inverting": {
+    "qp": false,
+    "qn": true
+   },
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fca_cl",
+     "role": "master, transparent while ckn high"
+    },
+    {
+     "inst": "X1",
+     "cell": "fca_cl",
+     "role": "slave, transparent while ckp high"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.dp",
+     "X0.dp",
+     "dp",
+     "hs_data"
+    ],
+    [
+     "PORT.dn",
+     "X0.dn",
+     "dn",
+     "hs_data"
+    ],
+    [
+     "X0.qp",
+     "X1.dp",
+     "mp",
+     "hs_data"
+    ],
+    [
+     "X0.qn",
+     "X1.dn",
+     "mn",
+     "hs_data"
+    ],
+    [
+     "X1.qp",
+     "PORT.qp",
+     "qp",
+     "hs_data"
+    ],
+    [
+     "X1.qn",
+     "PORT.qn",
+     "qn",
+     "hs_data"
+    ],
+    [
+     "PORT.ckp",
+     "X1.ckp",
+     "ckp",
+     "clock"
+    ],
+    [
+     "PORT.ckp",
+     "X0.ckn",
+     "ckp",
+     "clock"
+    ],
+    [
+     "PORT.ckn",
+     "X0.ckp",
+     "ckn",
+     "clock"
+    ]
+   ],
+   "controls": {
+    "ckp/ckn": "sampling clock; the edge sampler is the same cell with ckp/ckn swapped at the instance"
+   },
+   "notes": "Master gets the clocks swapped. Used twice per lane: data sampler and edge sampler."
+  },
+  "fca_trm": {
+   "role": "On-die differential termination: 2 x 50 ohm to a common-mode node, with CM decap",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.inp",
+     "R0",
+     "inp",
+     "hs_data"
+    ],
+    [
+     "PORT.inn",
+     "R1",
+     "inn",
+     "hs_data"
+    ],
+    [
+     "PORT.vcm",
+     "R0",
+     "vcm",
+     "reference"
+    ],
+    [
+     "C0",
+     "PORT.vcm",
+     "vcm",
+     "reference"
+    ]
+   ],
+   "controls": {},
+   "notes": "Shunt termination (100 ohm differential), no in->out path. vcm comes from the fca_bias divider. Used on the four data lanes and the forwarded-clock input."
+  },
+  "fca_mix2w": {
+   "role": "Phase-interpolator core: two lvt diff pairs (A, B) with shared resistor/capacitor loads; tail A = fixed unit + legs on wb[1:0] (4 - w units), tail B = legs on w[1:0] (w units)",
+   "on_high_speed_path": true,
+   "inverting": {
+    "outp": false,
+    "outn": true
+   },
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.ap",
+     "MN0.g",
+     "ap",
+     "clock"
+    ],
+    [
+     "PORT.an",
+     "MN1.g",
+     "an",
+     "clock"
+    ],
+    [
+     "PORT.bp",
+     "MN2.g",
+     "bp",
+     "clock"
+    ],
+    [
+     "PORT.bn",
+     "MN3.g",
+     "bn",
+     "clock"
+    ],
+    [
+     "MN0.d",
+     "PORT.outn",
+     "outn",
+     "clock"
+    ],
+    [
+     "MN1.d",
+     "PORT.outp",
+     "outp",
+     "clock"
+    ],
+    [
+     "MN2.d",
+     "PORT.outn",
+     "outn",
+     "clock"
+    ],
+    [
+     "MN3.d",
+     "PORT.outp",
+     "outp",
+     "clock"
+    ],
+    [
+     "PORT.w[1]",
+     "MN11.g",
+     "w[1]",
+     "pi_code"
+    ],
+    [
+     "PORT.w[0]",
+     "MN9.g",
+     "w[0]",
+     "pi_code"
+    ],
+    [
+     "PORT.wb[1]",
+     "MN7.g",
+     "wb[1]",
+     "pi_code"
+    ],
+    [
+     "PORT.wb[0]",
+     "MN5.g",
+     "wb[0]",
+     "pi_code"
+    ],
+    [
+     "PORT.vbn",
+     "MN4.g",
+     "vbn",
+     "bias"
+    ],
+    [
+     "C0",
+     "PORT.outp",
+     "outp",
+     "clock"
+    ]
+   ],
+   "controls": {
+    "w[1:0]": "interpolation weight: B tail = w units (legs m=1, m=2), A tail = 1 + (3 - w) = 4 - w units; sum always 4 units",
+    "wb[1:0]": "complement of w (from the counter qb outputs)",
+    "vbn": "unit tail current"
+   },
+   "notes": "LOOK-ALIKE: resembles an FFE/summer (diff pairs summing into shared loads with binary-weighted tail legs), but the inputs are two adjacent DLL clock phases, the two tail weights are complementary (constant total), the loads carry slew-shaping caps C0/C1 (25f) so the edges overlap and interpolate, and the output is the sampling clock. Output phase ~ phase(A) + (w/4) x 45 deg. rl=500 default, instance override rl=420."
+  },
+  "fca_dcell": {
+   "role": "DLL delay cell: two current-starved inverters (inp->outn, inn->outp) with NMOS starve gate vcn and PMOS starve gate vcp, plus a weak cross-coupled inverter pair between outn and outp",
+   "on_high_speed_path": true,
+   "inverting": {
+    "outp": false,
+    "outn": true
+   },
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.inp",
+     "MP1.g",
+     "inp",
+     "clock"
+    ],
+    [
+     "PORT.inn",
+     "MP3.g",
+     "inn",
+     "clock"
+    ],
+    [
+     "MN1.d",
+     "PORT.outn",
+     "outn",
+     "clock"
+    ],
+    [
+     "MN3.d",
+     "PORT.outp",
+     "outp",
+     "clock"
+    ],
+    [
+     "PORT.vcn",
+     "MN0.g",
+     "vcn",
+     "loop_control"
+    ],
+    [
+     "PORT.vcn",
+     "MN2.g",
+     "vcn",
+     "loop_control"
+    ],
+    [
+     "PORT.vcp",
+     "MP0.g",
+     "vcp",
+     "loop_control"
+    ],
+    [
+     "PORT.vcp",
+     "MP2.g",
+     "vcp",
+     "loop_control"
+    ]
+   ],
+   "controls": {
+    "vcn": "DLL control voltage: higher = more current = less delay",
+    "vcp": "PMOS starve bias derived from vcn"
+   },
+   "notes": "LOOK-ALIKE: the starved inverters look like static slew-limited inverters with fixed bias, but vcn/vcp are the DLL loop's analog control voltage, so this is a voltage-controlled delay stage. The weak cross-coupled pair (MP4/MN4, MP5/MN5, L=lcs) only keeps outp/outn complementary; it is not a latch (no clock, overpowered by the starved drivers). Each single-ended path inverts; the differential cell is non-inverting."
+  },
+  "fca_dline": {
+   "role": "Voltage-controlled delay line: 4 active differential delay cells + 1 dummy load cell, 8 taps at 45 deg",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fca_dcell",
+     "role": "stage 1: ph[1]=45, ph[5]=225 deg"
+    },
+    {
+     "inst": "X1",
+     "cell": "fca_dcell",
+     "role": "stage 2: ph[2], ph[6]"
+    },
+    {
+     "inst": "X2",
+     "cell": "fca_dcell",
+     "role": "stage 3: ph[3], ph[7]"
+    },
+    {
+     "inst": "X3",
+     "cell": "fca_dcell",
+     "role": "stage 4: ph[4]=180, ph[0]=360 deg"
+    },
+    {
+     "inst": "X4",
+     "cell": "fca_dcell",
+     "role": "dummy load on ph[4]/ph[0], outputs unused"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ckp",
+     "X0.inp",
+     "ckp",
+     "clock"
+    ],
+    [
+     "PORT.ckn",
+     "X0.inn",
+     "ckn",
+     "clock"
+    ],
+    [
+     "X0.outp",
+     "X1.inp",
+     "ph[1]",
+     "clock"
+    ],
+    [
+     "X0.outn",
+     "X1.inn",
+     "ph[5]",
+     "clock"
+    ],
+    [
+     "X1.outp",
+     "X2.inp",
+     "ph[2]",
+     "clock"
+    ],
+    [
+     "X1.outn",
+     "X2.inn",
+     "ph[6]",
+     "clock"
+    ],
+    [
+     "X2.outp",
+     "X3.inp",
+     "ph[3]",
+     "clock"
+    ],
+    [
+     "X2.outn",
+     "X3.inn",
+     "ph[7]",
+     "clock"
+    ],
+    [
+     "X3.outp",
+     "X4.inp",
+     "ph[4]",
+     "clock"
+    ],
+    [
+     "X3.outn",
+     "X4.inn",
+     "ph[0]",
+     "clock"
+    ],
+    [
+     "X0.outp",
+     "PORT.ph[1]",
+     "ph[1]",
+     "clock"
+    ],
+    [
+     "X3.outn",
+     "PORT.ph[0]",
+     "ph[0]",
+     "clock"
+    ],
+    [
+     "PORT.vcn",
+     "X0.vcn",
+     "vcn",
+     "loop_control"
+    ],
+    [
+     "PORT.vcp",
+     "X0.vcp",
+     "vcp",
+     "loop_control"
+    ]
+   ],
+   "controls": {
+    "vcn/vcp": "delay per stage (all five cells share them)"
+   },
+   "notes": "Phase naming is by phase, not by stage: stage k true output = ph[k], complement = ph[k+4]. Locked delay is T/2 over 4 stages, so ph[0] (stage-4 complement) lines up with ckp. Intentional asymmetry: the dummy X4 loads the last stage like the others; its outputs dmp/dmn are intentionally unused."
+  },
+  "fca_pfd": {
+   "role": "Tri-state phase-frequency detector: two reset flops with D tied to vddd, AND reset with delay, plus external DLL reset",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fcd_dffr",
+     "role": "UP flop, clocked by ref"
+    },
+    {
+     "inst": "X1",
+     "cell": "fcd_dffr",
+     "role": "DN flop, clocked by fb"
+    },
+    {
+     "inst": "X2",
+     "cell": "fcd_nand2",
+     "role": "up NAND dn"
+    },
+    {
+     "inst": "X3",
+     "cell": "fcd_inv",
+     "role": "up AND dn"
+    },
+    {
+     "inst": "X4",
+     "cell": "fcd_inv",
+     "role": "rstb -> rst"
+    },
+    {
+     "inst": "X5",
+     "cell": "fcd_nor2",
+     "role": "reset combine"
+    },
+    {
+     "inst": "X6",
+     "cell": "fcd_inv",
+     "role": "reset delay"
+    },
+    {
+     "inst": "X7",
+     "cell": "fcd_inv",
+     "role": "reset delay"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ref",
+     "MN0.g",
+     "ref",
+     "clock"
+    ],
+    [
+     "PORT.ref",
+     "X0.ck",
+     "ref",
+     "clock"
+    ],
+    [
+     "MN0.d",
+     "X0.ckb",
+     "refb",
+     "clock"
+    ],
+    [
+     "PORT.fb",
+     "X1.ck",
+     "fb",
+     "clock"
+    ],
+    [
+     "MN1.d",
+     "X1.ckb",
+     "fbb",
+     "clock"
+    ],
+    [
+     "X0.q",
+     "PORT.up",
+     "up",
+     "loop_error"
+    ],
+    [
+     "X0.qb",
+     "PORT.upb",
+     "upb",
+     "loop_error"
+    ],
+    [
+     "X1.q",
+     "PORT.dn",
+     "dn",
+     "loop_error"
+    ],
+    [
+     "X1.qb",
+     "PORT.dnb",
+     "dnb",
+     "loop_error"
+    ],
+    [
+     "X0.q",
+     "X2.a",
+     "up",
+     "loop_error"
+    ],
+    [
+     "X1.q",
+     "X2.b",
+     "dn",
+     "loop_error"
+    ],
+    [
+     "X2.y",
+     "X3.a",
+     "x0",
+     "loop_error"
+    ],
+    [
+     "X3.y",
+     "X5.a",
+     "x1",
+     "loop_error"
+    ],
+    [
+     "PORT.rstb",
+     "X4.a",
+     "rstb",
+     "general_control"
+    ],
+    [
+     "X4.y",
+     "X5.b",
+     "rst",
+     "general_control"
+    ],
+    [
+     "X5.y",
+     "X6.a",
+     "rbi",
+     "loop_error"
+    ],
+    [
+     "X6.y",
+     "X7.a",
+     "r1",
+     "loop_error"
+    ],
+    [
+     "X7.y",
+     "X0.rb",
+     "rbd",
+     "loop_error"
+    ],
+    [
+     "X7.y",
+     "X1.rb",
+     "rbd",
+     "loop_error"
+    ]
+   ],
+   "controls": {
+    "rstb": "0 holds both flops reset (no pump action)"
+   },
+   "notes": "Mixed cell: local clock inverters MN0/MP0, MN1/MP1 are devices. Feedback loop: q -> NAND -> delay -> rb. up=1 while ref leads fb. The flops' D pins are tied to the global vddd. Not the Alexander PD: no data input, D is constant, outputs reset themselves."
+  },
+  "fca_isw": {
+   "role": "DLL charge pump: PMOS source (vbp) + PMOS switch (upb) / NMOS switch (dn) + NMOS sink (ib mirror), with its own bias mirror",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.upb",
+     "MP2.g",
+     "upb",
+     "loop_error"
+    ],
+    [
+     "PORT.dn",
+     "MN2.g",
+     "dn",
+     "loop_error"
+    ],
+    [
+     "PORT.ib",
+     "MN0.d",
+     "ib",
+     "bias"
+    ],
+    [
+     "MN1.d",
+     "MP0.d",
+     "vbp",
+     "bias"
+    ],
+    [
+     "MP0.d",
+     "MP1.g",
+     "vbp",
+     "bias"
+    ],
+    [
+     "MP2.d",
+     "PORT.vctl",
+     "vctl",
+     "loop_control"
+    ],
+    [
+     "MN2.d",
+     "PORT.vctl",
+     "vctl",
+     "loop_control"
+    ]
+   ],
+   "controls": {
+    "upb": "0 = source current into vctl",
+    "dn": "1 = sink current from vctl",
+    "ib": "pump current reference"
+   },
+   "notes": "LOOK-ALIKE: MP1-MP2-MN2-MN3 is the same stack as a current-starved or tri-state inverter, but the two inner gates are different signals (upb from the PFD UP flop qb, dn from the DN flop q), the outer gates are bias (vbp from MP0 diode, ib diode MN0), and the shared drain vctl is an analog node going to the loop filter and the delay-line control, never to a logic input. Output current: +I when up, -I when dn, 0 when both or neither."
+  },
+  "fca_lpf": {
+   "role": "DLL loop filter: series R (4k) + C (20p) to avss, parallel C (1.5p)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.vctl",
+     "R0",
+     "vctl",
+     "loop_control"
+    ],
+    [
+     "R0",
+     "C0",
+     "lf1",
+     "loop_control"
+    ],
+    [
+     "PORT.vctl",
+     "C1",
+     "vctl",
+     "loop_control"
+    ]
+   ],
+   "controls": {},
+   "notes": "Passive-only cell. Integrates the charge-pump current into vctl."
+  },
+  "fca_dll": {
+   "role": "Delay-locked loop: VCDL + vcp generator + PFD + charge pump + loop filter + reset switch + MOS decap; analog vctl closes the loop back to the delay line",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fca_dline",
+     "role": "voltage-controlled delay line, 8 phases"
+    },
+    {
+     "inst": "X1",
+     "cell": "fca_pfd",
+     "role": "PFD: ref=ckp vs fb=ph[0]"
+    },
+    {
+     "inst": "X2",
+     "cell": "fca_isw",
+     "role": "charge pump"
+    },
+    {
+     "inst": "X3",
+     "cell": "fca_lpf",
+     "role": "loop filter"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ckp",
+     "X0.ckp",
+     "ckp",
+     "clock"
+    ],
+    [
+     "PORT.ckn",
+     "X0.ckn",
+     "ckn",
+     "clock"
+    ],
+    [
+     "X0.ph[7:0]",
+     "PORT.ph[7:0]",
+     "ph[7:0]",
+     "clock"
+    ],
+    [
+     "PORT.ckp",
+     "X1.ref",
+     "ckp",
+     "clock"
+    ],
+    [
+     "X0.ph[0]",
+     "X1.fb",
+     "ph[0]",
+     "clock"
+    ],
+    [
+     "X1.upb",
+     "X2.upb",
+     "upb",
+     "loop_error"
+    ],
+    [
+     "X1.dn",
+     "X2.dn",
+     "dn",
+     "loop_error"
+    ],
+    [
+     "PORT.ib",
+     "X2.ib",
+     "ib",
+     "bias"
+    ],
+    [
+     "X2.vctl",
+     "X3.vctl",
+     "vctl",
+     "loop_control"
+    ],
+    [
+     "X2.vctl",
+     "X0.vcn",
+     "vctl",
+     "loop_control"
+    ],
+    [
+     "X2.vctl",
+     "MN0.g",
+     "vctl",
+     "loop_control"
+    ],
+    [
+     "MN0.d",
+     "X0.vcp",
+     "vcp",
+     "loop_control"
+    ],
+    [
+     "MN0.d",
+     "PORT.vcp",
+     "vcp",
+     "loop_control"
+    ],
+    [
+     "X2.vctl",
+     "PORT.vctl",
+     "vctl",
+     "loop_control"
+    ],
+    [
+     "PORT.rstb",
+     "X1.rstb",
+     "rstb",
+     "general_control"
+    ],
+    [
+     "PORT.rstb",
+     "MP1.g",
+     "rstb",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "rstb": "0: PFD held reset and MP1 pulls vctl to avdd (minimum delay start, avoids harmonic lock)",
+    "ib": "charge-pump current"
+   },
+   "notes": "Mixed cell. Loop: ph[0] -> PFD -> CP -> vctl -> delay line -> ph[0]. MN0/MP0 convert vctl into the PMOS starve bias vcp. MN1 is a MOS capacitor on vctl (gate = vctl, d/s/b = avss). Unused PFD outputs: up, dnb (only upb and dn drive the pump). vctl and vcp are exported for the RO replica and the analog monitor."
+  },
+  "fca_phd": {
+   "role": "Phase distribution: one inverting driver per DLL phase, index rotated by 4 (pho[k+4] = NOT ph[k])",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [
+    {
+     "inst": "X0[7:0]",
+     "cell": "fcd_inv4",
+     "role": "phase driver, instance m=2"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ph[7:0]",
+     "X0[7:0].a",
+     "ph[7:0]",
+     "clock"
+    ],
+    [
+     "X0[7:4].y",
+     "PORT.pho[3:0]",
+     "pho[3:0]",
+     "clock"
+    ],
+    [
+     "X0[3:0].y",
+     "PORT.pho[7:4]",
+     "pho[7:4]",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Each driver inverts, and inverting a 45k-deg phase gives the phase 180 deg away, so wiring ph[k] to pho[(k+4) mod 8] keeps pho[k] at k x 45 deg. Fan-out: 4 lanes + Tx (pho[0])."
+  },
+  "fca_fwd": {
+   "role": "Forwarded-clock lane: termination, CML receiver, two CML-to-CMOS converters (true and complement), DLL and phase distribution",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fca_trm",
+     "role": "100 ohm termination to vcm"
+    },
+    {
+     "inst": "X1",
+     "cell": "fca_cmla",
+     "role": "CML clock receiver, rl=450"
+    },
+    {
+     "inst": "X2",
+     "cell": "fca_c2c",
+     "role": "ckp (CMOS)"
+    },
+    {
+     "inst": "X3",
+     "cell": "fca_c2c",
+     "role": "ckn (CMOS), inputs swapped"
+    },
+    {
+     "inst": "X4",
+     "cell": "fca_dll",
+     "role": "DLL, 8 phases"
+    },
+    {
+     "inst": "X5",
+     "cell": "fca_phd",
+     "role": "phase drivers to the lanes"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.fckp",
+     "X0.inp",
+     "fckp",
+     "clock"
+    ],
+    [
+     "PORT.fckp",
+     "X1.inp",
+     "fckp",
+     "clock"
+    ],
+    [
+     "PORT.fckn",
+     "X1.inn",
+     "fckn",
+     "clock"
+    ],
+    [
+     "PORT.vcm",
+     "X0.vcm",
+     "vcm",
+     "reference"
+    ],
+    [
+     "X1.outp",
+     "X2.inp",
+     "fa_p",
+     "clock"
+    ],
+    [
+     "X1.outn",
+     "X2.inn",
+     "fa_n",
+     "clock"
+    ],
+    [
+     "X1.outn",
+     "X3.inp",
+     "fa_n",
+     "clock"
+    ],
+    [
+     "X1.outp",
+     "X3.inn",
+     "fa_p",
+     "clock"
+    ],
+    [
+     "X2.y",
+     "X4.ckp",
+     "ckp",
+     "clock"
+    ],
+    [
+     "X3.y",
+     "X4.ckn",
+     "ckn",
+     "clock"
+    ],
+    [
+     "X4.ph[7:0]",
+     "X5.ph[7:0]",
+     "ph[7:0]",
+     "clock"
+    ],
+    [
+     "X5.pho[7:0]",
+     "PORT.pho[7:0]",
+     "pho[7:0]",
+     "clock"
+    ],
+    [
+     "X4.vctl",
+     "PORT.vctl",
+     "vctl",
+     "loop_control"
+    ],
+    [
+     "X4.vcp",
+     "PORT.vcp",
+     "vcp",
+     "loop_control"
+    ],
+    [
+     "PORT.vbn",
+     "X1.vbn",
+     "vbn",
+     "bias"
+    ],
+    [
+     "PORT.ib",
+     "X4.ib",
+     "ib",
+     "bias"
+    ],
+    [
+     "PORT.rstb",
+     "X4.rstb",
+     "rstb",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "rstb": "DLL reset"
+   },
+   "notes": "Hierarchical only."
+  },
+  "fca_bias": {
+   "role": "Bias generator: ibias reference diode, PMOS mirror distributing to CML tail-bias diodes (rx, tx) and the charge-pump current; resistor divider for the termination common mode",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.ibias",
+     "MN0.d",
+     "ibias",
+     "bias"
+    ],
+    [
+     "MN1.d",
+     "MP0.d",
+     "n1",
+     "bias"
+    ],
+    [
+     "MP1.d",
+     "PORT.vbn_rx",
+     "vbn_rx",
+     "bias"
+    ],
+    [
+     "MP2.d",
+     "PORT.vbn_tx",
+     "vbn_tx",
+     "bias"
+    ],
+    [
+     "MP3.d",
+     "PORT.ib_cp",
+     "ib_cp",
+     "bias"
+    ],
+    [
+     "R0",
+     "PORT.vcm",
+     "vcm",
+     "reference"
+    ]
+   ],
+   "controls": {},
+   "notes": "vbn_rx/vbn_tx are gate voltages from diodes MN2/MN3; ib_cp is a current into the pump's diode. vcm = 0.75 avdd (1k/3k), decap C0 5p."
+  },
+  "fce_lv": {
+   "role": "Pad ESD for avdd-domain CML pads: gate-grounded NMOS to avss + gate-tied PMOS to avdd",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.pad",
+     "MN0.d",
+     "pad",
+     "power"
+    ],
+    [
+     "PORT.pad",
+     "MP0.d",
+     "pad",
+     "power"
+    ]
+   ],
+   "controls": {},
+   "notes": "Thin-oxide, m=4 nf=4. Off in normal operation."
+  },
+  "fce_hv": {
+   "role": "Pad ESD for vddq-domain CMOS pads: thick-oxide GGNMOS + gate-tied PMOS",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.pad",
+     "MN0.d",
+     "pad",
+     "power"
+    ],
+    [
+     "PORT.pad",
+     "MP0.d",
+     "pad",
+     "power"
+    ]
+   ],
+   "controls": {},
+   "notes": "Primary ESD inside fcs_inrx."
+  },
+  "fce_clmp": {
+   "role": "RC-triggered rail clamp: R (60k) to vp, C (2p) to vn, three-inverter trigger chain, big NMOS vp->vn (m=40)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "R0",
+     "MN0.g",
+     "rc",
+     "power"
+    ],
+    [
+     "MN0.d",
+     "MN1.g",
+     "t1",
+     "power"
+    ],
+    [
+     "MN1.d",
+     "MN2.g",
+     "t2",
+     "power"
+    ],
+    [
+     "MN2.d",
+     "MN3.g",
+     "g",
+     "power"
+    ],
+    [
+     "MN3.d",
+     "PORT.vp",
+     "vp",
+     "power"
+    ]
+   ],
+   "controls": {},
+   "notes": "thin-oxide; used for avdd/avss and for the global vddd/vssd. LOOK-ALIKE (extra): the inverter chain is not a buffer/delay chain on a signal; it is the ESD trigger. In steady state rc=vp, g=0 and the clamp is off."
+  },
+  "fce_clmphv": {
+   "role": "RC-triggered rail clamp: R (60k) to vp, C (2p) to vn, three-inverter trigger chain, big NMOS vp->vn (m=40)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "R0",
+     "MN0.g",
+     "rc",
+     "power"
+    ],
+    [
+     "MN0.d",
+     "MN1.g",
+     "t1",
+     "power"
+    ],
+    [
+     "MN1.d",
+     "MN2.g",
+     "t2",
+     "power"
+    ],
+    [
+     "MN2.d",
+     "MN3.g",
+     "g",
+     "power"
+    ],
+    [
+     "MN3.d",
+     "PORT.vp",
+     "vp",
+     "power"
+    ]
+   ],
+   "controls": {},
+   "notes": "thick-oxide; used for vddq/vssq. LOOK-ALIKE (extra): the inverter chain is not a buffer/delay chain on a signal; it is the ESD trigger. In steady state rc=vp, g=0 and the clamp is off."
+  },
+  "fcr_phsel": {
+   "role": "Phase selector: two 8:1 TG-mux trees on the 8 DLL phases with shared select inverters; tree B inputs rotated by one phase, so a = ph[k] and b = ph[k+1 mod 8]; restoring output buffers give a/ab, b/bb",
+   "on_high_speed_path": true,
+   "inverting": {
+    "a": false,
+    "ab": true,
+    "b": false,
+    "bb": true
+   },
+   "children": [
+    {
+     "inst": "X0[2:0]",
+     "cell": "fcd_inv",
+     "role": "k[2:0] -> kb[2:0] (shared mux selects)"
+    },
+    {
+     "inst": "X1[3:0]",
+     "cell": "fcd_tgmux",
+     "role": "tree A level 1 (k[0]): ph[2i] / ph[2i+1]"
+    },
+    {
+     "inst": "X2[1:0]",
+     "cell": "fcd_tgmux",
+     "role": "tree A level 2 (k[1])"
+    },
+    {
+     "inst": "X3",
+     "cell": "fcd_tgmux",
+     "role": "tree A level 3 (k[2])"
+    },
+    {
+     "inst": "X4[3:0]",
+     "cell": "fcd_tgmux",
+     "role": "tree B level 1 (k[0]): ph[2i+1] / ph[2i+2 mod 8]"
+    },
+    {
+     "inst": "X5[1:0]",
+     "cell": "fcd_tgmux",
+     "role": "tree B level 2"
+    },
+    {
+     "inst": "X6",
+     "cell": "fcd_tgmux",
+     "role": "tree B level 3"
+    },
+    {
+     "inst": "X7",
+     "cell": "fcd_inv",
+     "role": "ta -> ab"
+    },
+    {
+     "inst": "X8",
+     "cell": "fcd_inv4",
+     "role": "ab -> a"
+    },
+    {
+     "inst": "X9",
+     "cell": "fcd_inv",
+     "role": "tb -> bb"
+    },
+    {
+     "inst": "X10",
+     "cell": "fcd_inv4",
+     "role": "bb -> b"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ph[6:0:2]",
+     "X1[3:0].d0",
+     "ph[6:0:2]",
+     "clock"
+    ],
+    [
+     "PORT.ph[7:1:2]",
+     "X1[3:0].d1",
+     "ph[7:1:2]",
+     "clock"
+    ],
+    [
+     "X1[3:1:2].y",
+     "X2[1:0].d1",
+     "ta1[3:1:2]",
+     "clock"
+    ],
+    [
+     "X1[2:0:2].y",
+     "X2[1:0].d0",
+     "ta1[2:0:2]",
+     "clock"
+    ],
+    [
+     "X2[0].y",
+     "X3.d0",
+     "ta2[0]",
+     "clock"
+    ],
+    [
+     "X2[1].y",
+     "X3.d1",
+     "ta2[1]",
+     "clock"
+    ],
+    [
+     "X3.y",
+     "X7.a",
+     "ta",
+     "clock"
+    ],
+    [
+     "X7.y",
+     "X8.a",
+     "ab",
+     "clock"
+    ],
+    [
+     "X8.y",
+     "PORT.a",
+     "a",
+     "clock"
+    ],
+    [
+     "X7.y",
+     "PORT.ab",
+     "ab",
+     "clock"
+    ],
+    [
+     "PORT.ph[7:1:2]",
+     "X4[3:0].d0",
+     "ph[7:1:2]",
+     "clock"
+    ],
+    [
+     "PORT.ph[0]",
+     "X4[3].d1",
+     "ph[0]",
+     "clock"
+    ],
+    [
+     "PORT.ph[6:2:2]",
+     "X4[2:0].d1",
+     "ph[6:2:2]",
+     "clock"
+    ],
+    [
+     "X4[3:1:2].y",
+     "X5[1:0].d1",
+     "tb1[3:1:2]",
+     "clock"
+    ],
+    [
+     "X5[1].y",
+     "X6.d1",
+     "tb2[1]",
+     "clock"
+    ],
+    [
+     "X6.y",
+     "X9.a",
+     "tb",
+     "clock"
+    ],
+    [
+     "X9.y",
+     "X10.a",
+     "bb",
+     "clock"
+    ],
+    [
+     "X10.y",
+     "PORT.b",
+     "b",
+     "clock"
+    ],
+    [
+     "X9.y",
+     "PORT.bb",
+     "bb",
+     "clock"
+    ],
+    [
+     "PORT.k[2:0]",
+     "X0[2:0].a",
+     "k[2:0]",
+     "pi_code"
+    ],
+    [
+     "X0[0].y",
+     "X1[3:0].sb",
+     "kb[0]",
+     "pi_code"
+    ],
+    [
+     "PORT.k[0]",
+     "X4[3:0].s",
+     "k[0]",
+     "pi_code"
+    ],
+    [
+     "PORT.k[2]",
+     "X3.s",
+     "k[2]",
+     "pi_code"
+    ]
+   ],
+   "controls": {
+    "k[2:0]": "phase-pair index (code[4:2]): A = ph[k], B = ph[(k+1) mod 8]"
+   },
+   "notes": "Looks like a serializer/mux tree but selects static clock phases; select changes only when the CDR code steps. Intentional asymmetry: tree B is wired with inputs rotated by one phase (wraps ph[0] into X4[3].d1) instead of using an incrementer on the select. a/ab come from different inverter depths (one-gate skew between true and complement)."
+  },
+  "fcr_phmix": {
+   "role": "Lane phase interpolator: phase-pair select + weighted two-phase current-mode mixer",
+   "on_high_speed_path": true,
+   "inverting": {
+    "ckp": false,
+    "ckn": true
+   },
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fcr_phsel",
+     "role": "selects ph[k], ph[k+1] from code[4:2]"
+    },
+    {
+     "inst": "X1",
+     "cell": "fca_mix2w",
+     "role": "interpolator core, weights code[1:0], instance rl=420"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ph[7:0]",
+     "X0.ph[7:0]",
+     "ph[7:0]",
+     "clock"
+    ],
+    [
+     "PORT.code[4:2]",
+     "X0.k[2:0]",
+     "code[4:2]",
+     "pi_code"
+    ],
+    [
+     "X0.a",
+     "X1.ap",
+     "a",
+     "clock"
+    ],
+    [
+     "X0.ab",
+     "X1.an",
+     "ab",
+     "clock"
+    ],
+    [
+     "X0.b",
+     "X1.bp",
+     "b",
+     "clock"
+    ],
+    [
+     "X0.bb",
+     "X1.bn",
+     "bb",
+     "clock"
+    ],
+    [
+     "PORT.code[1:0]",
+     "X1.w[1:0]",
+     "code[1:0]",
+     "pi_code"
+    ],
+    [
+     "PORT.codeb[1:0]",
+     "X1.wb[1:0]",
+     "codeb[1:0]",
+     "pi_code"
+    ],
+    [
+     "X1.outp",
+     "PORT.ckp",
+     "ckp",
+     "clock"
+    ],
+    [
+     "X1.outn",
+     "PORT.ckn",
+     "ckn",
+     "clock"
+    ],
+    [
+     "PORT.vbn",
+     "X1.vbn",
+     "vbn",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "code[4:0]": "output phase = (code[4:2] + code[1:0]/4) x 45 deg (32 steps over 360 deg)",
+    "codeb[1:0]": "complement weights for tail A"
+   },
+   "notes": "Hierarchical only. Output is the CML sampling clock of the lane (pck_p/pck_n in fcr_lane)."
+  },
+  "fcr_smp": {
+   "role": "2x oversampling sampler bank: data CML flop on ckp rising, edge CML flop on ckn rising (half UI later), each followed by a CML-to-CMOS converter",
+   "on_high_speed_path": true,
+   "inverting": {
+    "dsam": false,
+    "esam": false
+   },
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fca_clff",
+     "role": "data sampler (ckp)"
+    },
+    {
+     "inst": "X1",
+     "cell": "fca_clff",
+     "role": "edge sampler (clocks swapped: ckn)"
+    },
+    {
+     "inst": "X2",
+     "cell": "fca_c2c",
+     "role": "data sample to CMOS"
+    },
+    {
+     "inst": "X3",
+     "cell": "fca_c2c",
+     "role": "edge sample to CMOS"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.dp",
+     "X0.dp",
+     "dp",
+     "hs_data"
+    ],
+    [
+     "PORT.dn",
+     "X0.dn",
+     "dn",
+     "hs_data"
+    ],
+    [
+     "PORT.dp",
+     "X1.dp",
+     "dp",
+     "hs_data"
+    ],
+    [
+     "PORT.dn",
+     "X1.dn",
+     "dn",
+     "hs_data"
+    ],
+    [
+     "PORT.ckp",
+     "X0.ckp",
+     "ckp",
+     "clock"
+    ],
+    [
+     "PORT.ckn",
+     "X1.ckp",
+     "ckn",
+     "clock"
+    ],
+    [
+     "X0.qp",
+     "X2.inp",
+     "dqp",
+     "hs_data"
+    ],
+    [
+     "X0.qn",
+     "X2.inn",
+     "dqn",
+     "hs_data"
+    ],
+    [
+     "X1.qp",
+     "X3.inp",
+     "eqp",
+     "hs_data"
+    ],
+    [
+     "X1.qn",
+     "X3.inn",
+     "eqn",
+     "hs_data"
+    ],
+    [
+     "X2.y",
+     "PORT.dsam",
+     "dsam",
+     "hs_data"
+    ],
+    [
+     "X3.y",
+     "PORT.esam",
+     "esam",
+     "hs_data"
+    ],
+    [
+     "PORT.vbn",
+     "X0.vbn",
+     "vbn",
+     "bias"
+    ]
+   ],
+   "controls": {},
+   "notes": "Both samplers see the same preamp output; they differ only by clock polarity."
+  },
+  "fcr_bbx": {
+   "role": "Alexander (bang-bang) phase detector with data retiming: data flops s0/s1 on ck falling, edge flop e0 on ck rising then e1 on ck falling, up = e1 XOR s0, dn = s1 XOR e1",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fcd_dff",
+     "role": "s0 = D[k] (ck falling: ck pin = ckb)"
+    },
+    {
+     "inst": "X1",
+     "cell": "fcd_dff",
+     "role": "s1 = D[k-1]"
+    },
+    {
+     "inst": "X2",
+     "cell": "fcd_dff",
+     "role": "e0 = edge sample (ck rising)"
+    },
+    {
+     "inst": "X3",
+     "cell": "fcd_dff",
+     "role": "e1 = e0 moved to ck falling"
+    },
+    {
+     "inst": "X4",
+     "cell": "fcd_xor2",
+     "role": "up = E XOR D[k]: edge sample equals the earlier bit -> clock early"
+    },
+    {
+     "inst": "X5",
+     "cell": "fcd_xor2",
+     "role": "dn = D[k-1] XOR E: edge sample equals the later bit -> clock late"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.dsam",
+     "X0.d",
+     "dsam",
+     "hs_data"
+    ],
+    [
+     "X0.q",
+     "X1.d",
+     "s0",
+     "hs_data"
+    ],
+    [
+     "X0.q",
+     "PORT.s0",
+     "s0",
+     "hs_data"
+    ],
+    [
+     "X1.q",
+     "PORT.s1",
+     "s1",
+     "hs_data"
+    ],
+    [
+     "PORT.esam",
+     "X2.d",
+     "esam",
+     "hs_data"
+    ],
+    [
+     "X2.q",
+     "X3.d",
+     "e0",
+     "hs_data"
+    ],
+    [
+     "X3.q",
+     "X4.a",
+     "e1",
+     "hs_data"
+    ],
+    [
+     "X0.q",
+     "X4.b",
+     "s0",
+     "hs_data"
+    ],
+    [
+     "X1.q",
+     "X5.a",
+     "s1",
+     "hs_data"
+    ],
+    [
+     "X3.q",
+     "X5.b",
+     "e1",
+     "hs_data"
+    ],
+    [
+     "X4.y",
+     "PORT.up",
+     "up",
+     "loop_error"
+    ],
+    [
+     "X5.y",
+     "PORT.dn",
+     "dn",
+     "loop_error"
+    ],
+    [
+     "PORT.ck",
+     "X2.ck",
+     "ck",
+     "clock"
+    ],
+    [
+     "PORT.ckb",
+     "X0.ck",
+     "ckb",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "LOOK-ALIKE: DFFs followed by XORs resemble a BIST/PRBS checker or a plain sampler bank. Tell-tales: the two inputs are data and edge samples of the same signal taken half a UI apart, the flops run on both clock edges (ck pin swapped on X0/X1/X3), there is no pattern generator, LFSR feedback or error counter, and the XOR outputs go to a vote + up/down counter that steers the interpolator (a loop). up and dn are both 1 only on a non-transition with an edge mismatch; the vote cancels that. s0/s1 are also the first two deserializer stages (mission data), hence on_high_speed_path. s0b, s1b, e0b, e1b unused."
+  },
+  "fcr_vote": {
+   "role": "UP/DN majority vote: two 2-stage history shift registers and two inverting 3-input majority gates (vub = NOT maj(up[k], up[k-1], up[k-2]), same for dn)",
+   "on_high_speed_path": false,
+   "inverting": {
+    "vub": true,
+    "vdb": true
+   },
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fcd_dff",
+     "role": "up history 1"
+    },
+    {
+     "inst": "X1",
+     "cell": "fcd_dff",
+     "role": "up history 2"
+    },
+    {
+     "inst": "X2",
+     "cell": "fcd_dff",
+     "role": "dn history 1"
+    },
+    {
+     "inst": "X3",
+     "cell": "fcd_dff",
+     "role": "dn history 2"
+    },
+    {
+     "inst": "X4",
+     "cell": "fcd_majb3",
+     "role": "up vote (active low)"
+    },
+    {
+     "inst": "X5",
+     "cell": "fcd_majb3",
+     "role": "dn vote (active low)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.up",
+     "X0.d",
+     "up",
+     "loop_error"
+    ],
+    [
+     "X0.q",
+     "X1.d",
+     "u1",
+     "loop_error"
+    ],
+    [
+     "PORT.up",
+     "X4.a",
+     "up",
+     "loop_error"
+    ],
+    [
+     "X0.q",
+     "X4.b",
+     "u1",
+     "loop_error"
+    ],
+    [
+     "X1.q",
+     "X4.c",
+     "u2",
+     "loop_error"
+    ],
+    [
+     "X4.y",
+     "PORT.vub",
+     "vub",
+     "loop_error"
+    ],
+    [
+     "PORT.dn",
+     "X2.d",
+     "dn",
+     "loop_error"
+    ],
+    [
+     "X2.q",
+     "X3.d",
+     "d1",
+     "loop_error"
+    ],
+    [
+     "X3.q",
+     "X5.c",
+     "d2",
+     "loop_error"
+    ],
+    [
+     "X5.y",
+     "PORT.vdb",
+     "vdb",
+     "loop_error"
+    ],
+    [
+     "PORT.ck",
+     "X0.ck",
+     "ck",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Runs at bit rate (lane wires ck = falling-edge clock). Its output is sampled once per word by the accumulator, so only 3 of 8 PD decisions per word are used (decimation). u1b/u2b/d1b/d2b unused."
+  },
+  "fcr_ube": {
+   "role": "Up/down counter bit, even position: active-high carry-in, active-low carry-out",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fcd_dffr",
+     "role": "bit register"
+    },
+    {
+     "inst": "X1",
+     "cell": "fcd_xor2",
+     "role": "qn = qb XOR tb = q XOR t"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.cu",
+     "MN0.g",
+     "cu",
+     "pi_code"
+    ],
+    [
+     "PORT.cd",
+     "MN1.g",
+     "cd",
+     "pi_code"
+    ],
+    [
+     "MN0.d",
+     "X1.b",
+     "tb",
+     "pi_code"
+    ],
+    [
+     "X1.y",
+     "X0.d",
+     "qn",
+     "pi_code"
+    ],
+    [
+     "X0.q",
+     "PORT.q",
+     "q",
+     "pi_code"
+    ],
+    [
+     "X0.qb",
+     "PORT.qb",
+     "qb",
+     "pi_code"
+    ],
+    [
+     "MN2.d",
+     "PORT.cuob",
+     "cuob",
+     "pi_code"
+    ],
+    [
+     "MN4.d",
+     "PORT.cdob",
+     "cdob",
+     "pi_code"
+    ],
+    [
+     "PORT.ck",
+     "X0.ck",
+     "ck",
+     "clock"
+    ],
+    [
+     "PORT.rb",
+     "X0.rb",
+     "rb",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "cu/cd": "count-up / count-down enable from the lower bits (active high)"
+   },
+   "notes": "Counter bit of the CDR accumulator (fcr_acc). Mixed cell: tb = NOR(cu,cd) (MN0/MN1/MP0/MP1), cuob = NAND(cu,q), cdob = NAND(cd,qb) as devices. Toggles when either carry is active."
+  },
+  "fcr_ubo": {
+   "role": "Up/down counter bit, odd position: active-low carry-in, active-high carry-out",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fcd_dffr",
+     "role": "bit register"
+    },
+    {
+     "inst": "X1",
+     "cell": "fcd_xor2",
+     "role": "qn = q XOR t"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.cub",
+     "MN0.g",
+     "cub",
+     "pi_code"
+    ],
+    [
+     "PORT.cdb",
+     "MN1.g",
+     "cdb",
+     "pi_code"
+    ],
+    [
+     "MN0.d",
+     "X1.b",
+     "t",
+     "pi_code"
+    ],
+    [
+     "X1.y",
+     "X0.d",
+     "qn",
+     "pi_code"
+    ],
+    [
+     "X0.q",
+     "PORT.q",
+     "q",
+     "pi_code"
+    ],
+    [
+     "X0.qb",
+     "PORT.qb",
+     "qb",
+     "pi_code"
+    ],
+    [
+     "MN2.d",
+     "PORT.cuo",
+     "cuo",
+     "pi_code"
+    ],
+    [
+     "MN4.d",
+     "PORT.cdo",
+     "cdo",
+     "pi_code"
+    ],
+    [
+     "PORT.ck",
+     "X0.ck",
+     "ck",
+     "clock"
+    ],
+    [
+     "PORT.rb",
+     "X0.rb",
+     "rb",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "cub/cdb": "carry enables, active low"
+   },
+   "notes": "Counter bit of the CDR accumulator (fcr_acc). Mixed cell: t = NAND(cub,cdb), cuo = NOR(cub,qb), cdo = NOR(cdb,q) as devices. Alternating polarity with fcr_ube removes the chain inverters."
+  },
+  "fcr_acc": {
+   "role": "CDR accumulator: vote decode (up only / down only / hold) and a 5-bit synchronous wrapping up/down counter (ripple-carry chains, alternating bit cells) giving the PI code",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fcd_inv",
+     "role": "holdb"
+    },
+    {
+     "inst": "X1",
+     "cell": "fcd_nand2",
+     "role": "x0 = NAND(vdb, holdb)"
+    },
+    {
+     "inst": "X2",
+     "cell": "fcd_nor2",
+     "role": "u = vup & ~vdn & ~hold"
+    },
+    {
+     "inst": "X3",
+     "cell": "fcd_nand2",
+     "role": "x1 = NAND(vub, holdb)"
+    },
+    {
+     "inst": "X4",
+     "cell": "fcd_nor2",
+     "role": "d = vdn & ~vup & ~hold"
+    },
+    {
+     "inst": "X5",
+     "cell": "fcr_ube",
+     "role": "bit 0"
+    },
+    {
+     "inst": "X6",
+     "cell": "fcr_ubo",
+     "role": "bit 1"
+    },
+    {
+     "inst": "X7",
+     "cell": "fcr_ube",
+     "role": "bit 2"
+    },
+    {
+     "inst": "X8",
+     "cell": "fcr_ubo",
+     "role": "bit 3"
+    },
+    {
+     "inst": "X9",
+     "cell": "fcr_ube",
+     "role": "bit 4"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.vub",
+     "X2.a",
+     "vub",
+     "loop_error"
+    ],
+    [
+     "PORT.vdb",
+     "X1.a",
+     "vdb",
+     "loop_error"
+    ],
+    [
+     "PORT.vdb",
+     "X4.a",
+     "vdb",
+     "loop_error"
+    ],
+    [
+     "X2.y",
+     "X5.cu",
+     "u",
+     "loop_error"
+    ],
+    [
+     "X4.y",
+     "X5.cd",
+     "d",
+     "loop_error"
+    ],
+    [
+     "X5.cuob",
+     "X6.cub",
+     "cub1",
+     "pi_code"
+    ],
+    [
+     "X6.cuo",
+     "X7.cu",
+     "cu2",
+     "pi_code"
+    ],
+    [
+     "X7.cuob",
+     "X8.cub",
+     "cub3",
+     "pi_code"
+    ],
+    [
+     "X8.cuo",
+     "X9.cu",
+     "cu4",
+     "pi_code"
+    ],
+    [
+     "X5.q",
+     "PORT.code[0]",
+     "code[0]",
+     "pi_code"
+    ],
+    [
+     "X9.q",
+     "PORT.code[4]",
+     "code[4]",
+     "pi_code"
+    ],
+    [
+     "X5.qb",
+     "PORT.codeb[0]",
+     "codeb[0]",
+     "pi_code"
+    ],
+    [
+     "X6.qb",
+     "PORT.codeb[1]",
+     "codeb[1]",
+     "pi_code"
+    ],
+    [
+     "PORT.hold",
+     "X0.a",
+     "hold",
+     "important_control"
+    ],
+    [
+     "PORT.ck",
+     "X5.ck",
+     "ck",
+     "clock"
+    ],
+    [
+     "PORT.rb",
+     "X5.rb",
+     "rb",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "hold": "1 freezes the code (CDR hold from the command register)",
+    "vub/vdb": "both active (low): cancel; neither: no step"
+   },
+   "notes": "Clocked by the word clock. Wraps 31->0 and 0->31 (the PI covers a full 360 deg). Reset (rb=0) gives code 0 = pure ph[0]. Unused: cb2, cb3, cb4 (qb of bits 2-4) and the final carries cub5/cdb5. Not a binary-weighted DAC: the code goes to the phase selector and PI tail legs."
+  },
+  "fcr_jdiv8": {
+   "role": "Divide-by-8 Johnson (twisted-ring) counter: 4 reset flops, last qb fed back to the first; one-UI load pulse ld = q0 & ~q1",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fcd_dffr",
+     "role": "stage 0 (d = wckb)"
+    },
+    {
+     "inst": "X1",
+     "cell": "fcd_dffr",
+     "role": "stage 1"
+    },
+    {
+     "inst": "X2",
+     "cell": "fcd_dffr",
+     "role": "stage 2"
+    },
+    {
+     "inst": "X3",
+     "cell": "fcd_dffr",
+     "role": "stage 3 = wck"
+    },
+    {
+     "inst": "X4",
+     "cell": "fcd_nand2",
+     "role": "ldb = NAND(q0, q1b)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "X0.q",
+     "X1.d",
+     "q0",
+     "clock"
+    ],
+    [
+     "X1.q",
+     "X2.d",
+     "q1",
+     "clock"
+    ],
+    [
+     "X2.q",
+     "X3.d",
+     "q2",
+     "clock"
+    ],
+    [
+     "X3.q",
+     "PORT.wck",
+     "wck",
+     "clock"
+    ],
+    [
+     "X3.qb",
+     "X0.d",
+     "wckb",
+     "clock"
+    ],
+    [
+     "X3.qb",
+     "PORT.wckb",
+     "wckb",
+     "clock"
+    ],
+    [
+     "X0.q",
+     "X4.a",
+     "q0",
+     "clock"
+    ],
+    [
+     "X1.qb",
+     "X4.b",
+     "q1b",
+     "clock"
+    ],
+    [
+     "X4.y",
+     "MN0.g",
+     "ldb",
+     "clock"
+    ],
+    [
+     "X4.y",
+     "PORT.ldb",
+     "ldb",
+     "clock"
+    ],
+    [
+     "MN0.d",
+     "PORT.ld",
+     "ld",
+     "clock"
+    ],
+    [
+     "PORT.ck",
+     "X0.ck",
+     "ck",
+     "clock"
+    ],
+    [
+     "PORT.rb",
+     "X0.rb",
+     "rb",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "rb": "reset to 0000; release sets the word alignment"
+   },
+   "notes": "LOOK-ALIKE (extra): a shift register of flops like the deserializer, but closed with inverted feedback (wckb -> X0.d), so it is a divider. wck has 50% duty. Mixed cell (ld inverter MN0/MP0). q0b, q2b unused. Shared by the Rx lanes and the Tx lane."
+  },
+  "fcr_dsr8": {
+   "role": "1:8 deserializer: 6-stage shift register continuing the PD retime flops sr[1:0], plus 8 capture latches opened by the one-UI load pulse; rxd[0] is the oldest bit",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0[7:2]",
+     "cell": "fcd_dff",
+     "role": "shift stages sr[7:2]"
+    },
+    {
+     "inst": "X1[7:0]",
+     "cell": "fcd_lat",
+     "role": "capture latches, rxd[7-i] <- sr[i]"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.sr[1]",
+     "X0[2].d",
+     "sr[1]",
+     "hs_data"
+    ],
+    [
+     "X0[7:2].q",
+     "X1[7:2].d",
+     "sr[7:2]",
+     "hs_data"
+    ],
+    [
+     "X0[6:2].q",
+     "X0[7:3].d",
+     "sr[6:2]",
+     "hs_data"
+    ],
+    [
+     "PORT.sr[1:0]",
+     "X1[1:0].d",
+     "sr[1:0]",
+     "hs_data"
+    ],
+    [
+     "X1[7:0].q",
+     "PORT.rxd[0:7]",
+     "rxd[0:7]",
+     "word_rate_data"
+    ],
+    [
+     "PORT.ld",
+     "X1[7:0].en",
+     "ld",
+     "clock"
+    ],
+    [
+     "PORT.ldb",
+     "X1[7:0].enb",
+     "ldb",
+     "clock"
+    ],
+    [
+     "PORT.ck",
+     "X0[7:2].ck",
+     "ck",
+     "clock"
+    ]
+   ],
+   "controls": {
+    "ld/ldb": "one-UI capture window per word, generated on the opposite clock edge from the shift"
+   },
+   "notes": "The first two stages live in fcr_bbx (shared with the PD). The capture latch is transparent across one shift edge and closes half a UI later, so the word is stable for the remaining 7 UI. srb[7:2] unused."
+  },
+  "fcr_dig": {
+   "role": "Lane digital back-end: local clock driver, Alexander PD + retime, vote, deserializer, Johnson word-clock divider, accumulator",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fcd_ckbuf",
+     "role": "cka/ckab from the CMOS sampling clock, instance m=2"
+    },
+    {
+     "inst": "X1",
+     "cell": "fcr_bbx",
+     "role": "Alexander PD"
+    },
+    {
+     "inst": "X2",
+     "cell": "fcr_vote",
+     "role": "majority vote (ck falling)"
+    },
+    {
+     "inst": "X3",
+     "cell": "fcr_dsr8",
+     "role": "1:8 deserializer"
+    },
+    {
+     "inst": "X4",
+     "cell": "fcr_jdiv8",
+     "role": "word clock and load pulse (ck rising)"
+    },
+    {
+     "inst": "X5",
+     "cell": "fcr_acc",
+     "role": "PI code accumulator (wck)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ck",
+     "X0.a",
+     "ck",
+     "clock"
+    ],
+    [
+     "PORT.dsam",
+     "X1.dsam",
+     "dsam",
+     "hs_data"
+    ],
+    [
+     "PORT.esam",
+     "X1.esam",
+     "esam",
+     "hs_data"
+    ],
+    [
+     "X0.y",
+     "X1.ck",
+     "cka",
+     "clock"
+    ],
+    [
+     "X0.yb",
+     "X1.ckb",
+     "ckab",
+     "clock"
+    ],
+    [
+     "X1.s0",
+     "X3.sr[0]",
+     "sr[0]",
+     "hs_data"
+    ],
+    [
+     "X1.s1",
+     "X3.sr[1]",
+     "sr[1]",
+     "hs_data"
+    ],
+    [
+     "X1.up",
+     "X2.up",
+     "up",
+     "loop_error"
+    ],
+    [
+     "X1.dn",
+     "X2.dn",
+     "dn",
+     "loop_error"
+    ],
+    [
+     "X0.yb",
+     "X2.ck",
+     "ckab",
+     "clock"
+    ],
+    [
+     "X0.yb",
+     "X3.ck",
+     "ckab",
+     "clock"
+    ],
+    [
+     "X0.y",
+     "X4.ck",
+     "cka",
+     "clock"
+    ],
+    [
+     "X4.ld",
+     "X3.ld",
+     "ld",
+     "clock"
+    ],
+    [
+     "X4.ldb",
+     "X3.ldb",
+     "ldb",
+     "clock"
+    ],
+    [
+     "X4.wck",
+     "X5.ck",
+     "wck",
+     "clock"
+    ],
+    [
+     "X4.wck",
+     "PORT.wck",
+     "wck",
+     "clock"
+    ],
+    [
+     "X2.vub",
+     "X5.vub",
+     "vub",
+     "loop_error"
+    ],
+    [
+     "X2.vdb",
+     "X5.vdb",
+     "vdb",
+     "loop_error"
+    ],
+    [
+     "X3.rxd[7:0]",
+     "PORT.rxd[7:0]",
+     "rxd[7:0]",
+     "word_rate_data"
+    ],
+    [
+     "X5.code[4:0]",
+     "PORT.code[4:0]",
+     "code[4:0]",
+     "pi_code"
+    ],
+    [
+     "X5.codeb[1:0]",
+     "PORT.codeb[1:0]",
+     "codeb[1:0]",
+     "pi_code"
+    ],
+    [
+     "PORT.hold",
+     "X5.hold",
+     "hold",
+     "important_control"
+    ],
+    [
+     "PORT.rb",
+     "X4.rb",
+     "rb",
+     "general_control"
+    ],
+    [
+     "PORT.rb",
+     "X5.rb",
+     "rb",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "hold": "freeze the CDR code",
+    "rb": "reset Johnson divider and accumulator"
+   },
+   "notes": "Clock phases: data retime, vote and shift on ck falling; edge retime and Johnson on ck rising; accumulator on wck rising. Digital CDR loop is closed through the parent (code -> PI -> sampling clock)."
+  },
+  "fcr_lane": {
+   "role": "Data lane: termination, CML input buffer, data/edge samplers, phase interpolator, clock CML-to-CMOS, digital CDR + deserializer",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fca_trm",
+     "role": "100 ohm termination to vcm"
+    },
+    {
+     "inst": "X1",
+     "cell": "fca_cmla",
+     "role": "CML input buffer"
+    },
+    {
+     "inst": "X2",
+     "cell": "fcr_smp",
+     "role": "data + edge samplers"
+    },
+    {
+     "inst": "X3",
+     "cell": "fcr_phmix",
+     "role": "phase interpolator"
+    },
+    {
+     "inst": "X4",
+     "cell": "fca_c2c",
+     "role": "PI clock to CMOS for the digital back-end"
+    },
+    {
+     "inst": "X5",
+     "cell": "fcr_dig",
+     "role": "CDR logic + deser"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.rxp",
+     "X0.inp",
+     "rxp",
+     "hs_data"
+    ],
+    [
+     "PORT.rxp",
+     "X1.inp",
+     "rxp",
+     "hs_data"
+    ],
+    [
+     "PORT.rxn",
+     "X1.inn",
+     "rxn",
+     "hs_data"
+    ],
+    [
+     "PORT.vcm",
+     "X0.vcm",
+     "vcm",
+     "reference"
+    ],
+    [
+     "X1.outp",
+     "X2.dp",
+     "la_p",
+     "hs_data"
+    ],
+    [
+     "X1.outn",
+     "X2.dn",
+     "la_n",
+     "hs_data"
+    ],
+    [
+     "PORT.ph[7:0]",
+     "X3.ph[7:0]",
+     "ph[7:0]",
+     "clock"
+    ],
+    [
+     "X3.ckp",
+     "X2.ckp",
+     "pck_p",
+     "clock"
+    ],
+    [
+     "X3.ckn",
+     "X2.ckn",
+     "pck_n",
+     "clock"
+    ],
+    [
+     "X3.ckp",
+     "X4.inp",
+     "pck_p",
+     "clock"
+    ],
+    [
+     "X4.y",
+     "X5.ck",
+     "ck",
+     "clock"
+    ],
+    [
+     "X2.dsam",
+     "X5.dsam",
+     "dsam",
+     "hs_data"
+    ],
+    [
+     "X2.esam",
+     "X5.esam",
+     "esam",
+     "hs_data"
+    ],
+    [
+     "X5.code[4:0]",
+     "X3.code[4:0]",
+     "code[4:0]",
+     "pi_code"
+    ],
+    [
+     "X5.codeb[1:0]",
+     "X3.codeb[1:0]",
+     "codeb[1:0]",
+     "pi_code"
+    ],
+    [
+     "X5.code[4:0]",
+     "PORT.code[4:0]",
+     "code[4:0]",
+     "status"
+    ],
+    [
+     "X5.rxd[7:0]",
+     "PORT.rxd[7:0]",
+     "rxd[7:0]",
+     "word_rate_data"
+    ],
+    [
+     "X5.wck",
+     "PORT.wck",
+     "wck",
+     "clock"
+    ],
+    [
+     "PORT.vbn",
+     "X1.vbn",
+     "vbn",
+     "bias"
+    ],
+    [
+     "PORT.hold",
+     "X5.hold",
+     "hold",
+     "important_control"
+    ],
+    [
+     "PORT.rb",
+     "X5.rb",
+     "rb",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "hold": "CDR freeze",
+    "rb": "CDR/deser reset"
+   },
+   "notes": "CDR loop: samplers -> PD -> vote -> accumulator -> code -> PI -> sampling clock -> samplers. code is also exported (status readback)."
+  },
+  "fca_tleg": {
+   "role": "Tail-current DAC leg: NMOS switch (en) in series with an NMOS current source (vbn)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.s",
+     "MN0.d",
+     "s",
+     "bias"
+    ],
+    [
+     "PORT.en",
+     "MN0.g",
+     "en",
+     "important_control"
+    ],
+    [
+     "PORT.vbn",
+     "MN1.g",
+     "vbn",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "en": "1 = leg conducts"
+   },
+   "notes": "Binary weighting is set by the instance m= (1/2/4/8) in fcx_drv."
+  },
+  "fcx_ser8": {
+   "role": "8:1 shift-load serializer: 8 TG load/shift muxes + 8 flops; ld=1 loads txd[7:0], otherwise shifts toward sq[0]; txd[0] leaves first",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "X0[7:0]",
+     "cell": "fcd_tgmux",
+     "role": "load (d1 = txd[i]) / shift (d0 = sq[i+1]; vssd for i=7) select"
+    },
+    {
+     "inst": "X1[7:0]",
+     "cell": "fcd_dff",
+     "role": "shift register"
+    },
+    {
+     "inst": "X2",
+     "cell": "fcd_ckbuf",
+     "role": "serial output buffer"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.txd[7:0]",
+     "X0[7:0].d1",
+     "txd[7:0]",
+     "word_rate_data"
+    ],
+    [
+     "X0[7:0].y",
+     "X1[7:0].d",
+     "mx[7:0]",
+     "hs_data"
+    ],
+    [
+     "X1[7:1].q",
+     "X0[6:0].d0",
+     "sq[7:1]",
+     "hs_data"
+    ],
+    [
+     "X1[0].q",
+     "X2.a",
+     "sq[0]",
+     "hs_data"
+    ],
+    [
+     "X2.y",
+     "PORT.so",
+     "so",
+     "hs_data"
+    ],
+    [
+     "PORT.ld",
+     "X0[7:0].s",
+     "ld",
+     "clock"
+    ],
+    [
+     "PORT.ldb",
+     "X0[7:0].sb",
+     "ldb",
+     "clock"
+    ],
+    [
+     "PORT.ck",
+     "X1[7:0].ck",
+     "ck",
+     "clock"
+    ]
+   ],
+   "controls": {
+    "ld/ldb": "one-cycle load pulse per word from the Johnson divider"
+   },
+   "notes": "Not a mux-tree serializer: a parallel-load shift register. X0[7].d0 is tied to the global vssd (zero fill). sob and sqb[7:0] unused."
+  },
+  "fcx_ffe": {
+   "role": "FFE tap generator and pre-drivers: two flops make main (1 UI) and post (2 UI) from the serial stream (pre = undelayed), each tap converted to a complementary pair",
+   "on_high_speed_path": true,
+   "inverting": {
+    "pre": false,
+    "preb": true,
+    "main": false,
+    "mainb": true,
+    "post": false,
+    "postb": true
+   },
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fcd_dff",
+     "role": "main-cursor delay"
+    },
+    {
+     "inst": "X1",
+     "cell": "fcd_dff",
+     "role": "post-cursor delay"
+    },
+    {
+     "inst": "X2",
+     "cell": "fcd_ckbuf",
+     "role": "pre/preb"
+    },
+    {
+     "inst": "X3",
+     "cell": "fcd_ckbuf",
+     "role": "main/mainb, instance m=2"
+    },
+    {
+     "inst": "X4",
+     "cell": "fcd_ckbuf",
+     "role": "post/postb"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.so",
+     "X0.d",
+     "so",
+     "hs_data"
+    ],
+    [
+     "PORT.so",
+     "X2.a",
+     "so",
+     "hs_data"
+    ],
+    [
+     "X0.q",
+     "X1.d",
+     "d1",
+     "hs_data"
+    ],
+    [
+     "X0.q",
+     "X3.a",
+     "d1",
+     "hs_data"
+    ],
+    [
+     "X1.q",
+     "X4.a",
+     "d2",
+     "hs_data"
+    ],
+    [
+     "X2.y",
+     "PORT.pre",
+     "pre",
+     "hs_data"
+    ],
+    [
+     "X2.yb",
+     "PORT.preb",
+     "preb",
+     "hs_data"
+    ],
+    [
+     "X3.y",
+     "PORT.main",
+     "main",
+     "hs_data"
+    ],
+    [
+     "X3.yb",
+     "PORT.mainb",
+     "mainb",
+     "hs_data"
+    ],
+    [
+     "X4.y",
+     "PORT.post",
+     "post",
+     "hs_data"
+    ],
+    [
+     "X4.yb",
+     "PORT.postb",
+     "postb",
+     "hs_data"
+    ],
+    [
+     "PORT.ck",
+     "X0.ck",
+     "ck",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "pre(t) = so(t) = d[n+1] relative to main = d[n]; post = d[n-1]. d1b, d2b unused."
+  },
+  "fcx_drv": {
+   "role": "CML output driver with 3-tap FFE: main, pre and post diff pairs summing into 50 ohm loads (the termination), each with a binary tail-current DAC from register weights; pre and post wired with inverted polarity (subtracting)",
+   "on_high_speed_path": true,
+   "inverting": {
+    "txp": false,
+    "txn": true
+   },
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fca_tleg",
+     "role": "main DAC leg x1"
+    },
+    {
+     "inst": "X1",
+     "cell": "fca_tleg",
+     "role": "main x2"
+    },
+    {
+     "inst": "X2",
+     "cell": "fca_tleg",
+     "role": "main x4"
+    },
+    {
+     "inst": "X3",
+     "cell": "fca_tleg",
+     "role": "main x8"
+    },
+    {
+     "inst": "X4",
+     "cell": "fca_tleg",
+     "role": "pre x1"
+    },
+    {
+     "inst": "X5",
+     "cell": "fca_tleg",
+     "role": "pre x2"
+    },
+    {
+     "inst": "X6",
+     "cell": "fca_tleg",
+     "role": "post x1"
+    },
+    {
+     "inst": "X7",
+     "cell": "fca_tleg",
+     "role": "post x2"
+    },
+    {
+     "inst": "X8",
+     "cell": "fca_tleg",
+     "role": "post x4"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.main",
+     "MN0.g",
+     "main",
+     "hs_data"
+    ],
+    [
+     "PORT.mainb",
+     "MN1.g",
+     "mainb",
+     "hs_data"
+    ],
+    [
+     "PORT.pre",
+     "MN2.g",
+     "pre",
+     "hs_data"
+    ],
+    [
+     "PORT.preb",
+     "MN3.g",
+     "preb",
+     "hs_data"
+    ],
+    [
+     "PORT.post",
+     "MN4.g",
+     "post",
+     "hs_data"
+    ],
+    [
+     "PORT.postb",
+     "MN5.g",
+     "postb",
+     "hs_data"
+    ],
+    [
+     "MN0.d",
+     "PORT.txn",
+     "txn",
+     "hs_data"
+    ],
+    [
+     "MN1.d",
+     "PORT.txp",
+     "txp",
+     "hs_data"
+    ],
+    [
+     "MN2.d",
+     "PORT.txp",
+     "txp",
+     "hs_data"
+    ],
+    [
+     "MN4.d",
+     "PORT.txp",
+     "txp",
+     "hs_data"
+    ],
+    [
+     "R0",
+     "PORT.txp",
+     "txp",
+     "hs_data"
+    ],
+    [
+     "R1",
+     "PORT.txn",
+     "txn",
+     "hs_data"
+    ],
+    [
+     "PORT.wmain[3]",
+     "X3.en",
+     "wmain[3]",
+     "important_control"
+    ],
+    [
+     "PORT.wmain[0]",
+     "X0.en",
+     "wmain[0]",
+     "important_control"
+    ],
+    [
+     "PORT.wpre[1]",
+     "X5.en",
+     "wpre[1]",
+     "important_control"
+    ],
+    [
+     "PORT.wpre[0]",
+     "X4.en",
+     "wpre[0]",
+     "important_control"
+    ],
+    [
+     "PORT.wpost[2]",
+     "X8.en",
+     "wpost[2]",
+     "important_control"
+    ],
+    [
+     "PORT.wpost[0]",
+     "X6.en",
+     "wpost[0]",
+     "important_control"
+    ],
+    [
+     "MN0.s",
+     "X0.s",
+     "sm",
+     "bias"
+    ],
+    [
+     "MN2.s",
+     "X4.s",
+     "sp",
+     "bias"
+    ],
+    [
+     "MN4.s",
+     "X6.s",
+     "sq",
+     "bias"
+    ],
+    [
+     "PORT.vbn",
+     "X0.vbn",
+     "vbn",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "wmain[3:0]": "main-cursor current, 0..15 units",
+    "wpre[1:0]": "pre-cursor de-emphasis, 0..3 units",
+    "wpost[2:0]": "post-cursor de-emphasis, 0..7 units"
+   },
+   "notes": "This is the real summer/FFE (compare fca_mix2w): inputs are delayed copies of the same data stream, weights are independent register values (no complementary total), pre/post pairs cross-connected for negative taps, outputs go to pads. Mixed cell (MOS pairs + DAC-leg instances with m=)."
+  },
+  "fcx_lane": {
+   "role": "Tx lane: clock driver, Johnson /8 (word clock + load pulse), 8:1 shift-load serializer, FFE taps, CML FFE driver",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fcd_ckbuf",
+     "role": "cka/ckab from DLL phase pho[0], instance m=2"
+    },
+    {
+     "inst": "X1",
+     "cell": "fcr_jdiv8",
+     "role": "tx word clock and load pulse"
+    },
+    {
+     "inst": "X2",
+     "cell": "fcx_ser8",
+     "role": "serializer"
+    },
+    {
+     "inst": "X3",
+     "cell": "fcx_ffe",
+     "role": "FFE taps"
+    },
+    {
+     "inst": "X4",
+     "cell": "fcx_drv",
+     "role": "CML FFE driver"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ck",
+     "X0.a",
+     "ck",
+     "clock"
+    ],
+    [
+     "X0.y",
+     "X1.ck",
+     "cka",
+     "clock"
+    ],
+    [
+     "X0.y",
+     "X2.ck",
+     "cka",
+     "clock"
+    ],
+    [
+     "X1.ld",
+     "X2.ld",
+     "ld",
+     "clock"
+    ],
+    [
+     "X1.ldb",
+     "X2.ldb",
+     "ldb",
+     "clock"
+    ],
+    [
+     "X1.wck",
+     "PORT.wck",
+     "wck",
+     "clock"
+    ],
+    [
+     "PORT.txd[7:0]",
+     "X2.txd[7:0]",
+     "txd[7:0]",
+     "word_rate_data"
+    ],
+    [
+     "X2.so",
+     "X3.so",
+     "so",
+     "hs_data"
+    ],
+    [
+     "X3.pre",
+     "X4.pre",
+     "pre",
+     "hs_data"
+    ],
+    [
+     "X3.main",
+     "X4.main",
+     "main",
+     "hs_data"
+    ],
+    [
+     "X3.post",
+     "X4.post",
+     "post",
+     "hs_data"
+    ],
+    [
+     "X3.mainb",
+     "X4.mainb",
+     "mainb",
+     "hs_data"
+    ],
+    [
+     "X4.txp",
+     "PORT.txp",
+     "txp",
+     "hs_data"
+    ],
+    [
+     "X4.txn",
+     "PORT.txn",
+     "txn",
+     "hs_data"
+    ],
+    [
+     "PORT.wmain[3:0]",
+     "X4.wmain[3:0]",
+     "wmain[3:0]",
+     "important_control"
+    ],
+    [
+     "PORT.wpre[1:0]",
+     "X4.wpre[1:0]",
+     "wpre[1:0]",
+     "important_control"
+    ],
+    [
+     "PORT.wpost[2:0]",
+     "X4.wpost[2:0]",
+     "wpost[2:0]",
+     "important_control"
+    ],
+    [
+     "PORT.vbn",
+     "X4.vbn",
+     "vbn",
+     "bias"
+    ],
+    [
+     "PORT.rb",
+     "X1.rb",
+     "rb",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "rb": "resets the Tx Johnson divider (word alignment)"
+   },
+   "notes": "wckb (Johnson complement) unused here. Core launches txd on wck; it is loaded on the ck edge after ld."
+  },
+  "fct_csi": {
+   "role": "Current-starved inverter (replica of the DLL delay-cell half), avdd domain",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MP1.g",
+     "a",
+     "test_digital"
+    ],
+    [
+     "MN1.d",
+     "PORT.y",
+     "y",
+     "test_digital"
+    ],
+    [
+     "PORT.vcn",
+     "MN0.g",
+     "vcn",
+     "loop_control"
+    ],
+    [
+     "PORT.vcp",
+     "MP0.g",
+     "vcp",
+     "loop_control"
+    ]
+   ],
+   "controls": {
+    "vcn/vcp": "starving bias = DLL control voltages"
+   },
+   "notes": "Ring stage of fct_cs5."
+  },
+  "fct_cs5": {
+   "role": "5-stage ring oscillator: current-starved NAND stage (enable) + 4 current-starved inverters in a closed loop, output inverter",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fct_csi",
+     "role": "stage 2"
+    },
+    {
+     "inst": "X1",
+     "cell": "fct_csi",
+     "role": "stage 3"
+    },
+    {
+     "inst": "X2",
+     "cell": "fct_csi",
+     "role": "stage 4"
+    },
+    {
+     "inst": "X3",
+     "cell": "fct_csi",
+     "role": "stage 5"
+    }
+   ],
+   "signal_flow": [
+    [
+     "MN1.d",
+     "X0.a",
+     "r0",
+     "test_digital"
+    ],
+    [
+     "X0.y",
+     "X1.a",
+     "r1",
+     "test_digital"
+    ],
+    [
+     "X1.y",
+     "X2.a",
+     "r2",
+     "test_digital"
+    ],
+    [
+     "X2.y",
+     "X3.a",
+     "r3",
+     "test_digital"
+    ],
+    [
+     "X3.y",
+     "MN1.g",
+     "r4",
+     "test_digital"
+    ],
+    [
+     "X3.y",
+     "MN3.g",
+     "r4",
+     "test_digital"
+    ],
+    [
+     "MN3.d",
+     "PORT.y",
+     "y",
+     "test_digital"
+    ],
+    [
+     "PORT.en",
+     "MN2.g",
+     "en",
+     "test_digital"
+    ],
+    [
+     "PORT.en",
+     "MP2.g",
+     "en",
+     "test_digital"
+    ],
+    [
+     "PORT.vcn",
+     "MN0.g",
+     "vcn",
+     "loop_control"
+    ],
+    [
+     "PORT.vcn",
+     "X0.vcn",
+     "vcn",
+     "loop_control"
+    ],
+    [
+     "PORT.vcp",
+     "MP0.g",
+     "vcp",
+     "loop_control"
+    ]
+   ],
+   "controls": {
+    "en": "1 = oscillate; 0 = NAND output forced high, ring static (r0..r4 = 1,0,1,0,1)",
+    "vcn/vcp": "frequency, from the DLL vctl/vcp (replica of the delay-line stage)"
+   },
+   "notes": "LOOK-ALIKE: r4 feeds back into the NAND stage, so the chain is a closed loop of 5 inverting stages (odd) and oscillates; it is not a buffer chain. Mixed cell (NAND stage and output inverter are devices)."
+  },
+  "fct_rip3": {
+   "role": "3-stage ripple counter: toggle flops (d = own qb), each stage clocked by the previous qb",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fcd_dffr",
+     "role": "bit 0, clocked by ck"
+    },
+    {
+     "inst": "X1",
+     "cell": "fcd_dffr",
+     "role": "bit 1, clocked by qb[0]"
+    },
+    {
+     "inst": "X2",
+     "cell": "fcd_dffr",
+     "role": "bit 2, clocked by qb[1]"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ck",
+     "X0.ck",
+     "ck",
+     "test_digital"
+    ],
+    [
+     "X0.qb",
+     "X0.d",
+     "qb[0]",
+     "test_digital"
+    ],
+    [
+     "X0.qb",
+     "X1.ck",
+     "qb[0]",
+     "test_digital"
+    ],
+    [
+     "X0.q",
+     "X1.ckb",
+     "q[0]",
+     "test_digital"
+    ],
+    [
+     "X1.qb",
+     "X2.ck",
+     "qb[1]",
+     "test_digital"
+    ],
+    [
+     "X0.q",
+     "PORT.q[0]",
+     "q[0]",
+     "test_digital"
+    ],
+    [
+     "X2.q",
+     "PORT.q[2]",
+     "q[2]",
+     "test_digital"
+    ],
+    [
+     "PORT.rb",
+     "X0.rb",
+     "rb",
+     "test_digital"
+    ]
+   ],
+   "controls": {
+    "rb": "clear"
+   },
+   "notes": "Counts up on ck rising (q[2:0] = number of edges mod 8). Used as divider and as counter."
+  },
+  "fct_mon": {
+   "role": "Delay-line replica ring-oscillator monitor: RO, clock buffer, ripple /8 divider (test clock out) and a gated 6-bit ripple frequency counter",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fct_cs5",
+     "role": "ring oscillator biased by the DLL vctl/vcp"
+    },
+    {
+     "inst": "X1",
+     "cell": "fcd_ckbuf",
+     "role": "RO clock to CMOS"
+    },
+    {
+     "inst": "X2",
+     "cell": "fct_rip3",
+     "role": "/8 ripple divider"
+    },
+    {
+     "inst": "X3",
+     "cell": "fcd_inv",
+     "role": "divider output buffer"
+    },
+    {
+     "inst": "X4",
+     "cell": "fcd_inv4",
+     "role": "rodiv driver"
+    },
+    {
+     "inst": "X5",
+     "cell": "fcd_nand2",
+     "role": "count gate"
+    },
+    {
+     "inst": "X6",
+     "cell": "fcd_inv",
+     "role": "gck"
+    },
+    {
+     "inst": "X7",
+     "cell": "fct_rip3",
+     "role": "count bits 2:0"
+    },
+    {
+     "inst": "X8",
+     "cell": "fct_rip3",
+     "role": "count bits 5:3, clocked by cb[2]"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.en",
+     "X0.en",
+     "en",
+     "test_digital"
+    ],
+    [
+     "X0.y",
+     "X1.a",
+     "rclk",
+     "test_digital"
+    ],
+    [
+     "X1.y",
+     "X2.ck",
+     "rca",
+     "test_digital"
+    ],
+    [
+     "X2.q[2]",
+     "X3.a",
+     "dq[2]",
+     "test_digital"
+    ],
+    [
+     "X3.y",
+     "X4.a",
+     "t0",
+     "test_digital"
+    ],
+    [
+     "X4.y",
+     "PORT.rodiv",
+     "rodiv",
+     "test_digital"
+    ],
+    [
+     "X2.q[2]",
+     "X5.b",
+     "dq[2]",
+     "test_digital"
+    ],
+    [
+     "PORT.gate",
+     "X5.a",
+     "gate",
+     "test_digital"
+    ],
+    [
+     "X5.y",
+     "X6.a",
+     "gckb",
+     "test_digital"
+    ],
+    [
+     "X6.y",
+     "X7.ck",
+     "gck",
+     "test_digital"
+    ],
+    [
+     "X7.qb[2]",
+     "X8.ck",
+     "cb[2]",
+     "test_digital"
+    ],
+    [
+     "X7.q[2:0]",
+     "PORT.cnt[2:0]",
+     "cnt[2:0]",
+     "test_digital"
+    ],
+    [
+     "X8.q[2:0]",
+     "PORT.cnt[5:3]",
+     "cnt[5:3]",
+     "test_digital"
+    ],
+    [
+     "PORT.vcn",
+     "X0.vcn",
+     "vcn",
+     "loop_control"
+    ],
+    [
+     "PORT.vcp",
+     "X0.vcp",
+     "vcp",
+     "loop_control"
+    ],
+    [
+     "PORT.rb",
+     "X2.rb",
+     "rb",
+     "test_digital"
+    ]
+   ],
+   "controls": {
+    "en": "RO enable (command register bit 0)",
+    "gate": "count window (command register bit 2)",
+    "rb": "clear divider and count"
+   },
+   "notes": "Frequency count = cnt / window = f_RO / 8 per second; with vcn/vcp = DLL vctl/vcp it measures the locked per-stage delay. Unused: dq[1:0], dqb[2:0], cb[1:0], cb[5:3]."
+  },
+  "fcs_inrx": {
+   "role": "Slow CMOS input pad receiver: primary ESD, 200 ohm series R, secondary GGNMOS, 6T Schmitt trigger on vddq (thick oxide), thick-oxide inverter on vddd as level-down",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fce_hv",
+     "role": "primary pad ESD"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.pad",
+     "X0.pad",
+     "pad",
+     "slow_signal"
+    ],
+    [
+     "PORT.pad",
+     "R0",
+     "pad",
+     "slow_signal"
+    ],
+    [
+     "R0",
+     "MP0.g",
+     "pi",
+     "slow_signal"
+    ],
+    [
+     "MN1.d",
+     "MN4.g",
+     "sx",
+     "slow_signal"
+    ],
+    [
+     "MN4.d",
+     "PORT.o",
+     "o",
+     "slow_signal"
+    ],
+    [
+     "MN1.d",
+     "MP2.g",
+     "sx",
+     "slow_signal"
+    ],
+    [
+     "MN1.d",
+     "MN3.g",
+     "sx",
+     "slow_signal"
+    ]
+   ],
+   "controls": {},
+   "notes": "LOOK-ALIKE: MP2/MN3 feed the output back into the stack, which can be read as a latch. It is a Schmitt trigger: one input drives all four stack devices (MP0/MP1/MN1/MN2), the feedback devices only move the internal nodes p1/n1 (d pin on p1/n1, s pin on the opposite rail: MP2 to vssq, MN3 to vddq), and there is no clock or second input. Mixed cell. o follows pad."
+  },
+  "fcs_creg": {
+   "role": "Command register: 4 reset flops clocked by the buffered strobe",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fcd_ckbuf",
+     "role": "strobe sk/skb"
+    },
+    {
+     "inst": "X1[3:0]",
+     "cell": "fcd_dffr",
+     "role": "command bits"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ci[3:0]",
+     "X1[3:0].d",
+     "ci[3:0]",
+     "slow_signal"
+    ],
+    [
+     "PORT.stb",
+     "X0.a",
+     "stb",
+     "clock"
+    ],
+    [
+     "X0.y",
+     "X1[3:0].ck",
+     "sk",
+     "clock"
+    ],
+    [
+     "X0.yb",
+     "X1[3:0].ckb",
+     "skb",
+     "clock"
+    ],
+    [
+     "X1[3:0].q",
+     "PORT.cq[3:0]",
+     "cq[3:0]",
+     "general_control"
+    ],
+    [
+     "PORT.rb",
+     "X1[3:0].rb",
+     "rb",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "rb": "clears all bits"
+   },
+   "notes": "Captures on strobe rising. cqb[3:0] unused."
+  },
+  "fcs_pads": {
+   "role": "Slow control pad group: 4 command pads and 1 strobe pad with Schmitt receivers, command register",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "X0[3:0]",
+     "cell": "fcs_inrx",
+     "role": "command pad receivers"
+    },
+    {
+     "inst": "X1",
+     "cell": "fcs_inrx",
+     "role": "strobe pad receiver"
+    },
+    {
+     "inst": "X2",
+     "cell": "fcs_creg",
+     "role": "command register"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.cpad[3:0]",
+     "X0[3:0].pad",
+     "cpad[3:0]",
+     "slow_signal"
+    ],
+    [
+     "X0[3:0].o",
+     "X2.ci[3:0]",
+     "ci[3:0]",
+     "slow_signal"
+    ],
+    [
+     "PORT.spad",
+     "X1.pad",
+     "spad",
+     "clock"
+    ],
+    [
+     "X1.o",
+     "X2.stb",
+     "si",
+     "clock"
+    ],
+    [
+     "X2.cq[3:0]",
+     "PORT.cq[3:0]",
+     "cq[3:0]",
+     "general_control"
+    ],
+    [
+     "PORT.rb",
+     "X2.rb",
+     "rb",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": "Pad cells on vddq/vssq pins; register on the global vddd/vssd."
+  },
+  "fcl_link_top": {
+   "role": "Forwarded-clock serial link IO: forwarded-clock lane (CML Rx + DLL, 8 phases), four data lanes (termination, CML input, data/edge samplers, Alexander PD, vote, accumulator, phase interpolator, 1:8 deser), one Tx lane (8:1 serializer, 3-tap FFE CML driver), DLL-replica ring-oscillator monitor, slow Schmitt control pads with a strobed command register, bias, pad ESD and rail clamps",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X0",
+     "cell": "fca_bias",
+     "role": "bias currents and termination common mode"
+    },
+    {
+     "inst": "X1",
+     "cell": "fca_fwd",
+     "role": "forwarded-clock lane, DLL"
+    },
+    {
+     "inst": "X2[3:0]",
+     "cell": "fcr_lane",
+     "role": "data lanes 3..0"
+    },
+    {
+     "inst": "X3",
+     "cell": "fcx_lane",
+     "role": "Tx lane"
+    },
+    {
+     "inst": "X4",
+     "cell": "fct_mon",
+     "role": "RO monitor"
+    },
+    {
+     "inst": "X5",
+     "cell": "fcs_pads",
+     "role": "slow control pads + command register"
+    },
+    {
+     "inst": "X6",
+     "cell": "fce_lv",
+     "role": "fck_p ESD"
+    },
+    {
+     "inst": "X7",
+     "cell": "fce_lv",
+     "role": "fck_n ESD"
+    },
+    {
+     "inst": "X8[3:0]",
+     "cell": "fce_lv",
+     "role": "rx_p ESD"
+    },
+    {
+     "inst": "X9[3:0]",
+     "cell": "fce_lv",
+     "role": "rx_n ESD"
+    },
+    {
+     "inst": "X10",
+     "cell": "fce_lv",
+     "role": "tx_p ESD"
+    },
+    {
+     "inst": "X11",
+     "cell": "fce_lv",
+     "role": "tx_n ESD"
+    },
+    {
+     "inst": "X12",
+     "cell": "fce_clmp",
+     "role": "avdd/avss clamp"
+    },
+    {
+     "inst": "X13",
+     "cell": "fce_clmp",
+     "role": "global vddd/vssd clamp"
+    },
+    {
+     "inst": "X14",
+     "cell": "fce_clmphv",
+     "role": "vddq/vssq clamp"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.fck_p",
+     "X1.fckp",
+     "fck_p",
+     "clock"
+    ],
+    [
+     "PORT.fck_n",
+     "X1.fckn",
+     "fck_n",
+     "clock"
+    ],
+    [
+     "X1.pho[7:0]",
+     "X2[3:0].ph[7:0]",
+     "ph[7:0]",
+     "clock"
+    ],
+    [
+     "X1.pho[0]",
+     "X3.ck",
+     "ph[0]",
+     "clock"
+    ],
+    [
+     "PORT.rx_p[3:0]",
+     "X2[3:0].rxp",
+     "rx_p[3:0]",
+     "hs_data"
+    ],
+    [
+     "PORT.rx_n[3:0]",
+     "X2[3:0].rxn",
+     "rx_n[3:0]",
+     "hs_data"
+    ],
+    [
+     "X2[3:0].rxd[7:0]",
+     "PORT.rxd[31:0]",
+     "rxd[31:0]",
+     "word_rate_data"
+    ],
+    [
+     "X2[3:0].wck",
+     "PORT.rx_wck[3:0]",
+     "rx_wck[3:0]",
+     "clock"
+    ],
+    [
+     "X2[3:0].code[4:0]",
+     "PORT.rx_pic[19:0]",
+     "rx_pic[19:0]",
+     "status"
+    ],
+    [
+     "PORT.txd[7:0]",
+     "X3.txd[7:0]",
+     "txd[7:0]",
+     "word_rate_data"
+    ],
+    [
+     "X3.txp",
+     "PORT.tx_p",
+     "tx_p",
+     "hs_data"
+    ],
+    [
+     "X3.txn",
+     "PORT.tx_n",
+     "tx_n",
+     "hs_data"
+    ],
+    [
+     "X3.wck",
+     "PORT.tx_wck",
+     "tx_wck",
+     "clock"
+    ],
+    [
+     "PORT.txffe_main[3:0]",
+     "X3.wmain[3:0]",
+     "txffe_main[3:0]",
+     "important_control"
+    ],
+    [
+     "PORT.txffe_pre[1:0]",
+     "X3.wpre[1:0]",
+     "txffe_pre[1:0]",
+     "important_control"
+    ],
+    [
+     "PORT.txffe_post[2:0]",
+     "X3.wpost[2:0]",
+     "txffe_post[2:0]",
+     "important_control"
+    ],
+    [
+     "X1.vctl",
+     "X4.vcn",
+     "vctl",
+     "loop_control"
+    ],
+    [
+     "X1.vcp",
+     "X4.vcp",
+     "vcp",
+     "loop_control"
+    ],
+    [
+     "X1.vctl",
+     "R0",
+     "vctl",
+     "loop_control"
+    ],
+    [
+     "R0",
+     "PORT.dll_vmon",
+     "dll_vmon",
+     "test_analog"
+    ],
+    [
+     "X4.rodiv",
+     "PORT.ro_div",
+     "ro_div",
+     "test_digital"
+    ],
+    [
+     "X4.cnt[5:0]",
+     "PORT.ro_cnt[5:0]",
+     "ro_cnt[5:0]",
+     "test_digital"
+    ],
+    [
+     "PORT.cmd_pad[3:0]",
+     "X5.cpad[3:0]",
+     "cmd_pad[3:0]",
+     "slow_signal"
+    ],
+    [
+     "PORT.cstb_pad",
+     "X5.spad",
+     "cstb_pad",
+     "clock"
+    ],
+    [
+     "X5.cq[3:0]",
+     "PORT.cmd_q[3:0]",
+     "cmd_q[3:0]",
+     "status"
+    ],
+    [
+     "X5.cq[0]",
+     "X4.en",
+     "cmd_q[0]",
+     "test_digital"
+    ],
+    [
+     "X5.cq[1]",
+     "X2[3:0].hold",
+     "cmd_q[1]",
+     "important_control"
+    ],
+    [
+     "X5.cq[2]",
+     "X4.gate",
+     "cmd_q[2]",
+     "test_digital"
+    ],
+    [
+     "PORT.ibias",
+     "X0.ibias",
+     "ibias",
+     "bias"
+    ],
+    [
+     "X0.vbn_rx",
+     "X2[3:0].vbn",
+     "vbn_rx",
+     "bias"
+    ],
+    [
+     "X0.vbn_rx",
+     "X1.vbn",
+     "vbn_rx",
+     "bias"
+    ],
+    [
+     "X0.vbn_tx",
+     "X3.vbn",
+     "vbn_tx",
+     "bias"
+    ],
+    [
+     "X0.ib_cp",
+     "X1.ib",
+     "ib_cp",
+     "bias"
+    ],
+    [
+     "X0.vcm",
+     "X2[3:0].vcm",
+     "vcm",
+     "reference"
+    ],
+    [
+     "X0.vcm",
+     "X1.vcm",
+     "vcm",
+     "reference"
+    ],
+    [
+     "PORT.rst_n",
+     "X2[3:0].rb",
+     "rst_n",
+     "general_control"
+    ],
+    [
+     "PORT.rst_n",
+     "X3.rb",
+     "rst_n",
+     "general_control"
+    ],
+    [
+     "PORT.rst_n",
+     "X5.rb",
+     "rst_n",
+     "general_control"
+    ],
+    [
+     "PORT.dll_rst_n",
+     "X1.rstb",
+     "dll_rst_n",
+     "general_control"
+    ],
+    [
+     "PORT.fc_rst_n",
+     "X4.rb",
+     "fc_rst_n",
+     "test_digital"
+    ],
+    [
+     "PORT.rx_p[3:0]",
+     "X8[3:0].pad",
+     "rx_p[3:0]",
+     "hs_data"
+    ]
+   ],
+   "controls": {
+    "cmd_q[0]": "RO enable",
+    "cmd_q[1]": "CDR hold, all four lanes",
+    "cmd_q[2]": "frequency-count window",
+    "cmd_q[3]": "spare: read back only",
+    "txffe_main[3:0]": "Tx main tap current",
+    "rst_n": "CDR/deser, Tx divider, command register reset",
+    "dll_rst_n": "DLL reset"
+   },
+   "notes": "Loops: (1) DLL: ph[0] -> PFD -> charge pump -> vctl -> delay line; (2) per lane digital CDR: samplers -> Alexander PD -> vote -> accumulator -> PI code -> sampling clock; (3) RO ring (test). Tx uses DLL phase pho[0] as bit clock. Mixed cell (R0 20k vctl monitor, C0 20p decap). The global vddd/vssd are not pins."
+  }
+ }
+}

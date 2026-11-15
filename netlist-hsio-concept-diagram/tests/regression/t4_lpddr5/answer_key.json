@@ -1,0 +1,7456 @@
+{
+ "netlist": "netlist_f.sp",
+ "top": "LP5_DQ_BYTE",
+ "supplies": [
+  "VDD",
+  "VDDQ"
+ ],
+ "grounds": [
+  "VSS",
+  "VSSQ"
+ ],
+ "ports": {
+  "DQ[7:0]": {
+   "class": "hs_data_io",
+   "function": "DQ pads, bidirectional: write data in (CTLE + DFE receiver), read data out (LVSTL driver with de-emphasis)"
+  },
+  "WCK": {
+   "class": "clock_in",
+   "function": "write clock (true), half the data rate; differential CML input"
+  },
+  "WCKB": {
+   "class": "clock_in",
+   "function": "write clock complement"
+  },
+  "ZQ": {
+   "class": "reference",
+   "function": "ZQ pad to external RZQ (to VDDQ); replica pull-down legs drive it during calibration"
+  },
+  "TXD[31:0]": {
+   "class": "word_rate_data",
+   "function": "read data from the core, TXD[4n+k] = DQ[n] UI k, launched on TXCLK rising"
+  },
+  "RXD[31:0]": {
+   "class": "word_rate_data",
+   "function": "received data to the core, RXD[4n+k] = DQ[n] UI k; the four bits of a DQ are staggered by one UI and all stable around RXCLK rising"
+  },
+  "TXCLK": {
+   "class": "clock_out",
+   "function": "quarter-rate word clock for the core's TXD launch (buffered left-spine phase 2)"
+  },
+  "RXCLK": {
+   "class": "clock_out",
+   "function": "quarter-rate word clock for the core's RXD capture (buffered left-spine phase 0)"
+  },
+  "OE": {
+   "class": "important_control",
+   "function": "DQ output enable: 0 = all driver legs off (Hi-Z); 1 also forces ODT off"
+  },
+  "EQ_EN": {
+   "class": "important_control",
+   "function": "Tx de-emphasis (post-cursor FFE segment) enable"
+  },
+  "SR[1:0]": {
+   "class": "important_control",
+   "function": "Tx predriver slew code (main segment), sets output edge rate"
+  },
+  "ODT_EN": {
+   "class": "important_control",
+   "function": "pull-down ODT enable (auto-off while OE=1)"
+  },
+  "ODT_CODE[2:0]": {
+   "class": "important_control",
+   "function": "ODT strength, binary legs 600/4, 600/2, 600 ohm"
+  },
+  "VREF_CODE[3:0]": {
+   "class": "important_control",
+   "function": "Rx VREF level: VDDQ/2 * code/16"
+  },
+  "CTLE_CODE[1:0]": {
+   "class": "important_control",
+   "function": "CTLE peaking (degeneration cap) code"
+  },
+  "DFE_TAP[2:0]": {
+   "class": "important_control",
+   "function": "DFE h1 tap magnitude alpha (0 = DFE off)"
+  },
+  "RX_EN": {
+   "class": "important_control",
+   "function": "Rx enable: CTLE/DAC PMOS bias and VREF ladder"
+  },
+  "CAL_EN": {
+   "class": "important_control",
+   "function": "Rx offset-calibration mode: CTLE inputs shorted to VREF, pad isolated, alpha forced 0, counters run until CAL_DONE"
+  },
+  "CAL_DONE": {
+   "class": "status_out",
+   "function": "Rx offset calibration finished (timer expired); counters frozen"
+  },
+  "ZQ_CLK": {
+   "class": "clock_in",
+   "function": "slow ZQ calibration clock (SAR); not a high-speed clock"
+  },
+  "ZQ_START": {
+   "class": "command",
+   "function": "one ZQ_CLK-cycle pulse that starts a ZQ calibration"
+  },
+  "ZQ_DONE": {
+   "class": "status_out",
+   "function": "ZQ SAR finished (5 clocks after start)"
+  },
+  "ZQ_CODE[4:0]": {
+   "class": "status_out",
+   "function": "ZQ code readback; internally drives all Tx main legs and (bits 4:2) the post legs"
+  },
+  "CK_EN": {
+   "class": "important_control",
+   "function": "WCK CML receiver enable"
+  },
+  "DIV_RST": {
+   "class": "general_control",
+   "function": "reset of the /2 I/Q divider (phase alignment)"
+  },
+  "DCC_EN": {
+   "class": "important_control",
+   "function": "analog duty-cycle loop enable; 0 holds VCTRL at its preset, leaving the clock duty uncorrected"
+  },
+  "DCC_RST": {
+   "class": "general_control",
+   "function": "forces VCTRL to its preset (loop restart)"
+  },
+  "IBIAS": {
+   "class": "bias",
+   "function": "reference current input for all bias generation"
+  },
+  "VDD": {
+   "class": "power",
+   "function": "core supply (~0.75 V): logic, clocks, predrivers, Rx"
+  },
+  "VSS": {
+   "class": "power",
+   "function": "core ground"
+  },
+  "VDDQ": {
+   "class": "power",
+   "function": "IO supply (~0.5 V, LVSTL): driver pull-ups, ZQ divider, VREF ladder, ESD"
+  },
+  "VSSQ": {
+   "class": "power",
+   "function": "IO ground: driver pull-downs, ODT, ZQ replica, ESD"
+  }
+ },
+ "cells": {
+  "INV_D1": {
+   "role": "Static CMOS inverter, core devices (0.2u/0.4u)",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.A",
+     "M_N0.g",
+     "A",
+     "clock"
+    ],
+    [
+     "PORT.A",
+     "M_P0.g",
+     "A",
+     "clock"
+    ],
+    [
+     "M_N0.d",
+     "PORT.Y",
+     "Y",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "On the high-speed path only as X_I1 of CML2CMOS (WCK clock). Elsewhere it is control/calibration logic (TX_CTRL, ODT_CTRL, CAL_CTRL, VREF_R2R bit complements, DCC_LOOP reset logic, RX_CAL_CNT toggle chain)."
+  },
+  "INV_D4": {
+   "role": "Large low-Vt clock inverter (0.8u/1.6u)",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.A",
+     "M_N0.g",
+     "A",
+     "clock"
+    ],
+    [
+     "PORT.A",
+     "M_P0.g",
+     "A",
+     "clock"
+    ],
+    [
+     "M_N0.d",
+     "PORT.Y",
+     "Y",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Used for the quarter-rate clock tree (root pairs and inverting spine drivers), the TXCLK/RXCLK word-clock buffers and the CML2CMOS output stage."
+  },
+  "NAND2_D1": {
+   "role": "2-input NAND",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.A",
+     "M_N0.g",
+     "A",
+     "general_control"
+    ],
+    [
+     "PORT.B",
+     "M_N1.g",
+     "B",
+     "general_control"
+    ],
+    [
+     "M_N0.d",
+     "PORT.Y",
+     "Y",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": "Control and calibration logic only: TX_CTRL enable gating, TAP_DAC cal gating, RX_CAL_CNT toggle chain, CAL_CTRL timer outputs and the ZQ_SAR5 code OR (CODE = NAND(CB, TB) = C | T)."
+  },
+  "NAND3_D1": {
+   "role": "3-input NAND",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.A",
+     "M_N0.g",
+     "A",
+     "general_control"
+    ],
+    [
+     "PORT.B",
+     "M_N1.g",
+     "B",
+     "general_control"
+    ],
+    [
+     "PORT.C",
+     "M_N2.g",
+     "C",
+     "general_control"
+    ],
+    [
+     "M_N0.d",
+     "PORT.Y",
+     "Y",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": "ODT_CTRL leg decode and the RX_CAL_CNT saturation detect."
+  },
+  "NOR2_D1": {
+   "role": "2-input NOR",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.A",
+     "M_N0.g",
+     "A",
+     "general_control"
+    ],
+    [
+     "PORT.B",
+     "M_N1.g",
+     "B",
+     "general_control"
+    ],
+    [
+     "M_N0.d",
+     "PORT.Y",
+     "Y",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": "ZQ_SAR5 synchronous-clear gates and DONE logic, DCC_LOOP reset decode."
+  },
+  "TGMUX2": {
+   "role": "Transmission-gate 2:1 mux (non-restoring): Y = S ? D1 : D0",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.D0",
+     "M_N0.s",
+     "D0",
+     "slow_signal"
+    ],
+    [
+     "PORT.D1",
+     "M_N1.s",
+     "D1",
+     "slow_signal"
+    ],
+    [
+     "M_N0.d",
+     "PORT.Y",
+     "Y",
+     "slow_signal"
+    ],
+    [
+     "M_N1.d",
+     "PORT.Y",
+     "Y",
+     "slow_signal"
+    ],
+    [
+     "PORT.S",
+     "M_N1.g",
+     "S",
+     "slow_signal"
+    ],
+    [
+     "PORT.SB",
+     "M_N0.g",
+     "SB",
+     "slow_signal"
+    ]
+   ],
+   "controls": {
+    "S": "select (1 = D1), needs complement SB",
+    "SB": "complement select"
+   },
+   "notes": "Used in RX_CAL_CNT (XNOR and XOR terms) and ZQ_SAR5 (keep/hold mux). In RX_CAL_CNT the data inputs are static nets and the flop outputs drive only the selects; a TSPC QB (dynamic while CK is low) must not be passed through a TG while its select can change."
+  },
+  "DFF_TSPC": {
+   "role": "True single-phase-clock positive-edge D flip-flop (dynamic, 9T core + output inverter)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.D",
+     "M_P1.g",
+     "D",
+     "hs_data"
+    ],
+    [
+     "PORT.D",
+     "M_N1.g",
+     "D",
+     "hs_data"
+    ],
+    [
+     "M_N1.d",
+     "M_N2.g",
+     "X1",
+     "hs_data"
+    ],
+    [
+     "M_N2.d",
+     "M_P4.g",
+     "Y1",
+     "hs_data"
+    ],
+    [
+     "M_P4.d",
+     "PORT.QB",
+     "QB",
+     "hs_data"
+    ],
+    [
+     "PORT.QB",
+     "M_N6.g",
+     "QB",
+     "hs_data"
+    ],
+    [
+     "M_N6.d",
+     "PORT.Q",
+     "Q",
+     "hs_data"
+    ],
+    [
+     "PORT.CK",
+     "M_P2.g",
+     "CK",
+     "clock"
+    ],
+    [
+     "PORT.CK",
+     "M_P3.g",
+     "CK",
+     "clock"
+    ],
+    [
+     "PORT.CK",
+     "M_N3.g",
+     "CK",
+     "clock"
+    ],
+    [
+     "PORT.CK",
+     "M_N4.g",
+     "CK",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Two outputs: Q (main, static, non-inverting) and QB (inverted, the dynamic third-stage node: floating while CK is low). On the HS path in TX_SER4 (staggered capture flops). Also used, at lower clock rates, in RX_CAL_CNT, CAL_CTRL (as T flops with D tied to their own QB) and ZQ_SAR5; it needs a running clock."
+  },
+  "SER_MUX4": {
+   "role": "4:1 quarter-rate window mux: four 3-high clocked inverters on one output node; bit k drives Y = ~D[k] while P[k] and P[k+3] are high (N stack) and P[k+2], P[k+1] are low (P stack)",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.D[0]",
+     "M_ND0.g",
+     "D[0]",
+     "hs_data"
+    ],
+    [
+     "PORT.D[0]",
+     "M_PD0.g",
+     "D[0]",
+     "hs_data"
+    ],
+    [
+     "PORT.P[0]",
+     "M_NC0.g",
+     "P[0]",
+     "clock"
+    ],
+    [
+     "PORT.P[3]",
+     "M_NE0.g",
+     "P[3]",
+     "clock"
+    ],
+    [
+     "PORT.P[2]",
+     "M_PC0.g",
+     "P[2]",
+     "clock"
+    ],
+    [
+     "PORT.P[1]",
+     "M_PE0.g",
+     "P[1]",
+     "clock"
+    ],
+    [
+     "M_ND0.d",
+     "PORT.Y",
+     "Y",
+     "hs_data"
+    ],
+    [
+     "PORT.D[1]",
+     "M_ND1.g",
+     "D[1]",
+     "hs_data"
+    ],
+    [
+     "PORT.D[1]",
+     "M_PD1.g",
+     "D[1]",
+     "hs_data"
+    ],
+    [
+     "PORT.P[1]",
+     "M_NC1.g",
+     "P[1]",
+     "clock"
+    ],
+    [
+     "PORT.P[0]",
+     "M_NE1.g",
+     "P[0]",
+     "clock"
+    ],
+    [
+     "PORT.P[3]",
+     "M_PC1.g",
+     "P[3]",
+     "clock"
+    ],
+    [
+     "PORT.P[2]",
+     "M_PE1.g",
+     "P[2]",
+     "clock"
+    ],
+    [
+     "M_ND1.d",
+     "PORT.Y",
+     "Y",
+     "hs_data"
+    ],
+    [
+     "PORT.D[2]",
+     "M_ND2.g",
+     "D[2]",
+     "hs_data"
+    ],
+    [
+     "PORT.D[2]",
+     "M_PD2.g",
+     "D[2]",
+     "hs_data"
+    ],
+    [
+     "PORT.P[2]",
+     "M_NC2.g",
+     "P[2]",
+     "clock"
+    ],
+    [
+     "PORT.P[1]",
+     "M_NE2.g",
+     "P[1]",
+     "clock"
+    ],
+    [
+     "PORT.P[0]",
+     "M_PC2.g",
+     "P[0]",
+     "clock"
+    ],
+    [
+     "PORT.P[3]",
+     "M_PE2.g",
+     "P[3]",
+     "clock"
+    ],
+    [
+     "M_ND2.d",
+     "PORT.Y",
+     "Y",
+     "hs_data"
+    ],
+    [
+     "PORT.D[3]",
+     "M_ND3.g",
+     "D[3]",
+     "hs_data"
+    ],
+    [
+     "PORT.D[3]",
+     "M_PD3.g",
+     "D[3]",
+     "hs_data"
+    ],
+    [
+     "PORT.P[3]",
+     "M_NC3.g",
+     "P[3]",
+     "clock"
+    ],
+    [
+     "PORT.P[2]",
+     "M_NE3.g",
+     "P[2]",
+     "clock"
+    ],
+    [
+     "PORT.P[1]",
+     "M_PC3.g",
+     "P[1]",
+     "clock"
+    ],
+    [
+     "PORT.P[0]",
+     "M_PE3.g",
+     "P[0]",
+     "clock"
+    ],
+    [
+     "M_ND3.d",
+     "PORT.Y",
+     "Y",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "The four windows partition the quarter-rate cycle, so Y is always driven by exactly one stack (static). It inverts: TX_SER4 feeds the main mux with the flops' QB and the post mux with Q."
+  },
+  "SLEW_INV": {
+   "role": "Predriver final inverter with code-selected parallel legs: base leg, x1 leg enabled by SR[0], x2 leg enabled by SR[1]",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.A",
+     "M_PB.g",
+     "A",
+     "hs_data"
+    ],
+    [
+     "PORT.A",
+     "M_NB.g",
+     "A",
+     "hs_data"
+    ],
+    [
+     "PORT.A",
+     "M_P0.g",
+     "A",
+     "hs_data"
+    ],
+    [
+     "PORT.A",
+     "M_P1.g",
+     "A",
+     "hs_data"
+    ],
+    [
+     "M_PB.d",
+     "PORT.Y",
+     "Y",
+     "hs_data"
+    ],
+    [
+     "M_P1.d",
+     "PORT.Y",
+     "Y",
+     "hs_data"
+    ],
+    [
+     "PORT.SR[0]",
+     "M_N0E.g",
+     "SR[0]",
+     "important_control"
+    ],
+    [
+     "PORT.SRB[0]",
+     "M_P0E.g",
+     "SRB[0]",
+     "important_control"
+    ],
+    [
+     "PORT.SR[1]",
+     "M_N1E.g",
+     "SR[1]",
+     "important_control"
+    ],
+    [
+     "PORT.SRB[1]",
+     "M_P1E.g",
+     "SRB[1]",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "SR[1:0]": "static slew code: adds x1 (bit 0) and x2 (bit 1) drive legs, faster predriver edges",
+    "SRB[1:0]": "complements of SR for the PMOS leg enables"
+   },
+   "notes": "Drive strength 1x..4x of the base leg; sets the gate edge rate of the driver legs (output slew)."
+  },
+  "TX_PDRV": {
+   "role": "FFE predriver of one DQ: main segment PU/PD gate drivers through slew-coded inverters, post segment PU/PD gate drivers (plain inverters)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "X_SPU",
+     "cell": "SLEW_INV",
+     "role": "main pull-up gate driver, input ~D -> PUG_M = D"
+    },
+    {
+     "inst": "X_SPD",
+     "cell": "SLEW_INV",
+     "role": "main pull-down gate driver, PDG_M = ~D"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.D",
+     "M_DIN.g",
+     "D",
+     "hs_data"
+    ],
+    [
+     "M_DIN.d",
+     "X_SPU.A",
+     "DB",
+     "hs_data"
+    ],
+    [
+     "X_SPU.Y",
+     "PORT.PUG_M",
+     "PUG_M",
+     "hs_data"
+    ],
+    [
+     "PORT.D",
+     "X_SPD.A",
+     "D",
+     "hs_data"
+    ],
+    [
+     "X_SPD.Y",
+     "PORT.PDG_M",
+     "PDG_M",
+     "hs_data"
+    ],
+    [
+     "PORT.P",
+     "M_PIN.g",
+     "P",
+     "hs_data"
+    ],
+    [
+     "M_PIN.d",
+     "PORT.PDG_P",
+     "PDG_P",
+     "hs_data"
+    ],
+    [
+     "M_PIN.d",
+     "M_QUN.g",
+     "PDG_P",
+     "hs_data"
+    ],
+    [
+     "M_QUN.d",
+     "PORT.PUG_P",
+     "PUG_P",
+     "hs_data"
+    ],
+    [
+     "PORT.SR[1:0]",
+     "X_SPU.SR[1:0]",
+     "SR[1:0]",
+     "important_control"
+    ],
+    [
+     "PORT.SR[1:0]",
+     "X_SPD.SR[1:0]",
+     "SR[1:0]",
+     "important_control"
+    ],
+    [
+     "PORT.SRB[1:0]",
+     "X_SPU.SRB[1:0]",
+     "SRB[1:0]",
+     "important_control"
+    ],
+    [
+     "PORT.SRB[1:0]",
+     "X_SPD.SRB[1:0]",
+     "SRB[1:0]",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "SR[1:0]": "main-segment predriver slew code",
+    "SRB[1:0]": "complement of SR"
+   },
+   "notes": "Four outputs. Main output PUG_M = D (two inversions: M_DIN then X_SPU) because the NMOS pull-up is a source follower, non-inverting from gate to pad; PDG_M = ~D. Post outputs: PDG_P = ~P (M_PIN/M_PIP) and PUG_P = P (M_QUN/M_QUP). Intentional asymmetry: only the main segment has slew control. No enable gating here: the segment/leg enables are the stacked devices inside TX_LEG_M/TX_LEG_P."
+  },
+  "TX_LEG_M": {
+   "role": "LVSTL main driver unit leg: pull-up = enable NMOS from VDDQ + data NMOS (source follower) + 300 ohm; pull-down = 300 ohm + data NMOS + enable NMOS to VSSQ (all NMOS 2.4u)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.PUG",
+     "M_PU.g",
+     "PUG",
+     "hs_data"
+    ],
+    [
+     "M_PU.s",
+     "R_PU",
+     "NU2",
+     "hs_data"
+    ],
+    [
+     "R_PU",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "PORT.PDG",
+     "M_PD.g",
+     "PDG",
+     "hs_data"
+    ],
+    [
+     "M_PD.d",
+     "R_PD",
+     "ND2",
+     "hs_data"
+    ],
+    [
+     "R_PD",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "PORT.VDDQ",
+     "M_PUE.d",
+     "VDDQ",
+     "power"
+    ],
+    [
+     "M_PUE.s",
+     "M_PU.d",
+     "NU1",
+     "hs_data"
+    ],
+    [
+     "M_PD.s",
+     "M_PDE.d",
+     "ND1",
+     "hs_data"
+    ],
+    [
+     "PORT.EN",
+     "M_PUE.g",
+     "EN",
+     "important_control"
+    ],
+    [
+     "PORT.EN",
+     "M_PDE.g",
+     "EN",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "EN": "static leg enable (ZQ code bit AND OE, and EQ_EN for post legs): both stacks open when 0 (Hi-Z)"
+   },
+   "notes": "Main path PUG -> PAD is non-inverting (NMOS source follower from VDDQ, bulk on VSSQ, pad high = VDDQ - Vt at most); PDG -> PAD is inverting. The stacked M_PUE/M_PDE look like data devices of a NAND but are static enables. Weighted by instance M= in TX_DRV."
+  },
+  "TX_LEG_P": {
+   "role": "LVSTL post (1/4 of the main unit) driver unit leg: pull-up = enable NMOS from VDDQ + data NMOS (source follower) + 1200 ohm; pull-down = 1200 ohm + data NMOS + enable NMOS to VSSQ (all NMOS 0.6u)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.PUG",
+     "M_PU.g",
+     "PUG",
+     "hs_data"
+    ],
+    [
+     "M_PU.s",
+     "R_PU",
+     "NU2",
+     "hs_data"
+    ],
+    [
+     "R_PU",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "PORT.PDG",
+     "M_PD.g",
+     "PDG",
+     "hs_data"
+    ],
+    [
+     "M_PD.d",
+     "R_PD",
+     "ND2",
+     "hs_data"
+    ],
+    [
+     "R_PD",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "PORT.VDDQ",
+     "M_PUE.d",
+     "VDDQ",
+     "power"
+    ],
+    [
+     "M_PUE.s",
+     "M_PU.d",
+     "NU1",
+     "hs_data"
+    ],
+    [
+     "M_PD.s",
+     "M_PDE.d",
+     "ND1",
+     "hs_data"
+    ],
+    [
+     "PORT.EN",
+     "M_PUE.g",
+     "EN",
+     "important_control"
+    ],
+    [
+     "PORT.EN",
+     "M_PDE.g",
+     "EN",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "EN": "static leg enable (ZQ code bit AND OE, and EQ_EN for post legs): both stacks open when 0 (Hi-Z)"
+   },
+   "notes": "Main path PUG -> PAD is non-inverting (NMOS source follower from VDDQ, bulk on VSSQ, pad high = VDDQ - Vt at most); PDG -> PAD is inverting. The stacked M_PUE/M_PDE look like data devices of a NAND but are static enables. Weighted by instance M= in TX_DRV."
+  },
+  "TX_DRV": {
+   "role": "Per-DQ output stage: 5 binary main legs (TX_LEG_M, M=16/8/4/2/1 on EN_M[4:0]) and 3 post legs (TX_LEG_P, M=16/8/4 on EN_P[2:0]) on one pad",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "X_LM4",
+     "cell": "TX_LEG_M",
+     "role": "main leg 4, M=16"
+    },
+    {
+     "inst": "X_LM3",
+     "cell": "TX_LEG_M",
+     "role": "main leg 3, M=8"
+    },
+    {
+     "inst": "X_LM2",
+     "cell": "TX_LEG_M",
+     "role": "main leg 2, M=4"
+    },
+    {
+     "inst": "X_LM1",
+     "cell": "TX_LEG_M",
+     "role": "main leg 1, M=2"
+    },
+    {
+     "inst": "X_LM0",
+     "cell": "TX_LEG_M",
+     "role": "main leg 0, M=1"
+    },
+    {
+     "inst": "X_LP2",
+     "cell": "TX_LEG_P",
+     "role": "post leg for ZQ bit 4, M=16"
+    },
+    {
+     "inst": "X_LP1",
+     "cell": "TX_LEG_P",
+     "role": "post leg for ZQ bit 3, M=8"
+    },
+    {
+     "inst": "X_LP0",
+     "cell": "TX_LEG_P",
+     "role": "post leg for ZQ bit 2, M=4"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.PUG_M",
+     "X_LM4.PUG",
+     "PUG_M",
+     "hs_data"
+    ],
+    [
+     "PORT.PUG_M",
+     "X_LM0.PUG",
+     "PUG_M",
+     "hs_data"
+    ],
+    [
+     "PORT.PDG_M",
+     "X_LM4.PDG",
+     "PDG_M",
+     "hs_data"
+    ],
+    [
+     "PORT.PDG_M",
+     "X_LM0.PDG",
+     "PDG_M",
+     "hs_data"
+    ],
+    [
+     "PORT.PUG_P",
+     "X_LP2.PUG",
+     "PUG_P",
+     "hs_data"
+    ],
+    [
+     "PORT.PUG_P",
+     "X_LP0.PUG",
+     "PUG_P",
+     "hs_data"
+    ],
+    [
+     "PORT.PDG_P",
+     "X_LP2.PDG",
+     "PDG_P",
+     "hs_data"
+    ],
+    [
+     "PORT.PDG_P",
+     "X_LP0.PDG",
+     "PDG_P",
+     "hs_data"
+    ],
+    [
+     "X_LM4.PAD",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "X_LM3.PAD",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "X_LM2.PAD",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "X_LM1.PAD",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "X_LM0.PAD",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "X_LP2.PAD",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "X_LP1.PAD",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "X_LP0.PAD",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "PORT.EN_M[4]",
+     "X_LM4.EN",
+     "EN_M[4]",
+     "important_control"
+    ],
+    [
+     "PORT.EN_M[3]",
+     "X_LM3.EN",
+     "EN_M[3]",
+     "important_control"
+    ],
+    [
+     "PORT.EN_M[2]",
+     "X_LM2.EN",
+     "EN_M[2]",
+     "important_control"
+    ],
+    [
+     "PORT.EN_M[1]",
+     "X_LM1.EN",
+     "EN_M[1]",
+     "important_control"
+    ],
+    [
+     "PORT.EN_M[0]",
+     "X_LM0.EN",
+     "EN_M[0]",
+     "important_control"
+    ],
+    [
+     "PORT.EN_P[2]",
+     "X_LP2.EN",
+     "EN_P[2]",
+     "important_control"
+    ],
+    [
+     "PORT.EN_P[1]",
+     "X_LP1.EN",
+     "EN_P[1]",
+     "important_control"
+    ],
+    [
+     "PORT.EN_P[0]",
+     "X_LP0.EN",
+     "EN_P[0]",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "EN_M[4:0]": "main leg enables = ZQ code AND OE (drive strength)",
+    "EN_P[2:0]": "post leg enables = ZQ code[4:2] AND OE AND EQ_EN (de-emphasis strength)"
+   },
+   "notes": "Main and post segments drive the same pad: when the post data (~previous bit) disagrees with the main data the post legs oppose it (de-emphasis of non-transition bits). Post legs follow only ZQ bits [4:2] because bits [1:0] would be sub-unit in the 1/4-size post unit, so the post/main ratio is ~7/31 at full code. Total output impedance changes with EQ_EN (not compensated)."
+  },
+  "TX_SER4": {
+   "role": "4:1 serializer with FFE post-cursor lane: per-bit capture of the core word on staggered quarter-rate phases, then two 4:1 window muxes: main stream DS and the 1-UI-delayed inverted stream PS",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "X_FF0",
+     "cell": "DFF_TSPC",
+     "role": "bit 0 capture on PH[3]"
+    },
+    {
+     "inst": "X_FF1",
+     "cell": "DFF_TSPC",
+     "role": "bit 1 capture on PH[3]"
+    },
+    {
+     "inst": "X_FF2",
+     "cell": "DFF_TSPC",
+     "role": "bit 2 capture on PH[0]"
+    },
+    {
+     "inst": "X_FF3",
+     "cell": "DFF_TSPC",
+     "role": "bit 3 capture on PH[1]"
+    },
+    {
+     "inst": "X_MUXM",
+     "cell": "SER_MUX4",
+     "role": "main 4:1 mux, fed QB (mux inverts)"
+    },
+    {
+     "inst": "X_MUXP",
+     "cell": "SER_MUX4",
+     "role": "post-cursor 4:1 mux, fed Q rotated by one lane"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.TXD[0]",
+     "X_FF0.D",
+     "TXD[0]",
+     "word_rate_data"
+    ],
+    [
+     "PORT.TXD[1]",
+     "X_FF1.D",
+     "TXD[1]",
+     "word_rate_data"
+    ],
+    [
+     "PORT.TXD[2]",
+     "X_FF2.D",
+     "TXD[2]",
+     "word_rate_data"
+    ],
+    [
+     "PORT.TXD[3]",
+     "X_FF3.D",
+     "TXD[3]",
+     "word_rate_data"
+    ],
+    [
+     "PORT.PH[3]",
+     "X_FF0.CK",
+     "PH[3]",
+     "clock"
+    ],
+    [
+     "PORT.PH[3]",
+     "X_FF1.CK",
+     "PH[3]",
+     "clock"
+    ],
+    [
+     "PORT.PH[0]",
+     "X_FF2.CK",
+     "PH[0]",
+     "clock"
+    ],
+    [
+     "PORT.PH[1]",
+     "X_FF3.CK",
+     "PH[1]",
+     "clock"
+    ],
+    [
+     "X_FF0.QB",
+     "X_MUXM.D[0]",
+     "B0B",
+     "hs_data"
+    ],
+    [
+     "X_FF1.QB",
+     "X_MUXM.D[1]",
+     "B1B",
+     "hs_data"
+    ],
+    [
+     "X_FF2.QB",
+     "X_MUXM.D[2]",
+     "B2B",
+     "hs_data"
+    ],
+    [
+     "X_FF3.QB",
+     "X_MUXM.D[3]",
+     "B3B",
+     "hs_data"
+    ],
+    [
+     "X_FF3.Q",
+     "X_MUXP.D[0]",
+     "B3",
+     "hs_data"
+    ],
+    [
+     "X_FF0.Q",
+     "X_MUXP.D[1]",
+     "B0",
+     "hs_data"
+    ],
+    [
+     "X_FF1.Q",
+     "X_MUXP.D[2]",
+     "B1",
+     "hs_data"
+    ],
+    [
+     "X_FF2.Q",
+     "X_MUXP.D[3]",
+     "B2",
+     "hs_data"
+    ],
+    [
+     "PORT.PH[3:0]",
+     "X_MUXM.P[3:0]",
+     "PH[3:0]",
+     "clock"
+    ],
+    [
+     "PORT.PH[3:0]",
+     "X_MUXP.P[3:0]",
+     "PH[3:0]",
+     "clock"
+    ],
+    [
+     "X_MUXM.Y",
+     "PORT.DS",
+     "DS",
+     "hs_data"
+    ],
+    [
+     "X_MUXP.Y",
+     "PORT.PS",
+     "PS",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Two outputs: DS = TXD serialized (main, non-inverting) and PS = ~(previous UI) (post-cursor). The core launches TXD on PH[2] (TXCLK). Bit k is shown in window k = PH[k]&PH[k+3]. Capture phases are staggered and intentionally uneven: bits 0 and 1 both on PH[3], bit 2 on PH[0], bit 3 on PH[1]; every capture is at least 90 degrees inside the core launch window and changes at least 90 degrees before its own mux window. The post lane is the same four flops rotated by one position (D[k] of X_MUXP = bit k-1; D[0] = bit 3 of the previous word, still held by X_FF3) and taken from Q, so the inverting mux gives ~bit(k-1): the 1-UI delay is the rotation, not a delay flop, and its hold margin at the window end is one flop clock-to-Q."
+  },
+  "TX_DQ": {
+   "role": "Per-DQ transmitter: 4:1 serializer with post lane -> FFE predriver -> LVSTL NMOS-NMOS driver legs",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "X_SER",
+     "cell": "TX_SER4",
+     "role": "4:1 serializer, main + post streams"
+    },
+    {
+     "inst": "X_PDRV",
+     "cell": "TX_PDRV",
+     "role": "predriver"
+    },
+    {
+     "inst": "X_DRV",
+     "cell": "TX_DRV",
+     "role": "main + post driver legs"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.TXD[3:0]",
+     "X_SER.TXD[3:0]",
+     "TXD[3:0]",
+     "word_rate_data"
+    ],
+    [
+     "PORT.PH[3:0]",
+     "X_SER.PH[3:0]",
+     "PH[3:0]",
+     "clock"
+    ],
+    [
+     "X_SER.DS",
+     "X_PDRV.D",
+     "DS",
+     "hs_data"
+    ],
+    [
+     "X_SER.PS",
+     "X_PDRV.P",
+     "PS",
+     "hs_data"
+    ],
+    [
+     "X_PDRV.PUG_M",
+     "X_DRV.PUG_M",
+     "PUG_M",
+     "hs_data"
+    ],
+    [
+     "X_PDRV.PDG_M",
+     "X_DRV.PDG_M",
+     "PDG_M",
+     "hs_data"
+    ],
+    [
+     "X_PDRV.PUG_P",
+     "X_DRV.PUG_P",
+     "PUG_P",
+     "hs_data"
+    ],
+    [
+     "X_PDRV.PDG_P",
+     "X_DRV.PDG_P",
+     "PDG_P",
+     "hs_data"
+    ],
+    [
+     "X_DRV.PAD",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "PORT.EN_M[4:0]",
+     "X_DRV.EN_M[4:0]",
+     "EN_M[4:0]",
+     "important_control"
+    ],
+    [
+     "PORT.EN_P[2:0]",
+     "X_DRV.EN_P[2:0]",
+     "EN_P[2:0]",
+     "important_control"
+    ],
+    [
+     "PORT.SR[1:0]",
+     "X_PDRV.SR[1:0]",
+     "SR[1:0]",
+     "important_control"
+    ],
+    [
+     "PORT.SRB[1:0]",
+     "X_PDRV.SRB[1:0]",
+     "SRB[1:0]",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "EN_M[4:0]": "main drive strength / output enable",
+    "EN_P[2:0]": "de-emphasis strength / enable",
+    "SR[1:0]": "predriver slew",
+    "SRB[1:0]": "slew complement"
+   },
+   "notes": "TXD -> PAD is non-inverting. Hi-Z when all EN_M/EN_P are 0 (OE=0)."
+  },
+  "TX_CTRL": {
+   "role": "Byte-level Tx decode: EN_M = ZQ code AND OE; EN_P = EN_M[4:2] AND EQ_EN; slew-code complements",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X_NM4",
+     "cell": "NAND2_D1",
+     "role": "ZC[4] NAND OE"
+    },
+    {
+     "inst": "X_NM3",
+     "cell": "NAND2_D1",
+     "role": "ZC[3] NAND OE"
+    },
+    {
+     "inst": "X_NM2",
+     "cell": "NAND2_D1",
+     "role": "ZC[2] NAND OE"
+    },
+    {
+     "inst": "X_NM1",
+     "cell": "NAND2_D1",
+     "role": "ZC[1] NAND OE"
+    },
+    {
+     "inst": "X_NM0",
+     "cell": "NAND2_D1",
+     "role": "ZC[0] NAND OE"
+    },
+    {
+     "inst": "X_IM4",
+     "cell": "INV_D1",
+     "role": "EN_M[4]"
+    },
+    {
+     "inst": "X_IM3",
+     "cell": "INV_D1",
+     "role": "EN_M[3]"
+    },
+    {
+     "inst": "X_IM2",
+     "cell": "INV_D1",
+     "role": "EN_M[2]"
+    },
+    {
+     "inst": "X_IM1",
+     "cell": "INV_D1",
+     "role": "EN_M[1]"
+    },
+    {
+     "inst": "X_IM0",
+     "cell": "INV_D1",
+     "role": "EN_M[0]"
+    },
+    {
+     "inst": "X_NP2",
+     "cell": "NAND2_D1",
+     "role": "EN_M[4] NAND EQ_EN"
+    },
+    {
+     "inst": "X_NP1",
+     "cell": "NAND2_D1",
+     "role": "EN_M[3] NAND EQ_EN"
+    },
+    {
+     "inst": "X_NP0",
+     "cell": "NAND2_D1",
+     "role": "EN_M[2] NAND EQ_EN"
+    },
+    {
+     "inst": "X_IP2",
+     "cell": "INV_D1",
+     "role": "EN_P[2]"
+    },
+    {
+     "inst": "X_IP1",
+     "cell": "INV_D1",
+     "role": "EN_P[1]"
+    },
+    {
+     "inst": "X_IP0",
+     "cell": "INV_D1",
+     "role": "EN_P[0]"
+    },
+    {
+     "inst": "X_SR1",
+     "cell": "INV_D1",
+     "role": "SRB[1]"
+    },
+    {
+     "inst": "X_SR0",
+     "cell": "INV_D1",
+     "role": "SRB[0]"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ZC[4]",
+     "X_NM4.A",
+     "ZC[4]",
+     "important_control"
+    ],
+    [
+     "PORT.OE",
+     "X_NM4.B",
+     "OE",
+     "important_control"
+    ],
+    [
+     "X_NM4.Y",
+     "X_IM4.A",
+     "EMB4",
+     "important_control"
+    ],
+    [
+     "X_IM4.Y",
+     "PORT.EN_M[4]",
+     "EN_M[4]",
+     "important_control"
+    ],
+    [
+     "PORT.ZC[3]",
+     "X_NM3.A",
+     "ZC[3]",
+     "important_control"
+    ],
+    [
+     "PORT.OE",
+     "X_NM3.B",
+     "OE",
+     "important_control"
+    ],
+    [
+     "X_NM3.Y",
+     "X_IM3.A",
+     "EMB3",
+     "important_control"
+    ],
+    [
+     "X_IM3.Y",
+     "PORT.EN_M[3]",
+     "EN_M[3]",
+     "important_control"
+    ],
+    [
+     "PORT.ZC[2]",
+     "X_NM2.A",
+     "ZC[2]",
+     "important_control"
+    ],
+    [
+     "PORT.OE",
+     "X_NM2.B",
+     "OE",
+     "important_control"
+    ],
+    [
+     "X_NM2.Y",
+     "X_IM2.A",
+     "EMB2",
+     "important_control"
+    ],
+    [
+     "X_IM2.Y",
+     "PORT.EN_M[2]",
+     "EN_M[2]",
+     "important_control"
+    ],
+    [
+     "PORT.ZC[1]",
+     "X_NM1.A",
+     "ZC[1]",
+     "important_control"
+    ],
+    [
+     "PORT.OE",
+     "X_NM1.B",
+     "OE",
+     "important_control"
+    ],
+    [
+     "X_NM1.Y",
+     "X_IM1.A",
+     "EMB1",
+     "important_control"
+    ],
+    [
+     "X_IM1.Y",
+     "PORT.EN_M[1]",
+     "EN_M[1]",
+     "important_control"
+    ],
+    [
+     "PORT.ZC[0]",
+     "X_NM0.A",
+     "ZC[0]",
+     "important_control"
+    ],
+    [
+     "PORT.OE",
+     "X_NM0.B",
+     "OE",
+     "important_control"
+    ],
+    [
+     "X_NM0.Y",
+     "X_IM0.A",
+     "EMB0",
+     "important_control"
+    ],
+    [
+     "X_IM0.Y",
+     "PORT.EN_M[0]",
+     "EN_M[0]",
+     "important_control"
+    ],
+    [
+     "X_IM4.Y",
+     "X_NP2.A",
+     "EN_M[4]",
+     "important_control"
+    ],
+    [
+     "PORT.EQ_EN",
+     "X_NP2.B",
+     "EQ_EN",
+     "important_control"
+    ],
+    [
+     "X_NP2.Y",
+     "X_IP2.A",
+     "EPB2",
+     "important_control"
+    ],
+    [
+     "X_IP2.Y",
+     "PORT.EN_P[2]",
+     "EN_P[2]",
+     "important_control"
+    ],
+    [
+     "X_IM3.Y",
+     "X_NP1.A",
+     "EN_M[3]",
+     "important_control"
+    ],
+    [
+     "PORT.EQ_EN",
+     "X_NP1.B",
+     "EQ_EN",
+     "important_control"
+    ],
+    [
+     "X_NP1.Y",
+     "X_IP1.A",
+     "EPB1",
+     "important_control"
+    ],
+    [
+     "X_IP1.Y",
+     "PORT.EN_P[1]",
+     "EN_P[1]",
+     "important_control"
+    ],
+    [
+     "X_IM2.Y",
+     "X_NP0.A",
+     "EN_M[2]",
+     "important_control"
+    ],
+    [
+     "PORT.EQ_EN",
+     "X_NP0.B",
+     "EQ_EN",
+     "important_control"
+    ],
+    [
+     "X_NP0.Y",
+     "X_IP0.A",
+     "EPB0",
+     "important_control"
+    ],
+    [
+     "X_IP0.Y",
+     "PORT.EN_P[0]",
+     "EN_P[0]",
+     "important_control"
+    ],
+    [
+     "PORT.SR[1]",
+     "X_SR1.A",
+     "SR[1]",
+     "important_control"
+    ],
+    [
+     "PORT.SR[0]",
+     "X_SR0.A",
+     "SR[0]",
+     "important_control"
+    ],
+    [
+     "X_SR1.Y",
+     "PORT.SRB[1]",
+     "SRB[1]",
+     "important_control"
+    ],
+    [
+     "X_SR0.Y",
+     "PORT.SRB[0]",
+     "SRB[0]",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "ZC[4:0]": "ZQ calibrated strength code (legs per segment)",
+    "OE": "output enable: all legs off when 0",
+    "EQ_EN": "post-cursor (de-emphasis) segment enable",
+    "SR[1:0]": "predriver slew code"
+   },
+   "notes": "Several outputs (multi-function decode), so inverting is null. Shared by all 8 DQ slices. One ZQ code drives both the pull-up and the pull-down legs (the PU NMOS legs are sized to track the calibrated PD legs)."
+  },
+  "ODT_LEG": {
+   "role": "ODT unit leg: 600 ohm poly from the pad + switched NMOS to VSSQ",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.PAD",
+     "R_ODT",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "R_ODT",
+     "M_ODT.d",
+     "NO",
+     "hs_data"
+    ],
+    [
+     "PORT.G",
+     "M_ODT.g",
+     "G",
+     "important_control"
+    ],
+    [
+     "M_ODT.s",
+     "PORT.VSSQ",
+     "VSSQ",
+     "power"
+    ]
+   ],
+   "controls": {
+    "G": "leg on/off (static, from ODT_CTRL)"
+   },
+   "notes": "Same NMOS+R topology as a driver pull-down leg but the gate is a static decode, not data: termination only."
+  },
+  "ODT_PD": {
+   "role": "Pull-down-only ODT array: 3 binary legs (M=4/2/1) from the pad to VSSQ",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X_OL2",
+     "cell": "ODT_LEG",
+     "role": "leg 2, M=4"
+    },
+    {
+     "inst": "X_OL1",
+     "cell": "ODT_LEG",
+     "role": "leg 1, M=2"
+    },
+    {
+     "inst": "X_OL0",
+     "cell": "ODT_LEG",
+     "role": "leg 0, M=1"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.G[2]",
+     "X_OL2.G",
+     "G[2]",
+     "important_control"
+    ],
+    [
+     "PORT.G[1]",
+     "X_OL1.G",
+     "G[1]",
+     "important_control"
+    ],
+    [
+     "PORT.G[0]",
+     "X_OL0.G",
+     "G[0]",
+     "important_control"
+    ],
+    [
+     "PORT.PAD",
+     "X_OL2.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "PORT.PAD",
+     "X_OL1.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "PORT.PAD",
+     "X_OL0.PAD",
+     "PAD",
+     "hs_data"
+    ]
+   ],
+   "controls": {
+    "G[2:0]": "termination strength code (600/4, 600/2, 600 ohm legs)"
+   },
+   "notes": "Shunt termination to VSSQ (LVSTL), not in series with the data. Code 7 is about 86 ohm plus device on-resistance."
+  },
+  "ODT_CTRL": {
+   "role": "ODT decode: ODT_G[k] = ODT_C[k] AND ODT_EN AND NOT OE",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X_OEI",
+     "cell": "INV_D1",
+     "role": "OE complement"
+    },
+    {
+     "inst": "X_NO2",
+     "cell": "NAND3_D1",
+     "role": "leg 2 decode"
+    },
+    {
+     "inst": "X_NO1",
+     "cell": "NAND3_D1",
+     "role": "leg 1 decode"
+    },
+    {
+     "inst": "X_NO0",
+     "cell": "NAND3_D1",
+     "role": "leg 0 decode"
+    },
+    {
+     "inst": "X_IO2",
+     "cell": "INV_D1",
+     "role": "ODT_G[2]"
+    },
+    {
+     "inst": "X_IO1",
+     "cell": "INV_D1",
+     "role": "ODT_G[1]"
+    },
+    {
+     "inst": "X_IO0",
+     "cell": "INV_D1",
+     "role": "ODT_G[0]"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.OE",
+     "X_OEI.A",
+     "OE",
+     "important_control"
+    ],
+    [
+     "PORT.ODT_C[2]",
+     "X_NO2.A",
+     "ODT_C[2]",
+     "important_control"
+    ],
+    [
+     "PORT.ODT_EN",
+     "X_NO2.B",
+     "ODT_EN",
+     "important_control"
+    ],
+    [
+     "X_OEI.Y",
+     "X_NO2.C",
+     "OEB",
+     "important_control"
+    ],
+    [
+     "X_NO2.Y",
+     "X_IO2.A",
+     "OGB2",
+     "important_control"
+    ],
+    [
+     "X_IO2.Y",
+     "PORT.ODT_G[2]",
+     "ODT_G[2]",
+     "important_control"
+    ],
+    [
+     "PORT.ODT_C[1]",
+     "X_NO1.A",
+     "ODT_C[1]",
+     "important_control"
+    ],
+    [
+     "PORT.ODT_EN",
+     "X_NO1.B",
+     "ODT_EN",
+     "important_control"
+    ],
+    [
+     "X_OEI.Y",
+     "X_NO1.C",
+     "OEB",
+     "important_control"
+    ],
+    [
+     "X_NO1.Y",
+     "X_IO1.A",
+     "OGB1",
+     "important_control"
+    ],
+    [
+     "X_IO1.Y",
+     "PORT.ODT_G[1]",
+     "ODT_G[1]",
+     "important_control"
+    ],
+    [
+     "PORT.ODT_C[0]",
+     "X_NO0.A",
+     "ODT_C[0]",
+     "important_control"
+    ],
+    [
+     "PORT.ODT_EN",
+     "X_NO0.B",
+     "ODT_EN",
+     "important_control"
+    ],
+    [
+     "X_OEI.Y",
+     "X_NO0.C",
+     "OEB",
+     "important_control"
+    ],
+    [
+     "X_NO0.Y",
+     "X_IO0.A",
+     "OGB0",
+     "important_control"
+    ],
+    [
+     "X_IO0.Y",
+     "PORT.ODT_G[0]",
+     "ODT_G[0]",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "ODT_EN": "termination enable",
+    "ODT_C[2:0]": "termination strength",
+    "OE": "driver enable: forces ODT off"
+   },
+   "notes": "ODT is turned off automatically while the DQ drivers are enabled (read). Shared by all 8 DQs."
+  },
+  "CTLE_SC": {
+   "role": "Pseudo-differential PMOS-input CTLE (DQ vs VREF): two PMOS tail sources, 1.5k loads to VSS, 800 ohm source degeneration R_S and a 2-bit statically switched series-cap bank (C_A/M_S/C_B) across the sources for peaking",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.INP",
+     "M_IA.g",
+     "INP",
+     "hs_data"
+    ],
+    [
+     "PORT.INN",
+     "M_IB.g",
+     "INN",
+     "reference"
+    ],
+    [
+     "M_IA.d",
+     "PORT.OUTN",
+     "OUTN",
+     "hs_data"
+    ],
+    [
+     "M_IB.d",
+     "PORT.OUTP",
+     "OUTP",
+     "hs_data"
+    ],
+    [
+     "M_IA.s",
+     "R_S",
+     "SA",
+     "hs_data"
+    ],
+    [
+     "R_S",
+     "M_IB.s",
+     "SB",
+     "hs_data"
+    ],
+    [
+     "M_IA.s",
+     "C_A0",
+     "SA",
+     "hs_data"
+    ],
+    [
+     "C_A0",
+     "M_S0.d",
+     "CX0",
+     "hs_data"
+    ],
+    [
+     "M_S0.s",
+     "C_B0",
+     "CY0",
+     "hs_data"
+    ],
+    [
+     "M_IA.s",
+     "C_A1",
+     "SA",
+     "hs_data"
+    ],
+    [
+     "C_A1",
+     "M_S1.d",
+     "CX1",
+     "hs_data"
+    ],
+    [
+     "M_S1.s",
+     "C_B1",
+     "CY1",
+     "hs_data"
+    ],
+    [
+     "PORT.C[0]",
+     "M_S0.g",
+     "C[0]",
+     "important_control"
+    ],
+    [
+     "PORT.C[1]",
+     "M_S1.g",
+     "C[1]",
+     "important_control"
+    ],
+    [
+     "PORT.VBP",
+     "M_TA.g",
+     "VBP",
+     "bias"
+    ],
+    [
+     "PORT.VBP",
+     "M_TB.g",
+     "VBP",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "C[1:0]": "peaking code: switches 40f/80f degeneration caps in (more cap = lower zero, more HF boost)",
+    "VBP": "tail bias; pulled to VDD (tails off) when RX_EN=0"
+   },
+   "notes": "INP (pad side) -> OUTP is non-inverting, but OUTP is the drain of the VREF-side device M_IB: a higher INP lowers the A-branch current (OUTN falls) and, through the degeneration, raises the B branch (OUTP rises). PMOS inputs because the LVSTL signal and VREF sit near ground. The cap switches are static (code), not clocked switched-capacitor circuits."
+  },
+  "DT_CMP": {
+   "role": "Double-tail clocked comparator (not StrongARM): stage 1 = NMOS pair on a CK-switched tail with PMOS precharge of FN/FP; stage 2 = PMOS-tailed (CKB) cross-coupled latch whose NMOS reset devices are driven by FN/FP; current-injection devices M_AL (DFE alpha, on FP) and M_TN/M_TP (offset trim, on FN/FP)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.INP",
+     "M_I1.g",
+     "INP",
+     "hs_data"
+    ],
+    [
+     "PORT.INN",
+     "M_I2.g",
+     "INN",
+     "hs_data"
+    ],
+    [
+     "M_I1.d",
+     "M_R1.g",
+     "FN",
+     "hs_data"
+    ],
+    [
+     "M_I2.d",
+     "M_R2.g",
+     "FP",
+     "hs_data"
+    ],
+    [
+     "M_R1.d",
+     "PORT.OUTP",
+     "OUTP",
+     "hs_data"
+    ],
+    [
+     "M_R2.d",
+     "PORT.OUTN",
+     "OUTN",
+     "hs_data"
+    ],
+    [
+     "M_LP1.d",
+     "PORT.OUTP",
+     "OUTP",
+     "hs_data"
+    ],
+    [
+     "PORT.OUTN",
+     "M_LP1.g",
+     "OUTN",
+     "hs_data"
+    ],
+    [
+     "PORT.CK",
+     "M_T1.g",
+     "CK",
+     "clock"
+    ],
+    [
+     "PORT.CK",
+     "M_PC1.g",
+     "CK",
+     "clock"
+    ],
+    [
+     "PORT.CK",
+     "M_PC2.g",
+     "CK",
+     "clock"
+    ],
+    [
+     "PORT.CKB",
+     "M_T2.g",
+     "CKB",
+     "clock"
+    ],
+    [
+     "PORT.VA",
+     "M_AL.g",
+     "VA",
+     "bias"
+    ],
+    [
+     "M_AL.d",
+     "M_R2.g",
+     "FP",
+     "hs_data"
+    ],
+    [
+     "PORT.VTRN",
+     "M_TN.g",
+     "VTRN",
+     "bias"
+    ],
+    [
+     "PORT.VTRP",
+     "M_TP.g",
+     "VTRP",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "VA": "DFE tap current on FP: raises the decision threshold by +alpha",
+    "VTRN": "offset-trim current on FN (favours OUTP)",
+    "VTRP": "offset-trim current on FP (favours OUTN)"
+   },
+   "notes": "OUTP = 1 when INP - INN > alpha (+trim); return-to-zero outputs (both low while CK is low, FN/FP precharged). Evaluates while CK is high; CKB is the complementary quarter-rate phase. The three small injection devices look like extra input devices but carry bias currents set by the shared DACs."
+  },
+  "DFE_MUXLAT": {
+   "role": "DFE 2:1 selector merged into a ratioed SR latch: set network SH*S + SL*SB pulls DB low, reset network RH*S + RL*SB pulls D low, weak cross-coupled inverters hold the decision",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.SH",
+     "M_S1.g",
+     "SH",
+     "hs_data"
+    ],
+    [
+     "PORT.SL",
+     "M_S3.g",
+     "SL",
+     "hs_data"
+    ],
+    [
+     "PORT.RH",
+     "M_R1.g",
+     "RH",
+     "hs_data"
+    ],
+    [
+     "PORT.RL",
+     "M_R3.g",
+     "RL",
+     "hs_data"
+    ],
+    [
+     "PORT.S",
+     "M_S2.g",
+     "S",
+     "hs_data"
+    ],
+    [
+     "PORT.SB",
+     "M_S4.g",
+     "SB",
+     "hs_data"
+    ],
+    [
+     "PORT.S",
+     "M_R2.g",
+     "S",
+     "hs_data"
+    ],
+    [
+     "PORT.SB",
+     "M_R4.g",
+     "SB",
+     "hs_data"
+    ],
+    [
+     "M_S1.d",
+     "PORT.DB",
+     "DB",
+     "hs_data"
+    ],
+    [
+     "M_R1.d",
+     "PORT.D",
+     "D",
+     "hs_data"
+    ],
+    [
+     "M_P1.d",
+     "PORT.D",
+     "D",
+     "hs_data"
+    ],
+    [
+     "M_P2.d",
+     "PORT.DB",
+     "DB",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "S/SB are data (the previous phase's decision), not static controls: S=1 selects the +alpha comparator (H), S=0 the -alpha comparator (L). Holds while the comparators are in their return-to-zero phase. Two outputs, D (main) and DB."
+  },
+  "RX_PHASE": {
+   "role": "One phase of the 1-tap loop-unrolled DFE: +alpha comparator X_CMPH, -alpha comparator X_CMPL and the mux-latch X_MXL selected by the previous phase's decision",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "X_CMPH",
+     "cell": "DT_CMP",
+     "role": "+alpha comparator (decides x > +alpha)"
+    },
+    {
+     "inst": "X_CMPL",
+     "cell": "DT_CMP",
+     "role": "-alpha comparator: same cell with INP/INN, OUTP/OUTN and VTRN/VTRP cross-wired"
+    },
+    {
+     "inst": "X_MXL",
+     "cell": "DFE_MUXLAT",
+     "role": "speculative selector + decision latch"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.INP",
+     "X_CMPH.INP",
+     "INP",
+     "hs_data"
+    ],
+    [
+     "PORT.INN",
+     "X_CMPH.INN",
+     "INN",
+     "hs_data"
+    ],
+    [
+     "PORT.INN",
+     "X_CMPL.INP",
+     "INN",
+     "hs_data"
+    ],
+    [
+     "PORT.INP",
+     "X_CMPL.INN",
+     "INP",
+     "hs_data"
+    ],
+    [
+     "X_CMPH.OUTP",
+     "X_MXL.SH",
+     "HP",
+     "hs_data"
+    ],
+    [
+     "X_CMPH.OUTN",
+     "X_MXL.RH",
+     "HN",
+     "hs_data"
+    ],
+    [
+     "X_CMPL.OUTN",
+     "X_MXL.SL",
+     "LP",
+     "hs_data"
+    ],
+    [
+     "X_CMPL.OUTP",
+     "X_MXL.RL",
+     "LN",
+     "hs_data"
+    ],
+    [
+     "PORT.SEL",
+     "X_MXL.S",
+     "SEL",
+     "hs_data"
+    ],
+    [
+     "PORT.SELB",
+     "X_MXL.SB",
+     "SELB",
+     "hs_data"
+    ],
+    [
+     "X_MXL.D",
+     "PORT.D",
+     "D",
+     "hs_data"
+    ],
+    [
+     "X_MXL.DB",
+     "PORT.DB",
+     "DB",
+     "hs_data"
+    ],
+    [
+     "PORT.CK",
+     "X_CMPH.CK",
+     "CK",
+     "clock"
+    ],
+    [
+     "PORT.CK",
+     "X_CMPL.CK",
+     "CK",
+     "clock"
+    ],
+    [
+     "PORT.CKB",
+     "X_CMPH.CKB",
+     "CKB",
+     "clock"
+    ],
+    [
+     "PORT.CKB",
+     "X_CMPL.CKB",
+     "CKB",
+     "clock"
+    ],
+    [
+     "PORT.VA",
+     "X_CMPH.VA",
+     "VA",
+     "bias"
+    ],
+    [
+     "PORT.VA",
+     "X_CMPL.VA",
+     "VA",
+     "bias"
+    ],
+    [
+     "PORT.VTRN",
+     "X_CMPH.VTRN",
+     "VTRN",
+     "bias"
+    ],
+    [
+     "PORT.VTRN",
+     "X_CMPL.VTRP",
+     "VTRN",
+     "bias"
+    ],
+    [
+     "PORT.VTRP",
+     "X_CMPH.VTRP",
+     "VTRP",
+     "bias"
+    ],
+    [
+     "PORT.VTRP",
+     "X_CMPL.VTRN",
+     "VTRP",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "VA": "DFE tap alpha (shared)",
+    "VTRN": "offset trim (shared per DQ)",
+    "VTRP": "offset trim complement"
+   },
+   "notes": "With INP/INN and OUTP/OUTN both swapped, the L cell's alpha device (on its FP, i.e. the INP side of the phase) lowers the threshold: L = (x > -alpha). The trim biases are swapped too so one code corrects both comparators in the same physical direction. Main output D (non-inverting from INP)."
+  },
+  "RX_TRIM_DAC": {
+   "role": "3-bit current-steering offset-trim DAC: binary PMOS sources (M=4/2/1) steered by C/CB into two NMOS diodes; VTRN carries code*I, VTRP carries (7-code)*I",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.C[2]",
+     "M_SP2.g",
+     "C[2]",
+     "slow_signal"
+    ],
+    [
+     "PORT.CB[2]",
+     "M_SN2.g",
+     "CB[2]",
+     "slow_signal"
+    ],
+    [
+     "PORT.VBP",
+     "M_CS2.g",
+     "VBP",
+     "bias"
+    ],
+    [
+     "M_CS2.d",
+     "M_SN2.s",
+     "NS2",
+     "bias"
+    ],
+    [
+     "M_SN2.d",
+     "PORT.VTRN",
+     "VTRN",
+     "bias"
+    ],
+    [
+     "M_SP2.d",
+     "PORT.VTRP",
+     "VTRP",
+     "bias"
+    ],
+    [
+     "PORT.C[1]",
+     "M_SP1.g",
+     "C[1]",
+     "slow_signal"
+    ],
+    [
+     "PORT.CB[1]",
+     "M_SN1.g",
+     "CB[1]",
+     "slow_signal"
+    ],
+    [
+     "PORT.VBP",
+     "M_CS1.g",
+     "VBP",
+     "bias"
+    ],
+    [
+     "M_CS1.d",
+     "M_SN1.s",
+     "NS1",
+     "bias"
+    ],
+    [
+     "M_SN1.d",
+     "PORT.VTRN",
+     "VTRN",
+     "bias"
+    ],
+    [
+     "M_SP1.d",
+     "PORT.VTRP",
+     "VTRP",
+     "bias"
+    ],
+    [
+     "PORT.C[0]",
+     "M_SP0.g",
+     "C[0]",
+     "slow_signal"
+    ],
+    [
+     "PORT.CB[0]",
+     "M_SN0.g",
+     "CB[0]",
+     "slow_signal"
+    ],
+    [
+     "PORT.VBP",
+     "M_CS0.g",
+     "VBP",
+     "bias"
+    ],
+    [
+     "M_CS0.d",
+     "M_SN0.s",
+     "NS0",
+     "bias"
+    ],
+    [
+     "M_SN0.d",
+     "PORT.VTRN",
+     "VTRN",
+     "bias"
+    ],
+    [
+     "M_SP0.d",
+     "PORT.VTRP",
+     "VTRP",
+     "bias"
+    ],
+    [
+     "M_DN.d",
+     "PORT.VTRN",
+     "VTRN",
+     "bias"
+    ],
+    [
+     "M_DP.d",
+     "PORT.VTRP",
+     "VTRP",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "C[2:0]": "trim code from the cal counter (offset binary)",
+    "CB[2:0]": "complement code",
+    "VBP": "unit current bias"
+   },
+   "notes": "Looks like a bias generator or current mirror, but it is the offset-calibration DAC; its two diode outputs bias the M_TN/M_TP injection devices in all 8 comparators of the DQ. Differential: no decoder, the sum of the two currents is constant."
+  },
+  "RX_CAL_CNT": {
+   "role": "3-bit saturating synchronous up/down counter (TSPC flops): PJ = C ? UP : UPB (XNOR), toggle chain G, D = C ? GB : G (XOR), hold at 7 when counting up and at 0 when counting down",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X_PM2",
+     "cell": "TGMUX2",
+     "role": "PJ2 = XNOR(C[2], UP)"
+    },
+    {
+     "inst": "X_PM1",
+     "cell": "TGMUX2",
+     "role": "PJ1 = XNOR(C[1], UP)"
+    },
+    {
+     "inst": "X_PM0",
+     "cell": "TGMUX2",
+     "role": "PJ0 = XNOR(C[0], UP)"
+    },
+    {
+     "inst": "X_SAT",
+     "cell": "NAND3_D1",
+     "role": "saturation detect (all PJ = 1)"
+    },
+    {
+     "inst": "X_GE",
+     "cell": "NAND2_D1",
+     "role": "enable AND not saturated"
+    },
+    {
+     "inst": "X_GEI",
+     "cell": "INV_D1",
+     "role": "G0"
+    },
+    {
+     "inst": "X_G1",
+     "cell": "NAND2_D1",
+     "role": "toggle term bit 1"
+    },
+    {
+     "inst": "X_G1I",
+     "cell": "INV_D1",
+     "role": "G1"
+    },
+    {
+     "inst": "X_G2",
+     "cell": "NAND2_D1",
+     "role": "toggle term bit 2"
+    },
+    {
+     "inst": "X_G2I",
+     "cell": "INV_D1",
+     "role": "G2"
+    },
+    {
+     "inst": "X_TM2",
+     "cell": "TGMUX2",
+     "role": "DN2 = C[2] XOR G2"
+    },
+    {
+     "inst": "X_TM1",
+     "cell": "TGMUX2",
+     "role": "DN1 = C[1] XOR G1"
+    },
+    {
+     "inst": "X_TM0",
+     "cell": "TGMUX2",
+     "role": "DN0 = C[0] XOR G0"
+    },
+    {
+     "inst": "X_FF2",
+     "cell": "DFF_TSPC",
+     "role": "code bit 2"
+    },
+    {
+     "inst": "X_FF1",
+     "cell": "DFF_TSPC",
+     "role": "code bit 1"
+    },
+    {
+     "inst": "X_FF0",
+     "cell": "DFF_TSPC",
+     "role": "code bit 0"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.UP",
+     "X_PM2.D1",
+     "UP",
+     "slow_signal"
+    ],
+    [
+     "PORT.UPB",
+     "X_PM2.D0",
+     "UPB",
+     "slow_signal"
+    ],
+    [
+     "X_FF2.Q",
+     "X_PM2.S",
+     "C[2]",
+     "slow_signal"
+    ],
+    [
+     "X_FF2.QB",
+     "X_PM2.SB",
+     "CB[2]",
+     "slow_signal"
+    ],
+    [
+     "X_TM2.Y",
+     "X_FF2.D",
+     "DN2",
+     "slow_signal"
+    ],
+    [
+     "PORT.CK",
+     "X_FF2.CK",
+     "CK",
+     "clock"
+    ],
+    [
+     "X_FF2.Q",
+     "PORT.C[2]",
+     "C[2]",
+     "slow_signal"
+    ],
+    [
+     "X_FF2.QB",
+     "PORT.CB[2]",
+     "CB[2]",
+     "slow_signal"
+    ],
+    [
+     "X_FF2.Q",
+     "X_TM2.S",
+     "C[2]",
+     "slow_signal"
+    ],
+    [
+     "PORT.UP",
+     "X_PM1.D1",
+     "UP",
+     "slow_signal"
+    ],
+    [
+     "PORT.UPB",
+     "X_PM1.D0",
+     "UPB",
+     "slow_signal"
+    ],
+    [
+     "X_FF1.Q",
+     "X_PM1.S",
+     "C[1]",
+     "slow_signal"
+    ],
+    [
+     "X_FF1.QB",
+     "X_PM1.SB",
+     "CB[1]",
+     "slow_signal"
+    ],
+    [
+     "X_TM1.Y",
+     "X_FF1.D",
+     "DN1",
+     "slow_signal"
+    ],
+    [
+     "PORT.CK",
+     "X_FF1.CK",
+     "CK",
+     "clock"
+    ],
+    [
+     "X_FF1.Q",
+     "PORT.C[1]",
+     "C[1]",
+     "slow_signal"
+    ],
+    [
+     "X_FF1.QB",
+     "PORT.CB[1]",
+     "CB[1]",
+     "slow_signal"
+    ],
+    [
+     "X_FF1.Q",
+     "X_TM1.S",
+     "C[1]",
+     "slow_signal"
+    ],
+    [
+     "PORT.UP",
+     "X_PM0.D1",
+     "UP",
+     "slow_signal"
+    ],
+    [
+     "PORT.UPB",
+     "X_PM0.D0",
+     "UPB",
+     "slow_signal"
+    ],
+    [
+     "X_FF0.Q",
+     "X_PM0.S",
+     "C[0]",
+     "slow_signal"
+    ],
+    [
+     "X_FF0.QB",
+     "X_PM0.SB",
+     "CB[0]",
+     "slow_signal"
+    ],
+    [
+     "X_TM0.Y",
+     "X_FF0.D",
+     "DN0",
+     "slow_signal"
+    ],
+    [
+     "PORT.CK",
+     "X_FF0.CK",
+     "CK",
+     "clock"
+    ],
+    [
+     "X_FF0.Q",
+     "PORT.C[0]",
+     "C[0]",
+     "slow_signal"
+    ],
+    [
+     "X_FF0.QB",
+     "PORT.CB[0]",
+     "CB[0]",
+     "slow_signal"
+    ],
+    [
+     "X_FF0.Q",
+     "X_TM0.S",
+     "C[0]",
+     "slow_signal"
+    ],
+    [
+     "X_PM0.Y",
+     "X_SAT.A",
+     "PJ0",
+     "slow_signal"
+    ],
+    [
+     "X_PM1.Y",
+     "X_SAT.B",
+     "PJ1",
+     "slow_signal"
+    ],
+    [
+     "X_PM2.Y",
+     "X_SAT.C",
+     "PJ2",
+     "slow_signal"
+    ],
+    [
+     "X_SAT.Y",
+     "X_GE.B",
+     "ALLPB",
+     "slow_signal"
+    ],
+    [
+     "PORT.EN",
+     "X_GE.A",
+     "EN",
+     "general_control"
+    ],
+    [
+     "X_GE.Y",
+     "X_GEI.A",
+     "G0B",
+     "slow_signal"
+    ],
+    [
+     "X_GEI.Y",
+     "X_TM0.D0",
+     "G0",
+     "slow_signal"
+    ],
+    [
+     "X_GE.Y",
+     "X_TM0.D1",
+     "G0B",
+     "slow_signal"
+    ],
+    [
+     "X_GEI.Y",
+     "X_G1.A",
+     "G0",
+     "slow_signal"
+    ],
+    [
+     "X_PM0.Y",
+     "X_G1.B",
+     "PJ0",
+     "slow_signal"
+    ],
+    [
+     "X_G1.Y",
+     "X_G1I.A",
+     "G1B",
+     "slow_signal"
+    ],
+    [
+     "X_G1I.Y",
+     "X_TM1.D0",
+     "G1",
+     "slow_signal"
+    ],
+    [
+     "X_G1I.Y",
+     "X_G2.A",
+     "G1",
+     "slow_signal"
+    ],
+    [
+     "X_PM1.Y",
+     "X_G2.B",
+     "PJ1",
+     "slow_signal"
+    ],
+    [
+     "X_G2.Y",
+     "X_G2I.A",
+     "G2B",
+     "slow_signal"
+    ],
+    [
+     "X_G2I.Y",
+     "X_TM2.D0",
+     "G2",
+     "slow_signal"
+    ]
+   ],
+   "controls": {
+    "EN": "count enable (CAL_RUN: cal mode and timer not expired)",
+    "UP": "count direction (decision complement)",
+    "UPB": "direction complement"
+   },
+   "notes": "No reset: each calibration resumes from the last trim; the 8-to-10-cycle CAL window covers the full 0..7 range. The flop outputs drive only TG selects and gates (never a TG data input), so the dynamic TSPC QB node is not exposed to charge sharing when UP changes while CK is low. With EN=0 the code recirculates through the XOR mux every CAL_CK cycle (dynamic storage): CAL_CK runs whenever WCK runs; after a WCK stop the trim must be recalibrated. Multi-output, inverting null."
+  },
+  "RX_DQ": {
+   "role": "Per-DQ receiver: cal input mux (series NMOS M_ISO + short-to-VREF TG M_CSN/M_CSP), CTLE vs VREF, 4-phase 1-tap loop-unrolled DFE (X_PH0..3), offset-trim DAC and up/down counter closed through the phase-0 decision",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "X_CTLE",
+     "cell": "CTLE_SC",
+     "role": "CTLE"
+    },
+    {
+     "inst": "X_PH0",
+     "cell": "RX_PHASE",
+     "role": "phase 0, select = RXD[3] (previous UI)"
+    },
+    {
+     "inst": "X_PH1",
+     "cell": "RX_PHASE",
+     "role": "phase 1, select = RXD[0]"
+    },
+    {
+     "inst": "X_PH2",
+     "cell": "RX_PHASE",
+     "role": "phase 2, select = RXD[1]"
+    },
+    {
+     "inst": "X_PH3",
+     "cell": "RX_PHASE",
+     "role": "phase 3, select = RXD[2]"
+    },
+    {
+     "inst": "X_TDAC",
+     "cell": "RX_TRIM_DAC",
+     "role": "offset-trim DAC"
+    },
+    {
+     "inst": "X_CNT",
+     "cell": "RX_CAL_CNT",
+     "role": "offset-cal up/down counter"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.PADR",
+     "M_ISO.d",
+     "PADR",
+     "hs_data"
+    ],
+    [
+     "M_ISO.s",
+     "X_CTLE.INP",
+     "RXIN",
+     "hs_data"
+    ],
+    [
+     "PORT.VREF",
+     "X_CTLE.INN",
+     "VREF",
+     "reference"
+    ],
+    [
+     "PORT.VREF",
+     "M_CSN.s",
+     "VREF",
+     "reference"
+    ],
+    [
+     "M_CSN.d",
+     "X_CTLE.INP",
+     "RXIN",
+     "hs_data"
+    ],
+    [
+     "PORT.CAL_EN",
+     "M_CSN.g",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_ENB",
+     "M_CSP.g",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_ENB",
+     "M_ISO.g",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "PORT.CTLE_C[1:0]",
+     "X_CTLE.C[1:0]",
+     "CTLE_C[1:0]",
+     "important_control"
+    ],
+    [
+     "PORT.VBP",
+     "X_CTLE.VBP",
+     "VBP",
+     "bias"
+    ],
+    [
+     "X_CTLE.OUTP",
+     "X_PH0.INP",
+     "CTP",
+     "hs_data"
+    ],
+    [
+     "X_CTLE.OUTN",
+     "X_PH0.INN",
+     "CTN",
+     "hs_data"
+    ],
+    [
+     "PORT.PH[0]",
+     "X_PH0.CK",
+     "PH[0]",
+     "clock"
+    ],
+    [
+     "PORT.PH[2]",
+     "X_PH0.CKB",
+     "PH[2]",
+     "clock"
+    ],
+    [
+     "X_PH3.D",
+     "X_PH0.SEL",
+     "RXD[3]",
+     "hs_data"
+    ],
+    [
+     "X_PH3.DB",
+     "X_PH0.SELB",
+     "DB3",
+     "hs_data"
+    ],
+    [
+     "X_PH0.D",
+     "PORT.RXD[0]",
+     "RXD[0]",
+     "word_rate_data"
+    ],
+    [
+     "PORT.VALF",
+     "X_PH0.VA",
+     "VALF",
+     "bias"
+    ],
+    [
+     "X_TDAC.VTRN",
+     "X_PH0.VTRN",
+     "VTRN",
+     "bias"
+    ],
+    [
+     "X_TDAC.VTRP",
+     "X_PH0.VTRP",
+     "VTRP",
+     "bias"
+    ],
+    [
+     "X_CTLE.OUTP",
+     "X_PH1.INP",
+     "CTP",
+     "hs_data"
+    ],
+    [
+     "X_CTLE.OUTN",
+     "X_PH1.INN",
+     "CTN",
+     "hs_data"
+    ],
+    [
+     "PORT.PH[1]",
+     "X_PH1.CK",
+     "PH[1]",
+     "clock"
+    ],
+    [
+     "PORT.PH[3]",
+     "X_PH1.CKB",
+     "PH[3]",
+     "clock"
+    ],
+    [
+     "X_PH0.D",
+     "X_PH1.SEL",
+     "RXD[0]",
+     "hs_data"
+    ],
+    [
+     "X_PH0.DB",
+     "X_PH1.SELB",
+     "DB0",
+     "hs_data"
+    ],
+    [
+     "X_PH1.D",
+     "PORT.RXD[1]",
+     "RXD[1]",
+     "word_rate_data"
+    ],
+    [
+     "PORT.VALF",
+     "X_PH1.VA",
+     "VALF",
+     "bias"
+    ],
+    [
+     "X_TDAC.VTRN",
+     "X_PH1.VTRN",
+     "VTRN",
+     "bias"
+    ],
+    [
+     "X_TDAC.VTRP",
+     "X_PH1.VTRP",
+     "VTRP",
+     "bias"
+    ],
+    [
+     "X_CTLE.OUTP",
+     "X_PH2.INP",
+     "CTP",
+     "hs_data"
+    ],
+    [
+     "X_CTLE.OUTN",
+     "X_PH2.INN",
+     "CTN",
+     "hs_data"
+    ],
+    [
+     "PORT.PH[2]",
+     "X_PH2.CK",
+     "PH[2]",
+     "clock"
+    ],
+    [
+     "PORT.PH[0]",
+     "X_PH2.CKB",
+     "PH[0]",
+     "clock"
+    ],
+    [
+     "X_PH1.D",
+     "X_PH2.SEL",
+     "RXD[1]",
+     "hs_data"
+    ],
+    [
+     "X_PH1.DB",
+     "X_PH2.SELB",
+     "DB1",
+     "hs_data"
+    ],
+    [
+     "X_PH2.D",
+     "PORT.RXD[2]",
+     "RXD[2]",
+     "word_rate_data"
+    ],
+    [
+     "PORT.VALF",
+     "X_PH2.VA",
+     "VALF",
+     "bias"
+    ],
+    [
+     "X_TDAC.VTRN",
+     "X_PH2.VTRN",
+     "VTRN",
+     "bias"
+    ],
+    [
+     "X_TDAC.VTRP",
+     "X_PH2.VTRP",
+     "VTRP",
+     "bias"
+    ],
+    [
+     "X_CTLE.OUTP",
+     "X_PH3.INP",
+     "CTP",
+     "hs_data"
+    ],
+    [
+     "X_CTLE.OUTN",
+     "X_PH3.INN",
+     "CTN",
+     "hs_data"
+    ],
+    [
+     "PORT.PH[3]",
+     "X_PH3.CK",
+     "PH[3]",
+     "clock"
+    ],
+    [
+     "PORT.PH[1]",
+     "X_PH3.CKB",
+     "PH[1]",
+     "clock"
+    ],
+    [
+     "X_PH2.D",
+     "X_PH3.SEL",
+     "RXD[2]",
+     "hs_data"
+    ],
+    [
+     "X_PH2.DB",
+     "X_PH3.SELB",
+     "DB2",
+     "hs_data"
+    ],
+    [
+     "X_PH3.D",
+     "PORT.RXD[3]",
+     "RXD[3]",
+     "word_rate_data"
+    ],
+    [
+     "PORT.VALF",
+     "X_PH3.VA",
+     "VALF",
+     "bias"
+    ],
+    [
+     "X_TDAC.VTRN",
+     "X_PH3.VTRN",
+     "VTRN",
+     "bias"
+    ],
+    [
+     "X_TDAC.VTRP",
+     "X_PH3.VTRP",
+     "VTRP",
+     "bias"
+    ],
+    [
+     "X_PH0.DB",
+     "X_CNT.UP",
+     "DB0",
+     "slow_signal"
+    ],
+    [
+     "X_PH0.D",
+     "X_CNT.UPB",
+     "RXD[0]",
+     "slow_signal"
+    ],
+    [
+     "PORT.CAL_RUN",
+     "X_CNT.EN",
+     "CAL_RUN",
+     "general_control"
+    ],
+    [
+     "PORT.CAL_CK",
+     "X_CNT.CK",
+     "CAL_CK",
+     "clock"
+    ],
+    [
+     "X_CNT.C[2:0]",
+     "X_TDAC.C[2:0]",
+     "TC[2:0]",
+     "slow_signal"
+    ],
+    [
+     "X_CNT.CB[2:0]",
+     "X_TDAC.CB[2:0]",
+     "TCB[2:0]",
+     "slow_signal"
+    ],
+    [
+     "PORT.VBP",
+     "X_TDAC.VBP",
+     "VBP",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "CAL_EN": "cal mode: shorts the CTLE input to VREF",
+    "CAL_ENB": "complement: opens M_ISO (pad isolated)",
+    "CTLE_C[1:0]": "CTLE peaking",
+    "CAL_RUN": "counter enable",
+    "VALF": "DFE tap alpha bias",
+    "VBP": "Rx bias (RX_EN)",
+    "VREF": "receiver threshold reference"
+   },
+   "notes": "Feedback loops: (1) DFE decision loop RXD[3] -> X_PH0 select -> RXD[0] -> X_PH1 -> ... -> RXD[3], one phase per UI (critical timing loop); (2) offset-cal loop: phase-0 decision complement DB0 -> counter UP -> trim DAC -> M_TN/M_TP in all 8 comparators -> decisions. Only phase 0 is observed and all 8 comparators share one trim code (common-offset cancellation, dominated by the CTLE): intentional asymmetry. In cal mode the tap DAC is forced off (alpha = 0), so H and L comparators are equivalent. RXD[3:0] are staggered by one UI each; all four are stable together for one UI around the next PH[0] rising edge (RXCLK). Main path PADR -> RXD non-inverting."
+  },
+  "TAP_DAC": {
+   "role": "DFE tap (alpha) current DAC: 3 binary PMOS sources (M=4/2/1) switched by TAP AND CAL_ENB into an NMOS diode, giving the VALF bias of every comparator's M_AL",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X_TN2",
+     "cell": "NAND2_D1",
+     "role": "TAP[2] gated by CAL_ENB"
+    },
+    {
+     "inst": "X_TN1",
+     "cell": "NAND2_D1",
+     "role": "TAP[1] gated by CAL_ENB"
+    },
+    {
+     "inst": "X_TN0",
+     "cell": "NAND2_D1",
+     "role": "TAP[0] gated by CAL_ENB"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.TAP[2]",
+     "X_TN2.A",
+     "TAP[2]",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_ENB",
+     "X_TN2.B",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "X_TN2.Y",
+     "M_SW2.g",
+     "TB2",
+     "important_control"
+    ],
+    [
+     "PORT.VBP",
+     "M_CS2.g",
+     "VBP",
+     "bias"
+    ],
+    [
+     "M_SW2.d",
+     "PORT.VALF",
+     "VALF",
+     "bias"
+    ],
+    [
+     "PORT.TAP[1]",
+     "X_TN1.A",
+     "TAP[1]",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_ENB",
+     "X_TN1.B",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "X_TN1.Y",
+     "M_SW1.g",
+     "TB1",
+     "important_control"
+    ],
+    [
+     "PORT.VBP",
+     "M_CS1.g",
+     "VBP",
+     "bias"
+    ],
+    [
+     "M_SW1.d",
+     "PORT.VALF",
+     "VALF",
+     "bias"
+    ],
+    [
+     "PORT.TAP[0]",
+     "X_TN0.A",
+     "TAP[0]",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_ENB",
+     "X_TN0.B",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "X_TN0.Y",
+     "M_SW0.g",
+     "TB0",
+     "important_control"
+    ],
+    [
+     "PORT.VBP",
+     "M_CS0.g",
+     "VBP",
+     "bias"
+    ],
+    [
+     "M_SW0.d",
+     "PORT.VALF",
+     "VALF",
+     "bias"
+    ],
+    [
+     "M_D.d",
+     "PORT.VALF",
+     "VALF",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "TAP[2:0]": "DFE h1 tap magnitude (alpha)",
+    "CAL_ENB": "low in cal mode: forces alpha = 0",
+    "VBP": "unit current bias (RX_EN gated)"
+   },
+   "notes": "Shared by all 64 comparators of the byte. TAP = 0 disables the DFE (H = L)."
+  },
+  "VREF_R2R": {
+   "role": "4-bit voltage-mode R-2R VREF DAC: top divider VTOP = VDDQ/2 (enabled by EN), each bit an NMOS-only SPDT switch (M_H to VTOP / M_L to VSSQ) into a 2R leg, 2R termination, 2 pF decoupling",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X_CI3",
+     "cell": "INV_D1",
+     "role": "bit 3 complement"
+    },
+    {
+     "inst": "X_CI2",
+     "cell": "INV_D1",
+     "role": "bit 2 complement"
+    },
+    {
+     "inst": "X_CI1",
+     "cell": "INV_D1",
+     "role": "bit 1 complement"
+    },
+    {
+     "inst": "X_CI0",
+     "cell": "INV_D1",
+     "role": "bit 0 complement"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.EN",
+     "M_EN.g",
+     "EN",
+     "important_control"
+    ],
+    [
+     "PORT.VDDQ",
+     "R_T1",
+     "VDDQ",
+     "power"
+    ],
+    [
+     "R_T1",
+     "M_H3.d",
+     "VTOP",
+     "reference"
+    ],
+    [
+     "PORT.CODE[3]",
+     "X_CI3.A",
+     "CODE[3]",
+     "important_control"
+    ],
+    [
+     "PORT.CODE[3]",
+     "M_H3.g",
+     "CODE[3]",
+     "important_control"
+    ],
+    [
+     "X_CI3.Y",
+     "M_L3.g",
+     "CB3",
+     "important_control"
+    ],
+    [
+     "M_H3.s",
+     "R_2R3",
+     "SW3",
+     "reference"
+    ],
+    [
+     "PORT.CODE[2]",
+     "X_CI2.A",
+     "CODE[2]",
+     "important_control"
+    ],
+    [
+     "PORT.CODE[2]",
+     "M_H2.g",
+     "CODE[2]",
+     "important_control"
+    ],
+    [
+     "X_CI2.Y",
+     "M_L2.g",
+     "CB2",
+     "important_control"
+    ],
+    [
+     "M_H2.s",
+     "R_2R2",
+     "SW2",
+     "reference"
+    ],
+    [
+     "PORT.CODE[1]",
+     "X_CI1.A",
+     "CODE[1]",
+     "important_control"
+    ],
+    [
+     "PORT.CODE[1]",
+     "M_H1.g",
+     "CODE[1]",
+     "important_control"
+    ],
+    [
+     "X_CI1.Y",
+     "M_L1.g",
+     "CB1",
+     "important_control"
+    ],
+    [
+     "M_H1.s",
+     "R_2R1",
+     "SW1",
+     "reference"
+    ],
+    [
+     "PORT.CODE[0]",
+     "X_CI0.A",
+     "CODE[0]",
+     "important_control"
+    ],
+    [
+     "PORT.CODE[0]",
+     "M_H0.g",
+     "CODE[0]",
+     "important_control"
+    ],
+    [
+     "X_CI0.Y",
+     "M_L0.g",
+     "CB0",
+     "important_control"
+    ],
+    [
+     "M_H0.s",
+     "R_2R0",
+     "SW0",
+     "reference"
+    ],
+    [
+     "R_2R3",
+     "PORT.VREF",
+     "VREF",
+     "reference"
+    ],
+    [
+     "R_R2",
+     "PORT.VREF",
+     "VREF",
+     "reference"
+    ],
+    [
+     "C_VR",
+     "PORT.VREF",
+     "VREF",
+     "reference"
+    ]
+   ],
+   "controls": {
+    "CODE[3:0]": "receiver threshold: VREF = VTOP*CODE/16 (0..47% of VDDQ in ~3.1% steps)",
+    "EN": "ladder enable (RX_EN)"
+   },
+   "notes": "Each M_H/M_L pair looks like an NMOS-only inverter but is an analog single-pole double-throw switch. Output impedance is R (1k) at every code, so VREF is distributed unbuffered to the 8 CTLEs and cal short switches."
+  },
+  "BIAS_GEN": {
+   "role": "Bias generator from IBIAS: NMOS diode and mirrors; VBP_B (always-on PMOS bias: CML buffer, ZQ comparator), VBN (NMOS bias: CML2CMOS, DCC OTA), VBP_A (Rx PMOS bias, gated by EN)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.IBIAS",
+     "M_D1.d",
+     "IBIAS",
+     "bias"
+    ],
+    [
+     "PORT.IBIAS",
+     "M_M1.g",
+     "IBIAS",
+     "bias"
+    ],
+    [
+     "M_M1.d",
+     "PORT.VBP_B",
+     "VBP_B",
+     "bias"
+    ],
+    [
+     "PORT.VBP_B",
+     "M_M2.g",
+     "VBP_B",
+     "bias"
+    ],
+    [
+     "M_M2.d",
+     "PORT.VBN",
+     "VBN",
+     "bias"
+    ],
+    [
+     "PORT.IBIAS",
+     "M_M3.g",
+     "IBIAS",
+     "bias"
+    ],
+    [
+     "M_M3.d",
+     "PORT.VBP_A",
+     "VBP_A",
+     "bias"
+    ],
+    [
+     "PORT.EN",
+     "M_ENN.g",
+     "EN",
+     "important_control"
+    ],
+    [
+     "PORT.EN",
+     "M_OFF.g",
+     "EN",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "EN": "Rx bias enable: M_ENN cuts the VBP_A mirror and M_OFF pulls VBP_A to VDD (all Rx PMOS sources off)"
+   },
+   "notes": "Three bias outputs; VBP_A powers down the CTLEs, trim DACs and tap DAC together."
+  },
+  "CML_BUF": {
+   "role": "WCK differential CML input buffer: PMOS pair (low input common mode), 600 ohm loads to VSS, PMOS tail (VBP) with series enable PMOS (ENB)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.INP",
+     "M_1.g",
+     "INP",
+     "clock"
+    ],
+    [
+     "PORT.INN",
+     "M_2.g",
+     "INN",
+     "clock"
+    ],
+    [
+     "M_1.d",
+     "PORT.OUTN",
+     "OUTN",
+     "clock"
+    ],
+    [
+     "M_2.d",
+     "PORT.OUTP",
+     "OUTP",
+     "clock"
+    ],
+    [
+     "PORT.VBP",
+     "M_T.g",
+     "VBP",
+     "bias"
+    ],
+    [
+     "PORT.ENB",
+     "M_E.g",
+     "ENB",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "ENB": "active-low clock-receiver enable (CK_EN)",
+    "VBP": "tail bias"
+   },
+   "notes": "INP -> OUTP non-inverting (OUTP is the INN-device drain). Analog, not switch-level checked."
+  },
+  "CML2CMOS": {
+   "role": "CML-to-CMOS converter: NMOS-input 5T differential-to-single-ended amp with PMOS mirror load, then INV_D1 + INV_D4",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "X_I1",
+     "cell": "INV_D1",
+     "role": "restoring inverter"
+    },
+    {
+     "inst": "X_I2",
+     "cell": "INV_D4",
+     "role": "CMOS clock driver"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.INP",
+     "M_1.g",
+     "INP",
+     "clock"
+    ],
+    [
+     "PORT.INN",
+     "M_2.g",
+     "INN",
+     "clock"
+    ],
+    [
+     "M_1.d",
+     "M_4.g",
+     "XD",
+     "clock"
+    ],
+    [
+     "M_2.d",
+     "X_I1.A",
+     "YO",
+     "clock"
+    ],
+    [
+     "X_I1.Y",
+     "X_I2.A",
+     "YB",
+     "clock"
+    ],
+    [
+     "X_I2.Y",
+     "PORT.OUT",
+     "OUT",
+     "clock"
+    ],
+    [
+     "PORT.VBN",
+     "M_T.g",
+     "VBN",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "VBN": "tail bias"
+   },
+   "notes": "Single-ended output; the complement is regenerated later in DIV2_IQ. The 5T looks like an OTA in a bias path but is in series with the WCK clock."
+  },
+  "DCA_CS": {
+   "role": "Current-starved duty-cycle adjuster: first inverter's pull-down is starved by M_NS (gate VCTRL) with an always-on minimum-current device M_NM (gate tied to VDD); second inverter restores the edge",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.IN",
+     "M_P1.g",
+     "IN",
+     "clock"
+    ],
+    [
+     "PORT.IN",
+     "M_N1.g",
+     "IN",
+     "clock"
+    ],
+    [
+     "M_N1.s",
+     "M_NS.d",
+     "SN",
+     "clock"
+    ],
+    [
+     "M_P1.d",
+     "M_P2.g",
+     "A",
+     "clock"
+    ],
+    [
+     "M_P2.d",
+     "PORT.OUT",
+     "OUT",
+     "clock"
+    ],
+    [
+     "PORT.VCTRL",
+     "M_NS.g",
+     "VCTRL",
+     "slow_signal"
+    ]
+   ],
+   "controls": {
+    "VCTRL": "analog duty control from the DCC loop: higher VCTRL = faster fall of node A = earlier OUT rise = higher duty"
+   },
+   "notes": "Only one edge is modulated, so it changes duty rather than delay; it is not a VCDL cell. IN -> OUT non-inverting."
+  },
+  "DLAT_D": {
+   "role": "Differential clocked-inverter D latch, transparent while CK=1 (D -> QB and DB -> Q), weak always-on cross-coupled keeper, strong reset (Q low, QB high)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.D",
+     "M_A1.g",
+     "D",
+     "clock"
+    ],
+    [
+     "PORT.D",
+     "M_A4.g",
+     "D",
+     "clock"
+    ],
+    [
+     "M_A2.d",
+     "PORT.QB",
+     "QB",
+     "clock"
+    ],
+    [
+     "PORT.DB",
+     "M_B1.g",
+     "DB",
+     "clock"
+    ],
+    [
+     "PORT.DB",
+     "M_B4.g",
+     "DB",
+     "clock"
+    ],
+    [
+     "M_B2.d",
+     "PORT.Q",
+     "Q",
+     "clock"
+    ],
+    [
+     "PORT.CK",
+     "M_A3.g",
+     "CK",
+     "clock"
+    ],
+    [
+     "PORT.CK",
+     "M_B3.g",
+     "CK",
+     "clock"
+    ],
+    [
+     "PORT.CKB",
+     "M_A2.g",
+     "CKB",
+     "clock"
+    ],
+    [
+     "PORT.CKB",
+     "M_B2.g",
+     "CKB",
+     "clock"
+    ],
+    [
+     "PORT.RST",
+     "M_RN.g",
+     "RST",
+     "general_control"
+    ],
+    [
+     "PORT.RSTB",
+     "M_RP.g",
+     "RSTB",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "RST": "reset Q low",
+    "RSTB": "reset QB high"
+   },
+   "notes": "D -> Q non-inverting (main output Q; QB is the complement)."
+  },
+  "DIV2_IQ": {
+   "role": "Divide-by-2 quadrature generator: two differential latches in a ring (X_L1 transparent on CK high, X_L2 on CK low) with the inversion in the wiring (X_L1.D = X_L2.QB, X_L1.DB = X_L2.Q)",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X_L1",
+     "cell": "DLAT_D",
+     "role": "I latch: PH[0]/PH[2]"
+    },
+    {
+     "inst": "X_L2",
+     "cell": "DLAT_D",
+     "role": "Q latch: PH[1]/PH[3]"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.CK",
+     "M_CIN.g",
+     "CK",
+     "clock"
+    ],
+    [
+     "PORT.CK",
+     "X_L1.CK",
+     "CK",
+     "clock"
+    ],
+    [
+     "M_CIN.d",
+     "X_L1.CKB",
+     "CKB",
+     "clock"
+    ],
+    [
+     "M_CIN.d",
+     "X_L2.CK",
+     "CKB",
+     "clock"
+    ],
+    [
+     "PORT.CK",
+     "X_L2.CKB",
+     "CK",
+     "clock"
+    ],
+    [
+     "X_L1.Q",
+     "X_L2.D",
+     "PH[0]",
+     "clock"
+    ],
+    [
+     "X_L1.QB",
+     "X_L2.DB",
+     "PH[2]",
+     "clock"
+    ],
+    [
+     "X_L2.Q",
+     "X_L1.DB",
+     "PH[1]",
+     "clock"
+    ],
+    [
+     "X_L2.QB",
+     "X_L1.D",
+     "PH[3]",
+     "clock"
+    ],
+    [
+     "X_L1.Q",
+     "PORT.PH[0]",
+     "PH[0]",
+     "clock"
+    ],
+    [
+     "X_L2.Q",
+     "PORT.PH[1]",
+     "PH[1]",
+     "clock"
+    ],
+    [
+     "X_L1.QB",
+     "PORT.PH[2]",
+     "PH[2]",
+     "clock"
+    ],
+    [
+     "X_L2.QB",
+     "PORT.PH[3]",
+     "PH[3]",
+     "clock"
+    ],
+    [
+     "PORT.RST",
+     "M_RIN.g",
+     "RST",
+     "general_control"
+    ],
+    [
+     "PORT.RST",
+     "X_L1.RST",
+     "RST",
+     "general_control"
+    ],
+    [
+     "M_RIN.d",
+     "X_L1.RSTB",
+     "RSTB",
+     "general_control"
+    ],
+    [
+     "PORT.RST",
+     "X_L2.RST",
+     "RST",
+     "general_control"
+    ],
+    [
+     "M_RIN.d",
+     "X_L2.RSTB",
+     "RSTB",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "RST": "divider reset: PH = 0,0,1,1; release fixes which output is the 0-degree phase"
+   },
+   "notes": "Feedback ring of two latches (not a master-slave flop: both latch outputs are used and the ring inverts). PH[0] toggles on CK rising, PH[1] follows on CK falling, so PH[1] lags PH[0] by 90 degrees of the output; the I/Q spacing is set by the input duty cycle, which the DCC corrects. Four outputs, inverting null."
+  },
+  "DCC_DET": {
+   "role": "Duty detector on the corrected clock: inverter phase splitter (true = 2 inverters, complement = 1 inverter + always-on TG for delay matching), each into a 100k/1p RC low-pass, 0.5 pF across VP/VN",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.CK",
+     "M_1N.g",
+     "CK",
+     "clock"
+    ],
+    [
+     "M_1N.d",
+     "M_2N.g",
+     "N1",
+     "clock"
+    ],
+    [
+     "M_2N.d",
+     "R_T",
+     "TR",
+     "clock"
+    ],
+    [
+     "R_T",
+     "PORT.VP",
+     "VP",
+     "slow_signal"
+    ],
+    [
+     "M_1N.d",
+     "M_GN.s",
+     "N1",
+     "clock"
+    ],
+    [
+     "M_GN.d",
+     "R_C",
+     "CP",
+     "clock"
+    ],
+    [
+     "R_C",
+     "PORT.VN",
+     "VN",
+     "slow_signal"
+    ],
+    [
+     "C_D",
+     "PORT.VP",
+     "VP",
+     "slow_signal"
+    ]
+   ],
+   "controls": {},
+   "notes": "Two outputs: VP = D*VDD and VN = (1-D)*VDD (D = duty of CK). The TG with gates tied to VDD/VSS is a delay-matching element, not a switch. Loads the clock, not in series."
+  },
+  "DCC_OTA": {
+   "role": "5T NMOS-input OTA (PMOS mirror load) with series enable device, used as a Gm-C integrator",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.INP",
+     "M_1.g",
+     "INP",
+     "slow_signal"
+    ],
+    [
+     "PORT.INN",
+     "M_2.g",
+     "INN",
+     "slow_signal"
+    ],
+    [
+     "M_1.d",
+     "M_4.g",
+     "XD",
+     "slow_signal"
+    ],
+    [
+     "M_2.d",
+     "PORT.OUT",
+     "OUT",
+     "slow_signal"
+    ],
+    [
+     "PORT.VBN",
+     "M_T.g",
+     "VBN",
+     "bias"
+    ],
+    [
+     "PORT.EN",
+     "M_E.g",
+     "EN",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "EN": "integrator enable",
+    "VBN": "tail bias"
+   },
+   "notes": "OUT rises when INP > INN."
+  },
+  "DCC_LOOP": {
+   "role": "Analog DCC loop core: duty detector -> OTA integrating on C_INT (= VCTRL); reset/disable TG forces VCTRL to VPRE (0.6*VDD divider) when RST=1 or EN=0",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X_DET",
+     "cell": "DCC_DET",
+     "role": "RC duty detector"
+    },
+    {
+     "inst": "X_OTA",
+     "cell": "DCC_OTA",
+     "role": "integrator Gm, inputs crossed"
+    },
+    {
+     "inst": "X_ENI",
+     "cell": "INV_D1",
+     "role": "EN complement"
+    },
+    {
+     "inst": "X_RNR",
+     "cell": "NOR2_D1",
+     "role": "RSTXB = NOR(RST, ENB)"
+    },
+    {
+     "inst": "X_RSI",
+     "cell": "INV_D1",
+     "role": "RSTX"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.CK",
+     "X_DET.CK",
+     "CK",
+     "clock"
+    ],
+    [
+     "X_DET.VP",
+     "X_OTA.INN",
+     "VP",
+     "slow_signal"
+    ],
+    [
+     "X_DET.VN",
+     "X_OTA.INP",
+     "VN",
+     "slow_signal"
+    ],
+    [
+     "X_OTA.OUT",
+     "PORT.VCTRL",
+     "VCTRL",
+     "slow_signal"
+    ],
+    [
+     "X_OTA.OUT",
+     "C_INT",
+     "VCTRL",
+     "slow_signal"
+    ],
+    [
+     "PORT.EN",
+     "X_OTA.EN",
+     "EN",
+     "important_control"
+    ],
+    [
+     "PORT.EN",
+     "X_ENI.A",
+     "EN",
+     "important_control"
+    ],
+    [
+     "X_ENI.Y",
+     "X_RNR.B",
+     "ENB",
+     "important_control"
+    ],
+    [
+     "PORT.RST",
+     "X_RNR.A",
+     "RST",
+     "general_control"
+    ],
+    [
+     "X_RNR.Y",
+     "X_RSI.A",
+     "RSTXB",
+     "general_control"
+    ],
+    [
+     "X_RSI.Y",
+     "M_SWN.g",
+     "RSTX",
+     "general_control"
+    ],
+    [
+     "X_RNR.Y",
+     "M_SWP.g",
+     "RSTXB",
+     "general_control"
+    ],
+    [
+     "R_P1",
+     "M_SWN.s",
+     "VPRE",
+     "reference"
+    ],
+    [
+     "M_SWN.d",
+     "PORT.VCTRL",
+     "VCTRL",
+     "slow_signal"
+    ],
+    [
+     "PORT.VBN",
+     "X_OTA.VBN",
+     "VBN",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "EN": "loop enable (VCTRL held at VPRE when 0)",
+    "RST": "forces VCTRL to the preset",
+    "VBN": "OTA bias"
+   },
+   "notes": "No digital code. The OTA inputs are crossed (VP to INN): duty above 50% lowers VCTRL, which slows the DCA rising edge: negative feedback. The loop closes outside this cell through DCA_CS in CLK_GEN."
+  },
+  "CLK_GEN": {
+   "role": "WCK clock generation: CML input buffer -> CML-to-CMOS -> current-starved DCA (in path) -> /2 I/Q ring -> PH[3:0]; the analog DCC senses the DCA output and returns VCTRL",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X_ENI",
+     "cell": "INV_D1",
+     "role": "CK_EN complement"
+    },
+    {
+     "inst": "X_CML",
+     "cell": "CML_BUF",
+     "role": "WCK CML buffer"
+    },
+    {
+     "inst": "X_C2C",
+     "cell": "CML2CMOS",
+     "role": "CML to CMOS"
+    },
+    {
+     "inst": "X_DCA",
+     "cell": "DCA_CS",
+     "role": "duty adjust (in path)"
+    },
+    {
+     "inst": "X_DCC",
+     "cell": "DCC_LOOP",
+     "role": "analog duty-cycle correction loop"
+    },
+    {
+     "inst": "X_DIV",
+     "cell": "DIV2_IQ",
+     "role": "/2 quadrature generator"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.WCKI",
+     "X_CML.INP",
+     "WCKI",
+     "clock"
+    ],
+    [
+     "PORT.WCKBI",
+     "X_CML.INN",
+     "WCKBI",
+     "clock"
+    ],
+    [
+     "X_CML.OUTP",
+     "X_C2C.INP",
+     "CMLP",
+     "clock"
+    ],
+    [
+     "X_CML.OUTN",
+     "X_C2C.INN",
+     "CMLN",
+     "clock"
+    ],
+    [
+     "X_C2C.OUT",
+     "X_DCA.IN",
+     "CKC",
+     "clock"
+    ],
+    [
+     "X_DCA.OUT",
+     "X_DIV.CK",
+     "CKA",
+     "clock"
+    ],
+    [
+     "X_DCA.OUT",
+     "X_DCC.CK",
+     "CKA",
+     "clock"
+    ],
+    [
+     "X_DCC.VCTRL",
+     "X_DCA.VCTRL",
+     "VCTRL",
+     "slow_signal"
+    ],
+    [
+     "X_DIV.PH[3:0]",
+     "PORT.PH[3:0]",
+     "PH[3:0]",
+     "clock"
+    ],
+    [
+     "PORT.CK_EN",
+     "X_ENI.A",
+     "CK_EN",
+     "important_control"
+    ],
+    [
+     "X_ENI.Y",
+     "X_CML.ENB",
+     "CKENB",
+     "important_control"
+    ],
+    [
+     "PORT.DCC_EN",
+     "X_DCC.EN",
+     "DCC_EN",
+     "important_control"
+    ],
+    [
+     "PORT.DCC_RST",
+     "X_DCC.RST",
+     "DCC_RST",
+     "general_control"
+    ],
+    [
+     "PORT.DIV_RST",
+     "X_DIV.RST",
+     "DIV_RST",
+     "general_control"
+    ],
+    [
+     "PORT.VBP",
+     "X_CML.VBP",
+     "VBP",
+     "bias"
+    ],
+    [
+     "PORT.VBN",
+     "X_C2C.VBN",
+     "VBN",
+     "bias"
+    ],
+    [
+     "PORT.VBN",
+     "X_DCC.VBN",
+     "VBN",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "CK_EN": "WCK receiver enable",
+    "DCC_EN": "duty loop on/off",
+    "DCC_RST": "VCTRL preset",
+    "DIV_RST": "divider phase reset",
+    "VBP": "CML bias",
+    "VBN": "converter/OTA bias"
+   },
+   "notes": "Feedback loop: CKA -> X_DCC -> VCTRL -> X_DCA -> CKA. The DCC detects the full-rate CMOS clock (one phase, true and locally generated complement), because the /2 outputs are 50% by construction and their I/Q spacing depends on the duty of CKA. Four outputs, inverting null."
+  },
+  "CLK_TREE": {
+   "role": "Quarter-rate phase distribution: per phase a 2-inverter root buffer, then one inverting INV_D4 spine driver per side (left DQ0-3, right DQ4-7) with 30 ohm / 20 fF wire RC",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [
+    {
+     "inst": "X_RA0",
+     "cell": "INV_D4",
+     "role": "root buffer stage 1, PH[0]"
+    },
+    {
+     "inst": "X_RB0",
+     "cell": "INV_D4",
+     "role": "root buffer stage 2, PH[0]"
+    },
+    {
+     "inst": "X_SL0",
+     "cell": "INV_D4",
+     "role": "left spine driver from PH[0] (inverting)"
+    },
+    {
+     "inst": "X_SR0",
+     "cell": "INV_D4",
+     "role": "right spine driver from PH[0] (inverting)"
+    },
+    {
+     "inst": "X_RA1",
+     "cell": "INV_D4",
+     "role": "root buffer stage 1, PH[1]"
+    },
+    {
+     "inst": "X_RB1",
+     "cell": "INV_D4",
+     "role": "root buffer stage 2, PH[1]"
+    },
+    {
+     "inst": "X_SL1",
+     "cell": "INV_D4",
+     "role": "left spine driver from PH[1] (inverting)"
+    },
+    {
+     "inst": "X_SR1",
+     "cell": "INV_D4",
+     "role": "right spine driver from PH[1] (inverting)"
+    },
+    {
+     "inst": "X_RA2",
+     "cell": "INV_D4",
+     "role": "root buffer stage 1, PH[2]"
+    },
+    {
+     "inst": "X_RB2",
+     "cell": "INV_D4",
+     "role": "root buffer stage 2, PH[2]"
+    },
+    {
+     "inst": "X_SL2",
+     "cell": "INV_D4",
+     "role": "left spine driver from PH[2] (inverting)"
+    },
+    {
+     "inst": "X_SR2",
+     "cell": "INV_D4",
+     "role": "right spine driver from PH[2] (inverting)"
+    },
+    {
+     "inst": "X_RA3",
+     "cell": "INV_D4",
+     "role": "root buffer stage 1, PH[3]"
+    },
+    {
+     "inst": "X_RB3",
+     "cell": "INV_D4",
+     "role": "root buffer stage 2, PH[3]"
+    },
+    {
+     "inst": "X_SL3",
+     "cell": "INV_D4",
+     "role": "left spine driver from PH[3] (inverting)"
+    },
+    {
+     "inst": "X_SR3",
+     "cell": "INV_D4",
+     "role": "right spine driver from PH[3] (inverting)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.PH[0]",
+     "X_RA0.A",
+     "PH[0]",
+     "clock"
+    ],
+    [
+     "X_RA0.Y",
+     "X_RB0.A",
+     "RA0",
+     "clock"
+    ],
+    [
+     "X_RB0.Y",
+     "X_SL0.A",
+     "RB0",
+     "clock"
+    ],
+    [
+     "X_RB0.Y",
+     "X_SR0.A",
+     "RB0",
+     "clock"
+    ],
+    [
+     "X_SL0.Y",
+     "R_WL0",
+     "SLD0",
+     "clock"
+    ],
+    [
+     "R_WL0",
+     "PORT.PHL[2]",
+     "PHL[2]",
+     "clock"
+    ],
+    [
+     "X_SR0.Y",
+     "R_WR0",
+     "SRD0",
+     "clock"
+    ],
+    [
+     "R_WR0",
+     "PORT.PHR[2]",
+     "PHR[2]",
+     "clock"
+    ],
+    [
+     "PORT.PH[1]",
+     "X_RA1.A",
+     "PH[1]",
+     "clock"
+    ],
+    [
+     "X_RA1.Y",
+     "X_RB1.A",
+     "RA1",
+     "clock"
+    ],
+    [
+     "X_RB1.Y",
+     "X_SL1.A",
+     "RB1",
+     "clock"
+    ],
+    [
+     "X_RB1.Y",
+     "X_SR1.A",
+     "RB1",
+     "clock"
+    ],
+    [
+     "X_SL1.Y",
+     "R_WL1",
+     "SLD1",
+     "clock"
+    ],
+    [
+     "R_WL1",
+     "PORT.PHL[3]",
+     "PHL[3]",
+     "clock"
+    ],
+    [
+     "X_SR1.Y",
+     "R_WR1",
+     "SRD1",
+     "clock"
+    ],
+    [
+     "R_WR1",
+     "PORT.PHR[3]",
+     "PHR[3]",
+     "clock"
+    ],
+    [
+     "PORT.PH[2]",
+     "X_RA2.A",
+     "PH[2]",
+     "clock"
+    ],
+    [
+     "X_RA2.Y",
+     "X_RB2.A",
+     "RA2",
+     "clock"
+    ],
+    [
+     "X_RB2.Y",
+     "X_SL2.A",
+     "RB2",
+     "clock"
+    ],
+    [
+     "X_RB2.Y",
+     "X_SR2.A",
+     "RB2",
+     "clock"
+    ],
+    [
+     "X_SL2.Y",
+     "R_WL2",
+     "SLD2",
+     "clock"
+    ],
+    [
+     "R_WL2",
+     "PORT.PHL[0]",
+     "PHL[0]",
+     "clock"
+    ],
+    [
+     "X_SR2.Y",
+     "R_WR2",
+     "SRD2",
+     "clock"
+    ],
+    [
+     "R_WR2",
+     "PORT.PHR[0]",
+     "PHR[0]",
+     "clock"
+    ],
+    [
+     "PORT.PH[3]",
+     "X_RA3.A",
+     "PH[3]",
+     "clock"
+    ],
+    [
+     "X_RA3.Y",
+     "X_RB3.A",
+     "RA3",
+     "clock"
+    ],
+    [
+     "X_RB3.Y",
+     "X_SL3.A",
+     "RB3",
+     "clock"
+    ],
+    [
+     "X_RB3.Y",
+     "X_SR3.A",
+     "RB3",
+     "clock"
+    ],
+    [
+     "X_SL3.Y",
+     "R_WL3",
+     "SLD3",
+     "clock"
+    ],
+    [
+     "R_WL3",
+     "PORT.PHL[1]",
+     "PHL[1]",
+     "clock"
+    ],
+    [
+     "X_SR3.Y",
+     "R_WR3",
+     "SRD3",
+     "clock"
+    ],
+    [
+     "R_WR3",
+     "PORT.PHR[1]",
+     "PHR[1]",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Each spine driver inverts, so the spine net is labelled with the phase it carries: PHL[(k+2)%4] = ~PH[k]. The index rotation by two is the trap; logically PHL[j] = PHR[j] = PH[j]. Inverting per driver."
+  },
+  "CAL_CTRL": {
+   "role": "Rx offset-cal sequencer: ripple /4 of the PH[2] spine clock (CAL_CK for the counters), a further /2 clocking a 5-stage shift-register timer of CAL_EN; CAL_DONE = S4 AND CAL_EN, CAL_RUN = CAL_EN AND NOT CAL_DONE",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X_DV0",
+     "cell": "DFF_TSPC",
+     "role": "T flop, /2"
+    },
+    {
+     "inst": "X_DV1",
+     "cell": "DFF_TSPC",
+     "role": "T flop, /4 = CAL_CK"
+    },
+    {
+     "inst": "X_DV2",
+     "cell": "DFF_TSPC",
+     "role": "T flop, /8"
+    },
+    {
+     "inst": "X_S0",
+     "cell": "DFF_TSPC",
+     "role": "timer stage 0"
+    },
+    {
+     "inst": "X_S1",
+     "cell": "DFF_TSPC",
+     "role": "timer stage 1"
+    },
+    {
+     "inst": "X_S2",
+     "cell": "DFF_TSPC",
+     "role": "timer stage 2"
+    },
+    {
+     "inst": "X_S3",
+     "cell": "DFF_TSPC",
+     "role": "timer stage 3"
+    },
+    {
+     "inst": "X_S4",
+     "cell": "DFF_TSPC",
+     "role": "timer stage 4"
+    },
+    {
+     "inst": "X_DN",
+     "cell": "NAND2_D1",
+     "role": "done decode"
+    },
+    {
+     "inst": "X_DI",
+     "cell": "INV_D1",
+     "role": "CAL_DONE"
+    },
+    {
+     "inst": "X_RN",
+     "cell": "NAND2_D1",
+     "role": "run decode"
+    },
+    {
+     "inst": "X_RI",
+     "cell": "INV_D1",
+     "role": "CAL_RUN"
+    },
+    {
+     "inst": "X_EI",
+     "cell": "INV_D1",
+     "role": "CAL_ENB"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.CKIN",
+     "X_DV0.CK",
+     "CKIN",
+     "clock"
+    ],
+    [
+     "X_DV0.QB",
+     "X_DV0.D",
+     "DV0B",
+     "clock"
+    ],
+    [
+     "X_DV0.Q",
+     "X_DV1.CK",
+     "DV0",
+     "clock"
+    ],
+    [
+     "X_DV1.QB",
+     "X_DV1.D",
+     "DV1B",
+     "clock"
+    ],
+    [
+     "X_DV1.Q",
+     "PORT.CAL_CK",
+     "CAL_CK",
+     "clock"
+    ],
+    [
+     "X_DV1.Q",
+     "X_DV2.CK",
+     "CAL_CK",
+     "clock"
+    ],
+    [
+     "X_DV2.QB",
+     "X_DV2.D",
+     "DV2B",
+     "clock"
+    ],
+    [
+     "X_DV2.Q",
+     "X_S0.CK",
+     "DV2",
+     "clock"
+    ],
+    [
+     "PORT.CAL_EN",
+     "X_S0.D",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "X_S0.Q",
+     "X_S1.D",
+     "S0",
+     "slow_signal"
+    ],
+    [
+     "X_DV2.Q",
+     "X_S1.CK",
+     "DV2",
+     "clock"
+    ],
+    [
+     "X_S1.Q",
+     "X_S2.D",
+     "S1",
+     "slow_signal"
+    ],
+    [
+     "X_DV2.Q",
+     "X_S2.CK",
+     "DV2",
+     "clock"
+    ],
+    [
+     "X_S2.Q",
+     "X_S3.D",
+     "S2",
+     "slow_signal"
+    ],
+    [
+     "X_DV2.Q",
+     "X_S3.CK",
+     "DV2",
+     "clock"
+    ],
+    [
+     "X_S3.Q",
+     "X_S4.D",
+     "S3",
+     "slow_signal"
+    ],
+    [
+     "X_DV2.Q",
+     "X_S4.CK",
+     "DV2",
+     "clock"
+    ],
+    [
+     "X_S4.Q",
+     "X_DN.A",
+     "S4",
+     "slow_signal"
+    ],
+    [
+     "PORT.CAL_EN",
+     "X_DN.B",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "X_DN.Y",
+     "X_DI.A",
+     "DONEB",
+     "status"
+    ],
+    [
+     "X_DI.Y",
+     "PORT.CAL_DONE",
+     "CAL_DONE",
+     "status"
+    ],
+    [
+     "PORT.CAL_EN",
+     "X_RN.A",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "X_DN.Y",
+     "X_RN.B",
+     "DONEB",
+     "status"
+    ],
+    [
+     "X_RN.Y",
+     "X_RI.A",
+     "RUNB",
+     "general_control"
+    ],
+    [
+     "X_RI.Y",
+     "PORT.CAL_RUN",
+     "CAL_RUN",
+     "general_control"
+    ],
+    [
+     "PORT.CAL_EN",
+     "X_EI.A",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "X_EI.Y",
+     "PORT.CAL_ENB",
+     "CAL_ENB",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "CAL_EN": "cal mode request: starts the timer, enables counting until done"
+   },
+   "notes": "The cal clock is derived from the quarter-rate clock so the counters sample the phase-0 decisions synchronously (WCK must run during calibration). The shift register is a timer, not a deserializer or delay line: CAL_DONE rises 9-10 CAL_CK edges after CAL_EN; it drops at once with CAL_EN, and the register needs 5 slow cycles to flush (re-arming sooner gives an early DONE). Dividers have no reset (random start phase). QB of X_S0..X_S4 is unused."
+  },
+  "ZQ_CMP": {
+   "role": "Continuous-time 2-stage comparator: PMOS-input 5T (low common mode) + NMOS common-source stage with PMOS load; OUTB is active-low (high when INP < INN); series PMOS enable",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.INP",
+     "M_1.g",
+     "INP",
+     "reference"
+    ],
+    [
+     "PORT.INN",
+     "M_2.g",
+     "INN",
+     "reference"
+    ],
+    [
+     "M_1.d",
+     "M_4.g",
+     "XD",
+     "slow_signal"
+    ],
+    [
+     "M_2.d",
+     "M_5.g",
+     "YO",
+     "slow_signal"
+    ],
+    [
+     "M_5.d",
+     "PORT.OUTB",
+     "OUTB",
+     "slow_signal"
+    ],
+    [
+     "PORT.VBP",
+     "M_T.g",
+     "VBP",
+     "bias"
+    ],
+    [
+     "PORT.VBP",
+     "M_6.g",
+     "VBP",
+     "bias"
+    ],
+    [
+     "PORT.EN",
+     "M_EIN.g",
+     "EN",
+     "general_control"
+    ],
+    [
+     "M_EIN.d",
+     "M_E.g",
+     "ENB",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "EN": "comparator enable (ZQ BUSY)",
+    "VBP": "bias"
+   },
+   "notes": "Not clocked: the SAR flops sample its output on ZQ_CLK. Inverting from INP to OUTB."
+  },
+  "ZQ_SAR5": {
+   "role": "5-bit SAR register: one-hot token shift register T4..T0 started by START, per-bit hold/decide mux (T ? KEEP : C) with synchronous clear by START, CODE = C OR T (trial bit), sticky DONE, BUSY = NOT DONE",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X_T4",
+     "cell": "DFF_TSPC",
+     "role": "token bit 4 (D = START)"
+    },
+    {
+     "inst": "X_NT3",
+     "cell": "NOR2_D1",
+     "role": "token shift with START clear"
+    },
+    {
+     "inst": "X_T3",
+     "cell": "DFF_TSPC",
+     "role": "token bit 3"
+    },
+    {
+     "inst": "X_NT2",
+     "cell": "NOR2_D1",
+     "role": "token shift with START clear"
+    },
+    {
+     "inst": "X_T2",
+     "cell": "DFF_TSPC",
+     "role": "token bit 2"
+    },
+    {
+     "inst": "X_NT1",
+     "cell": "NOR2_D1",
+     "role": "token shift with START clear"
+    },
+    {
+     "inst": "X_T1",
+     "cell": "DFF_TSPC",
+     "role": "token bit 1"
+    },
+    {
+     "inst": "X_NT0",
+     "cell": "NOR2_D1",
+     "role": "token shift with START clear"
+    },
+    {
+     "inst": "X_T0",
+     "cell": "DFF_TSPC",
+     "role": "token bit 0"
+    },
+    {
+     "inst": "X_M4",
+     "cell": "TGMUX2",
+     "role": "decide (KEEPB) / hold (CB) select for bit 4"
+    },
+    {
+     "inst": "X_NC4",
+     "cell": "NOR2_D1",
+     "role": "synchronous clear by START"
+    },
+    {
+     "inst": "X_C4",
+     "cell": "DFF_TSPC",
+     "role": "code bit 4"
+    },
+    {
+     "inst": "X_O4",
+     "cell": "NAND2_D1",
+     "role": "CODE[4] = C | T"
+    },
+    {
+     "inst": "X_M3",
+     "cell": "TGMUX2",
+     "role": "decide (KEEPB) / hold (CB) select for bit 3"
+    },
+    {
+     "inst": "X_NC3",
+     "cell": "NOR2_D1",
+     "role": "synchronous clear by START"
+    },
+    {
+     "inst": "X_C3",
+     "cell": "DFF_TSPC",
+     "role": "code bit 3"
+    },
+    {
+     "inst": "X_O3",
+     "cell": "NAND2_D1",
+     "role": "CODE[3] = C | T"
+    },
+    {
+     "inst": "X_M2",
+     "cell": "TGMUX2",
+     "role": "decide (KEEPB) / hold (CB) select for bit 2"
+    },
+    {
+     "inst": "X_NC2",
+     "cell": "NOR2_D1",
+     "role": "synchronous clear by START"
+    },
+    {
+     "inst": "X_C2",
+     "cell": "DFF_TSPC",
+     "role": "code bit 2"
+    },
+    {
+     "inst": "X_O2",
+     "cell": "NAND2_D1",
+     "role": "CODE[2] = C | T"
+    },
+    {
+     "inst": "X_M1",
+     "cell": "TGMUX2",
+     "role": "decide (KEEPB) / hold (CB) select for bit 1"
+    },
+    {
+     "inst": "X_NC1",
+     "cell": "NOR2_D1",
+     "role": "synchronous clear by START"
+    },
+    {
+     "inst": "X_C1",
+     "cell": "DFF_TSPC",
+     "role": "code bit 1"
+    },
+    {
+     "inst": "X_O1",
+     "cell": "NAND2_D1",
+     "role": "CODE[1] = C | T"
+    },
+    {
+     "inst": "X_M0",
+     "cell": "TGMUX2",
+     "role": "decide (KEEPB) / hold (CB) select for bit 0"
+    },
+    {
+     "inst": "X_NC0",
+     "cell": "NOR2_D1",
+     "role": "synchronous clear by START"
+    },
+    {
+     "inst": "X_C0",
+     "cell": "DFF_TSPC",
+     "role": "code bit 0"
+    },
+    {
+     "inst": "X_O0",
+     "cell": "NAND2_D1",
+     "role": "CODE[0] = C | T"
+    },
+    {
+     "inst": "X_ND1",
+     "cell": "NOR2_D1",
+     "role": "T0 OR DONE"
+    },
+    {
+     "inst": "X_ND2",
+     "cell": "NOR2_D1",
+     "role": "AND NOT START"
+    },
+    {
+     "inst": "X_FD",
+     "cell": "DFF_TSPC",
+     "role": "DONE flop"
+    },
+    {
+     "inst": "X_BI",
+     "cell": "INV_D1",
+     "role": "BUSY = NOT DONE"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.START",
+     "X_T4.D",
+     "START",
+     "command"
+    ],
+    [
+     "PORT.CLK",
+     "X_T4.CK",
+     "CLK",
+     "clock"
+    ],
+    [
+     "X_T4.QB",
+     "X_NT3.A",
+     "T4B",
+     "slow_signal"
+    ],
+    [
+     "PORT.START",
+     "X_NT3.B",
+     "START",
+     "command"
+    ],
+    [
+     "X_NT3.Y",
+     "X_T3.D",
+     "TD3",
+     "slow_signal"
+    ],
+    [
+     "X_T3.QB",
+     "X_NT2.A",
+     "T3B",
+     "slow_signal"
+    ],
+    [
+     "PORT.START",
+     "X_NT2.B",
+     "START",
+     "command"
+    ],
+    [
+     "X_NT2.Y",
+     "X_T2.D",
+     "TD2",
+     "slow_signal"
+    ],
+    [
+     "X_T2.QB",
+     "X_NT1.A",
+     "T2B",
+     "slow_signal"
+    ],
+    [
+     "PORT.START",
+     "X_NT1.B",
+     "START",
+     "command"
+    ],
+    [
+     "X_NT1.Y",
+     "X_T1.D",
+     "TD1",
+     "slow_signal"
+    ],
+    [
+     "X_T1.QB",
+     "X_NT0.A",
+     "T1B",
+     "slow_signal"
+    ],
+    [
+     "PORT.START",
+     "X_NT0.B",
+     "START",
+     "command"
+    ],
+    [
+     "X_NT0.Y",
+     "X_T0.D",
+     "TD0",
+     "slow_signal"
+    ],
+    [
+     "X_T4.Q",
+     "X_M4.S",
+     "T4",
+     "slow_signal"
+    ],
+    [
+     "X_T4.QB",
+     "X_M4.SB",
+     "T4B",
+     "slow_signal"
+    ],
+    [
+     "PORT.KEEPB",
+     "X_M4.D1",
+     "KEEPB",
+     "slow_signal"
+    ],
+    [
+     "X_C4.QB",
+     "X_M4.D0",
+     "CB4",
+     "slow_signal"
+    ],
+    [
+     "X_M4.Y",
+     "X_NC4.A",
+     "MX4",
+     "slow_signal"
+    ],
+    [
+     "PORT.START",
+     "X_NC4.B",
+     "START",
+     "command"
+    ],
+    [
+     "X_NC4.Y",
+     "X_C4.D",
+     "CD4",
+     "slow_signal"
+    ],
+    [
+     "PORT.CLK",
+     "X_C4.CK",
+     "CLK",
+     "clock"
+    ],
+    [
+     "X_C4.QB",
+     "X_O4.A",
+     "CB4",
+     "slow_signal"
+    ],
+    [
+     "X_T4.QB",
+     "X_O4.B",
+     "T4B",
+     "slow_signal"
+    ],
+    [
+     "X_O4.Y",
+     "PORT.CODE[4]",
+     "CODE[4]",
+     "status"
+    ],
+    [
+     "X_T3.Q",
+     "X_M3.S",
+     "T3",
+     "slow_signal"
+    ],
+    [
+     "X_T3.QB",
+     "X_M3.SB",
+     "T3B",
+     "slow_signal"
+    ],
+    [
+     "PORT.KEEPB",
+     "X_M3.D1",
+     "KEEPB",
+     "slow_signal"
+    ],
+    [
+     "X_C3.QB",
+     "X_M3.D0",
+     "CB3",
+     "slow_signal"
+    ],
+    [
+     "X_M3.Y",
+     "X_NC3.A",
+     "MX3",
+     "slow_signal"
+    ],
+    [
+     "PORT.START",
+     "X_NC3.B",
+     "START",
+     "command"
+    ],
+    [
+     "X_NC3.Y",
+     "X_C3.D",
+     "CD3",
+     "slow_signal"
+    ],
+    [
+     "PORT.CLK",
+     "X_C3.CK",
+     "CLK",
+     "clock"
+    ],
+    [
+     "X_C3.QB",
+     "X_O3.A",
+     "CB3",
+     "slow_signal"
+    ],
+    [
+     "X_T3.QB",
+     "X_O3.B",
+     "T3B",
+     "slow_signal"
+    ],
+    [
+     "X_O3.Y",
+     "PORT.CODE[3]",
+     "CODE[3]",
+     "status"
+    ],
+    [
+     "X_T2.Q",
+     "X_M2.S",
+     "T2",
+     "slow_signal"
+    ],
+    [
+     "X_T2.QB",
+     "X_M2.SB",
+     "T2B",
+     "slow_signal"
+    ],
+    [
+     "PORT.KEEPB",
+     "X_M2.D1",
+     "KEEPB",
+     "slow_signal"
+    ],
+    [
+     "X_C2.QB",
+     "X_M2.D0",
+     "CB2",
+     "slow_signal"
+    ],
+    [
+     "X_M2.Y",
+     "X_NC2.A",
+     "MX2",
+     "slow_signal"
+    ],
+    [
+     "PORT.START",
+     "X_NC2.B",
+     "START",
+     "command"
+    ],
+    [
+     "X_NC2.Y",
+     "X_C2.D",
+     "CD2",
+     "slow_signal"
+    ],
+    [
+     "PORT.CLK",
+     "X_C2.CK",
+     "CLK",
+     "clock"
+    ],
+    [
+     "X_C2.QB",
+     "X_O2.A",
+     "CB2",
+     "slow_signal"
+    ],
+    [
+     "X_T2.QB",
+     "X_O2.B",
+     "T2B",
+     "slow_signal"
+    ],
+    [
+     "X_O2.Y",
+     "PORT.CODE[2]",
+     "CODE[2]",
+     "status"
+    ],
+    [
+     "X_T1.Q",
+     "X_M1.S",
+     "T1",
+     "slow_signal"
+    ],
+    [
+     "X_T1.QB",
+     "X_M1.SB",
+     "T1B",
+     "slow_signal"
+    ],
+    [
+     "PORT.KEEPB",
+     "X_M1.D1",
+     "KEEPB",
+     "slow_signal"
+    ],
+    [
+     "X_C1.QB",
+     "X_M1.D0",
+     "CB1",
+     "slow_signal"
+    ],
+    [
+     "X_M1.Y",
+     "X_NC1.A",
+     "MX1",
+     "slow_signal"
+    ],
+    [
+     "PORT.START",
+     "X_NC1.B",
+     "START",
+     "command"
+    ],
+    [
+     "X_NC1.Y",
+     "X_C1.D",
+     "CD1",
+     "slow_signal"
+    ],
+    [
+     "PORT.CLK",
+     "X_C1.CK",
+     "CLK",
+     "clock"
+    ],
+    [
+     "X_C1.QB",
+     "X_O1.A",
+     "CB1",
+     "slow_signal"
+    ],
+    [
+     "X_T1.QB",
+     "X_O1.B",
+     "T1B",
+     "slow_signal"
+    ],
+    [
+     "X_O1.Y",
+     "PORT.CODE[1]",
+     "CODE[1]",
+     "status"
+    ],
+    [
+     "X_T0.Q",
+     "X_M0.S",
+     "T0",
+     "slow_signal"
+    ],
+    [
+     "X_T0.QB",
+     "X_M0.SB",
+     "T0B",
+     "slow_signal"
+    ],
+    [
+     "PORT.KEEPB",
+     "X_M0.D1",
+     "KEEPB",
+     "slow_signal"
+    ],
+    [
+     "X_C0.QB",
+     "X_M0.D0",
+     "CB0",
+     "slow_signal"
+    ],
+    [
+     "X_M0.Y",
+     "X_NC0.A",
+     "MX0",
+     "slow_signal"
+    ],
+    [
+     "PORT.START",
+     "X_NC0.B",
+     "START",
+     "command"
+    ],
+    [
+     "X_NC0.Y",
+     "X_C0.D",
+     "CD0",
+     "slow_signal"
+    ],
+    [
+     "PORT.CLK",
+     "X_C0.CK",
+     "CLK",
+     "clock"
+    ],
+    [
+     "X_C0.QB",
+     "X_O0.A",
+     "CB0",
+     "slow_signal"
+    ],
+    [
+     "X_T0.QB",
+     "X_O0.B",
+     "T0B",
+     "slow_signal"
+    ],
+    [
+     "X_O0.Y",
+     "PORT.CODE[0]",
+     "CODE[0]",
+     "status"
+    ],
+    [
+     "X_T0.Q",
+     "X_ND1.A",
+     "T0",
+     "slow_signal"
+    ],
+    [
+     "X_FD.Q",
+     "X_ND1.B",
+     "DONE",
+     "status"
+    ],
+    [
+     "X_ND1.Y",
+     "X_ND2.A",
+     "DN1",
+     "slow_signal"
+    ],
+    [
+     "PORT.START",
+     "X_ND2.B",
+     "START",
+     "command"
+    ],
+    [
+     "X_ND2.Y",
+     "X_FD.D",
+     "DD",
+     "slow_signal"
+    ],
+    [
+     "X_FD.Q",
+     "PORT.DONE",
+     "DONE",
+     "status"
+    ],
+    [
+     "X_FD.Q",
+     "X_BI.A",
+     "DONE",
+     "status"
+    ],
+    [
+     "X_BI.Y",
+     "PORT.BUSY",
+     "BUSY",
+     "slow_signal"
+    ]
+   ],
+   "controls": {
+    "START": "command: one ZQ_CLK-cycle pulse starts a calibration (and clears all state)",
+    "KEEPB": "comparator decision, active low: 0 = keep the trial bit"
+   },
+   "notes": "MSB first, one bit per ZQ_CLK; DONE rises on the 5th clock after the START clock and holds until the next START; BUSY (= NOT DONE) is high exactly while a token is in flight. No reset pin: everything is cleared synchronously by START, so the code is undefined until the first calibration. Dynamic flops: ZQ_CLK must be free-running so the hold muxes refresh the code every cycle. Q of X_C4..X_C0 and QB of X_FD are unused (CODE is built from QB). Multi-output."
+  },
+  "ZQ_RLEG": {
+   "role": "ZQ replica pull-down leg, 1/6 scale of a TX_LEG_M pull-down half: 1.8k + NMOS (ON) + NMOS (code enable) to VSSQ",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.PAD",
+     "R_Z",
+     "PAD",
+     "reference"
+    ],
+    [
+     "R_Z",
+     "M_ON.d",
+     "NZ1",
+     "reference"
+    ],
+    [
+     "PORT.ON",
+     "M_ON.g",
+     "ON",
+     "slow_signal"
+    ],
+    [
+     "PORT.EN",
+     "M_EN.g",
+     "EN",
+     "slow_signal"
+    ]
+   ],
+   "controls": {
+    "ON": "replica active (BUSY), plays the role of the data device",
+    "EN": "code bit (leg enabled)"
+   },
+   "notes": "Same order and topology as the driver pull-down: PAD - R - data NMOS - enable NMOS - VSSQ."
+  },
+  "ZQ_CAL": {
+   "role": "ZQ calibration: VDDQ/2 divider (enabled by BUSY), continuous comparator ZQ vs ZREF, 5-bit SAR and 5 binary replica pull-down legs (M=16..1) on the ZQ pad driven by the trial code (RZQ to VDDQ is external)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X_CMP",
+     "cell": "ZQ_CMP",
+     "role": "ZQ pad vs VDDQ/2"
+    },
+    {
+     "inst": "X_SAR",
+     "cell": "ZQ_SAR5",
+     "role": "SAR register"
+    },
+    {
+     "inst": "X_RL4",
+     "cell": "ZQ_RLEG",
+     "role": "replica leg 4, M=16"
+    },
+    {
+     "inst": "X_RL3",
+     "cell": "ZQ_RLEG",
+     "role": "replica leg 3, M=8"
+    },
+    {
+     "inst": "X_RL2",
+     "cell": "ZQ_RLEG",
+     "role": "replica leg 2, M=4"
+    },
+    {
+     "inst": "X_RL1",
+     "cell": "ZQ_RLEG",
+     "role": "replica leg 1, M=2"
+    },
+    {
+     "inst": "X_RL0",
+     "cell": "ZQ_RLEG",
+     "role": "replica leg 0, M=1"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ZQ",
+     "X_CMP.INP",
+     "ZQ",
+     "reference"
+    ],
+    [
+     "R_D1",
+     "X_CMP.INN",
+     "ZREF",
+     "reference"
+    ],
+    [
+     "X_CMP.OUTB",
+     "X_SAR.KEEPB",
+     "KEEPB",
+     "slow_signal"
+    ],
+    [
+     "PORT.ZSTART",
+     "X_SAR.START",
+     "ZSTART",
+     "command"
+    ],
+    [
+     "PORT.ZCLK",
+     "X_SAR.CLK",
+     "ZCLK",
+     "clock"
+    ],
+    [
+     "X_SAR.CODE[4:0]",
+     "PORT.ZCODE[4:0]",
+     "ZCODE[4:0]",
+     "status"
+    ],
+    [
+     "X_SAR.DONE",
+     "PORT.ZDONE",
+     "ZDONE",
+     "status"
+    ],
+    [
+     "X_SAR.BUSY",
+     "M_DEN.g",
+     "BUSY",
+     "slow_signal"
+    ],
+    [
+     "X_SAR.BUSY",
+     "X_CMP.EN",
+     "BUSY",
+     "slow_signal"
+    ],
+    [
+     "PORT.VBP",
+     "X_CMP.VBP",
+     "VBP",
+     "bias"
+    ],
+    [
+     "X_SAR.CODE[4]",
+     "X_RL4.EN",
+     "ZCODE[4]",
+     "slow_signal"
+    ],
+    [
+     "X_SAR.BUSY",
+     "X_RL4.ON",
+     "BUSY",
+     "slow_signal"
+    ],
+    [
+     "X_RL4.PAD",
+     "PORT.ZQ",
+     "ZQ",
+     "reference"
+    ],
+    [
+     "X_SAR.CODE[3]",
+     "X_RL3.EN",
+     "ZCODE[3]",
+     "slow_signal"
+    ],
+    [
+     "X_SAR.BUSY",
+     "X_RL3.ON",
+     "BUSY",
+     "slow_signal"
+    ],
+    [
+     "X_RL3.PAD",
+     "PORT.ZQ",
+     "ZQ",
+     "reference"
+    ],
+    [
+     "X_SAR.CODE[2]",
+     "X_RL2.EN",
+     "ZCODE[2]",
+     "slow_signal"
+    ],
+    [
+     "X_SAR.BUSY",
+     "X_RL2.ON",
+     "BUSY",
+     "slow_signal"
+    ],
+    [
+     "X_RL2.PAD",
+     "PORT.ZQ",
+     "ZQ",
+     "reference"
+    ],
+    [
+     "X_SAR.CODE[1]",
+     "X_RL1.EN",
+     "ZCODE[1]",
+     "slow_signal"
+    ],
+    [
+     "X_SAR.BUSY",
+     "X_RL1.ON",
+     "BUSY",
+     "slow_signal"
+    ],
+    [
+     "X_RL1.PAD",
+     "PORT.ZQ",
+     "ZQ",
+     "reference"
+    ],
+    [
+     "X_SAR.CODE[0]",
+     "X_RL0.EN",
+     "ZCODE[0]",
+     "slow_signal"
+    ],
+    [
+     "X_SAR.BUSY",
+     "X_RL0.ON",
+     "BUSY",
+     "slow_signal"
+    ],
+    [
+     "X_RL0.PAD",
+     "PORT.ZQ",
+     "ZQ",
+     "reference"
+    ]
+   ],
+   "controls": {
+    "ZSTART": "start calibration (command)",
+    "ZCLK": "slow calibration clock",
+    "VBP": "comparator bias"
+   },
+   "notes": "Feedback loop: CODE -> replica legs -> ZQ pad voltage -> comparator -> SAR -> CODE (BUSY also gates the divider, comparator and replica legs). More legs pull ZQ lower; a bit is kept while ZQ > VDDQ/2. The same code drives the Tx legs live (also during calibration), so ZQ must run while the bus is idle. Multi-function, inverting null."
+  },
+  "ESD_DIO2": {
+   "role": "Primary pad ESD: gate-tied thick-oxide PMOS to VDDQ and NMOS to VSSQ (diode-connected)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.PAD",
+     "M_DP.d",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "PORT.PAD",
+     "M_DN.d",
+     "PAD",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Shunt devices on the pad (off in normal operation), not in series with the signal."
+  },
+  "ESD_CLAMP": {
+   "role": "RC-triggered rail clamp: 200k/2p RC, inverter, big NMOS (50u x 40) between VP and VN",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.VP",
+     "R_RC",
+     "VP",
+     "power"
+    ],
+    [
+     "R_RC",
+     "M_IP.g",
+     "RC",
+     "slow_signal"
+    ],
+    [
+     "C_RC",
+     "M_IN.g",
+     "RC",
+     "slow_signal"
+    ],
+    [
+     "M_IP.d",
+     "M_BIG.g",
+     "TRG",
+     "slow_signal"
+    ],
+    [
+     "PORT.VP",
+     "M_BIG.d",
+     "VP",
+     "power"
+    ],
+    [
+     "M_BIG.s",
+     "PORT.VN",
+     "VN",
+     "power"
+    ]
+   ],
+   "controls": {},
+   "notes": "Instantiated for VDDQ/VSSQ and for VDD/VSS."
+  },
+  "PAD_IN": {
+   "role": "Input pad: primary dual-diode ESD plus 100 ohm secondary series R",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "X_ESD",
+     "cell": "ESD_DIO2",
+     "role": "primary ESD"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.PAD",
+     "X_ESD.PAD",
+     "PAD",
+     "clock"
+    ],
+    [
+     "PORT.PAD",
+     "R_SEC",
+     "PAD",
+     "clock"
+    ],
+    [
+     "R_SEC",
+     "PORT.PADR",
+     "PADR",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Used for WCK and WCKB; the series R is in the clock path."
+  },
+  "DQ_SLICE": {
+   "role": "Per-DQ bidirectional slice: primary ESD, pad cap, pull-down ODT array and the Tx driver legs on the pad node; 150 ohm secondary R to the receiver",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X_ESD",
+     "cell": "ESD_DIO2",
+     "role": "primary ESD"
+    },
+    {
+     "inst": "X_ODT",
+     "cell": "ODT_PD",
+     "role": "pull-down ODT"
+    },
+    {
+     "inst": "X_TX",
+     "cell": "TX_DQ",
+     "role": "transmitter"
+    },
+    {
+     "inst": "X_RX",
+     "cell": "RX_DQ",
+     "role": "receiver"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.PAD",
+     "R_SEC",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "R_SEC",
+     "X_RX.PADR",
+     "PADR",
+     "hs_data"
+    ],
+    [
+     "X_TX.PAD",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "PORT.PAD",
+     "X_ESD.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "PORT.PAD",
+     "X_ODT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "C_PAD",
+     "PORT.PAD",
+     "PAD",
+     "hs_data"
+    ],
+    [
+     "PORT.TXD[3:0]",
+     "X_TX.TXD[3:0]",
+     "TXD[3:0]",
+     "word_rate_data"
+    ],
+    [
+     "X_RX.RXD[3:0]",
+     "PORT.RXD[3:0]",
+     "RXD[3:0]",
+     "word_rate_data"
+    ],
+    [
+     "PORT.PH[3:0]",
+     "X_TX.PH[3:0]",
+     "PH[3:0]",
+     "clock"
+    ],
+    [
+     "PORT.PH[3:0]",
+     "X_RX.PH[3:0]",
+     "PH[3:0]",
+     "clock"
+    ],
+    [
+     "PORT.EN_M[4:0]",
+     "X_TX.EN_M[4:0]",
+     "EN_M[4:0]",
+     "important_control"
+    ],
+    [
+     "PORT.EN_P[2:0]",
+     "X_TX.EN_P[2:0]",
+     "EN_P[2:0]",
+     "important_control"
+    ],
+    [
+     "PORT.SR[1:0]",
+     "X_TX.SR[1:0]",
+     "SR[1:0]",
+     "important_control"
+    ],
+    [
+     "PORT.SRB[1:0]",
+     "X_TX.SRB[1:0]",
+     "SRB[1:0]",
+     "important_control"
+    ],
+    [
+     "PORT.ODT_G[2:0]",
+     "X_ODT.G[2:0]",
+     "ODT_G[2:0]",
+     "important_control"
+    ],
+    [
+     "PORT.VREF",
+     "X_RX.VREF",
+     "VREF",
+     "reference"
+    ],
+    [
+     "PORT.CAL_EN",
+     "X_RX.CAL_EN",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_ENB",
+     "X_RX.CAL_ENB",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_CK",
+     "X_RX.CAL_CK",
+     "CAL_CK",
+     "clock"
+    ],
+    [
+     "PORT.CAL_RUN",
+     "X_RX.CAL_RUN",
+     "CAL_RUN",
+     "general_control"
+    ],
+    [
+     "PORT.CTLE_C[1:0]",
+     "X_RX.CTLE_C[1:0]",
+     "CTLE_C[1:0]",
+     "important_control"
+    ],
+    [
+     "PORT.VBP",
+     "X_RX.VBP",
+     "VBP",
+     "bias"
+    ],
+    [
+     "PORT.VALF",
+     "X_RX.VALF",
+     "VALF",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "EN_M[4:0]": "main drive strength / OE",
+    "EN_P[2:0]": "de-emphasis strength",
+    "SR[1:0]": "slew",
+    "ODT_G[2:0]": "termination legs",
+    "CAL_EN": "Rx offset-cal mode",
+    "CTLE_C[1:0]": "CTLE peaking",
+    "VALF": "DFE tap",
+    "CAL_RUN": "cal counter enable"
+   },
+   "notes": "Bidirectional (pad in both directions), inverting null. The driver and ODT sit before R_SEC, the receiver after it."
+  },
+  "LP5_DQ_BYTE": {
+   "role": "LPDDR5-style x8 DQ byte IO (memory side): 8 bidirectional DQ slices (4:1 serializer with FFE post lane, slew-coded predriver, LVSTL NMOS-NMOS driver, pull-down ODT; CTLE + 4-phase loop-unrolled DFE with double-tail comparators and offset calibration), WCK CML input with in-path DCA, analog DCC and /2 I/Q generation, quarter-rate phase tree, R-2R VREF, DFE tap DAC, ZQ 5-bit SAR, control decode, bias and ESD",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "X_PAD_WCK",
+     "cell": "PAD_IN",
+     "role": "WCK pad"
+    },
+    {
+     "inst": "X_PAD_WCKB",
+     "cell": "PAD_IN",
+     "role": "WCKB pad"
+    },
+    {
+     "inst": "X_ESD_ZQ",
+     "cell": "ESD_DIO2",
+     "role": "ZQ pad ESD"
+    },
+    {
+     "inst": "X_CLAMP_Q",
+     "cell": "ESD_CLAMP",
+     "role": "VDDQ rail clamp"
+    },
+    {
+     "inst": "X_CLAMP_C",
+     "cell": "ESD_CLAMP",
+     "role": "VDD rail clamp"
+    },
+    {
+     "inst": "X_BIAS",
+     "cell": "BIAS_GEN",
+     "role": "bias generator"
+    },
+    {
+     "inst": "X_CKGEN",
+     "cell": "CLK_GEN",
+     "role": "WCK receiver, DCA/DCC, /2 I/Q"
+    },
+    {
+     "inst": "X_CKTREE",
+     "cell": "CLK_TREE",
+     "role": "quarter-rate phase tree (left/right spines)"
+    },
+    {
+     "inst": "X_TCB0",
+     "cell": "INV_D4",
+     "role": "TXCLK buffer 1"
+    },
+    {
+     "inst": "X_TCB1",
+     "cell": "INV_D4",
+     "role": "TXCLK buffer 2"
+    },
+    {
+     "inst": "X_RCB0",
+     "cell": "INV_D4",
+     "role": "RXCLK buffer 1"
+    },
+    {
+     "inst": "X_RCB1",
+     "cell": "INV_D4",
+     "role": "RXCLK buffer 2"
+    },
+    {
+     "inst": "X_VREF",
+     "cell": "VREF_R2R",
+     "role": "Rx VREF DAC"
+    },
+    {
+     "inst": "X_TAP",
+     "cell": "TAP_DAC",
+     "role": "DFE tap DAC"
+    },
+    {
+     "inst": "X_CAL",
+     "cell": "CAL_CTRL",
+     "role": "Rx offset-cal clock and timer"
+    },
+    {
+     "inst": "X_ZQ",
+     "cell": "ZQ_CAL",
+     "role": "ZQ calibration"
+    },
+    {
+     "inst": "X_TXCTL",
+     "cell": "TX_CTRL",
+     "role": "Tx strength / FFE / slew decode"
+    },
+    {
+     "inst": "X_ODTCTL",
+     "cell": "ODT_CTRL",
+     "role": "ODT decode"
+    },
+    {
+     "inst": "X_DQ0",
+     "cell": "DQ_SLICE",
+     "role": "DQ[0] slice, left spine"
+    },
+    {
+     "inst": "X_DQ1",
+     "cell": "DQ_SLICE",
+     "role": "DQ[1] slice, left spine"
+    },
+    {
+     "inst": "X_DQ2",
+     "cell": "DQ_SLICE",
+     "role": "DQ[2] slice, left spine"
+    },
+    {
+     "inst": "X_DQ3",
+     "cell": "DQ_SLICE",
+     "role": "DQ[3] slice, left spine"
+    },
+    {
+     "inst": "X_DQ4",
+     "cell": "DQ_SLICE",
+     "role": "DQ[4] slice, right spine"
+    },
+    {
+     "inst": "X_DQ5",
+     "cell": "DQ_SLICE",
+     "role": "DQ[5] slice, right spine"
+    },
+    {
+     "inst": "X_DQ6",
+     "cell": "DQ_SLICE",
+     "role": "DQ[6] slice, right spine"
+    },
+    {
+     "inst": "X_DQ7",
+     "cell": "DQ_SLICE",
+     "role": "DQ[7] slice, right spine"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.WCK",
+     "X_PAD_WCK.PAD",
+     "WCK",
+     "clock"
+    ],
+    [
+     "PORT.WCKB",
+     "X_PAD_WCKB.PAD",
+     "WCKB",
+     "clock"
+    ],
+    [
+     "X_PAD_WCK.PADR",
+     "X_CKGEN.WCKI",
+     "WCKI",
+     "clock"
+    ],
+    [
+     "X_PAD_WCKB.PADR",
+     "X_CKGEN.WCKBI",
+     "WCKBI",
+     "clock"
+    ],
+    [
+     "X_CKGEN.PH[3:0]",
+     "X_CKTREE.PH[3:0]",
+     "PH[3:0]",
+     "clock"
+    ],
+    [
+     "X_CKTREE.PHL[2]",
+     "X_TCB0.A",
+     "PHL[2]",
+     "clock"
+    ],
+    [
+     "X_TCB0.Y",
+     "X_TCB1.A",
+     "TCK1",
+     "clock"
+    ],
+    [
+     "X_TCB1.Y",
+     "PORT.TXCLK",
+     "TXCLK",
+     "clock"
+    ],
+    [
+     "X_CKTREE.PHL[0]",
+     "X_RCB0.A",
+     "PHL[0]",
+     "clock"
+    ],
+    [
+     "X_RCB0.Y",
+     "X_RCB1.A",
+     "RCK1",
+     "clock"
+    ],
+    [
+     "X_RCB1.Y",
+     "PORT.RXCLK",
+     "RXCLK",
+     "clock"
+    ],
+    [
+     "X_CKTREE.PHL[2]",
+     "X_CAL.CKIN",
+     "PHL[2]",
+     "clock"
+    ],
+    [
+     "PORT.CK_EN",
+     "X_CKGEN.CK_EN",
+     "CK_EN",
+     "important_control"
+    ],
+    [
+     "PORT.DCC_EN",
+     "X_CKGEN.DCC_EN",
+     "DCC_EN",
+     "important_control"
+    ],
+    [
+     "PORT.DCC_RST",
+     "X_CKGEN.DCC_RST",
+     "DCC_RST",
+     "general_control"
+    ],
+    [
+     "PORT.DIV_RST",
+     "X_CKGEN.DIV_RST",
+     "DIV_RST",
+     "general_control"
+    ],
+    [
+     "PORT.IBIAS",
+     "X_BIAS.IBIAS",
+     "IBIAS",
+     "bias"
+    ],
+    [
+     "PORT.RX_EN",
+     "X_BIAS.EN",
+     "RX_EN",
+     "important_control"
+    ],
+    [
+     "PORT.RX_EN",
+     "X_VREF.EN",
+     "RX_EN",
+     "important_control"
+    ],
+    [
+     "X_BIAS.VBP_B",
+     "X_CKGEN.VBP",
+     "VBP_AO",
+     "bias"
+    ],
+    [
+     "X_BIAS.VBN",
+     "X_CKGEN.VBN",
+     "VBN",
+     "bias"
+    ],
+    [
+     "X_BIAS.VBP_B",
+     "X_ZQ.VBP",
+     "VBP_AO",
+     "bias"
+    ],
+    [
+     "X_BIAS.VBP_A",
+     "X_TAP.VBP",
+     "VBP_RX",
+     "bias"
+    ],
+    [
+     "PORT.VREF_CODE[3:0]",
+     "X_VREF.CODE[3:0]",
+     "VREF_CODE[3:0]",
+     "important_control"
+    ],
+    [
+     "PORT.DFE_TAP[2:0]",
+     "X_TAP.TAP[2:0]",
+     "DFE_TAP[2:0]",
+     "important_control"
+    ],
+    [
+     "X_CAL.CAL_ENB",
+     "X_TAP.CAL_ENB",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_EN",
+     "X_CAL.CAL_EN",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "X_CAL.CAL_DONE",
+     "PORT.CAL_DONE",
+     "CAL_DONE",
+     "status"
+    ],
+    [
+     "PORT.ZQ",
+     "X_ZQ.ZQ",
+     "ZQ",
+     "reference"
+    ],
+    [
+     "PORT.ZQ",
+     "X_ESD_ZQ.PAD",
+     "ZQ",
+     "reference"
+    ],
+    [
+     "PORT.ZQ_CLK",
+     "X_ZQ.ZCLK",
+     "ZQ_CLK",
+     "clock"
+    ],
+    [
+     "PORT.ZQ_START",
+     "X_ZQ.ZSTART",
+     "ZQ_START",
+     "command"
+    ],
+    [
+     "X_ZQ.ZDONE",
+     "PORT.ZQ_DONE",
+     "ZQ_DONE",
+     "status"
+    ],
+    [
+     "X_ZQ.ZCODE[4:0]",
+     "PORT.ZQ_CODE[4:0]",
+     "ZQ_CODE[4:0]",
+     "status"
+    ],
+    [
+     "X_ZQ.ZCODE[4:0]",
+     "X_TXCTL.ZC[4:0]",
+     "ZQ_CODE[4:0]",
+     "important_control"
+    ],
+    [
+     "PORT.OE",
+     "X_TXCTL.OE",
+     "OE",
+     "important_control"
+    ],
+    [
+     "PORT.EQ_EN",
+     "X_TXCTL.EQ_EN",
+     "EQ_EN",
+     "important_control"
+    ],
+    [
+     "PORT.SR[1:0]",
+     "X_TXCTL.SR[1:0]",
+     "SR[1:0]",
+     "important_control"
+    ],
+    [
+     "PORT.OE",
+     "X_ODTCTL.OE",
+     "OE",
+     "important_control"
+    ],
+    [
+     "PORT.ODT_EN",
+     "X_ODTCTL.ODT_EN",
+     "ODT_EN",
+     "important_control"
+    ],
+    [
+     "PORT.ODT_CODE[2:0]",
+     "X_ODTCTL.ODT_C[2:0]",
+     "ODT_CODE[2:0]",
+     "important_control"
+    ],
+    [
+     "PORT.VDDQ",
+     "X_CLAMP_Q.VP",
+     "VDDQ",
+     "power"
+    ],
+    [
+     "PORT.VDD",
+     "X_CLAMP_C.VP",
+     "VDD",
+     "power"
+    ],
+    [
+     "PORT.DQ[0]",
+     "X_DQ0.PAD",
+     "DQ[0]",
+     "hs_data"
+    ],
+    [
+     "X_DQ0.PAD",
+     "PORT.DQ[0]",
+     "DQ[0]",
+     "hs_data"
+    ],
+    [
+     "PORT.TXD[3:0]",
+     "X_DQ0.TXD[3:0]",
+     "TXD[3:0]",
+     "word_rate_data"
+    ],
+    [
+     "X_DQ0.RXD[3:0]",
+     "PORT.RXD[3:0]",
+     "RXD[3:0]",
+     "word_rate_data"
+    ],
+    [
+     "X_CKTREE.PHL[3:0]",
+     "X_DQ0.PH[3:0]",
+     "PHL[3:0]",
+     "clock"
+    ],
+    [
+     "X_TXCTL.EN_M[4:0]",
+     "X_DQ0.EN_M[4:0]",
+     "EN_M[4:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.EN_P[2:0]",
+     "X_DQ0.EN_P[2:0]",
+     "EN_P[2:0]",
+     "important_control"
+    ],
+    [
+     "X_ODTCTL.ODT_G[2:0]",
+     "X_DQ0.ODT_G[2:0]",
+     "ODT_G[2:0]",
+     "important_control"
+    ],
+    [
+     "X_VREF.VREF",
+     "X_DQ0.VREF",
+     "VREF",
+     "reference"
+    ],
+    [
+     "X_TAP.VALF",
+     "X_DQ0.VALF",
+     "VALF",
+     "bias"
+    ],
+    [
+     "X_CAL.CAL_CK",
+     "X_DQ0.CAL_CK",
+     "CAL_CK",
+     "clock"
+    ],
+    [
+     "X_CAL.CAL_RUN",
+     "X_DQ0.CAL_RUN",
+     "CAL_RUN",
+     "general_control"
+    ],
+    [
+     "X_CAL.CAL_ENB",
+     "X_DQ0.CAL_ENB",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_EN",
+     "X_DQ0.CAL_EN",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "PORT.CTLE_CODE[1:0]",
+     "X_DQ0.CTLE_C[1:0]",
+     "CTLE_CODE[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SR[1:0]",
+     "X_DQ0.SR[1:0]",
+     "SR[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SRB[1:0]",
+     "X_DQ0.SRB[1:0]",
+     "SRB[1:0]",
+     "important_control"
+    ],
+    [
+     "X_BIAS.VBP_A",
+     "X_DQ0.VBP",
+     "VBP_RX",
+     "bias"
+    ],
+    [
+     "PORT.DQ[1]",
+     "X_DQ1.PAD",
+     "DQ[1]",
+     "hs_data"
+    ],
+    [
+     "X_DQ1.PAD",
+     "PORT.DQ[1]",
+     "DQ[1]",
+     "hs_data"
+    ],
+    [
+     "PORT.TXD[7:4]",
+     "X_DQ1.TXD[3:0]",
+     "TXD[7:4]",
+     "word_rate_data"
+    ],
+    [
+     "X_DQ1.RXD[3:0]",
+     "PORT.RXD[7:4]",
+     "RXD[7:4]",
+     "word_rate_data"
+    ],
+    [
+     "X_CKTREE.PHL[3:0]",
+     "X_DQ1.PH[3:0]",
+     "PHL[3:0]",
+     "clock"
+    ],
+    [
+     "X_TXCTL.EN_M[4:0]",
+     "X_DQ1.EN_M[4:0]",
+     "EN_M[4:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.EN_P[2:0]",
+     "X_DQ1.EN_P[2:0]",
+     "EN_P[2:0]",
+     "important_control"
+    ],
+    [
+     "X_ODTCTL.ODT_G[2:0]",
+     "X_DQ1.ODT_G[2:0]",
+     "ODT_G[2:0]",
+     "important_control"
+    ],
+    [
+     "X_VREF.VREF",
+     "X_DQ1.VREF",
+     "VREF",
+     "reference"
+    ],
+    [
+     "X_TAP.VALF",
+     "X_DQ1.VALF",
+     "VALF",
+     "bias"
+    ],
+    [
+     "X_CAL.CAL_CK",
+     "X_DQ1.CAL_CK",
+     "CAL_CK",
+     "clock"
+    ],
+    [
+     "X_CAL.CAL_RUN",
+     "X_DQ1.CAL_RUN",
+     "CAL_RUN",
+     "general_control"
+    ],
+    [
+     "X_CAL.CAL_ENB",
+     "X_DQ1.CAL_ENB",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_EN",
+     "X_DQ1.CAL_EN",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "PORT.CTLE_CODE[1:0]",
+     "X_DQ1.CTLE_C[1:0]",
+     "CTLE_CODE[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SR[1:0]",
+     "X_DQ1.SR[1:0]",
+     "SR[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SRB[1:0]",
+     "X_DQ1.SRB[1:0]",
+     "SRB[1:0]",
+     "important_control"
+    ],
+    [
+     "X_BIAS.VBP_A",
+     "X_DQ1.VBP",
+     "VBP_RX",
+     "bias"
+    ],
+    [
+     "PORT.DQ[2]",
+     "X_DQ2.PAD",
+     "DQ[2]",
+     "hs_data"
+    ],
+    [
+     "X_DQ2.PAD",
+     "PORT.DQ[2]",
+     "DQ[2]",
+     "hs_data"
+    ],
+    [
+     "PORT.TXD[11:8]",
+     "X_DQ2.TXD[3:0]",
+     "TXD[11:8]",
+     "word_rate_data"
+    ],
+    [
+     "X_DQ2.RXD[3:0]",
+     "PORT.RXD[11:8]",
+     "RXD[11:8]",
+     "word_rate_data"
+    ],
+    [
+     "X_CKTREE.PHL[3:0]",
+     "X_DQ2.PH[3:0]",
+     "PHL[3:0]",
+     "clock"
+    ],
+    [
+     "X_TXCTL.EN_M[4:0]",
+     "X_DQ2.EN_M[4:0]",
+     "EN_M[4:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.EN_P[2:0]",
+     "X_DQ2.EN_P[2:0]",
+     "EN_P[2:0]",
+     "important_control"
+    ],
+    [
+     "X_ODTCTL.ODT_G[2:0]",
+     "X_DQ2.ODT_G[2:0]",
+     "ODT_G[2:0]",
+     "important_control"
+    ],
+    [
+     "X_VREF.VREF",
+     "X_DQ2.VREF",
+     "VREF",
+     "reference"
+    ],
+    [
+     "X_TAP.VALF",
+     "X_DQ2.VALF",
+     "VALF",
+     "bias"
+    ],
+    [
+     "X_CAL.CAL_CK",
+     "X_DQ2.CAL_CK",
+     "CAL_CK",
+     "clock"
+    ],
+    [
+     "X_CAL.CAL_RUN",
+     "X_DQ2.CAL_RUN",
+     "CAL_RUN",
+     "general_control"
+    ],
+    [
+     "X_CAL.CAL_ENB",
+     "X_DQ2.CAL_ENB",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_EN",
+     "X_DQ2.CAL_EN",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "PORT.CTLE_CODE[1:0]",
+     "X_DQ2.CTLE_C[1:0]",
+     "CTLE_CODE[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SR[1:0]",
+     "X_DQ2.SR[1:0]",
+     "SR[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SRB[1:0]",
+     "X_DQ2.SRB[1:0]",
+     "SRB[1:0]",
+     "important_control"
+    ],
+    [
+     "X_BIAS.VBP_A",
+     "X_DQ2.VBP",
+     "VBP_RX",
+     "bias"
+    ],
+    [
+     "PORT.DQ[3]",
+     "X_DQ3.PAD",
+     "DQ[3]",
+     "hs_data"
+    ],
+    [
+     "X_DQ3.PAD",
+     "PORT.DQ[3]",
+     "DQ[3]",
+     "hs_data"
+    ],
+    [
+     "PORT.TXD[15:12]",
+     "X_DQ3.TXD[3:0]",
+     "TXD[15:12]",
+     "word_rate_data"
+    ],
+    [
+     "X_DQ3.RXD[3:0]",
+     "PORT.RXD[15:12]",
+     "RXD[15:12]",
+     "word_rate_data"
+    ],
+    [
+     "X_CKTREE.PHL[3:0]",
+     "X_DQ3.PH[3:0]",
+     "PHL[3:0]",
+     "clock"
+    ],
+    [
+     "X_TXCTL.EN_M[4:0]",
+     "X_DQ3.EN_M[4:0]",
+     "EN_M[4:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.EN_P[2:0]",
+     "X_DQ3.EN_P[2:0]",
+     "EN_P[2:0]",
+     "important_control"
+    ],
+    [
+     "X_ODTCTL.ODT_G[2:0]",
+     "X_DQ3.ODT_G[2:0]",
+     "ODT_G[2:0]",
+     "important_control"
+    ],
+    [
+     "X_VREF.VREF",
+     "X_DQ3.VREF",
+     "VREF",
+     "reference"
+    ],
+    [
+     "X_TAP.VALF",
+     "X_DQ3.VALF",
+     "VALF",
+     "bias"
+    ],
+    [
+     "X_CAL.CAL_CK",
+     "X_DQ3.CAL_CK",
+     "CAL_CK",
+     "clock"
+    ],
+    [
+     "X_CAL.CAL_RUN",
+     "X_DQ3.CAL_RUN",
+     "CAL_RUN",
+     "general_control"
+    ],
+    [
+     "X_CAL.CAL_ENB",
+     "X_DQ3.CAL_ENB",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_EN",
+     "X_DQ3.CAL_EN",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "PORT.CTLE_CODE[1:0]",
+     "X_DQ3.CTLE_C[1:0]",
+     "CTLE_CODE[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SR[1:0]",
+     "X_DQ3.SR[1:0]",
+     "SR[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SRB[1:0]",
+     "X_DQ3.SRB[1:0]",
+     "SRB[1:0]",
+     "important_control"
+    ],
+    [
+     "X_BIAS.VBP_A",
+     "X_DQ3.VBP",
+     "VBP_RX",
+     "bias"
+    ],
+    [
+     "PORT.DQ[4]",
+     "X_DQ4.PAD",
+     "DQ[4]",
+     "hs_data"
+    ],
+    [
+     "X_DQ4.PAD",
+     "PORT.DQ[4]",
+     "DQ[4]",
+     "hs_data"
+    ],
+    [
+     "PORT.TXD[19:16]",
+     "X_DQ4.TXD[3:0]",
+     "TXD[19:16]",
+     "word_rate_data"
+    ],
+    [
+     "X_DQ4.RXD[3:0]",
+     "PORT.RXD[19:16]",
+     "RXD[19:16]",
+     "word_rate_data"
+    ],
+    [
+     "X_CKTREE.PHR[3:0]",
+     "X_DQ4.PH[3:0]",
+     "PHR[3:0]",
+     "clock"
+    ],
+    [
+     "X_TXCTL.EN_M[4:0]",
+     "X_DQ4.EN_M[4:0]",
+     "EN_M[4:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.EN_P[2:0]",
+     "X_DQ4.EN_P[2:0]",
+     "EN_P[2:0]",
+     "important_control"
+    ],
+    [
+     "X_ODTCTL.ODT_G[2:0]",
+     "X_DQ4.ODT_G[2:0]",
+     "ODT_G[2:0]",
+     "important_control"
+    ],
+    [
+     "X_VREF.VREF",
+     "X_DQ4.VREF",
+     "VREF",
+     "reference"
+    ],
+    [
+     "X_TAP.VALF",
+     "X_DQ4.VALF",
+     "VALF",
+     "bias"
+    ],
+    [
+     "X_CAL.CAL_CK",
+     "X_DQ4.CAL_CK",
+     "CAL_CK",
+     "clock"
+    ],
+    [
+     "X_CAL.CAL_RUN",
+     "X_DQ4.CAL_RUN",
+     "CAL_RUN",
+     "general_control"
+    ],
+    [
+     "X_CAL.CAL_ENB",
+     "X_DQ4.CAL_ENB",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_EN",
+     "X_DQ4.CAL_EN",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "PORT.CTLE_CODE[1:0]",
+     "X_DQ4.CTLE_C[1:0]",
+     "CTLE_CODE[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SR[1:0]",
+     "X_DQ4.SR[1:0]",
+     "SR[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SRB[1:0]",
+     "X_DQ4.SRB[1:0]",
+     "SRB[1:0]",
+     "important_control"
+    ],
+    [
+     "X_BIAS.VBP_A",
+     "X_DQ4.VBP",
+     "VBP_RX",
+     "bias"
+    ],
+    [
+     "PORT.DQ[5]",
+     "X_DQ5.PAD",
+     "DQ[5]",
+     "hs_data"
+    ],
+    [
+     "X_DQ5.PAD",
+     "PORT.DQ[5]",
+     "DQ[5]",
+     "hs_data"
+    ],
+    [
+     "PORT.TXD[23:20]",
+     "X_DQ5.TXD[3:0]",
+     "TXD[23:20]",
+     "word_rate_data"
+    ],
+    [
+     "X_DQ5.RXD[3:0]",
+     "PORT.RXD[23:20]",
+     "RXD[23:20]",
+     "word_rate_data"
+    ],
+    [
+     "X_CKTREE.PHR[3:0]",
+     "X_DQ5.PH[3:0]",
+     "PHR[3:0]",
+     "clock"
+    ],
+    [
+     "X_TXCTL.EN_M[4:0]",
+     "X_DQ5.EN_M[4:0]",
+     "EN_M[4:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.EN_P[2:0]",
+     "X_DQ5.EN_P[2:0]",
+     "EN_P[2:0]",
+     "important_control"
+    ],
+    [
+     "X_ODTCTL.ODT_G[2:0]",
+     "X_DQ5.ODT_G[2:0]",
+     "ODT_G[2:0]",
+     "important_control"
+    ],
+    [
+     "X_VREF.VREF",
+     "X_DQ5.VREF",
+     "VREF",
+     "reference"
+    ],
+    [
+     "X_TAP.VALF",
+     "X_DQ5.VALF",
+     "VALF",
+     "bias"
+    ],
+    [
+     "X_CAL.CAL_CK",
+     "X_DQ5.CAL_CK",
+     "CAL_CK",
+     "clock"
+    ],
+    [
+     "X_CAL.CAL_RUN",
+     "X_DQ5.CAL_RUN",
+     "CAL_RUN",
+     "general_control"
+    ],
+    [
+     "X_CAL.CAL_ENB",
+     "X_DQ5.CAL_ENB",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_EN",
+     "X_DQ5.CAL_EN",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "PORT.CTLE_CODE[1:0]",
+     "X_DQ5.CTLE_C[1:0]",
+     "CTLE_CODE[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SR[1:0]",
+     "X_DQ5.SR[1:0]",
+     "SR[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SRB[1:0]",
+     "X_DQ5.SRB[1:0]",
+     "SRB[1:0]",
+     "important_control"
+    ],
+    [
+     "X_BIAS.VBP_A",
+     "X_DQ5.VBP",
+     "VBP_RX",
+     "bias"
+    ],
+    [
+     "PORT.DQ[6]",
+     "X_DQ6.PAD",
+     "DQ[6]",
+     "hs_data"
+    ],
+    [
+     "X_DQ6.PAD",
+     "PORT.DQ[6]",
+     "DQ[6]",
+     "hs_data"
+    ],
+    [
+     "PORT.TXD[27:24]",
+     "X_DQ6.TXD[3:0]",
+     "TXD[27:24]",
+     "word_rate_data"
+    ],
+    [
+     "X_DQ6.RXD[3:0]",
+     "PORT.RXD[27:24]",
+     "RXD[27:24]",
+     "word_rate_data"
+    ],
+    [
+     "X_CKTREE.PHR[3:0]",
+     "X_DQ6.PH[3:0]",
+     "PHR[3:0]",
+     "clock"
+    ],
+    [
+     "X_TXCTL.EN_M[4:0]",
+     "X_DQ6.EN_M[4:0]",
+     "EN_M[4:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.EN_P[2:0]",
+     "X_DQ6.EN_P[2:0]",
+     "EN_P[2:0]",
+     "important_control"
+    ],
+    [
+     "X_ODTCTL.ODT_G[2:0]",
+     "X_DQ6.ODT_G[2:0]",
+     "ODT_G[2:0]",
+     "important_control"
+    ],
+    [
+     "X_VREF.VREF",
+     "X_DQ6.VREF",
+     "VREF",
+     "reference"
+    ],
+    [
+     "X_TAP.VALF",
+     "X_DQ6.VALF",
+     "VALF",
+     "bias"
+    ],
+    [
+     "X_CAL.CAL_CK",
+     "X_DQ6.CAL_CK",
+     "CAL_CK",
+     "clock"
+    ],
+    [
+     "X_CAL.CAL_RUN",
+     "X_DQ6.CAL_RUN",
+     "CAL_RUN",
+     "general_control"
+    ],
+    [
+     "X_CAL.CAL_ENB",
+     "X_DQ6.CAL_ENB",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_EN",
+     "X_DQ6.CAL_EN",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "PORT.CTLE_CODE[1:0]",
+     "X_DQ6.CTLE_C[1:0]",
+     "CTLE_CODE[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SR[1:0]",
+     "X_DQ6.SR[1:0]",
+     "SR[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SRB[1:0]",
+     "X_DQ6.SRB[1:0]",
+     "SRB[1:0]",
+     "important_control"
+    ],
+    [
+     "X_BIAS.VBP_A",
+     "X_DQ6.VBP",
+     "VBP_RX",
+     "bias"
+    ],
+    [
+     "PORT.DQ[7]",
+     "X_DQ7.PAD",
+     "DQ[7]",
+     "hs_data"
+    ],
+    [
+     "X_DQ7.PAD",
+     "PORT.DQ[7]",
+     "DQ[7]",
+     "hs_data"
+    ],
+    [
+     "PORT.TXD[31:28]",
+     "X_DQ7.TXD[3:0]",
+     "TXD[31:28]",
+     "word_rate_data"
+    ],
+    [
+     "X_DQ7.RXD[3:0]",
+     "PORT.RXD[31:28]",
+     "RXD[31:28]",
+     "word_rate_data"
+    ],
+    [
+     "X_CKTREE.PHR[3:0]",
+     "X_DQ7.PH[3:0]",
+     "PHR[3:0]",
+     "clock"
+    ],
+    [
+     "X_TXCTL.EN_M[4:0]",
+     "X_DQ7.EN_M[4:0]",
+     "EN_M[4:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.EN_P[2:0]",
+     "X_DQ7.EN_P[2:0]",
+     "EN_P[2:0]",
+     "important_control"
+    ],
+    [
+     "X_ODTCTL.ODT_G[2:0]",
+     "X_DQ7.ODT_G[2:0]",
+     "ODT_G[2:0]",
+     "important_control"
+    ],
+    [
+     "X_VREF.VREF",
+     "X_DQ7.VREF",
+     "VREF",
+     "reference"
+    ],
+    [
+     "X_TAP.VALF",
+     "X_DQ7.VALF",
+     "VALF",
+     "bias"
+    ],
+    [
+     "X_CAL.CAL_CK",
+     "X_DQ7.CAL_CK",
+     "CAL_CK",
+     "clock"
+    ],
+    [
+     "X_CAL.CAL_RUN",
+     "X_DQ7.CAL_RUN",
+     "CAL_RUN",
+     "general_control"
+    ],
+    [
+     "X_CAL.CAL_ENB",
+     "X_DQ7.CAL_ENB",
+     "CAL_ENB",
+     "important_control"
+    ],
+    [
+     "PORT.CAL_EN",
+     "X_DQ7.CAL_EN",
+     "CAL_EN",
+     "important_control"
+    ],
+    [
+     "PORT.CTLE_CODE[1:0]",
+     "X_DQ7.CTLE_C[1:0]",
+     "CTLE_CODE[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SR[1:0]",
+     "X_DQ7.SR[1:0]",
+     "SR[1:0]",
+     "important_control"
+    ],
+    [
+     "X_TXCTL.SRB[1:0]",
+     "X_DQ7.SRB[1:0]",
+     "SRB[1:0]",
+     "important_control"
+    ],
+    [
+     "X_BIAS.VBP_A",
+     "X_DQ7.VBP",
+     "VBP_RX",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "OE": "driver enable (read), also forces ODT off",
+    "EQ_EN": "Tx de-emphasis on",
+    "SR[1:0]": "output slew",
+    "ODT_EN": "termination on",
+    "ODT_CODE[2:0]": "termination strength",
+    "VREF_CODE[3:0]": "Rx threshold",
+    "CTLE_CODE[1:0]": "Rx peaking",
+    "DFE_TAP[2:0]": "DFE tap alpha",
+    "RX_EN": "Rx bias and VREF ladder",
+    "CAL_EN": "Rx offset-cal mode",
+    "ZQ_START": "ZQ calibration command",
+    "CK_EN": "WCK receiver enable",
+    "DCC_EN": "duty loop on",
+    "DCC_RST": "VCTRL preset",
+    "DIV_RST": "I/Q divider reset"
+   },
+   "notes": "Bidirectional DQ pads appear as input and output. Feedback loops: DCC (inside X_CKGEN), ZQ SAR (inside X_ZQ), per-DQ DFE decision loop and offset-cal loop (inside X_DQn/X_RX), divider ring (X_CKGEN/X_DIV). The ZQ code path X_ZQ -> X_TXCTL -> leg enables is open loop at run time. DQ0-3 use the left spine PHL, DQ4-7 the right spine PHR. TXCLK is the buffered left-spine phase 2, RXCLK phase 0, the cal clock divides phase 2. M_DCAP (NMOS) and C_DCQ are decaps. Not on the HS path: X_BIAS, X_VREF, X_TAP, X_CAL, X_ZQ, X_TXCTL, X_ODTCTL, X_ESD_ZQ, rail clamps."
+  }
+ }
+}

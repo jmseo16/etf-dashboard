@@ -2,6 +2,7 @@
 """Pack the whole skill folder into one text file (SOURCE_BUNDLE.md) for text-only hand-over.
 
 usage: python3 make_bundle.py            (run from this folder or anywhere)
+       python3 make_bundle.py --tests    (tests/regression → TESTS_BUNDLE.md)
 The receiver restores every file with the restore script printed at the top of the bundle.
 """
 import hashlib
@@ -53,6 +54,48 @@ sys.exit(1 if bad else 0)
 '''
 
 
+def write_bundle(out, files, header):
+    parts = list(header) + [
+        "### 복원 스크립트 (restore.py)\n",
+        FENCE + "python\n" + RESTORE.rstrip("\n") + "\n" + FENCE + "\n",
+        "## 파일 목록\n",
+    ]
+    listing, blocks = [], []
+    for rel in files:
+        with open(os.path.join(HERE, rel), encoding="utf-8") as f:
+            data = f.read()
+        if FENCE in data:
+            raise SystemExit("%s contains %s; choose a longer fence" % (rel, FENCE))
+        sha = hashlib.sha256(data.encode("utf-8")).hexdigest()
+        nl = "1" if data.endswith("\n") else "0"
+        body = data[:-1] if nl == "1" else data
+        lang = LANG.get(os.path.splitext(rel)[1], "")
+        listing.append("| `%s` | %d | `%s…` |" % (rel, len(data.encode("utf-8")), sha[:12]))
+        blocks.append("### FILE: %s\n<!-- sha256=%s newline=%s -->\n%s%s\n%s\n%s\n" % (rel, sha, nl, FENCE, lang, body, FENCE))
+    parts.append("| 경로 | 바이트 | SHA-256 |\n|---|---|---|\n" + "\n".join(listing) + "\n")
+    parts.append("## 파일\n")
+    parts.extend(blocks)
+    with open(out, "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(parts))
+    print("wrote", out, os.path.getsize(out), "bytes,", len(files), "files")
+
+
+def tests_bundle():
+    root = os.path.join(HERE, "tests", "regression")
+    files = []
+    for d, _, fs in sorted(os.walk(root)):
+        for name in sorted(fs):
+            files.append(os.path.relpath(os.path.join(d, name), HERE).replace(os.sep, "/"))
+    header = [
+        "# 넷리스트 기반 High-Speed IO 개념도 그리기 — 회귀 시험 세트 묶음 (TESTS_BUNDLE)\n",
+        "`tests/regression/`의 시험 netlist·정답지·설계 메모 전부. 쓰는 법은 그 안의 `README.md`. "
+        "**정답지·설계 메모·name_map은 검증 쪽에만 준다(그리는 쪽에는 netlist.sp만).**\n",
+        "## 복원 방법\n",
+        "`python3 restore.py TESTS_BUNDLE.md netlist-hsio-concept-diagram` → 모든 줄 `OK`, 마지막 줄 `0 checksum mismatches`.\n",
+    ]
+    write_bundle(os.path.join(HERE, "TESTS_BUNDLE.md"), files, header)
+
+
 def main():
     parts = [
         "# 넷리스트 기반 High-Speed IO 개념도 그리기 — 전체 파일 묶음 (SOURCE_BUNDLE)\n",
@@ -96,4 +139,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import sys as _sys
+    if "--tests" in _sys.argv:
+        tests_bundle()
+    else:
+        main()

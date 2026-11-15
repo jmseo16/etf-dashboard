@@ -1,0 +1,975 @@
+{
+ "top": "hsio_bist_top",
+ "supplies": [
+  "vdd",
+  "vddq"
+ ],
+ "grounds": [
+  "vss"
+ ],
+ "ports": {
+  "ckp": {"class": "clock_in", "function": "4 GHz half-rate differential clock, true (AC-coupled into ck_rx_acbuf)"},
+  "ckn": {"class": "clock_in", "function": "half-rate differential clock, complement"},
+  "rxp": {"class": "hs_data_in", "function": "external RX pad P (8 Gb/s), 50 Ohm terminated, selected when lpbk_en=0"},
+  "rxn": {"class": "hs_data_in", "function": "external RX pad N"},
+  "txp": {"class": "hs_data_out", "function": "CML TX pad P (PRBS out); also tapped internally as loopback source"},
+  "txn": {"class": "hs_data_out", "function": "CML TX pad N; also loopback source"},
+  "ibias": {"class": "bias", "function": "100 uA reference current into bist_bias diode -> vbn for all CML tails"},
+  "rstb": {"class": "general_control", "function": "global active-low async reset; seeds LFSR to 0..01, clears registers"},
+  "bist_en": {"class": "general_control", "function": "bias enable (vbn pulled to vss when 0)"},
+  "bist_start": {"class": "important_control", "function": "BIST start request (sync to wclk, rising edge): sets RUN, clears counters/lock"},
+  "bist_stop": {"class": "important_control", "function": "BIST stop request (sync to wclk): clears RUN, sets DONE"},
+  "cfg<8:0>": {"class": "important_control", "function": "mode register data: <8> prbs_sel(1=PRBS15) <7> lpbk_en <6> tx_en <5> rx_en <4> chk_en <3> err_inj <2:0> rdly (RX clock delay trim)"},
+  "cfg_wr": {"class": "general_control", "function": "mode register write strobe (rising edge loads cfg<8:0>)"},
+  "err_cnt<9:0>": {"class": "test_digital", "function": "error-word count after lock (10b ripple counter)"},
+  "err_ovf": {"class": "test_digital", "function": "sticky error counter overflow"},
+  "bist_lock": {"class": "test_digital", "function": "checker lock (>=15 consecutive error-free words)"},
+  "bist_err": {"class": "test_digital", "function": "registered per-word error flag from PRBS checker"},
+  "bist_busy": {"class": "test_digital", "function": "RUN state"},
+  "bist_done": {"class": "test_digital", "function": "DONE state (set by stop after run)"},
+  "vdd": {"class": "power", "function": "0.9 V core supply"},
+  "vddq": {"class": "power", "function": "1.0 V CML/TX/RX analog supply"},
+  "vss": {"class": "power", "function": "ground"}
+ },
+ "cells": {
+  "hsio_bist_top": {
+   "role": "HSIO loopback BIST top",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "bist_bias", "role": "CML tail bias generator (current-reference diode + RC filter)"},
+    {"inst": "xi1", "cell": "bist_clkgen", "role": "clock generation: clock RX buffer, /2 word clock divider, RX clock delay trim"},
+    {"inst": "xi2", "cell": "mode_reg", "role": "9-bit BIST mode register (parallel load)"},
+    {"inst": "xi3", "cell": "bist_ctrl", "role": "BIST control FSM (start/stop, run/done, error-inject pulse, counter clear)"},
+    {"inst": "xi4", "cell": "prbs_gen", "role": "4-bit/word parallel PRBS7/PRBS15 generator (LFSR) with error injection"},
+    {"inst": "xi5", "cell": "bist_tx_hs", "role": "TX high-speed path: serializer + CML driver"},
+    {"inst": "xi6", "cell": "lpbk_mux", "role": "RX termination + CML 2:1 loopback select mux"},
+    {"inst": "xi7", "cell": "bist_rx_hs", "role": "RX high-speed path: CTLE + even/odd samplers + deserializer"},
+    {"inst": "xi8", "cell": "prbs_chk", "role": "self-synchronizing PRBS7/PRBS15 checker + error detector"},
+    {"inst": "xi9", "cell": "lock_det4", "role": "lock detector: 4-bit saturating counter of consecutive error-free words"},
+    {"inst": "xi10", "cell": "err_cnt10", "role": "10-bit ripple error counter with sticky overflow"}
+   ],
+   "signal_flow": [
+    ["PORT.ckp", "xi1.ckp", "ckp", "clock"],
+    ["PORT.ckn", "xi1.ckn", "ckn", "clock"],
+    ["xi1.ck", "xi5.ck", "ck", "clock"],
+    ["xi1.ckb", "xi5.ckb", "ckb", "clock"],
+    ["xi1.wclk", "xi4.wclk", "wclk", "clock"],
+    ["xi1.wclk", "xi5.wclk", "wclk", "clock"],
+    ["xi1.wclkb", "xi5.wclkb", "wclkb", "clock"],
+    ["xi1.wclk", "xi3.wclk", "wclk", "clock"],
+    ["xi1.rck", "xi7.rck", "rck", "clock"],
+    ["xi1.rckb", "xi7.rckb", "rckb", "clock"],
+    ["xi4.tx_d<3>", "xi5.tx_d<3>", "tx_d<3>", "word_data"],
+    ["xi4.tx_d<2>", "xi5.tx_d<2>", "tx_d<2>", "word_data"],
+    ["xi4.tx_d<1>", "xi5.tx_d<1>", "tx_d<1>", "word_data"],
+    ["xi4.tx_d<0>", "xi5.tx_d<0>", "tx_d<0>", "word_data"],
+    ["xi5.txp", "PORT.txp", "txp", "hs_data"],
+    ["xi5.txn", "PORT.txn", "txn", "hs_data"],
+    ["PORT.txp", "xi6.txp", "txp", "hs_data"],
+    ["PORT.txn", "xi6.txn", "txn", "hs_data"],
+    ["PORT.rxp", "xi6.rxp", "rxp", "hs_data"],
+    ["PORT.rxn", "xi6.rxn", "rxn", "hs_data"],
+    ["xi6.rxi_p", "xi7.rxi_p", "rxi_p", "hs_data"],
+    ["xi6.rxi_n", "xi7.rxi_n", "rxi_n", "hs_data"],
+    ["xi7.rx_d<3>", "xi8.rx_d<3>", "rx_d<3>", "word_data"],
+    ["xi7.rx_d<2>", "xi8.rx_d<2>", "rx_d<2>", "word_data"],
+    ["xi7.rx_d<1>", "xi8.rx_d<1>", "rx_d<1>", "word_data"],
+    ["xi7.rx_d<0>", "xi8.rx_d<0>", "rx_d<0>", "word_data"],
+    ["xi7.rwclk", "xi8.rwclk", "rwclk", "clock"],
+    ["xi7.rwclk", "xi9.rwclk", "rwclk", "clock"],
+    ["xi7.rwclkb", "xi10.rwclkb", "rwclkb", "clock"],
+    ["xi8.err_q", "xi9.err_q", "bist_err", "status"],
+    ["xi8.err_q", "xi10.err_q", "bist_err", "status"],
+    ["xi8.err_q", "PORT.bist_err", "bist_err", "status"],
+    ["xi8.run_s", "xi9.run_s", "run_s", "control"],
+    ["xi8.run_s", "xi10.run_s", "run_s", "control"],
+    ["xi9.lock", "xi10.lock", "bist_lock", "status"],
+    ["xi9.lock", "PORT.bist_lock", "bist_lock", "status"],
+    ["xi10.cnt<9>", "PORT.err_cnt<9>", "err_cnt<9>", "status"],
+    ["xi10.cnt<0>", "PORT.err_cnt<0>", "err_cnt<0>", "status"],
+    ["xi10.ovf", "PORT.err_ovf", "err_ovf", "status"],
+    ["PORT.ibias", "xi0.ibias", "ibias", "bias"],
+    ["xi0.vbn", "xi5.vbn", "vbn", "bias"],
+    ["xi0.vbn", "xi6.vbn", "vbn", "bias"],
+    ["xi0.vbn", "xi7.vbn", "vbn", "bias"],
+    ["PORT.cfg<8>", "xi2.cfg<8>", "cfg<8>", "control"],
+    ["PORT.cfg_wr", "xi2.cfg_wr", "cfg_wr", "control"],
+    ["xi2.prbs_sel", "xi4.prbs_sel", "prbs_sel", "control"],
+    ["xi2.prbs_sel", "xi8.prbs_sel", "prbs_sel", "control"],
+    ["xi2.lpbk_en", "xi6.lpbk_en", "lpbk_en", "control"],
+    ["xi2.tx_en", "xi5.tx_en", "tx_en", "control"],
+    ["xi2.tx_en", "xi3.tx_en", "tx_en", "control"],
+    ["xi2.rx_en", "xi7.rx_en", "rx_en", "control"],
+    ["xi2.chk_en", "xi3.chk_en", "chk_en", "control"],
+    ["xi2.err_inj", "xi3.err_inj", "err_inj", "control"],
+    ["xi2.rdly<2>", "xi1.rdly<2>", "rdly<2>", "control"],
+    ["xi2.rdly<0>", "xi1.rdly<0>", "rdly<0>", "control"],
+    ["PORT.bist_start", "xi3.bist_start", "bist_start", "control"],
+    ["PORT.bist_stop", "xi3.bist_stop", "bist_stop", "control"],
+    ["xi3.gen_run", "xi4.gen_run", "gen_run", "control"],
+    ["xi3.inj_p", "xi4.inj", "inj_p", "control"],
+    ["xi3.chk_run", "xi8.chk_run", "chk_run", "control"],
+    ["xi3.clr_b", "xi9.clr_b", "clr_b", "control"],
+    ["xi3.clr_b", "xi10.clr_b", "clr_b", "control"],
+    ["xi3.bist_busy", "PORT.bist_busy", "bist_busy", "status"],
+    ["xi3.bist_done", "PORT.bist_done", "bist_done", "status"]
+   ],
+   "controls": {
+    "cfg<8:0>": "mode register contents (prbs_sel, lpbk_en, tx_en, rx_en, chk_en, err_inj, rdly<2:0>)",
+    "cfg_wr": "mode register write strobe",
+    "bist_start": "start BIST run",
+    "bist_stop": "stop BIST run",
+    "bist_en": "bias enable",
+    "rstb": "global async reset",
+    "prbs_sel": "PRBS7 (0) / PRBS15 (1) for generator and checker",
+    "lpbk_en": "internal TX->RX loopback (1) vs external rxp/rxn (0)",
+    "tx_en": "TX driver tail enable and generator run qualifier",
+    "rx_en": "CTLE tail enable",
+    "chk_en": "checker run qualifier",
+    "err_inj": "0->1 injects one bit error on tx_d<0>",
+    "rdly<2:0>": "RX sampling clock delay trim (switched caps)"
+   },
+   "notes": "HS path: prbs_gen(xi4, word rate) -> bist_tx_hs(xi5: 4:1 serializer + CML driver) -> txp/txn pads -> lpbk_mux(xi6, loopback tap or rxp/rxn) -> bist_rx_hs(xi7: CTLE, even/odd StrongARM samplers, 1:4 deser) -> prbs_chk(xi8) -> lock_det4(xi9), err_cnt10(xi10). TX side runs on wclk (=ck/2), RX side on rwclk (=rck/2, its own divider). xi0 bias, xi1 clocks, xi2 mode register, xi3 control are not on the data path. Loopback path is analog (TX pad -> 200 Ohm -> mux), not a digital bypass. [direct primitives in this cell: 2 C]"
+  },
+  "bist_clkgen": {
+   "role": "clock generation: clock RX buffer, /2 word clock divider, RX clock delay trim",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "ck_rx_acbuf", "role": "AC-coupled self-biased inverter clock receiver (CML -> CMOS)"},
+    {"inst": "xi1", "cell": "inv_x4", "role": "clock buffer inverter (x4)"},
+    {"inst": "xi2", "cell": "inv_x4", "role": "clock buffer inverter (x4)"},
+    {"inst": "xi3", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi4", "cell": "inv_x4", "role": "clock buffer inverter (x4)"},
+    {"inst": "xi5", "cell": "inv_x4", "role": "clock buffer inverter (x4)"},
+    {"inst": "xi6", "cell": "rxck_dly", "role": "RX sampling-clock delay trim (two dly_cell paths)"}
+   ],
+   "signal_flow": [
+    ["PORT.ckp", "xi0.ckp", "ckp", "clock"],
+    ["PORT.ckn", "xi0.ckn", "ckn", "clock"],
+    ["xi0.ck", "xi2.a", "ck_i", "clock"],
+    ["xi0.ckb", "xi1.a", "ckb_i", "clock"],
+    ["xi1.y", "PORT.ck", "ck", "clock"],
+    ["xi2.y", "PORT.ckb", "ckb", "clock"],
+    ["PORT.ck", "xi3.ck", "ck", "clock"],
+    ["xi3.qb", "xi3.d", "wclkb_i", "clock"],
+    ["xi3.q", "xi5.a", "wclk_i", "clock"],
+    ["xi3.qb", "xi4.a", "wclkb_i", "clock"],
+    ["xi4.y", "PORT.wclk", "wclk", "clock"],
+    ["xi5.y", "PORT.wclkb", "wclkb", "clock"],
+    ["PORT.ck", "xi6.ck", "ck", "clock"],
+    ["PORT.ckb", "xi6.ckb", "ckb", "clock"],
+    ["xi6.rck", "PORT.rck", "rck", "clock"],
+    ["xi6.rckb", "PORT.rckb", "rckb", "clock"]
+   ],
+   "controls": {
+    "rdly<2:0>": "delay of rck/rckb vs ck/ckb (RX sampling phase)",
+    "rstb": "resets the /2 divider"
+   },
+   "notes": "ck is produced by inverting ckb_i (and ckb from ck_i) so polarity of ck follows ckp. xi3 is a DFF with D=QB used as divide-by-2 (feedback loop). wclk = ck/2 is the TX word clock."
+  },
+  "ck_rx_acbuf": {
+   "role": "AC-coupled self-biased inverter clock receiver (CML -> CMOS)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.ckp", "c0.p", "ckp", "clock"],
+    ["c0.n", "mp0.g", "net1", "clock"],
+    ["mp0.d", "mp4.g", "net3", "clock"],
+    ["mp4.d", "PORT.ck", "ck", "clock"],
+    ["PORT.ckn", "c1.p", "ckn", "clock"],
+    ["c1.n", "mp1.g", "net2", "clock"],
+    ["mp1.d", "mp5.g", "net4", "clock"],
+    ["mp5.d", "PORT.ckb", "ckb", "clock"]
+   ],
+   "controls": {},
+   "notes": "20k feedback resistors self-bias the first inverters at trip point; mp2/mn2/mp3/mn3 weak cross-coupled inverters force complementary phases. Two inversions per rail -> non-inverting. [direct primitives in this cell: 2 C, 12 MOS, 2 R]"
+  },
+  "inv_x4": {
+   "role": "clock buffer inverter (x4)",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    ["PORT.a", "mp0.g", "a", "clock"],
+    ["mp0.d", "PORT.y", "y", "clock"]
+   ],
+   "controls": {},
+   "notes": "used as clock buffer in bist_clkgen, rxck_dly, rx_deser [direct primitives in this cell: 2 MOS]"
+  },
+  "dly_cell": {
+   "role": "digitally controlled delay stage (2 inverters + binary-weighted switched caps)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.in", "mp0.g", "in", "clock"],
+    ["mp0.d", "mp1.g", "n1", "clock"],
+    ["mp1.d", "PORT.out", "out", "clock"]
+   ],
+   "controls": {
+    "c<2:0>": "switch 3f/6f/12f load caps onto internal node n1 (more code = more delay)"
+   },
+   "notes": "[direct primitives in this cell: 3 C, 7 MOS]"
+  },
+  "rxck_dly": {
+   "role": "RX sampling-clock delay trim (two dly_cell paths)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "dly_cell", "role": "digitally controlled delay stage (2 inverters + binary-weighted switched caps)"},
+    {"inst": "xi1", "cell": "dly_cell", "role": "digitally controlled delay stage (2 inverters + binary-weighted switched caps)"},
+    {"inst": "xi2", "cell": "inv_x4", "role": "clock buffer inverter (x4)"},
+    {"inst": "xi3", "cell": "inv_x4", "role": "clock buffer inverter (x4)"}
+   ],
+   "signal_flow": [
+    ["PORT.ck", "xi0.in", "ck", "clock"],
+    ["xi0.out", "xi3.a", "dp", "clock"],
+    ["PORT.ckb", "xi1.in", "ckb", "clock"],
+    ["xi1.out", "xi2.a", "dn", "clock"],
+    ["xi2.y", "PORT.rck", "rck", "clock"],
+    ["xi3.y", "PORT.rckb", "rckb", "clock"]
+   ],
+   "controls": {
+    "rdly<2:0>": "shared delay code for both phases"
+   },
+   "notes": "rck is the inverted delayed ckb path (dn), rckb the inverted delayed ck path (dp) -> rck has ck polarity. mp0/mn0/mp1/mn1 weak cross-coupling between dp and dn. [direct primitives in this cell: 4 MOS]"
+  },
+  "dffr_x1": {
+   "role": "positive-edge DFF with active-low async reset",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.d", "mn0.s", "d", "data"],
+    ["mp6.d", "PORT.q", "q", "data"]
+   ],
+   "controls": {},
+   "notes": "generic flop; on the clock path only where wired as /2 divider (bist_clkgen.xi3, rx_deser.xi4); TFF in err_cnt10. [direct primitives in this cell: 22 MOS]"
+  },
+  "dff_x1": {
+   "role": "positive-edge master-slave DFF (no reset)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.d", "mn0.s", "d", "data"],
+    ["mp5.d", "PORT.q", "q", "data"]
+   ],
+   "controls": {},
+   "notes": "on the data path as word retime flops in ser4to1 and rx_deser; also history register in prbs_chk (not HS). [direct primitives in this cell: 18 MOS]"
+  },
+  "dlat_x1": {
+   "role": "D latch, transparent when ck=1 (complement clock on ckb pin)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.d", "mn0.s", "d", "data"],
+    ["mp2.d", "PORT.q", "q", "data"],
+    ["mp1.d", "PORT.qb", "qb", "data"]
+   ],
+   "controls": {},
+   "notes": "used with ck/ckb pins swapped as a transparent-low latch in ser4to1; also inside icg_x1. [direct primitives in this cell: 8 MOS]"
+  },
+  "mux2_x1": {
+   "role": "2:1 transmission-gate mux (y = s ? b : a)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.a", "mn1.s", "a", "data"],
+    ["PORT.b", "mn2.s", "b", "data"],
+    ["mn1.d", "PORT.y", "y", "data"]
+   ],
+   "controls": {
+    "s": "select"
+   },
+   "notes": "HS use: 4:2 stage of ser4to1 (s=wclk). Also used in prbs_pred4 (not HS). [direct primitives in this cell: 6 MOS]"
+  },
+  "ser4to1": {
+   "role": "4:1 half-rate serializer (CMOS 4:2 at wclk + CML 2:1 at ck)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0<3:0>", "cell": "dff_x1", "role": "positive-edge master-slave DFF (no reset)"},
+    {"inst": "xi1<1:0>", "cell": "dlat_x1", "role": "D latch, transparent when ck=1 (complement clock on ckb pin)"},
+    {"inst": "xi2<1:0>", "cell": "dlat_x1", "role": "D latch, transparent when ck=1 (complement clock on ckb pin)"},
+    {"inst": "xi3<1:0>", "cell": "dlat_x1", "role": "D latch, transparent when ck=1 (complement clock on ckb pin)"},
+    {"inst": "xi4", "cell": "mux2_x1", "role": "2:1 transmission-gate mux (y = s ? b : a)"},
+    {"inst": "xi5", "cell": "mux2_x1", "role": "2:1 transmission-gate mux (y = s ? b : a)"},
+    {"inst": "xi6", "cell": "dlat_x1", "role": "D latch, transparent when ck=1 (complement clock on ckb pin)"},
+    {"inst": "xi7", "cell": "dlat_x1", "role": "D latch, transparent when ck=1 (complement clock on ckb pin)"},
+    {"inst": "xi8", "cell": "dlat_x1", "role": "D latch, transparent when ck=1 (complement clock on ckb pin)"},
+    {"inst": "xi9", "cell": "ser_mux2_cml", "role": "CML 2:1 clock-selected mux (final serializer stage)"}
+   ],
+   "signal_flow": [
+    ["PORT.d<0>", "xi0<0>.d", "d<0>", "word_data"],
+    ["PORT.d<1>", "xi0<1>.d", "d<1>", "word_data"],
+    ["PORT.d<2>", "xi0<2>.d", "d<2>", "word_data"],
+    ["PORT.d<3>", "xi0<3>.d", "d<3>", "word_data"],
+    ["xi0<0>.q", "xi1<0>.d", "dr<0>", "word_data"],
+    ["xi1<0>.q", "xi4.b", "a0l", "word_data"],
+    ["xi0<2>.q", "xi2<0>.d", "dr<2>", "word_data"],
+    ["xi2<0>.q", "xi3<0>.d", "net042<0>", "word_data"],
+    ["xi3<0>.q", "xi4.a", "a2h", "word_data"],
+    ["xi0<1>.q", "xi1<1>.d", "dr<1>", "word_data"],
+    ["xi1<1>.q", "xi5.b", "b1l", "word_data"],
+    ["xi0<3>.q", "xi2<1>.d", "dr<3>", "word_data"],
+    ["xi2<1>.q", "xi3<1>.d", "net042<1>", "word_data"],
+    ["xi3<1>.q", "xi5.a", "b3h", "word_data"],
+    ["xi4.y", "xi6.d", "sa", "hs_data"],
+    ["xi6.q", "xi9.a", "sar", "hs_data"],
+    ["xi6.qb", "xi9.ab", "sarb", "hs_data"],
+    ["xi5.y", "xi7.d", "sb", "hs_data"],
+    ["xi7.q", "xi8.d", "net045", "hs_data"],
+    ["xi8.q", "xi9.b", "sbr", "hs_data"],
+    ["xi8.qb", "xi9.bb", "sbrb", "hs_data"],
+    ["xi9.op", "PORT.txs", "txs", "hs_data"],
+    ["xi9.on", "PORT.txsb", "txsb", "hs_data"],
+    ["PORT.wclk", "xi0<0>.ck", "wclk", "clock"],
+    ["PORT.wclk", "xi4.s", "wclk", "clock"],
+    ["PORT.wclk", "xi5.s", "wclk", "clock"],
+    ["PORT.ckb", "xi6.ck", "ckb", "clock"],
+    ["PORT.ck", "xi8.ck", "ck", "clock"],
+    ["PORT.ck", "xi9.ck", "ck", "clock"],
+    ["PORT.ckb", "xi9.ckb", "ckb", "clock"],
+    ["PORT.vbn", "xi9.vbn", "vbn", "bias"]
+   ],
+   "controls": {},
+   "notes": "Even stream = d<0>,d<2> (mux xi4), odd stream = d<1>,d<3> (mux xi5). Latches xi1 (transparent-low on wclk), xi2+xi3 (low then high) align inputs so each mux input is stable while selected; xi6 (transparent-low on ck) and xi7+xi8 (low then high) re-time the half-rate streams for the CML mux. Serial bit order: d<0>, d<1>, d<2>, d<3>. Unused flop/latch qb outputs (net040..net046)."
+  },
+  "ser_mux2_cml": {
+   "role": "CML 2:1 clock-selected mux (final serializer stage)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.a", "mn3.g", "a", "hs_data"],
+    ["PORT.ab", "mn4.g", "ab", "hs_data"],
+    ["PORT.b", "mn5.g", "b", "hs_data"],
+    ["PORT.bb", "mn6.g", "bb", "hs_data"],
+    ["mn3.d", "PORT.on", "on", "hs_data"],
+    ["mn4.d", "PORT.op", "op", "hs_data"],
+    ["PORT.ck", "mn1.g", "ck", "clock"],
+    ["PORT.ckb", "mn2.g", "ckb", "clock"],
+    ["PORT.vbn", "mn0.g", "vbn", "bias"]
+   ],
+   "controls": {},
+   "notes": "op/on = a/ab when ck=1, b/bb when ck=0; 250 Ohm loads to vddq, ~1.6 mA tail. [direct primitives in this cell: 7 MOS, 2 R]"
+  },
+  "tx_cml_drv": {
+   "role": "CML TX line driver (50 Ohm back-terminated)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.inp", "mn0.g", "inp", "hs_data"],
+    ["mn0.d", "PORT.txn", "txn", "hs_data"],
+    ["PORT.inn", "mn1.g", "inn", "hs_data"],
+    ["mn1.d", "PORT.txp", "txp", "hs_data"],
+    ["PORT.vbn", "mn2.g", "vbn", "bias"],
+    ["PORT.en", "mn3.g", "en", "control"]
+   ],
+   "controls": {
+    "en": "tail switch (driver on/off)"
+   },
+   "notes": "~8 mA tail (80x mirror of ibias); txp follows inp. [direct primitives in this cell: 2 C, 4 MOS, 2 R]"
+  },
+  "bist_tx_hs": {
+   "role": "TX high-speed path: serializer + CML driver",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "ser4to1", "role": "4:1 half-rate serializer (CMOS 4:2 at wclk + CML 2:1 at ck)"},
+    {"inst": "xi1", "cell": "tx_cml_drv", "role": "CML TX line driver (50 Ohm back-terminated)"}
+   ],
+   "signal_flow": [
+    ["PORT.tx_d<0>", "xi0.d<0>", "tx_d<0>", "word_data"],
+    ["PORT.tx_d<3>", "xi0.d<3>", "tx_d<3>", "word_data"],
+    ["xi0.txs", "xi1.inp", "txs", "hs_data"],
+    ["xi0.txsb", "xi1.inn", "txsb", "hs_data"],
+    ["xi1.txp", "PORT.txp", "txp", "hs_data"],
+    ["xi1.txn", "PORT.txn", "txn", "hs_data"],
+    ["PORT.ck", "xi0.ck", "ck", "clock"],
+    ["PORT.ckb", "xi0.ckb", "ckb", "clock"],
+    ["PORT.wclk", "xi0.wclk", "wclk", "clock"],
+    ["PORT.wclkb", "xi0.wclkb", "wclkb", "clock"],
+    ["PORT.vbn", "xi0.vbn", "vbn", "bias"],
+    ["PORT.vbn", "xi1.vbn", "vbn", "bias"],
+    ["PORT.tx_en", "mp0.g", "tx_en", "control"],
+    ["mp1.d", "xi1.en", "en_q", "control"]
+   ],
+   "controls": {
+    "tx_en": "TX driver enable, buffered to vddq level (en_q) by mp0/mn0/mp1/mn1"
+   },
+   "notes": "[direct primitives in this cell: 1 C, 4 MOS]"
+  },
+  "lpbk_mux": {
+   "role": "RX termination + CML 2:1 loopback select mux",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "inv_x1", "role": "inverter"}
+   ],
+   "signal_flow": [
+    ["PORT.rxp", "mn3.g", "rxp", "hs_data"],
+    ["PORT.rxn", "mn4.g", "rxn", "hs_data"],
+    ["PORT.txp", "r4.p", "txp", "hs_data"],
+    ["r4.n", "mn5.g", "nlp_p", "hs_data"],
+    ["PORT.txn", "r5.p", "txn", "hs_data"],
+    ["r5.n", "mn6.g", "nlp_n", "hs_data"],
+    ["mn3.d", "PORT.rxi_n", "rxi_n", "hs_data"],
+    ["mn4.d", "PORT.rxi_p", "rxi_p", "hs_data"],
+    ["mn5.d", "PORT.rxi_n", "rxi_n", "hs_data"],
+    ["mn6.d", "PORT.rxi_p", "rxi_p", "hs_data"],
+    ["PORT.lpbk_en", "mn2.g", "lpbk_en", "control"],
+    ["PORT.lpbk_en", "xi0.a", "lpbk_en", "control"],
+    ["xi0.y", "mn1.g", "lpbk_enb", "control"],
+    ["PORT.vbn", "mn0.g", "vbn", "bias"]
+   ],
+   "controls": {
+    "lpbk_en": "1: TX-pad loopback pair (mn5/mn6) gets the tail; 0: external rxp/rxn pair (mn3/mn4)"
+   },
+   "notes": "r0/r1 2x50 Ohm termination of rxp/rxn to nvcm (0.7 vddq via r2/r3 divider); r4/r5 200 Ohm loopback isolation from TX pads. [direct primitives in this cell: 1 C, 7 MOS, 8 R]"
+  },
+  "rx_ctle": {
+   "role": "source-degenerated CTLE (RC zero)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.inp", "mn0.g", "inp", "hs_data"],
+    ["mn0.d", "PORT.outn", "outn", "hs_data"],
+    ["PORT.inn", "mn1.g", "inn", "hs_data"],
+    ["mn1.d", "PORT.outp", "outp", "hs_data"],
+    ["PORT.vbn", "mn2.g", "vbn", "bias"],
+    ["PORT.en", "mn4.g", "en", "control"]
+   ],
+   "controls": {
+    "en": "tail enable (rx_en)"
+   },
+   "notes": "r0 400 Ohm || c0 150 fF degeneration, 300 Ohm loads to vddq. [direct primitives in this cell: 1 C, 5 MOS, 3 R]"
+  },
+  "sa_strongarm": {
+   "role": "StrongARM sense amplifier",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.inp", "mn1.g", "inp", "hs_data"],
+    ["PORT.inn", "mn2.g", "inn", "hs_data"],
+    ["PORT.clk", "mn0.g", "clk", "clock"],
+    ["mn3.d", "PORT.outn", "outn", "hs_data"],
+    ["mn4.d", "PORT.outp", "outp", "hs_data"]
+   ],
+   "controls": {},
+   "notes": "precharge high while clk=0, evaluate on clk rising edge; inp>inn -> outn falls. [direct primitives in this cell: 11 MOS]"
+  },
+  "sr_latch_nand": {
+   "role": "NAND SR latch (sampler hold latch)",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    ["PORT.sb", "mp0.g", "sb", "hs_data"],
+    ["mp0.d", "PORT.q", "q", "hs_data"],
+    ["PORT.rb", "mp2.g", "rb", "hs_data"],
+    ["mp2.d", "PORT.qb", "qb", "hs_data"]
+   ],
+   "controls": {},
+   "notes": "active-low set/reset; sb is driven by SA outn so q = sampled data. [direct primitives in this cell: 8 MOS]"
+  },
+  "rx_sampler": {
+   "role": "data sampler: StrongARM SA + SR latch",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "sa_strongarm", "role": "StrongARM sense amplifier"},
+    {"inst": "xi1", "cell": "sr_latch_nand", "role": "NAND SR latch (sampler hold latch)"}
+   ],
+   "signal_flow": [
+    ["PORT.inp", "xi0.inp", "inp", "hs_data"],
+    ["PORT.inn", "xi0.inn", "inn", "hs_data"],
+    ["PORT.clk", "xi0.clk", "clk", "clock"],
+    ["xi0.outn", "xi1.sb", "outn", "hs_data"],
+    ["xi0.outp", "xi1.rb", "outp", "hs_data"],
+    ["xi1.q", "PORT.q", "q", "hs_data"],
+    ["xi1.qb", "PORT.qb", "qb", "hs_data"]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "rx_deser": {
+   "role": "2:4 deserializer (half-rate even/odd -> 4-bit word) + RX word clock divider",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "dff_x1", "role": "positive-edge master-slave DFF (no reset)"},
+    {"inst": "xi1", "cell": "dff_x1", "role": "positive-edge master-slave DFF (no reset)"},
+    {"inst": "xi2", "cell": "dff_x1", "role": "positive-edge master-slave DFF (no reset)"},
+    {"inst": "xi3", "cell": "dff_x1", "role": "positive-edge master-slave DFF (no reset)"},
+    {"inst": "xi4", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi5", "cell": "inv_x4", "role": "clock buffer inverter (x4)"},
+    {"inst": "xi6", "cell": "inv_x4", "role": "clock buffer inverter (x4)"},
+    {"inst": "xi7<3:0>", "cell": "dff_x1", "role": "positive-edge master-slave DFF (no reset)"}
+   ],
+   "signal_flow": [
+    ["PORT.de", "xi0.d", "de", "hs_data"],
+    ["xi0.q", "xi2.d", "e1", "hs_data"],
+    ["xi0.q", "xi7<2>.d", "e1", "word_data"],
+    ["xi2.q", "xi7<0>.d", "e2", "word_data"],
+    ["PORT.do", "xi1.d", "do", "hs_data"],
+    ["xi1.q", "xi3.d", "o1", "hs_data"],
+    ["xi1.q", "xi7<3>.d", "o1", "word_data"],
+    ["xi3.q", "xi7<1>.d", "o2", "word_data"],
+    ["xi7<3>.q", "PORT.rx_d<3>", "rx_d<3>", "word_data"],
+    ["xi7<2>.q", "PORT.rx_d<2>", "rx_d<2>", "word_data"],
+    ["xi7<1>.q", "PORT.rx_d<1>", "rx_d<1>", "word_data"],
+    ["xi7<0>.q", "PORT.rx_d<0>", "rx_d<0>", "word_data"],
+    ["PORT.rck", "xi0.ck", "rck", "clock"],
+    ["PORT.rck", "xi1.ck", "rck", "clock"],
+    ["PORT.rckb", "xi4.ck", "rckb", "clock"],
+    ["xi4.qb", "xi4.d", "rwclkb_i", "clock"],
+    ["xi4.q", "xi6.a", "rwclk_i", "clock"],
+    ["xi4.qb", "xi5.a", "rwclkb_i", "clock"],
+    ["xi5.y", "PORT.rwclk", "rwclk", "clock"],
+    ["xi6.y", "PORT.rwclkb", "rwclkb", "clock"],
+    ["PORT.rwclk", "xi7<0>.ck", "rwclk", "clock"]
+   ],
+   "controls": {},
+   "notes": "rwclk = rck/2 generated from rckb so word capture is half a cycle away from e1/o1/e2/o2 updates. rx_d<0> is the oldest bit (e2), rx_d<3> the newest (o1)."
+  },
+  "bist_rx_hs": {
+   "role": "RX high-speed path: CTLE + even/odd samplers + deserializer",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "rx_ctle", "role": "source-degenerated CTLE (RC zero)"},
+    {"inst": "xi1", "cell": "rx_sampler", "role": "data sampler: StrongARM SA + SR latch"},
+    {"inst": "xi2", "cell": "rx_sampler", "role": "data sampler: StrongARM SA + SR latch"},
+    {"inst": "xi3", "cell": "rx_deser", "role": "2:4 deserializer (half-rate even/odd -> 4-bit word) + RX word clock divider"}
+   ],
+   "signal_flow": [
+    ["PORT.rxi_p", "xi0.inp", "rxi_p", "hs_data"],
+    ["PORT.rxi_n", "xi0.inn", "rxi_n", "hs_data"],
+    ["xi0.outp", "xi1.inp", "ap", "hs_data"],
+    ["xi0.outn", "xi1.inn", "an", "hs_data"],
+    ["xi0.outp", "xi2.inp", "ap", "hs_data"],
+    ["xi0.outn", "xi2.inn", "an", "hs_data"],
+    ["PORT.rck", "xi1.clk", "rck", "clock"],
+    ["PORT.rckb", "xi2.clk", "rckb", "clock"],
+    ["xi1.q", "xi3.de", "de", "hs_data"],
+    ["xi2.q", "xi3.do", "do", "hs_data"],
+    ["PORT.rck", "xi3.rck", "rck", "clock"],
+    ["PORT.rckb", "xi3.rckb", "rckb", "clock"],
+    ["xi3.rx_d<3>", "PORT.rx_d<3>", "rx_d<3>", "word_data"],
+    ["xi3.rx_d<0>", "PORT.rx_d<0>", "rx_d<0>", "word_data"],
+    ["xi3.rwclk", "PORT.rwclk", "rwclk", "clock"],
+    ["xi3.rwclkb", "PORT.rwclkb", "rwclkb", "clock"],
+    ["PORT.vbn", "xi0.vbn", "vbn", "bias"],
+    ["PORT.rx_en", "xi0.en", "rx_en", "control"]
+   ],
+   "controls": {
+    "rx_en": "CTLE tail enable"
+   },
+   "notes": "xi1 = even sampler (rck rising), xi2 = odd sampler (rckb rising); sampler qb outputs unused (net060, net061). [direct primitives in this cell: 2 C]"
+  },
+  "bist_bias": {
+   "role": "CML tail bias generator (current-reference diode + RC filter)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "inv_x1", "role": "inverter"}
+   ],
+   "signal_flow": [
+    ["PORT.ibias", "mn0.d", "ibias", "bias"],
+    ["PORT.ibias", "r0.p", "ibias", "bias"],
+    ["r0.n", "PORT.vbn", "vbn", "bias"],
+    ["PORT.en", "xi0.a", "en", "control"],
+    ["xi0.y", "mn1.g", "enb", "control"]
+   ],
+   "controls": {
+    "en": "power-down: en=0 pulls vbn and ibias to vss"
+   },
+   "notes": "[direct primitives in this cell: 1 C, 3 MOS, 1 R]"
+  },
+  "prbs_pred4": {
+   "role": "PRBS7/PRBS15 4-bit look-ahead XOR network",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0<3:0>", "cell": "xor2_x1", "role": "static XOR2"},
+    {"inst": "xi1<3:0>", "cell": "xor2_x1", "role": "static XOR2"},
+    {"inst": "xi2<3:0>", "cell": "mux2_x1", "role": "2:1 transmission-gate mux (y = s ? b : a)"}
+   ],
+   "signal_flow": [
+    ["PORT.r<6>", "xi0<0>.a", "r<6>", "word_data"],
+    ["PORT.r<7>", "xi0<0>.b", "r<7>", "word_data"],
+    ["xi0<0>.y", "xi2<0>.a", "q7<0>", "word_data"],
+    ["PORT.r<14>", "xi1<0>.a", "r<14>", "word_data"],
+    ["PORT.r<15>", "xi1<0>.b", "r<15>", "word_data"],
+    ["xi1<0>.y", "xi2<0>.b", "q15<0>", "word_data"],
+    ["xi2<0>.y", "PORT.p<0>", "p<0>", "word_data"],
+    ["xi0<3>.y", "xi2<3>.a", "q7<3>", "word_data"],
+    ["xi1<3>.y", "xi2<3>.b", "q15<3>", "word_data"],
+    ["xi2<3>.y", "PORT.p<3>", "p<3>", "word_data"],
+    ["PORT.sel", "xi2<0>.s", "sel", "control"]
+   ],
+   "controls": {
+    "sel": "0: PRBS7 taps p<k>=r<6-k>^r<7-k>; 1: PRBS15 taps p<k>=r<14-k>^r<15-k>"
+   },
+   "notes": "r<k> = bit n-k of the sequence, p<k> = predicted/generated bit n+k. Combinational."
+  },
+  "prbs_gen": {
+   "role": "4-bit/word parallel PRBS7/PRBS15 generator (LFSR) with error injection",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "icg_x1", "role": "latch-based integrated clock gate"},
+    {"inst": "xi1", "cell": "dffs_x1", "role": "DFF with active-low async set (inverter + dffr)"},
+    {"inst": "xi2<15:2>", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi3", "cell": "prbs_pred4", "role": "PRBS7/PRBS15 4-bit look-ahead XOR network"},
+    {"inst": "xi4", "cell": "xor2_x1", "role": "static XOR2"}
+   ],
+   "signal_flow": [
+    ["PORT.wclk", "xi0.ck", "wclk", "clock"],
+    ["PORT.gen_run", "xi0.en", "gen_run", "control"],
+    ["xi0.gck", "xi1.ck", "gclk", "clock"],
+    ["xi3.p<3>", "xi1.d", "p<3>", "word_data"],
+    ["xi3.p<2>", "xi2<2>.d", "p<2>", "word_data"],
+    ["xi3.p<1>", "xi2<3>.d", "p<1>", "word_data"],
+    ["xi3.p<0>", "xi2<4>.d", "p<0>", "word_data"],
+    ["xi1.q", "PORT.tx_d<3>", "tx_d<3>", "word_data"],
+    ["xi2<2>.q", "PORT.tx_d<2>", "tx_d<2>", "word_data"],
+    ["xi2<3>.q", "PORT.tx_d<1>", "tx_d<1>", "word_data"],
+    ["xi2<4>.q", "xi4.a", "r<4>", "word_data"],
+    ["PORT.inj", "xi4.b", "inj", "control"],
+    ["xi4.y", "PORT.tx_d<0>", "tx_d<0>", "word_data"],
+    ["xi1.q", "xi2<5>.d", "tx_d<3>", "word_data"],
+    ["xi2<11>.q", "xi2<15>.d", "r<11>", "word_data"],
+    ["xi2<15>.q", "xi3.r<15>", "r<15>", "word_data"],
+    ["xi2<4>.q", "xi3.r<4>", "r<4>", "word_data"],
+    ["PORT.prbs_sel", "xi3.sel", "prbs_sel", "control"],
+    ["PORT.rstb", "xi1.setb", "rstb", "control"]
+   ],
+   "controls": {
+    "prbs_sel": "polynomial select",
+    "gen_run": "clock-gate enable (LFSR frozen when 0)",
+    "inj": "one-word pulse inverting tx_d<0>",
+    "rstb": "seed: r<1>=1 (dffs), r<15:2>=0"
+   },
+   "notes": "Feedback loop: 15-flop state register -> prbs_pred4 -> r<4:1>; r<k+4> <= r<k>. tx_d<3:1> are the state flops r<1:3> directly; tx_d<0> = r<4> XOR inj (error injected outside the LFSR, so it does not corrupt the sequence). In PRBS7 mode r<15:8> just shift. Unused qb outputs."
+  },
+  "prbs_chk": {
+   "role": "self-synchronizing PRBS7/PRBS15 checker + error detector",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "sync2_x1", "role": "2-flop synchronizer"},
+    {"inst": "xi1<15:1>", "cell": "dff_x1", "role": "positive-edge master-slave DFF (no reset)"},
+    {"inst": "xi2", "cell": "prbs_pred4", "role": "PRBS7/PRBS15 4-bit look-ahead XOR network"},
+    {"inst": "xi3<3:0>", "cell": "xor2_x1", "role": "static XOR2"},
+    {"inst": "xi4", "cell": "nor2_x1", "role": "NOR2"},
+    {"inst": "xi5", "cell": "nor2_x1", "role": "NOR2"},
+    {"inst": "xi6", "cell": "nand2_x1", "role": "NAND2"},
+    {"inst": "xi7", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi8", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"}
+   ],
+   "signal_flow": [
+    ["PORT.rx_d<3>", "xi1<1>.d", "rx_d<3>", "word_data"],
+    ["PORT.rx_d<0>", "xi1<4>.d", "rx_d<0>", "word_data"],
+    ["xi1<1>.q", "xi1<5>.d", "c<1>", "word_data"],
+    ["xi1<15>.q", "xi2.r<15>", "c<15>", "word_data"],
+    ["xi1<3>.q", "xi2.r<3>", "c<3>", "word_data"],
+    ["PORT.rx_d<0>", "xi3<0>.a", "rx_d<0>", "word_data"],
+    ["xi2.p<0>", "xi3<0>.b", "p<0>", "word_data"],
+    ["xi3<0>.y", "xi4.a", "e<0>", "word_data"],
+    ["xi3<3>.y", "xi5.b", "e<3>", "word_data"],
+    ["xi4.y", "xi6.a", "n01", "word_data"],
+    ["xi5.y", "xi6.b", "n23", "word_data"],
+    ["xi6.y", "xi7.a", "e_any", "word_data"],
+    ["xi0.q", "xi7.b", "run_s", "control"],
+    ["xi7.y", "xi8.d", "err_d", "word_data"],
+    ["xi8.q", "PORT.err_q", "err_q", "status"],
+    ["PORT.rwclk", "xi1<1>.ck", "rwclk", "clock"],
+    ["PORT.rwclk", "xi8.ck", "rwclk", "clock"],
+    ["PORT.chk_run", "xi0.d", "chk_run", "control"],
+    ["xi0.q", "PORT.run_s", "run_s", "control"],
+    ["PORT.prbs_sel", "xi2.sel", "prbs_sel", "control"]
+   ],
+   "controls": {
+    "prbs_sel": "polynomial select",
+    "chk_run": "run enable, synchronized into rwclk domain (run_s) and gates the error flag"
+   },
+   "notes": "History register c<k> (dff_x1, no reset) is loaded from received data; prediction from c<15:3> is compared with the current word rx_d<3:0>; e_any = OR of 4 bit errors; err_q registered. No reset on history flops: errors before the history fills are masked by lock_det/err_cnt gating."
+  },
+  "err_cnt10": {
+   "role": "10-bit ripple error counter with sticky overflow",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "and3_x1", "role": "AND3 (nand3 + inv)"},
+    {"inst": "xi1", "cell": "nand3_x1", "role": "NAND3"},
+    {"inst": "xi2", "cell": "inv_x1", "role": "inverter"},
+    {"inst": "xi3<9:0>", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi4", "cell": "tiehi_x1", "role": "tie-high cell"},
+    {"inst": "xi5", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"}
+   ],
+   "signal_flow": [
+    ["PORT.err_q", "xi0.a", "err_q", "status"],
+    ["PORT.lock", "xi0.b", "lock", "control"],
+    ["PORT.run_s", "xi0.c", "run_s", "control"],
+    ["xi0.y", "xi1.a", "en1", "control"],
+    ["xi5.qb", "xi1.b", "ovfb", "control"],
+    ["PORT.rwclkb", "xi1.c", "rwclkb", "clock"],
+    ["xi1.y", "xi2.a", "net090", "clock"],
+    ["xi2.y", "xi3<0>.ck", "cnt_clk", "clock"],
+    ["xi3<0>.qb", "xi3<1>.ck", "cntb<0>", "clock"],
+    ["xi3<8>.qb", "xi3<9>.ck", "cntb<8>", "clock"],
+    ["xi3<9>.qb", "xi5.ck", "cntb<9>", "clock"],
+    ["xi4.hi", "xi5.d", "net091", "control"],
+    ["xi3<0>.q", "PORT.cnt<0>", "cnt<0>", "status"],
+    ["xi3<9>.q", "PORT.cnt<9>", "cnt<9>", "status"],
+    ["xi5.q", "PORT.ovf", "ovf", "status"]
+   ],
+   "controls": {
+    "clr_b": "async clear of counter and overflow (pulsed by bist_ctrl at start)",
+    "lock": "count only when locked",
+    "run_s": "count only while running"
+   },
+   "notes": "cnt_clk = err_q & lock & run_s & ~ovf & rwclkb (pulse in the low phase of rwclk). Each bit is a toggle flop (D=QB) clocked by previous qb (ripple up-counter). Overflow flop has D tied high via tiehi and is clocked when cnt<9> falls; ovf then blocks further counting."
+  },
+  "lock_det4": {
+   "role": "lock detector: 4-bit saturating counter of consecutive error-free words",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "inv_x1", "role": "inverter"},
+    {"inst": "xi1", "cell": "nor2_x1", "role": "NOR2"},
+    {"inst": "xi2", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi3", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi4", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi5", "cell": "inv_x1", "role": "inverter"},
+    {"inst": "xi6", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi7", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi8", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi9<3:0>", "cell": "xor2_x1", "role": "static XOR2"},
+    {"inst": "xi10<3:0>", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi11<3:0>", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi12", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi13", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"}
+   ],
+   "signal_flow": [
+    ["PORT.err_q", "xi1.a", "err_q", "status"],
+    ["PORT.run_s", "xi0.a", "run_s", "control"],
+    ["xi0.y", "xi1.b", "run_sb", "control"],
+    ["xi1.y", "xi10<0>.b", "ok", "control"],
+    ["xi11<0>.q", "xi2.a", "q<0>", "status"],
+    ["xi4.y", "xi5.a", "sat", "status"],
+    ["xi4.y", "xi12.a", "sat", "status"],
+    ["xi1.y", "xi12.b", "ok", "control"],
+    ["xi12.y", "xi13.d", "lk_d", "status"],
+    ["xi13.q", "PORT.lock", "lock", "status"],
+    ["PORT.rwclk", "xi13.ck", "rwclk", "clock"],
+    ["PORT.clr_b", "xi13.rstb", "clr_b", "control"]
+   ],
+   "controls": {
+    "clr_b": "async clear",
+    "run_s": "counter held at 0 while not running"
+   },
+   "notes": "ok = ~err_q & run_s; any error synchronously clears q<3:0>; count saturates at 15 (sat); lock = registered (sat & ok). Feedback loop through counter state."
+  },
+  "mode_reg": {
+   "role": "9-bit BIST mode register (parallel load)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "inv_x1", "role": "inverter"},
+    {"inst": "xi1", "cell": "inv_x1", "role": "inverter"},
+    {"inst": "xi2<8:0>", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"}
+   ],
+   "signal_flow": [
+    ["PORT.cfg_wr", "xi0.a", "cfg_wr", "control"],
+    ["xi0.y", "xi1.a", "net110", "control"],
+    ["xi1.y", "xi2<8>.ck", "wr_ckb", "control"],
+    ["PORT.cfg<8>", "xi2<8>.d", "cfg<8>", "control"],
+    ["xi2<8>.q", "PORT.prbs_sel", "prbs_sel", "control"],
+    ["xi2<7>.q", "PORT.lpbk_en", "lpbk_en", "control"],
+    ["xi2<6>.q", "PORT.tx_en", "tx_en", "control"],
+    ["xi2<5>.q", "PORT.rx_en", "rx_en", "control"],
+    ["xi2<4>.q", "PORT.chk_en", "chk_en", "control"],
+    ["xi2<3>.q", "PORT.err_inj", "err_inj", "control"],
+    ["xi2<2>.q", "PORT.rdly<2>", "rdly<2>", "control"],
+    ["xi2<1>.q", "PORT.rdly<1>", "rdly<1>", "control"],
+    ["xi2<0>.q", "PORT.rdly<0>", "rdly<0>", "control"]
+   ],
+   "controls": {
+    "cfg<8:0>": "register data",
+    "cfg_wr": "write strobe (rising edge)",
+    "rstb": "clears all bits"
+   },
+   "notes": "net wr_ckb is cfg_wr buffered through two inverters (same polarity despite its name)."
+  },
+  "bist_ctrl": {
+   "role": "BIST control FSM (start/stop, run/done, error-inject pulse, counter clear)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "sync2_x1", "role": "2-flop synchronizer"},
+    {"inst": "xi1", "cell": "sync2_x1", "role": "2-flop synchronizer"},
+    {"inst": "xi2", "cell": "sync2_x1", "role": "2-flop synchronizer"},
+    {"inst": "xi3", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi4", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi5", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi6", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi7", "cell": "or2_x1", "role": "OR2 (nor2 + inv)"},
+    {"inst": "xi8", "cell": "inv_x1", "role": "inverter"},
+    {"inst": "xi9", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi10", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi11", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi12", "cell": "or2_x1", "role": "OR2 (nor2 + inv)"},
+    {"inst": "xi13", "cell": "inv_x1", "role": "inverter"},
+    {"inst": "xi14", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi15", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi16", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi17", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi18", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"}
+   ],
+   "signal_flow": [
+    ["PORT.bist_start", "xi0.d", "bist_start", "control"],
+    ["xi0.q", "xi3.d", "st_s", "control"],
+    ["xi0.q", "xi4.a", "st_s", "control"],
+    ["xi3.qb", "xi4.b", "st_db", "control"],
+    ["xi4.y", "xi7.b", "start_p", "control"],
+    ["xi7.y", "xi9.a", "net120", "control"],
+    ["PORT.bist_stop", "xi1.d", "bist_stop", "control"],
+    ["xi1.q", "xi8.a", "sp_s", "control"],
+    ["xi8.y", "xi9.b", "sp_sb", "control"],
+    ["xi9.y", "xi10.d", "d_run", "control"],
+    ["xi10.q", "xi7.a", "run", "control"],
+    ["xi10.q", "xi16.a", "run", "control"],
+    ["xi10.qb", "mp0.g", "runb", "status"],
+    ["mp0.d", "PORT.bist_busy", "bist_busy", "status"],
+    ["PORT.err_inj", "xi2.d", "err_inj", "control"],
+    ["xi2.q", "xi5.d", "ij_s", "control"],
+    ["xi5.qb", "xi6.b", "ij_db", "control"],
+    ["xi6.y", "PORT.inj_p", "inj_p", "control"],
+    ["xi16.y", "PORT.gen_run", "gen_run", "control"],
+    ["xi17.y", "PORT.chk_run", "chk_run", "control"],
+    ["xi18.y", "PORT.clr_b", "clr_b", "control"],
+    ["xi15.qb", "mp1.g", "doneb", "status"],
+    ["mp1.d", "PORT.bist_done", "bist_done", "status"],
+    ["PORT.wclk", "xi10.ck", "wclk", "clock"]
+   ],
+   "controls": {
+    "tx_en": "qualifies gen_run",
+    "chk_en": "qualifies chk_run",
+    "err_inj": "edge -> 1-cycle inj_p"
+   },
+   "notes": "All on wclk. run_d = (run | start_p) & ~stop_s (feedback); done_d = (done | run&stop_s) & ~start_p; clr_b = rstb & ~start_p. Output drivers mp0/mn0, mp1/mn1 are direct transistors. Unused: st_d, ij_d (q outputs of edge flops). [direct primitives in this cell: 4 MOS]"
+  },
+  "icg_x1": {
+   "role": "latch-based integrated clock gate",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "inv_x1", "role": "inverter"},
+    {"inst": "xi1", "cell": "dlat_x1", "role": "D latch, transparent when ck=1 (complement clock on ckb pin)"},
+    {"inst": "xi2", "cell": "and2_x1", "role": "AND2 (nand2 + inv)"}
+   ],
+   "signal_flow": [
+    ["PORT.ck", "xi0.a", "ck", "clock"],
+    ["PORT.en", "xi1.d", "en", "control"],
+    ["xi1.q", "xi2.a", "enl", "control"],
+    ["PORT.ck", "xi2.b", "ck", "clock"],
+    ["xi2.y", "PORT.gck", "gck", "clock"]
+   ],
+   "controls": {},
+   "notes": "gates the word clock of prbs_gen; latch transparent while ck=0."
+  },
+  "sync2_x1": {
+   "role": "2-flop synchronizer",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi1", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"}
+   ],
+   "signal_flow": [
+    ["PORT.d", "xi0.d", "d", "control"],
+    ["xi0.q", "xi1.d", "net4", "control"],
+    ["xi1.q", "PORT.q", "q", "control"]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "dffs_x1": {
+   "role": "DFF with active-low async set (inverter + dffr)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "inv_x1", "role": "inverter"},
+    {"inst": "xi1", "cell": "dffr_x1", "role": "positive-edge DFF with active-low async reset"}
+   ],
+   "signal_flow": [
+    ["PORT.d", "xi0.a", "d", "data"],
+    ["xi0.y", "xi1.d", "net6", "data"],
+    ["xi1.qb", "PORT.q", "q", "data"],
+    ["xi1.q", "PORT.qb", "qb", "data"]
+   ],
+   "controls": {},
+   "notes": "inner dffr stores ~d; its reset produces q=1."
+  },
+  "and2_x1": {
+   "role": "AND2 (nand2 + inv)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "nand2_x1", "role": "NAND2"},
+    {"inst": "xi1", "cell": "inv_x1", "role": "inverter"}
+   ],
+   "signal_flow": [
+    ["PORT.a", "xi0.a", "a", "logic"],
+    ["xi0.y", "xi1.a", "net5", "logic"],
+    ["xi1.y", "PORT.y", "y", "logic"]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "or2_x1": {
+   "role": "OR2 (nor2 + inv)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "nor2_x1", "role": "NOR2"},
+    {"inst": "xi1", "cell": "inv_x1", "role": "inverter"}
+   ],
+   "signal_flow": [
+    ["PORT.a", "xi0.a", "a", "logic"],
+    ["xi0.y", "xi1.a", "net5", "logic"],
+    ["xi1.y", "PORT.y", "y", "logic"]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "and3_x1": {
+   "role": "AND3 (nand3 + inv)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "nand3_x1", "role": "NAND3"},
+    {"inst": "xi1", "cell": "inv_x1", "role": "inverter"}
+   ],
+   "signal_flow": [
+    ["PORT.a", "xi0.a", "a", "logic"],
+    ["xi0.y", "xi1.a", "net7", "logic"],
+    ["xi1.y", "PORT.y", "y", "logic"]
+   ],
+   "controls": {},
+   "notes": ""
+  }
+ }
+}

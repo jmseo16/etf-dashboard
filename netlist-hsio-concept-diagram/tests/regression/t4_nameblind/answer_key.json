@@ -1,0 +1,8180 @@
+{
+ "netlist": "netlist_e.sp",
+ "top": "udmp",
+ "supplies": [
+  "vdd",
+  "vccq"
+ ],
+ "grounds": [
+  "vss",
+  "vssq"
+ ],
+ "ports": {
+  "dxmd<7:0>": {
+   "class": "hs_data_io",
+   "function": "DQ pads, bidirectional DDR data: write data in (to the Rx slices), read data out (from the Tx slices)"
+  },
+  "a2djg": {
+   "class": "clock_in",
+   "function": "DQS pad, bidirectional strobe: write strobe in (center-aligned, both edges sample DQ); driven as read strobe (from RE) by the Tx"
+  },
+  "kd9h": {
+   "class": "clock_in",
+   "function": "DQSB pad, complementary bidirectional strobe (replaced by VREF in SE DQS mode; driven as ~DQS on reads)"
+  },
+  "iu7a": {
+   "class": "clock_in",
+   "function": "RE read-enable pad (true phase); read clock from which DQ/DQS outputs and z6y7x are timed"
+  },
+  "ydj9": {
+   "class": "clock_in",
+   "function": "nRE pad (complement); replaced by VREF when hpaa=1"
+  },
+  "aed2r": {
+   "class": "reference",
+   "function": "ZQ pad to external precision RZQ (300 ohm to VSSQ); PU replica legs drive it during calibration"
+  },
+  "d53w": {
+   "class": "reference",
+   "function": "external VREFQ pad for DQ receivers / SE strobes (used when oaov36=0)"
+  },
+  "erflz2<31:0>": {
+   "class": "word_rate_data",
+   "function": "deserialized write data to the core, erflz2<4n+3:4n> = DQ<n> UI3..UI0, updated once per DQS/2 word"
+  },
+  "bodg": {
+   "class": "clock_out",
+   "function": "DQS/2 word clock to the core (buffered xquh); core captures erflz2 on its rising edge"
+  },
+  "j9y56<7:0>": {
+   "class": "word_rate_data",
+   "function": "even read data per DQ from the core (sent while the RE-derived clock is high)"
+  },
+  "o83e<7:0>": {
+   "class": "word_rate_data",
+   "function": "odd read data per DQ from the core (sent while the RE-derived clock is low)"
+  },
+  "z6y7x": {
+   "class": "clock_out",
+   "function": "RE-derived clock to the core read pipeline (launches j9y56/o83e and ae1v)"
+  },
+  "afvfm": {
+   "class": "important_control",
+   "function": "Rx enable: DQ/DQS receivers and strobe distribution (power-down when 0)"
+  },
+  "hhqjm": {
+   "class": "important_control",
+   "function": "Rx path select: 0 = matched (DQ replica delay + DQS H-tree), 1 = unmatched (DQ direct + DQS repeater chain)"
+  },
+  "p4xy": {
+   "class": "important_control",
+   "function": "1 = single-ended DQS (DQS vs VREF), 0 = differential DQS/DQSB"
+  },
+  "oaov36": {
+   "class": "general_control",
+   "function": "1 = internal VREF DAC, 0 = d53w; also powers the ladder/OTA"
+  },
+  "jsfy<4:0>": {
+   "class": "important_control",
+   "function": "internal VREF tap, ~34.5%..71.4% of VCCQ in ~1.2% steps"
+  },
+  "jc9f4p<2:0>": {
+   "class": "general_control",
+   "function": "Rx DQS delay trim on both strobe phases"
+  },
+  "cu2af5<23:0>": {
+   "class": "general_control",
+   "function": "per-bit Rx DQ deskew, cu2af5<3n+2:3n> for DQ<n> (training, mainly unmatched mode)"
+  },
+  "wcu58e": {
+   "class": "general_control",
+   "function": "active-low reset of the DQS/2 divider; release sets the deser word alignment"
+  },
+  "yemsy": {
+   "class": "test_digital",
+   "function": "test mode: observe xquh on f84c0z"
+  },
+  "f84c0z": {
+   "class": "test_digital",
+   "function": "test observation output (xquh gated by yemsy & afvfm)"
+  },
+  "y4hg": {
+   "class": "important_control",
+   "function": "Tx enable: RE receiver bias/power-down"
+  },
+  "hpaa": {
+   "class": "important_control",
+   "function": "1 = single-ended RE (vs VREF), 0 = differential RE/nRE"
+  },
+  "fv9mp": {
+   "class": "important_control",
+   "function": "DQ output enable; 0 = all DQ driver legs off (Hi-Z); 1 also forces DQ ODT off"
+  },
+  "lxv2s": {
+   "class": "important_control",
+   "function": "DQS/DQSB output enable (preamble..postamble); 1 also forces DQS ODT off"
+  },
+  "ae1v": {
+   "class": "important_control",
+   "function": "1 = DQS/DQSB toggle with RE, 0 = DQS low / DQSB high (preamble/postamble)"
+  },
+  "e9k4l<1:0>": {
+   "class": "general_control",
+   "function": "output slew rate: pre-driver starving current"
+  },
+  "a46hb": {
+   "class": "important_control",
+   "function": "on-die termination enable (writes); auto-gated off per group by fv9mp/lxv2s"
+  },
+  "yo1i<2:0>": {
+   "class": "important_control",
+   "function": "ODT strength: ~300/150/100/75/60/50/43 ohm Thevenin for codes 1..7"
+  },
+  "tvxkez": {
+   "class": "clock_in",
+   "function": "slow calibration clock (~10 MHz, core oscillator): ZQ SAR/counter and DCC comparator/counter; not a high-speed clock"
+  },
+  "k0qtd": {
+   "class": "important_control",
+   "function": "ZQ calibration enable: VREF divider, comparators, replica legs, PD tracking"
+  },
+  "d4ih7z": {
+   "class": "command",
+   "function": "ZQ calibration start pulse (tvxkez domain): starts the PU SAR"
+  },
+  "wzymw4": {
+   "class": "general_control",
+   "function": "ZQ reset: SAR code 0, PD counter mid-scale"
+  },
+  "wbjp": {
+   "class": "status_out",
+   "function": "PU SAR finished (also enables PD tracking)"
+  },
+  "mu0x<4:0>": {
+   "class": "status_out",
+   "function": "calibrated pull-up code (readback); internally drives the DQ/DQS PU leg enables"
+  },
+  "yxapm<4:0>": {
+   "class": "status_out",
+   "function": "calibrated pull-down code (readback); internally drives the DQ/DQS PD leg enables"
+  },
+  "ww3p": {
+   "class": "general_control",
+   "function": "1 = driver strength from ymob/u09t92 instead of ZQ codes"
+  },
+  "ymob<4:0>": {
+   "class": "general_control",
+   "function": "override pull-up code (binary legs x16..x1)"
+  },
+  "u09t92<4:0>": {
+   "class": "general_control",
+   "function": "override pull-down code (binary legs x16..x1)"
+  },
+  "ps7xf1": {
+   "class": "command",
+   "function": "DCC training command: 1 = run the duty-cycle loop while RE toggles; 0 = hold the code, clear lock"
+  },
+  "bo8fy": {
+   "class": "general_control",
+   "function": "resets the DCC code to 10000 (neutral)"
+  },
+  "wvk9mh": {
+   "class": "status_out",
+   "function": "DCC loop locked (two dither events); also freezes the code"
+  },
+  "jmfj<4:0>": {
+   "class": "status_out",
+   "function": "current DCC code readback (offset binary, 10000 neutral)"
+  },
+  "e92if2": {
+   "class": "bias",
+   "function": "~10 uA reference current from the bandgap; mirrored to ZQ comparators and the VREF buffer"
+  },
+  "vdd": {
+   "class": "power",
+   "function": "core supply (~1.0 V): Rx back end, clock trees, serializer/deser, calibration logic"
+  },
+  "vccq": {
+   "class": "power",
+   "function": "IO supply (1.2 V): receivers, level shifters, pre-drivers, drivers, ODT, ESD, ZQ analog, VREF"
+  },
+  "vss": {
+   "class": "power",
+   "function": "core ground"
+  },
+  "vssq": {
+   "class": "power",
+   "function": "IO ground"
+  }
+ },
+ "cells": {
+  "qp91a5": {
+   "role": "Enable/mode control: level-shifts ikliqn, djfa and internal-VREF select to VCCQ, decodes mj8kv into mux selects and strobe clock-gate enables, test observe enable",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xv1as",
+     "cell": "sprh",
+     "role": "ikliqn -> i7frj/yavt3 (VCCQ) for receivers"
+    },
+    {
+     "inst": "Xp7n5uf",
+     "cell": "sprh",
+     "role": "djfa -> a3si7p/xegk (VCCQ) for DQS input TG select"
+    },
+    {
+     "inst": "Xp51e2",
+     "cell": "sprh",
+     "role": "(ukid & ikliqn) -> k8ji/wysjp (VCCQ)"
+    },
+    {
+     "inst": "Xb4ldl",
+     "cell": "yavkxw",
+     "role": "ukid NAND ikliqn"
+    },
+    {
+     "inst": "Xz050",
+     "cell": "l5tu7",
+     "role": "AND completion for internal-VREF enable"
+    },
+    {
+     "inst": "Xbtwh",
+     "cell": "w4yyx",
+     "role": "m4x6 = ~mj8kv (mux select buffer)"
+    },
+    {
+     "inst": "Xs4fy9q",
+     "cell": "w4yyx",
+     "role": "z207 = mj8kv (mux select buffer)"
+    },
+    {
+     "inst": "Xyxu6",
+     "cell": "yavkxw",
+     "role": "ikliqn NAND m4x6"
+    },
+    {
+     "inst": "Xomug",
+     "cell": "l5tu7",
+     "role": "wihj = ikliqn & matched mode"
+    },
+    {
+     "inst": "Xromg",
+     "cell": "yavkxw",
+     "role": "ikliqn NAND z207"
+    },
+    {
+     "inst": "Xma4v",
+     "cell": "l5tu7",
+     "role": "qagu5 = ikliqn & unmatched mode"
+    },
+    {
+     "inst": "Xxqmjyl",
+     "cell": "yavkxw",
+     "role": "t2tu01 NAND ikliqn"
+    },
+    {
+     "inst": "Xeuv9",
+     "cell": "l5tu7",
+     "role": "h33l0e"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ikliqn",
+     "Xv1as.ya3zs",
+     "ikliqn",
+     "important_control"
+    ],
+    [
+     "Xv1as.vd4xb",
+     "PORT.i7frj",
+     "i7frj",
+     "important_control"
+    ],
+    [
+     "Xv1as.p67ma",
+     "PORT.yavt3",
+     "yavt3",
+     "important_control"
+    ],
+    [
+     "PORT.djfa",
+     "Xp7n5uf.ya3zs",
+     "djfa",
+     "important_control"
+    ],
+    [
+     "Xp7n5uf.vd4xb",
+     "PORT.a3si7p",
+     "a3si7p",
+     "important_control"
+    ],
+    [
+     "Xp7n5uf.p67ma",
+     "PORT.xegk",
+     "xegk",
+     "important_control"
+    ],
+    [
+     "PORT.ukid",
+     "Xb4ldl.d470n",
+     "ukid",
+     "general_control"
+    ],
+    [
+     "Xb4ldl.cwi5m",
+     "Xz050.dgta",
+     "p5ts",
+     "general_control"
+    ],
+    [
+     "Xz050.rsu1kh",
+     "Xp51e2.ya3zs",
+     "bwl924",
+     "general_control"
+    ],
+    [
+     "Xp51e2.vd4xb",
+     "PORT.k8ji",
+     "k8ji",
+     "general_control"
+    ],
+    [
+     "Xp51e2.p67ma",
+     "PORT.wysjp",
+     "wysjp",
+     "general_control"
+    ],
+    [
+     "PORT.mj8kv",
+     "Xbtwh.skjz",
+     "mj8kv",
+     "important_control"
+    ],
+    [
+     "Xbtwh.j0tii8",
+     "Xs4fy9q.skjz",
+     "m4x6",
+     "important_control"
+    ],
+    [
+     "Xbtwh.j0tii8",
+     "PORT.m4x6",
+     "m4x6",
+     "important_control"
+    ],
+    [
+     "Xs4fy9q.j0tii8",
+     "PORT.z207",
+     "z207",
+     "important_control"
+    ],
+    [
+     "Xbtwh.j0tii8",
+     "Xyxu6.n7av",
+     "m4x6",
+     "important_control"
+    ],
+    [
+     "Xyxu6.cwi5m",
+     "Xomug.dgta",
+     "xw1ga",
+     "important_control"
+    ],
+    [
+     "Xomug.rsu1kh",
+     "PORT.wihj",
+     "wihj",
+     "important_control"
+    ],
+    [
+     "Xs4fy9q.j0tii8",
+     "Xromg.n7av",
+     "z207",
+     "important_control"
+    ],
+    [
+     "Xromg.cwi5m",
+     "Xma4v.dgta",
+     "g0k4x0",
+     "important_control"
+    ],
+    [
+     "Xma4v.rsu1kh",
+     "PORT.qagu5",
+     "qagu5",
+     "important_control"
+    ],
+    [
+     "PORT.t2tu01",
+     "Xxqmjyl.d470n",
+     "t2tu01",
+     "test_digital"
+    ],
+    [
+     "Xxqmjyl.cwi5m",
+     "Xeuv9.dgta",
+     "fs4d4",
+     "test_digital"
+    ],
+    [
+     "Xeuv9.rsu1kh",
+     "PORT.h33l0e",
+     "h33l0e",
+     "test_digital"
+    ]
+   ],
+   "controls": {
+    "ikliqn": "global receive enable",
+    "mj8kv": "matched/unmatched mode",
+    "djfa": "single-ended vs differential DQS",
+    "ukid": "internal VREF select (qualified by ikliqn)",
+    "t2tu01": "test observe enable (qualified by ikliqn)"
+   },
+   "notes": "Static control decode; all outputs are quasi-static mode signals."
+  },
+  "a44p": {
+   "role": "Internal VREFQ generator: enable PMOS + 32-tap resistor ladder on VCCQ, 5-bit TG tree mux, unity-gain OTA buffer, external/internal select mux, VREF decap",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xdi59j<4:0>",
+     "cell": "sprh",
+     "role": "horj<4:0> -> VCCQ select/selectb"
+    },
+    {
+     "inst": "Xlayjel",
+     "cell": "vv7jcn",
+     "role": "32:1 ladder tap selection"
+    },
+    {
+     "inst": "Xtkxo3p",
+     "cell": "fgjco",
+     "role": "unity-gain VREF buffer"
+    },
+    {
+     "inst": "Xnrq6jn",
+     "cell": "ptto",
+     "role": "gcyl vs buffered internal VREF select"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.hmdp",
+     "Mn5yvw.g",
+     "hmdp",
+     "general_control"
+    ],
+    [
+     "Mn5yvw.d",
+     "Ron77",
+     "lvogd",
+     "reference"
+    ],
+    [
+     "Rw31p<30:0>",
+     "Xlayjel.no0rjq<31:0>",
+     "pa6c<31:0>",
+     "reference"
+    ],
+    [
+     "PORT.horj<4:0>",
+     "Xdi59j<4:0>.ya3zs",
+     "horj<4:0>",
+     "important_control"
+    ],
+    [
+     "Xdi59j<4:0>.vd4xb",
+     "Xlayjel.h9j9qr<4:0>",
+     "grt0<4:0>",
+     "important_control"
+    ],
+    [
+     "Xdi59j<4:0>.p67ma",
+     "Xlayjel.l4lpzy<4:0>",
+     "qqn0<4:0>",
+     "important_control"
+    ],
+    [
+     "Xlayjel.bebidw",
+     "Xtkxo3p.s802",
+     "d26i",
+     "reference"
+    ],
+    [
+     "Xtkxo3p.g5k3l",
+     "Xtkxo3p.opjbuu",
+     "aejl",
+     "reference"
+    ],
+    [
+     "Xtkxo3p.g5k3l",
+     "Xnrq6jn.g94lcx",
+     "aejl",
+     "reference"
+    ],
+    [
+     "PORT.yh2uhk",
+     "Xtkxo3p.d3u11d",
+     "yh2uhk",
+     "bias"
+    ],
+    [
+     "PORT.gcyl",
+     "Xnrq6jn.axz6m",
+     "gcyl",
+     "reference"
+    ],
+    [
+     "PORT.n1tzk",
+     "Xnrq6jn.o83wq",
+     "n1tzk",
+     "general_control"
+    ],
+    [
+     "Xnrq6jn.h5q1",
+     "PORT.sj8uy",
+     "sj8uy",
+     "reference"
+    ]
+   ],
+   "controls": {
+    "horj<4:0>": "selects ladder tap pa6c<code>; pa6c<0>=14.5k/42k (~34.5% VCCQ), pa6c<31> ~71.4% VCCQ, 500 ohm/step (~1.2%)",
+    "n1tzk": "1: internal VREF (ladder on via Mn5yvw, OTA enabled, Xnrq6jn passes aejl); 0: gcyl passed, ladder and OTA off"
+   },
+   "notes": "Ladder: Ron77 12k (top) + Rw31p<30:0> 31 x 500 ohm + Ri9di 14.5k (bottom), ~29 uA from VCCQ when on. OTA in unity-gain feedback (opjbuu = g5k3l). Cbg9z 2p and MOS cap Mf0ow decouple sj8uy. Static bias; not on the high-speed path. In udmp gcyl arrives through the VREF pad cell (Xsuj0kt ye8xk0)."
+  },
+  "vv7jcn": {
+   "role": "32:1 binary-tree analog TG mux (thick-ox, VCCQ) for VREF tap selection",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xfv3d4<15:0>",
+     "cell": "ptto",
+     "role": "level 0 (h9j9qr<0>): no0rjq<2i+1>/no0rjq<2i> -> tbt0<i>"
+    },
+    {
+     "inst": "Xr547<7:0>",
+     "cell": "ptto",
+     "role": "level 1 (h9j9qr<1>)"
+    },
+    {
+     "inst": "Xwe6i<3:0>",
+     "cell": "ptto",
+     "role": "level 2 (h9j9qr<2>)"
+    },
+    {
+     "inst": "Xd6u2yj<1:0>",
+     "cell": "ptto",
+     "role": "level 3 (h9j9qr<3>)"
+    },
+    {
+     "inst": "Xafttpq",
+     "cell": "ptto",
+     "role": "root (h9j9qr<4>)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.no0rjq<30:0:2>",
+     "Xfv3d4<15:0>.axz6m",
+     "no0rjq<30:0:2>",
+     "reference"
+    ],
+    [
+     "PORT.no0rjq<31:1:2>",
+     "Xfv3d4<15:0>.g94lcx",
+     "no0rjq<31:1:2>",
+     "reference"
+    ],
+    [
+     "Xfv3d4<14:0:2>.h5q1",
+     "Xr547<7:0>.axz6m",
+     "tbt0<14:0:2>",
+     "reference"
+    ],
+    [
+     "Xfv3d4<15:1:2>.h5q1",
+     "Xr547<7:0>.g94lcx",
+     "tbt0<15:1:2>",
+     "reference"
+    ],
+    [
+     "Xr547<6:0:2>.h5q1",
+     "Xwe6i<3:0>.axz6m",
+     "jts48<6:0:2>",
+     "reference"
+    ],
+    [
+     "Xr547<7:1:2>.h5q1",
+     "Xwe6i<3:0>.g94lcx",
+     "jts48<7:1:2>",
+     "reference"
+    ],
+    [
+     "Xwe6i<2:0:2>.h5q1",
+     "Xd6u2yj<1:0>.axz6m",
+     "yetp2<2:0:2>",
+     "reference"
+    ],
+    [
+     "Xwe6i<3:1:2>.h5q1",
+     "Xd6u2yj<1:0>.g94lcx",
+     "yetp2<3:1:2>",
+     "reference"
+    ],
+    [
+     "Xd6u2yj<0>.h5q1",
+     "Xafttpq.axz6m",
+     "sqn5av<0>",
+     "reference"
+    ],
+    [
+     "Xd6u2yj<1>.h5q1",
+     "Xafttpq.g94lcx",
+     "sqn5av<1>",
+     "reference"
+    ],
+    [
+     "Xafttpq.h5q1",
+     "PORT.bebidw",
+     "bebidw",
+     "reference"
+    ],
+    [
+     "PORT.h9j9qr<0>",
+     "Xfv3d4<15:0>.o83wq",
+     "h9j9qr<0>",
+     "important_control"
+    ],
+    [
+     "PORT.h9j9qr<1>",
+     "Xr547<7:0>.o83wq",
+     "h9j9qr<1>",
+     "important_control"
+    ],
+    [
+     "PORT.h9j9qr<2>",
+     "Xwe6i<3:0>.o83wq",
+     "h9j9qr<2>",
+     "important_control"
+    ],
+    [
+     "PORT.h9j9qr<3>",
+     "Xd6u2yj<1:0>.o83wq",
+     "h9j9qr<3>",
+     "important_control"
+    ],
+    [
+     "PORT.h9j9qr<4>",
+     "Xafttpq.o83wq",
+     "h9j9qr<4>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "h9j9qr<4:0>": "binary tap index (h9j9qr<0> = LSB at the leaf level); l4lpzy<4:0> are the complements"
+   },
+   "notes": "Each level halves the candidates; odd taps on g94lcx, even taps on axz6m. Static."
+  },
+  "fgjco": {
+   "role": "Two-stage Miller OTA (NMOS input pair, PMOS mirror, PMOS CS second stage), thick-ox on VCCQ, with power-down; used as unity-gain VREF buffer",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.s802",
+     "Myri2kk.g",
+     "s802",
+     "reference"
+    ],
+    [
+     "PORT.opjbuu",
+     "Mjoryzz.g",
+     "opjbuu",
+     "reference"
+    ],
+    [
+     "Myri2kk.d",
+     "Mov8f.g",
+     "w9rzz",
+     "reference"
+    ],
+    [
+     "Mov8f.d",
+     "PORT.g5k3l",
+     "g5k3l",
+     "reference"
+    ],
+    [
+     "PORT.d3u11d",
+     "Mbh07.d",
+     "d3u11d",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "ymovk": "enable (Mz2n1 pulls w9rzz to VCCQ when ymovk=0)",
+    "r5jy": "power-down (Mqszi grounds bias gate when r5jy=1)"
+   },
+   "notes": "Mbh07 diode sets tail (Macfm) and 2nd-stage sink (Mjxevhe) currents; Rbkfiuz 5k + Cvzljq 0.8p nulling-resistor Miller compensation."
+  },
+  "un713b": {
+   "role": "Strobe receive path: DQS/DQSB input TGs with diff/SE select, two complementary receivers (true and complement strobe), VCCQ->VDD level conversion, DQS delay trim, clock gating, matched H-trees and unmatched RPT chains for both strobe phases",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xo1nhy",
+     "cell": "q8m8",
+     "role": "always-on TG on DQS (matches the select TG on the ref side and the DQ input TG)"
+    },
+    {
+     "inst": "Xbyvi",
+     "cell": "q8m8",
+     "role": "passes DQSB to qtdhx in differential mode"
+    },
+    {
+     "inst": "Xqd2e",
+     "cell": "q8m8",
+     "role": "passes VREF to qtdhx in single-ended mode"
+    },
+    {
+     "inst": "Xne2gtq",
+     "cell": "vmgkr",
+     "role": "true-strobe receiver (DQS minus ref)"
+    },
+    {
+     "inst": "Xex8p5",
+     "cell": "vmgkr",
+     "role": "complement-strobe receiver (ref minus DQS), inputs swapped"
+    },
+    {
+     "inst": "Xydha",
+     "cell": "edau8i",
+     "role": "true strobe VCCQ->VDD"
+    },
+    {
+     "inst": "Xqk570y",
+     "cell": "edau8i",
+     "role": "complement strobe VCCQ->VDD"
+    },
+    {
+     "inst": "Xku8m",
+     "cell": "ismh",
+     "role": "true strobe delay trim (lgp56p)"
+    },
+    {
+     "inst": "Xzafk",
+     "cell": "ismh",
+     "role": "complement strobe delay trim (lgp56p)"
+    },
+    {
+     "inst": "Xrawl",
+     "cell": "uye5vz",
+     "role": "true strobe gate into matched tree (jhzo)"
+    },
+    {
+     "inst": "Xg2mqxz",
+     "cell": "uye5vz",
+     "role": "complement strobe gate into matched tree (jhzo)"
+    },
+    {
+     "inst": "Xn9e3a",
+     "cell": "uye5vz",
+     "role": "true strobe gate into RPT chain (wap5kq)"
+    },
+    {
+     "inst": "Xey70",
+     "cell": "uye5vz",
+     "role": "complement strobe gate into RPT chain (wap5kq)"
+    },
+    {
+     "inst": "Xcjz2",
+     "cell": "wggy",
+     "role": "matched H-tree, true strobe -> n45ct<8:0>"
+    },
+    {
+     "inst": "Xec8ei",
+     "cell": "wggy",
+     "role": "matched H-tree, complement strobe -> n1jm<8:0>"
+    },
+    {
+     "inst": "Xq4oy",
+     "cell": "ax7dv",
+     "role": "unmatched RPT chain, true strobe -> wkqkft<8:0>"
+    },
+    {
+     "inst": "Xqd8h",
+     "cell": "ax7dv",
+     "role": "unmatched RPT chain, complement strobe -> vgvk6<8:0>"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.o9g8",
+     "Xo1nhy.w2jsk",
+     "o9g8",
+     "clock"
+    ],
+    [
+     "Xo1nhy.lii3yp",
+     "Xne2gtq.xr7h",
+     "bigl",
+     "clock"
+    ],
+    [
+     "Xo1nhy.lii3yp",
+     "Xex8p5.rjct",
+     "bigl",
+     "clock"
+    ],
+    [
+     "PORT.yly3",
+     "Xbyvi.w2jsk",
+     "yly3",
+     "clock"
+    ],
+    [
+     "PORT.r8qt33",
+     "Xqd2e.w2jsk",
+     "r8qt33",
+     "reference"
+    ],
+    [
+     "Xbyvi.lii3yp",
+     "Xne2gtq.rjct",
+     "qtdhx",
+     "clock"
+    ],
+    [
+     "Xbyvi.lii3yp",
+     "Xex8p5.xr7h",
+     "qtdhx",
+     "clock"
+    ],
+    [
+     "Xqd2e.lii3yp",
+     "Xne2gtq.rjct",
+     "qtdhx",
+     "reference"
+    ],
+    [
+     "Xne2gtq.lweqg",
+     "Xydha.k3s6f",
+     "uw6e",
+     "clock"
+    ],
+    [
+     "Xydha.to2mwe",
+     "Xku8m.kwpzs",
+     "ushjm",
+     "clock"
+    ],
+    [
+     "Xku8m.d5af",
+     "Xrawl.k8hwgq",
+     "zsmws",
+     "clock"
+    ],
+    [
+     "Xku8m.d5af",
+     "Xn9e3a.k8hwgq",
+     "zsmws",
+     "clock"
+    ],
+    [
+     "Xrawl.ovk306",
+     "Xcjz2.ekxus",
+     "kkalkx",
+     "clock"
+    ],
+    [
+     "Xn9e3a.ovk306",
+     "Xq4oy.xyx5vk",
+     "dy98",
+     "clock"
+    ],
+    [
+     "Xex8p5.lweqg",
+     "Xqk570y.k3s6f",
+     "h7i2d5",
+     "clock"
+    ],
+    [
+     "Xqk570y.to2mwe",
+     "Xzafk.kwpzs",
+     "y7t3bu",
+     "clock"
+    ],
+    [
+     "Xzafk.d5af",
+     "Xg2mqxz.k8hwgq",
+     "uiryh",
+     "clock"
+    ],
+    [
+     "Xzafk.d5af",
+     "Xey70.k8hwgq",
+     "uiryh",
+     "clock"
+    ],
+    [
+     "Xg2mqxz.ovk306",
+     "Xec8ei.ekxus",
+     "r3jf",
+     "clock"
+    ],
+    [
+     "Xey70.ovk306",
+     "Xqd8h.xyx5vk",
+     "uw7vmi",
+     "clock"
+    ],
+    [
+     "Xcjz2.zf3r<8:0>",
+     "PORT.n45ct<8:0>",
+     "n45ct<8:0>",
+     "clock"
+    ],
+    [
+     "Xec8ei.zf3r<8:0>",
+     "PORT.n1jm<8:0>",
+     "n1jm<8:0>",
+     "clock"
+    ],
+    [
+     "Xq4oy.y39jdi<8:0>",
+     "PORT.wkqkft<8:0>",
+     "wkqkft<8:0>",
+     "clock"
+    ],
+    [
+     "Xqd8h.y39jdi<8:0>",
+     "PORT.vgvk6<8:0>",
+     "vgvk6<8:0>",
+     "clock"
+    ],
+    [
+     "PORT.s8ql",
+     "Xbyvi.qpkdub",
+     "s8ql",
+     "important_control"
+    ],
+    [
+     "PORT.wqm5q1",
+     "Xqd2e.qpkdub",
+     "wqm5q1",
+     "important_control"
+    ],
+    [
+     "PORT.l5d9x",
+     "Xne2gtq.pto2s",
+     "l5d9x",
+     "important_control"
+    ],
+    [
+     "PORT.lgp56p<2:0>",
+     "Xku8m.p59e<2:0>",
+     "lgp56p<2:0>",
+     "general_control"
+    ],
+    [
+     "PORT.lgp56p<2:0>",
+     "Xzafk.p59e<2:0>",
+     "lgp56p<2:0>",
+     "general_control"
+    ],
+    [
+     "PORT.jhzo",
+     "Xrawl.adj5",
+     "jhzo",
+     "important_control"
+    ],
+    [
+     "PORT.wap5kq",
+     "Xn9e3a.adj5",
+     "wap5kq",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "wqm5q1": "1: VREF drives qtdhx (single-ended DQS); s8ql is its complement (1: DQSB drives qtdhx)",
+    "l5d9x": "receiver enable (hb53 complement)",
+    "lgp56p<2:0>": "strobe trim delay, same code on both phases",
+    "jhzo": "enables the matched H-trees",
+    "wap5kq": "enables the unmatched RPT chains"
+   },
+   "notes": "Complement strobe is made by a second identical receiver with swapped inputs (not an inverter) so rise/fall sampling clocks have matched latency; in SE mode the complement receiver compares VREF vs DQS. Xo1nhy is an intentionally always-on TG (qpkdub tied vccq, rbsi8 tied vssq) matching Xbyvi/Xqd2e and the DQ-slice input TG. Only one distribution network toggles at a time. In udmp o9g8/yly3 come from the pksyp outputs of the two jq2jj pad cells (same fwhwl as DQ), so the DQS input sees the same pad loading as DQ."
+  },
+  "we5v": {
+   "role": "Per-DQ receive slice: input TG, VREF-referenced receiver, VCCQ->VDD conversion, per-bit deskew, matched replica delay, mode muxes for data and both strobe phases, rise/fall DDR samplers, 1:4 deserializer (instantiated in c4ar97)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xzn1tt",
+     "cell": "q8m8",
+     "role": "always-on input TG, matches the DQS input TG"
+    },
+    {
+     "inst": "Xm8bpx",
+     "cell": "vmgkr",
+     "role": "DQ receiver, DQ vs VREF"
+    },
+    {
+     "inst": "Xpnitc",
+     "cell": "edau8i",
+     "role": "VCCQ->VDD level conversion"
+    },
+    {
+     "inst": "Xot9fv3",
+     "cell": "ismh",
+     "role": "per-bit deskew trim (e1eb<2:0>)"
+    },
+    {
+     "inst": "Xqp63",
+     "cell": "xbcz59",
+     "role": "replica of DQS clock gate + H-tree delay (matched mode)"
+    },
+    {
+     "inst": "Xfxcymh",
+     "cell": "kr7x",
+     "role": "data select: replica-delayed (w73d59) vs direct (s2jpi)"
+    },
+    {
+     "inst": "Xojjo",
+     "cell": "kr7x",
+     "role": "rise strobe select: H-tree leaf (w73d59) vs RPT tap (s2jpi)"
+    },
+    {
+     "inst": "Xafue",
+     "cell": "kr7x",
+     "role": "fall strobe select: H-tree leaf (w73d59) vs RPT tap (s2jpi)"
+    },
+    {
+     "inst": "Xgk3hga",
+     "cell": "bxgg",
+     "role": "rise and fall samplers"
+    },
+    {
+     "inst": "Xonzvxn",
+     "cell": "l0sxx",
+     "role": "1:4 deserializer"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.bqc6",
+     "Xzn1tt.w2jsk",
+     "bqc6",
+     "hs_data"
+    ],
+    [
+     "Xzn1tt.lii3yp",
+     "Xm8bpx.xr7h",
+     "fi7rh",
+     "hs_data"
+    ],
+    [
+     "PORT.gvr6",
+     "Xm8bpx.rjct",
+     "gvr6",
+     "reference"
+    ],
+    [
+     "Xm8bpx.lweqg",
+     "Xpnitc.k3s6f",
+     "jqhm",
+     "hs_data"
+    ],
+    [
+     "Xpnitc.to2mwe",
+     "Xot9fv3.kwpzs",
+     "i8uru2",
+     "hs_data"
+    ],
+    [
+     "Xot9fv3.d5af",
+     "Xqp63.hbl7f",
+     "b76vx",
+     "hs_data"
+    ],
+    [
+     "Xqp63.i2gg8v",
+     "Xfxcymh.w73d59",
+     "ojk5b",
+     "hs_data"
+    ],
+    [
+     "Xot9fv3.d5af",
+     "Xfxcymh.s2jpi",
+     "b76vx",
+     "hs_data"
+    ],
+    [
+     "Xfxcymh.gwfbl",
+     "Xgk3hga.q5bjz",
+     "fy8h",
+     "hs_data"
+    ],
+    [
+     "PORT.z1zpqz",
+     "Xojjo.w73d59",
+     "z1zpqz",
+     "clock"
+    ],
+    [
+     "PORT.u1d4",
+     "Xojjo.s2jpi",
+     "u1d4",
+     "clock"
+    ],
+    [
+     "Xojjo.gwfbl",
+     "Xgk3hga.ukw8",
+     "l56kpw",
+     "clock"
+    ],
+    [
+     "PORT.j3zd",
+     "Xafue.w73d59",
+     "j3zd",
+     "clock"
+    ],
+    [
+     "PORT.faqfgf",
+     "Xafue.s2jpi",
+     "faqfgf",
+     "clock"
+    ],
+    [
+     "Xafue.gwfbl",
+     "Xgk3hga.p4rq",
+     "z7dl8",
+     "clock"
+    ],
+    [
+     "Xafue.gwfbl",
+     "Xonzvxn.yb1z",
+     "z7dl8",
+     "clock"
+    ],
+    [
+     "Xgk3hga.hjd6z7",
+     "Xonzvxn.rfomo",
+     "tswc",
+     "hs_data"
+    ],
+    [
+     "Xgk3hga.g3u8ja",
+     "Xonzvxn.ej5ebo",
+     "r8ws",
+     "hs_data"
+    ],
+    [
+     "PORT.eyha",
+     "Xonzvxn.y3h4vh",
+     "eyha",
+     "clock"
+    ],
+    [
+     "PORT.omlh",
+     "Xonzvxn.fj7kaj",
+     "omlh",
+     "clock"
+    ],
+    [
+     "Xonzvxn.y07ql<3:0>",
+     "PORT.agnm<3:0>",
+     "agnm<3:0>",
+     "word_rate_data"
+    ],
+    [
+     "PORT.zdjooo",
+     "Xfxcymh.q1ghmr",
+     "zdjooo",
+     "important_control"
+    ],
+    [
+     "PORT.zdjooo",
+     "Xojjo.q1ghmr",
+     "zdjooo",
+     "important_control"
+    ],
+    [
+     "PORT.zdjooo",
+     "Xafue.q1ghmr",
+     "zdjooo",
+     "important_control"
+    ],
+    [
+     "PORT.qm5cj",
+     "Xqp63.pay7",
+     "qm5cj",
+     "important_control"
+    ],
+    [
+     "PORT.e1eb<2:0>",
+     "Xot9fv3.p59e<2:0>",
+     "e1eb<2:0>",
+     "general_control"
+    ],
+    [
+     "PORT.wy3vv",
+     "Xm8bpx.pto2s",
+     "wy3vv",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "zdjooo": "0 = matched (replica data + H-tree strobes), 1 = unmatched (direct data + RPT taps); qm5cj is its complement and also gates the replica",
+    "e1eb<2:0>": "per-bit DQ delay trim",
+    "wy3vv": "receiver enable (hch4x complement)"
+   },
+   "notes": "Matched path is a structural copy of the strobe path: same TG, receiver, zmf6 and ismh cells, then xbcz59 (uye5vz + 3 yydl) replicating uye5vz + root/branch/leaf of wggy, and the same kr7x cell on data and strobe. In unmatched mode the replica is bypassed and clock-gated. Fall sampler clock z7dl8 also retimes the rise sample inside the deser. In udmp the bqc6 input is the secondary-protected pad node gh1dv of the shared bidirectional pad cell (c4ar97/Xal7gi), so the DQ Tx driver and ODT legs load the same pad."
+  },
+  "xbcz59": {
+   "role": "DQ replica delay line matching DQS clock gate + 3-level H-tree (gate, root, branch, leaf yydl with lumped replica load caps)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xkr9os",
+     "cell": "uye5vz",
+     "role": "replica of the DQS-path clock gate (pay7 = qm5cj)"
+    },
+    {
+     "inst": "Xgjmy",
+     "cell": "yydl",
+     "role": "replica of tree root"
+    },
+    {
+     "inst": "Xd875",
+     "cell": "yydl",
+     "role": "replica of tree branch"
+    },
+    {
+     "inst": "Xka9bp",
+     "cell": "yydl",
+     "role": "replica of tree leaf"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.hbl7f",
+     "Xkr9os.k8hwgq",
+     "hbl7f",
+     "hs_data"
+    ],
+    [
+     "PORT.pay7",
+     "Xkr9os.adj5",
+     "pay7",
+     "important_control"
+    ],
+    [
+     "Xkr9os.ovk306",
+     "Xgjmy.o822u",
+     "g2cx",
+     "hs_data"
+    ],
+    [
+     "Xgjmy.lnolwu",
+     "Xd875.o822u",
+     "nwllgn",
+     "hs_data"
+    ],
+    [
+     "Xd875.lnolwu",
+     "Xka9bp.o822u",
+     "gowsi",
+     "hs_data"
+    ],
+    [
+     "Xka9bp.lnolwu",
+     "PORT.i2gg8v",
+     "i2gg8v",
+     "hs_data"
+    ]
+   ],
+   "controls": {
+    "pay7": "gates the replica off in unmatched mode (power)"
+   },
+   "notes": "Cvz07s9 17f / Cpa0b14 13f emulate fan-out-3 (two extra yydl inputs + wire) seen by the real root/branch; Csd7h2m 5f equals the tree leaf wire cap."
+  },
+  "wggy": {
+   "role": "Matched DQS distribution: 1->3->9 buffered H-tree of yydl with lumped wire caps; leaves 0..7 to DQ slices, leaf 8 to the divider slice",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xyaeycy",
+     "cell": "yydl",
+     "role": "root buffer"
+    },
+    {
+     "inst": "Xrt3sdz<2:0>",
+     "cell": "yydl",
+     "role": "branch buffers"
+    },
+    {
+     "inst": "Xcj63v<8:0>",
+     "cell": "yydl",
+     "role": "leaf buffers"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ekxus",
+     "Xyaeycy.o822u",
+     "ekxus",
+     "clock"
+    ],
+    [
+     "Xyaeycy.lnolwu",
+     "Xrt3sdz<2:0>.o822u",
+     "h70hkm",
+     "clock"
+    ],
+    [
+     "Xrt3sdz<2>.lnolwu",
+     "Xcj63v<8:6>.o822u",
+     "lt3d<2>",
+     "clock"
+    ],
+    [
+     "Xrt3sdz<1>.lnolwu",
+     "Xcj63v<5:3>.o822u",
+     "lt3d<1>",
+     "clock"
+    ],
+    [
+     "Xrt3sdz<0>.lnolwu",
+     "Xcj63v<2:0>.o822u",
+     "lt3d<0>",
+     "clock"
+    ],
+    [
+     "Xcj63v<8:0>.lnolwu",
+     "PORT.zf3r<8:0>",
+     "zf3r<8:0>",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Equal depth (3 yydl) and equal fan-out to every leaf; replicated on the DQ side by xbcz59."
+  },
+  "ax7dv": {
+   "role": "Unmatched DQS distribution: 9 repeaters (q8t9) with pi-RC wire segments; the tap after each repeater drives one slice directly",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xqlyzt2<8:0>",
+     "cell": "q8t9",
+     "role": "repeaters"
+    },
+    {
+     "inst": "Xsj7179<7:0>",
+     "cell": "yqsu",
+     "role": "inter-repeater wire RC"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.xyx5vk",
+     "Xqlyzt2<0>.jv878",
+     "xyx5vk",
+     "clock"
+    ],
+    [
+     "Xqlyzt2<7:0>.xxhqv",
+     "Xsj7179<7:0>.z2i9an",
+     "y39jdi<7:0>",
+     "clock"
+    ],
+    [
+     "Xsj7179<7:0>.xtr5",
+     "Xqlyzt2<8:1>.jv878",
+     "ygrb1y<8:1>",
+     "clock"
+    ],
+    [
+     "Xqlyzt2<8:0>.xxhqv",
+     "PORT.y39jdi<8:0>",
+     "y39jdi<8:0>",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Latency increases monotonically from y39jdi<0> to y39jdi<8>; no DQ-side replica, so per-bit DQ deskew/training absorbs the skew in unmatched mode."
+  },
+  "bxgg": {
+   "role": "DDR sampler pair: rise-edge sampler on ukw8, fall-edge sampler on p4rq (complement strobe)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xa98n8v",
+     "cell": "u0vlr",
+     "role": "rise sampler"
+    },
+    {
+     "inst": "Xk2zc57",
+     "cell": "u0vlr",
+     "role": "fall sampler"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.q5bjz",
+     "Xa98n8v.lutju3",
+     "q5bjz",
+     "hs_data"
+    ],
+    [
+     "PORT.q5bjz",
+     "Xk2zc57.lutju3",
+     "q5bjz",
+     "hs_data"
+    ],
+    [
+     "PORT.ukw8",
+     "Xa98n8v.o8w9v",
+     "ukw8",
+     "clock"
+    ],
+    [
+     "PORT.p4rq",
+     "Xk2zc57.o8w9v",
+     "p4rq",
+     "clock"
+    ],
+    [
+     "Xa98n8v.a47gj8",
+     "PORT.hjd6z7",
+     "hjd6z7",
+     "hs_data"
+    ],
+    [
+     "Xk2zc57.a47gj8",
+     "PORT.g3u8ja",
+     "g3u8ja",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "xe1z outputs ewfie2/fj73n are unused."
+  },
+  "u0vlr": {
+   "role": "StrongARM sense-amp flip-flop: always-on TG + inverter make delay-matched d/db, StrongARM latch (lvt), NAND SR latch",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xvdvult",
+     "cell": "kfwj",
+     "role": "oqyb generation"
+    },
+    {
+     "inst": "Xhf9iv0",
+     "cell": "yo4ne",
+     "role": "SR latch, a47gj8 side"
+    },
+    {
+     "inst": "Xqpc4",
+     "cell": "yo4ne",
+     "role": "SR latch, xe1z side"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.lutju3",
+     "Mauja.d",
+     "lutju3",
+     "hs_data"
+    ],
+    [
+     "Mauja.s",
+     "Ms2f24.g",
+     "ew0r",
+     "hs_data"
+    ],
+    [
+     "PORT.lutju3",
+     "Xvdvult.lajhyo",
+     "lutju3",
+     "hs_data"
+    ],
+    [
+     "Xvdvult.b3vsp",
+     "Mz8e9s.g",
+     "oqyb",
+     "hs_data"
+    ],
+    [
+     "PORT.o8w9v",
+     "Mvlky.g",
+     "o8w9v",
+     "clock"
+    ],
+    [
+     "Mhy31g.d",
+     "Xhf9iv0.btpi6",
+     "pmvw",
+     "hs_data"
+    ],
+    [
+     "Mhr3r1l.d",
+     "Xqpc4.btpi6",
+     "pi5pn8",
+     "hs_data"
+    ],
+    [
+     "Xhf9iv0.muua0",
+     "PORT.a47gj8",
+     "a47gj8",
+     "hs_data"
+    ],
+    [
+     "Xqpc4.muua0",
+     "PORT.xe1z",
+     "xe1z",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Evaluates on o8w9v rising, precharges (Mdzm9/Mcf343t/Mnwbui/Majpvvd) while o8w9v low; pmvw falls when lutju3=1, so a47gj8=1. The Muvyh0/Mauja TG intentionally matches the inverter delay of the db side. SR latch holds during precharge."
+  },
+  "xeip": {
+   "role": "Deser clock slice: mode mux for strobe leaf/tap 8, divide-by-2 toggle flop, k1rmky/lpksua buffers, jjezn driver to core",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xlejs",
+     "cell": "kr7x",
+     "role": "matched/unmatched strobe select (same cell as bit slices)"
+    },
+    {
+     "inst": "Xjco9",
+     "cell": "zuhc6m",
+     "role": "DQS/2 toggle divider with reset"
+    },
+    {
+     "inst": "Xj41x0",
+     "cell": "yydl",
+     "role": "k1rmky buffer"
+    },
+    {
+     "inst": "Xjf2rk",
+     "cell": "yydl",
+     "role": "lpksua buffer"
+    },
+    {
+     "inst": "Xri471",
+     "cell": "q8t9",
+     "role": "jjezn driver to core"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.e791n",
+     "Xlejs.w73d59",
+     "e791n",
+     "clock"
+    ],
+    [
+     "PORT.ud2h",
+     "Xlejs.s2jpi",
+     "ud2h",
+     "clock"
+    ],
+    [
+     "Xlejs.gwfbl",
+     "Xjco9.er9lh",
+     "lwzwvs",
+     "clock"
+    ],
+    [
+     "Xjco9.qz5196",
+     "Xjco9.u79k",
+     "tv4b3j",
+     "clock"
+    ],
+    [
+     "Xjco9.rzaf",
+     "Xj41x0.o822u",
+     "s7ww",
+     "clock"
+    ],
+    [
+     "Xjco9.qz5196",
+     "Xjf2rk.o822u",
+     "tv4b3j",
+     "clock"
+    ],
+    [
+     "Xj41x0.lnolwu",
+     "PORT.k1rmky",
+     "k1rmky",
+     "clock"
+    ],
+    [
+     "Xjf2rk.lnolwu",
+     "PORT.lpksua",
+     "lpksua",
+     "clock"
+    ],
+    [
+     "Xj41x0.lnolwu",
+     "Xri471.jv878",
+     "k1rmky",
+     "clock"
+    ],
+    [
+     "Xri471.xxhqv",
+     "PORT.jjezn",
+     "jjezn",
+     "clock"
+    ],
+    [
+     "PORT.jxah5g",
+     "Xjco9.ln1ps",
+     "jxah5g",
+     "general_control"
+    ],
+    [
+     "PORT.rwbe",
+     "Xlejs.q1ghmr",
+     "rwbe",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "rwbe": "selects leaf 8 of the H-tree or tap 8 of the RPT chain",
+    "jxah5g": "divider reset (rzaf=0: k1rmky low, lpksua high)"
+   },
+   "notes": "Divide-by-2 feedback loop qz5196 -> u79k. lpksua is derived from qz5196, one inverter later than rzaf, which is tolerated because the deser capture window is one full DQS period. jjezn is exported as bodg at udmp."
+  },
+  "j19e": {
+   "role": "Test observation gate/driver for the deser clock",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xa1qza",
+     "cell": "yavkxw",
+     "role": "q57a gated by gkrpou"
+    },
+    {
+     "inst": "Xykoi",
+     "cell": "w4yyx",
+     "role": "output driver"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.q57a",
+     "Xa1qza.d470n",
+     "q57a",
+     "clock"
+    ],
+    [
+     "PORT.gkrpou",
+     "Xa1qza.n7av",
+     "gkrpou",
+     "test_digital"
+    ],
+    [
+     "Xa1qza.cwi5m",
+     "Xykoi.skjz",
+     "xd7g",
+     "test_digital"
+    ],
+    [
+     "Xykoi.j0tii8",
+     "PORT.meld",
+     "meld",
+     "test_digital"
+    ]
+   ],
+   "controls": {
+    "gkrpou": "test observe enable"
+   },
+   "notes": "Test only."
+  },
+  "ismh": {
+   "role": "3-bit binary cap-load delay trim: two lvt inverters with 1x/2x/4x switched MOS-cap loads on the middle node",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xeza6cb",
+     "cell": "kfwj",
+     "role": "first stage, drives loaded node"
+    },
+    {
+     "inst": "Xulmbfr",
+     "cell": "kfwj",
+     "role": "second stage, restores polarity"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.kwpzs",
+     "Xeza6cb.lajhyo",
+     "kwpzs",
+     "hs_data"
+    ],
+    [
+     "Xeza6cb.b3vsp",
+     "Xulmbfr.lajhyo",
+     "qzjk",
+     "hs_data"
+    ],
+    [
+     "Xulmbfr.b3vsp",
+     "PORT.d5af",
+     "d5af",
+     "hs_data"
+    ],
+    [
+     "PORT.p59e<0>",
+     "Mg5zi.g",
+     "p59e<0>",
+     "general_control"
+    ],
+    [
+     "PORT.p59e<1>",
+     "Medxw.g",
+     "p59e<1>",
+     "general_control"
+    ],
+    [
+     "PORT.p59e<2>",
+     "Mgd4by.g",
+     "p59e<2>",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "p59e<2:0>": "switches Ma7yi/Mkxuc/Ms71d3 MOS caps (m=1/2/4) onto qzjk; larger p59e = more delay"
+   },
+   "notes": "Used in both DQ (e1eb) and DQS (lgp56p) paths so the code-0 delay matches."
+  },
+  "kr7x": {
+   "role": "NAND-NAND 2:1 mux, gwfbl = q1ghmr ? s2jpi : w73d59; same cell on data and strobe paths for delay matching",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xk3552",
+     "cell": "yo4ne",
+     "role": "w73d59 AND t0a3l"
+    },
+    {
+     "inst": "Xskt9w",
+     "cell": "yo4ne",
+     "role": "s2jpi AND q1ghmr"
+    },
+    {
+     "inst": "Xc807v",
+     "cell": "yo4ne",
+     "role": "OR (NAND of NANDs)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.w73d59",
+     "Xk3552.btpi6",
+     "w73d59",
+     "hs_data"
+    ],
+    [
+     "PORT.t0a3l",
+     "Xk3552.lmlt",
+     "t0a3l",
+     "important_control"
+    ],
+    [
+     "PORT.s2jpi",
+     "Xskt9w.btpi6",
+     "s2jpi",
+     "hs_data"
+    ],
+    [
+     "PORT.q1ghmr",
+     "Xskt9w.lmlt",
+     "q1ghmr",
+     "important_control"
+    ],
+    [
+     "Xk3552.muua0",
+     "Xc807v.btpi6",
+     "fk1oi",
+     "hs_data"
+    ],
+    [
+     "Xskt9w.muua0",
+     "Xc807v.lmlt",
+     "g5af4r",
+     "hs_data"
+    ],
+    [
+     "Xc807v.muua0",
+     "PORT.gwfbl",
+     "gwfbl",
+     "hs_data"
+    ]
+   ],
+   "controls": {
+    "q1ghmr": "select (t0a3l must be its complement)"
+   },
+   "notes": "Two-level NAND path is identical for w73d59 and s2jpi."
+  },
+  "vmgkr": {
+   "role": "Bazes complementary self-biased differential receiver (thick-ox, VCCQ) with power-down",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.xr7h",
+     "Mg6c3i6.g",
+     "xr7h",
+     "hs_data"
+    ],
+    [
+     "PORT.xr7h",
+     "Mdkq1p2.g",
+     "xr7h",
+     "hs_data"
+    ],
+    [
+     "PORT.rjct",
+     "Mzpxq.g",
+     "rjct",
+     "hs_data"
+    ],
+    [
+     "PORT.rjct",
+     "Me6th6v.g",
+     "rjct",
+     "hs_data"
+    ],
+    [
+     "Mg6c3i6.d",
+     "Mjlzb.g",
+     "rwmoqj",
+     "bias"
+    ],
+    [
+     "Mg6c3i6.d",
+     "Mhzb5un.g",
+     "rwmoqj",
+     "bias"
+    ],
+    [
+     "Mzpxq.d",
+     "PORT.lweqg",
+     "lweqg",
+     "hs_data"
+    ]
+   ],
+   "controls": {
+    "pto2s": "enables NMOS tail (Mook2) and releases rwmoqj",
+    "wove": "enables PMOS tail (Mjpqt78); when high, Mv644b clamps lweqg low"
+   },
+   "notes": "rwmoqj is the self-bias feedback node driving both tail devices; lweqg is non-inverting w.r.t. xr7h and not full-swing (squared by edau8i). Used for DQ (rjct=VREF) and for both DQS phases (swapped inputs)."
+  },
+  "q8m8": {
+   "role": "Thick-oxide transmission gate on VCCQ (input select / delay matching)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.w2jsk",
+     "Mhw93bc.d",
+     "w2jsk",
+     "hs_data"
+    ],
+    [
+     "Mhw93bc.s",
+     "PORT.lii3yp",
+     "lii3yp",
+     "hs_data"
+    ]
+   ],
+   "controls": {
+    "qpkdub": "NMOS gate",
+    "rbsi8": "PMOS gate"
+   },
+   "notes": "Instances with qpkdub tied to vccq / rbsi8 to vssq are permanently on (matching elements)."
+  },
+  "edau8i": {
+   "role": "VCCQ->VDD down level converter: VCCQ inverter then thick-gate inverter on VDD",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.k3s6f",
+     "Mzwmh.g",
+     "k3s6f",
+     "hs_data"
+    ],
+    [
+     "Mzwmh.d",
+     "Mswdjq.g",
+     "biwe7",
+     "hs_data"
+    ],
+    [
+     "Mswdjq.d",
+     "PORT.to2mwe",
+     "to2mwe",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "First stage squares the receiver output to full VCCQ swing; second stage uses hv devices so its gate tolerates VCCQ."
+  },
+  "ptto": {
+   "role": "Thick-oxide TG 2:1 analog mux on VCCQ, h5q1 = o83wq ? g94lcx : axz6m",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.g94lcx",
+     "Mirgz.d",
+     "g94lcx",
+     "reference"
+    ],
+    [
+     "PORT.axz6m",
+     "Mb9x7x.d",
+     "axz6m",
+     "reference"
+    ],
+    [
+     "Mirgz.s",
+     "PORT.h5q1",
+     "h5q1",
+     "reference"
+    ]
+   ],
+   "controls": {
+    "o83wq": "select (e5ms complement)"
+   },
+   "notes": "Analog VREF routing only."
+  },
+  "q8t9": {
+   "role": "Two-stage lvt repeater for long strobe/clock wires",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.jv878",
+     "Mom5u.g",
+     "jv878",
+     "clock"
+    ],
+    [
+     "Mom5u.d",
+     "Mq4po.g",
+     "bc2dul",
+     "clock"
+    ],
+    [
+     "Mq4po.d",
+     "PORT.xxhqv",
+     "xxhqv",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "ciz0t2": {
+   "role": "RE/nRE input receiver: input TGs with diff/SE select, Bazes receiver, dummy complementary receiver for input-load symmetry, VCCQ->VDD conversion",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xln8g",
+     "cell": "q8m8",
+     "role": "always-on TG on RE (matches the select TGs)"
+    },
+    {
+     "inst": "Xg18yy",
+     "cell": "q8m8",
+     "role": "passes nRE to rg3xy in differential mode"
+    },
+    {
+     "inst": "Xqy3gl",
+     "cell": "q8m8",
+     "role": "passes VREF to rg3xy in single-ended mode"
+    },
+    {
+     "inst": "Xtq6k3",
+     "cell": "vmgkr",
+     "role": "RE receiver (RE minus ref)"
+    },
+    {
+     "inst": "Xwk3u7",
+     "cell": "vmgkr",
+     "role": "dummy receiver with swapped inputs, output unused (load balance)"
+    },
+    {
+     "inst": "Xq0hcna",
+     "cell": "edau8i",
+     "role": "VCCQ->VDD level conversion"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.mkdw1",
+     "Xln8g.w2jsk",
+     "mkdw1",
+     "clock"
+    ],
+    [
+     "Xln8g.lii3yp",
+     "Xtq6k3.xr7h",
+     "kmsu0y",
+     "clock"
+    ],
+    [
+     "Xln8g.lii3yp",
+     "Xwk3u7.rjct",
+     "kmsu0y",
+     "clock"
+    ],
+    [
+     "PORT.oi8e",
+     "Xg18yy.w2jsk",
+     "oi8e",
+     "clock"
+    ],
+    [
+     "PORT.edkvt",
+     "Xqy3gl.w2jsk",
+     "edkvt",
+     "reference"
+    ],
+    [
+     "Xg18yy.lii3yp",
+     "Xtq6k3.rjct",
+     "rg3xy",
+     "clock"
+    ],
+    [
+     "Xg18yy.lii3yp",
+     "Xwk3u7.xr7h",
+     "rg3xy",
+     "clock"
+    ],
+    [
+     "Xtq6k3.lweqg",
+     "Xq0hcna.k3s6f",
+     "xkra",
+     "clock"
+    ],
+    [
+     "Xq0hcna.to2mwe",
+     "PORT.c3qhh",
+     "c3qhh",
+     "clock"
+    ],
+    [
+     "PORT.g8jthl",
+     "Xg18yy.qpkdub",
+     "g8jthl",
+     "important_control"
+    ],
+    [
+     "PORT.wbac",
+     "Xqy3gl.qpkdub",
+     "wbac",
+     "important_control"
+    ],
+    [
+     "PORT.bt0b1y",
+     "Xtq6k3.pto2s",
+     "bt0b1y",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "wbac": "1: VREF is the reference (SE RE); g8jthl: 1: nRE is the reference",
+    "bt0b1y": "receiver enable"
+   },
+   "notes": "Xwk3u7 output jnrb4 is intentionally unused: it only equalizes the capacitive load presented to RE and nRE. In udmp mkdw1/oi8e are the secondary-protected pad nodes ktu6j/c4vsk and edkvt is the internal/external VREFQ (k8aj95), shared with the DQ receivers."
+  },
+  "wtth": {
+   "role": "Duty-cycle adjuster: inverter with code-enabled binary PU/PD auxiliary legs (asymmetric edge strength) + output inverter; offset-binary decode",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xvs8sld<3:0>",
+     "cell": "yavkxw",
+     "role": "PU leg enable decode hna1da<i> = ~(v2qwm<4> & v2qwm<i>)"
+    },
+    {
+     "inst": "Xa0noq<3:0>",
+     "cell": "wxlvj5",
+     "role": "PD leg enable decode vxfw<i> = ~v2qwm<4> & ~v2qwm<i>"
+    },
+    {
+     "inst": "Xnju4a",
+     "cell": "kfwj",
+     "role": "output inverter"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.qqmq",
+     "Mlt3qs.g",
+     "qqmq",
+     "clock"
+    ],
+    [
+     "PORT.qqmq",
+     "Mr40z0u.g",
+     "qqmq",
+     "clock"
+    ],
+    [
+     "Mlt3qs.d",
+     "Xnju4a.lajhyo",
+     "xghw3p",
+     "clock"
+    ],
+    [
+     "Xnju4a.b3vsp",
+     "PORT.wyfs90",
+     "wyfs90",
+     "clock"
+    ],
+    [
+     "PORT.v2qwm<4>",
+     "Xvs8sld<3:0>.d470n",
+     "v2qwm<4>",
+     "important_control"
+    ],
+    [
+     "PORT.v2qwm<4>",
+     "Xa0noq<3:0>.dt9b",
+     "v2qwm<4>",
+     "important_control"
+    ],
+    [
+     "Xvs8sld<3>.cwi5m",
+     "Mgc37y.g",
+     "hna1da<3>",
+     "important_control"
+    ],
+    [
+     "Xvs8sld<0>.cwi5m",
+     "Mfg9z8.g",
+     "hna1da<0>",
+     "important_control"
+    ],
+    [
+     "Xa0noq<3>.ivw5",
+     "Mb0mq.g",
+     "vxfw<3>",
+     "important_control"
+    ],
+    [
+     "Xa0noq<0>.ivw5",
+     "Mv7yj.g",
+     "vxfw<0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "v2qwm<4:0>": "offset binary: v2qwm<4>=1 enables PU legs (m=8/4/2/1 on v2qwm<3:0>) -> faster xghw3p rise -> earlier wyfs90 fall -> lower duty; v2qwm<4>=0 enables PD legs on ~v2qwm<3:0> -> earlier wyfs90 rise -> higher duty; 10000/01111 neutral"
+   },
+   "notes": "Cnqfv 6f on xghw3p sets the edge rate the legs act on. Intentional rise/fall asymmetry is the adjustment mechanism."
+  },
+  "f7hz": {
+   "role": "Global clock repeater (RPT) chain: 4 repeaters with pi-RC wire segments from RE pad area to the byte",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xntkhcb<3:0>",
+     "cell": "ajlh",
+     "role": "repeaters"
+    },
+    {
+     "inst": "Xa89d<3:0>",
+     "cell": "l8ij1",
+     "role": "wire segments"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.epzwg5",
+     "Xntkhcb<0>.h77r",
+     "epzwg5",
+     "clock"
+    ],
+    [
+     "Xntkhcb<3:0>.ypzua",
+     "Xa89d<3:0>.sxkfbs",
+     "it6j<3:0>",
+     "clock"
+    ],
+    [
+     "Xa89d<2:0>.jvzv",
+     "Xntkhcb<3:1>.h77r",
+     "vhln98<3:1>",
+     "clock"
+    ],
+    [
+     "Xa89d<3>.jvzv",
+     "PORT.f6sf",
+     "f6sf",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "h1n10i": {
+   "role": "Slew-rate bias generator: resistor-referenced NMOS mirror, vdm8zj-switched current DAC into PMOS diode (y52pv7), mirrored into NMOS diode (o9b9u4)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xzwrv<1:0>",
+     "cell": "sprh",
+     "role": "vdm8zj level shift to VCCQ"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.vdm8zj<1:0>",
+     "Xzwrv<1:0>.ya3zs",
+     "vdm8zj<1:0>",
+     "general_control"
+    ],
+    [
+     "Xzwrv<0>.vd4xb",
+     "Mz7aw.g",
+     "i95j9<0>",
+     "general_control"
+    ],
+    [
+     "Xzwrv<1>.vd4xb",
+     "Mr6gzo.g",
+     "i95j9<1>",
+     "general_control"
+    ],
+    [
+     "Rij0yew",
+     "Mfby6.d",
+     "zogu",
+     "bias"
+    ],
+    [
+     "Mwvoi.d",
+     "Meus7sk.d",
+     "y52pv7",
+     "bias"
+    ],
+    [
+     "Meus7sk.d",
+     "PORT.y52pv7",
+     "y52pv7",
+     "bias"
+    ],
+    [
+     "Mqhj5.d",
+     "PORT.o9b9u4",
+     "o9b9u4",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "vdm8zj<1:0>": "adds 1x (bit0) and 2x (bit1) to the base 2x mirror current; higher code -> more pre-driver current -> faster output edges"
+   },
+   "notes": "Always on (no enable). kao3td<1:0> unused. Cgk658/Cryil decouple the bias lines distributed to all slices. Lives in hggq3i; y52pv7/o9b9u4 go to every DQ/DQS pre-driver."
+  },
+  "gugmik": {
+   "role": "TX control: level-shifts enables and drive codes to VCCQ, gates PU/PD leg enables with zkl7 / eiu8s, generates DQS/DQSB even/odd patterns from pmv9",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xyx9odm",
+     "cell": "sprh",
+     "role": "j4u4x -> f74rbw/memc"
+    },
+    {
+     "inst": "Xge434b",
+     "cell": "sprh",
+     "role": "c204 -> fa6b5/yqhbir"
+    },
+    {
+     "inst": "Xswgz9m",
+     "cell": "sprh",
+     "role": "zkl7 -> cyu5j"
+    },
+    {
+     "inst": "Xv5lm5m",
+     "cell": "sprh",
+     "role": "eiu8s -> oi4cv"
+    },
+    {
+     "inst": "Xyv497e<4:0>",
+     "cell": "sprh",
+     "role": "ga5p level shift"
+    },
+    {
+     "inst": "Xkoiw80<4:0>",
+     "cell": "sprh",
+     "role": "wsx8n level shift"
+    },
+    {
+     "inst": "Xq0ugo<4:0>",
+     "cell": "uqsz",
+     "role": "ga5p & zkl7 (inverted)"
+    },
+    {
+     "inst": "Xcu3l<4:0>",
+     "cell": "cathu",
+     "role": "a3wl<4:0>"
+    },
+    {
+     "inst": "Xqz20h9<4:0>",
+     "cell": "uqsz",
+     "role": "d63tq<4:0> = ~(wsx8n & zkl7)"
+    },
+    {
+     "inst": "Xz9bhmy<4:0>",
+     "cell": "uqsz",
+     "role": "ga5p & eiu8s (inverted)"
+    },
+    {
+     "inst": "Xqqan<4:0>",
+     "cell": "cathu",
+     "role": "b1qd<4:0>"
+    },
+    {
+     "inst": "Xqfhwtj<4:0>",
+     "cell": "uqsz",
+     "role": "w13km<4:0> = ~(wsx8n & eiu8s)"
+    },
+    {
+     "inst": "Xllrmss",
+     "cell": "l5tu7",
+     "role": "pmv9 invert"
+    },
+    {
+     "inst": "Xd21q",
+     "cell": "w4yyx",
+     "role": "u68ig = pmv9"
+    },
+    {
+     "inst": "Xa9zgh",
+     "cell": "w4yyx",
+     "role": "prz11 = ~pmv9"
+    },
+    {
+     "inst": "Xg1rvv",
+     "cell": "uq60",
+     "role": "wy8qmy = 1, c5iy = 0"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.j4u4x",
+     "Xyx9odm.ya3zs",
+     "j4u4x",
+     "important_control"
+    ],
+    [
+     "Xyx9odm.vd4xb",
+     "PORT.f74rbw",
+     "f74rbw",
+     "important_control"
+    ],
+    [
+     "Xyx9odm.p67ma",
+     "PORT.memc",
+     "memc",
+     "important_control"
+    ],
+    [
+     "PORT.c204",
+     "Xge434b.ya3zs",
+     "c204",
+     "important_control"
+    ],
+    [
+     "Xge434b.vd4xb",
+     "PORT.fa6b5",
+     "fa6b5",
+     "important_control"
+    ],
+    [
+     "Xge434b.p67ma",
+     "PORT.yqhbir",
+     "yqhbir",
+     "important_control"
+    ],
+    [
+     "PORT.zkl7",
+     "Xswgz9m.ya3zs",
+     "zkl7",
+     "important_control"
+    ],
+    [
+     "Xswgz9m.vd4xb",
+     "Xq0ugo<4:0>.qavq",
+     "cyu5j",
+     "important_control"
+    ],
+    [
+     "Xswgz9m.vd4xb",
+     "Xqz20h9<4:0>.qavq",
+     "cyu5j",
+     "important_control"
+    ],
+    [
+     "PORT.eiu8s",
+     "Xv5lm5m.ya3zs",
+     "eiu8s",
+     "important_control"
+    ],
+    [
+     "Xv5lm5m.vd4xb",
+     "Xz9bhmy<4:0>.qavq",
+     "oi4cv",
+     "important_control"
+    ],
+    [
+     "Xv5lm5m.vd4xb",
+     "Xqfhwtj<4:0>.qavq",
+     "oi4cv",
+     "important_control"
+    ],
+    [
+     "PORT.ga5p<4:0>",
+     "Xyv497e<4:0>.ya3zs",
+     "ga5p<4:0>",
+     "important_control"
+    ],
+    [
+     "Xyv497e<4:0>.vd4xb",
+     "Xq0ugo<4:0>.iyh7t3",
+     "kntskg<4:0>",
+     "important_control"
+    ],
+    [
+     "Xq0ugo<4:0>.g6wk",
+     "Xcu3l<4:0>.rm91",
+     "uasqwt<4:0>",
+     "important_control"
+    ],
+    [
+     "Xcu3l<4:0>.kkjm54",
+     "PORT.a3wl<4:0>",
+     "a3wl<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.wsx8n<4:0>",
+     "Xkoiw80<4:0>.ya3zs",
+     "wsx8n<4:0>",
+     "important_control"
+    ],
+    [
+     "Xkoiw80<4:0>.vd4xb",
+     "Xqz20h9<4:0>.iyh7t3",
+     "r9fn<4:0>",
+     "important_control"
+    ],
+    [
+     "Xqz20h9<4:0>.g6wk",
+     "PORT.d63tq<4:0>",
+     "d63tq<4:0>",
+     "important_control"
+    ],
+    [
+     "Xyv497e<4:0>.vd4xb",
+     "Xz9bhmy<4:0>.iyh7t3",
+     "kntskg<4:0>",
+     "important_control"
+    ],
+    [
+     "Xz9bhmy<4:0>.g6wk",
+     "Xqqan<4:0>.rm91",
+     "ofna8o<4:0>",
+     "important_control"
+    ],
+    [
+     "Xqqan<4:0>.kkjm54",
+     "PORT.b1qd<4:0>",
+     "b1qd<4:0>",
+     "important_control"
+    ],
+    [
+     "Xkoiw80<4:0>.vd4xb",
+     "Xqfhwtj<4:0>.iyh7t3",
+     "r9fn<4:0>",
+     "important_control"
+    ],
+    [
+     "Xqfhwtj<4:0>.g6wk",
+     "PORT.w13km<4:0>",
+     "w13km<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.pmv9",
+     "Xllrmss.dgta",
+     "pmv9",
+     "important_control"
+    ],
+    [
+     "Xllrmss.rsu1kh",
+     "Xd21q.skjz",
+     "jut9f",
+     "important_control"
+    ],
+    [
+     "Xd21q.j0tii8",
+     "PORT.u68ig",
+     "u68ig",
+     "important_control"
+    ],
+    [
+     "Xd21q.j0tii8",
+     "Xa9zgh.skjz",
+     "u68ig",
+     "important_control"
+    ],
+    [
+     "Xa9zgh.j0tii8",
+     "PORT.prz11",
+     "prz11",
+     "important_control"
+    ],
+    [
+     "Xg1rvv.r5j7y",
+     "PORT.wy8qmy",
+     "wy8qmy",
+     "important_control"
+    ],
+    [
+     "Xg1rvv.bt2g",
+     "PORT.c5iy",
+     "c5iy",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "zkl7": "gates DQ leg enables",
+    "eiu8s": "gates DQS/DQSB leg enables",
+    "ga5p<4:0>": "PU leg enables",
+    "wsx8n<4:0>": "PD leg enables (as active-high disables)",
+    "pmv9": "DQS pattern select",
+    "j4u4x": "receiver enable",
+    "c204": "SE RE select"
+   },
+   "notes": "pu_en_* is active-high (NAND in pre-driver), pd_dis_* is active-high disable (NOR in pre-driver). Unused LS complements: oq0e5, cfn15, xn2l<4:0>, kz82m<4:0>. pmv9 is launched by the core on z6y7x and retimed inside the DQS slices, so its buffering here is not timing-critical. In udmp ga5p/wsx8n come from z0nj9x (ZQ result or override) inside pk25sw."
+  },
+  "siyoi": {
+   "role": "Clock phase splitter: 2-inverter true path and TG+inverter complement path with matched delay",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.l0z1uw",
+     "Mcd6s.g",
+     "l0z1uw",
+     "clock"
+    ],
+    [
+     "Mcd6s.d",
+     "Mznveo.g",
+     "zjra",
+     "clock"
+    ],
+    [
+     "Mznveo.d",
+     "PORT.xfij",
+     "xfij",
+     "clock"
+    ],
+    [
+     "PORT.l0z1uw",
+     "Msh5aj8.d",
+     "l0z1uw",
+     "clock"
+    ],
+    [
+     "Msh5aj8.s",
+     "Mgmj1lq.g",
+     "z1ulz",
+     "clock"
+    ],
+    [
+     "Mgmj1lq.d",
+     "PORT.z1xj",
+     "z1xj",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "xfij non-inverted, z1xj inverted; the always-on TG Msh5aj8/Mc41u9l replaces one inverter delay on the z1xj side."
+  },
+  "xoa6": {
+   "role": "2:1 DDR serializer: even and odd retime flops on r86k3 falling (r9nk9 rising), half-cycle latch on the odd path, clocked TG mux and output buffer",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xu70i",
+     "cell": "bj6r",
+     "role": "even data retime (clocked by r9nk9)"
+    },
+    {
+     "inst": "Xbt6aqi",
+     "cell": "bj6r",
+     "role": "odd data retime (clocked by r9nk9)"
+    },
+    {
+     "inst": "Xq0xp",
+     "cell": "n26dpi",
+     "role": "odd half-cycle latch, transparent while r86k3 high"
+    },
+    {
+     "inst": "Xmv1sm",
+     "cell": "kfwj",
+     "role": "mux output buffer"
+    },
+    {
+     "inst": "Xqk4fj",
+     "cell": "kfwj",
+     "role": "mux output buffer"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.g6nmv",
+     "Xu70i.zt7ee8",
+     "g6nmv",
+     "word_rate_data"
+    ],
+    [
+     "PORT.nql66",
+     "Xbt6aqi.zt7ee8",
+     "nql66",
+     "word_rate_data"
+    ],
+    [
+     "PORT.r9nk9",
+     "Xu70i.vtam",
+     "r9nk9",
+     "clock"
+    ],
+    [
+     "PORT.r9nk9",
+     "Xbt6aqi.vtam",
+     "r9nk9",
+     "clock"
+    ],
+    [
+     "Xbt6aqi.tywlx",
+     "Xq0xp.zhw6z",
+     "q10f",
+     "word_rate_data"
+    ],
+    [
+     "PORT.r86k3",
+     "Xq0xp.gi5kb",
+     "r86k3",
+     "clock"
+    ],
+    [
+     "Xu70i.tywlx",
+     "Mgle1.d",
+     "yo1jrm",
+     "word_rate_data"
+    ],
+    [
+     "Xq0xp.c2dhp",
+     "Mht0l29.d",
+     "l0lwu",
+     "word_rate_data"
+    ],
+    [
+     "PORT.r86k3",
+     "Mgle1.g",
+     "r86k3",
+     "clock"
+    ],
+    [
+     "Mgle1.s",
+     "Xmv1sm.lajhyo",
+     "prq01t",
+     "hs_data"
+    ],
+    [
+     "Xmv1sm.b3vsp",
+     "Xqk4fj.lajhyo",
+     "gmhk",
+     "hs_data"
+    ],
+    [
+     "Xqk4fj.b3vsp",
+     "PORT.ynj1co",
+     "ynj1co",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "r86k3 high selects yo1jrm (even), r86k3 low selects l0lwu (odd). yo1jrm changes at r86k3 fall and is stable while selected; l0lwu changes during r86k3 high and is stable during r86k3 low, so the mux output is glitch-free. One clock cycle of latency."
+  },
+  "n26dpi": {
+   "role": "Static TG D-latch, transparent when gi5kb=1",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xu3xa6e",
+     "cell": "l5tu7",
+     "role": "forward inverter"
+    },
+    {
+     "inst": "Xfssvi1",
+     "cell": "kfwj",
+     "role": "output inverter / keeper driver"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.zhw6z",
+     "Mwg1n.d",
+     "zhw6z",
+     "hs_data"
+    ],
+    [
+     "Mwg1n.s",
+     "Xu3xa6e.dgta",
+     "pil0s",
+     "hs_data"
+    ],
+    [
+     "Xu3xa6e.rsu1kh",
+     "Xfssvi1.lajhyo",
+     "ve5m5",
+     "hs_data"
+    ],
+    [
+     "Xfssvi1.b3vsp",
+     "PORT.c2dhp",
+     "c2dhp",
+     "hs_data"
+    ],
+    [
+     "PORT.gi5kb",
+     "Mwg1n.g",
+     "gi5kb",
+     "clock"
+    ]
+   ],
+   "controls": {
+    "gi5kb": "transparent when high (b4fj complement drives keeper TG Mpxs6zy/Mivis)"
+   },
+   "notes": "Half-cycle latch on the odd path of xoa6 (gi5kb = r86k3): holds the odd bit through the r86k3-low phase."
+  },
+  "v1zh": {
+   "role": "High-speed VDD->VCCQ cross-coupled level shifter for serialized data (lvt input inverter, hv latch, hv output inverter)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.eskzp",
+     "Miusu.g",
+     "eskzp",
+     "hs_data"
+    ],
+    [
+     "PORT.eskzp",
+     "Mu11t8o.g",
+     "eskzp",
+     "hs_data"
+    ],
+    [
+     "Miusu.d",
+     "Mz3wjxy.g",
+     "t7xuy",
+     "hs_data"
+    ],
+    [
+     "Mu11t8o.d",
+     "Mkhris5.g",
+     "k59x",
+     "hs_data"
+    ],
+    [
+     "Mkhris5.d",
+     "PORT.xjezk4",
+     "xjezk4",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Ratioed latch gives unequal rise/fall delay (duty distortion on the data path)."
+  },
+  "v18jr": {
+   "role": "One pre-driver leg: NAND(data, rhxtq)+inverter+current-starved inverter for the PMOS gate; NOR(data, atea)+inverter+current-starved inverter for the NMOS gate",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [
+    {
+     "inst": "Xyrjby",
+     "cell": "uqsz",
+     "role": "PU gating"
+    },
+    {
+     "inst": "Xkftjm",
+     "cell": "cathu",
+     "role": "PU buffer"
+    },
+    {
+     "inst": "Xc2cwvl",
+     "cell": "m5vzy",
+     "role": "PD gating"
+    },
+    {
+     "inst": "Xl7fl",
+     "cell": "cathu",
+     "role": "PD buffer"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.x8g750",
+     "Xyrjby.iyh7t3",
+     "x8g750",
+     "hs_data"
+    ],
+    [
+     "PORT.rhxtq",
+     "Xyrjby.qavq",
+     "rhxtq",
+     "important_control"
+    ],
+    [
+     "Xyrjby.g6wk",
+     "Xkftjm.rm91",
+     "rthbwe",
+     "hs_data"
+    ],
+    [
+     "Xkftjm.kkjm54",
+     "Mhedg8y.g",
+     "i6ta",
+     "hs_data"
+    ],
+    [
+     "Mhedg8y.d",
+     "PORT.rq3o",
+     "rq3o",
+     "hs_data"
+    ],
+    [
+     "PORT.x8g750",
+     "Xc2cwvl.jewpc0",
+     "x8g750",
+     "hs_data"
+    ],
+    [
+     "PORT.atea",
+     "Xc2cwvl.z88s",
+     "atea",
+     "important_control"
+    ],
+    [
+     "Xc2cwvl.bopi",
+     "Xl7fl.rm91",
+     "ggq1",
+     "hs_data"
+    ],
+    [
+     "Xl7fl.kkjm54",
+     "Mqt3p9.g",
+     "rl6hg1",
+     "hs_data"
+    ],
+    [
+     "Mqt3p9.d",
+     "PORT.d3v2w",
+     "d3v2w",
+     "hs_data"
+    ],
+    [
+     "PORT.gea1",
+     "Mf9bd.g",
+     "gea1",
+     "bias"
+    ],
+    [
+     "PORT.gquo",
+     "Mkwep87.g",
+     "gquo",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "rhxtq": "1 enables the leg pull-up",
+    "atea": "1 disables the leg pull-down",
+    "gea1": "PMOS starving bias of the final stages (output slew)",
+    "gquo": "NMOS starving bias of the final stages (output slew)"
+   },
+   "notes": "rq3o = NAND(x8g750, rhxtq), d3v2w = NOR(x8g750, atea); disabled leg gives rq3o=1, d3v2w=0 (Hi-Z). Mf9bd/Mkwep87 and Ml51ko2/Mfexd are the starving devices."
+  },
+  "ewiu3i": {
+   "role": "Unit output leg: thick-ox PMOS pull-up + series poly R, thick-ox NMOS pull-down + series poly R",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.corbyn",
+     "Mju5rvq.g",
+     "corbyn",
+     "hs_data"
+    ],
+    [
+     "Mju5rvq.d",
+     "Rvihh",
+     "h8143",
+     "hs_data"
+    ],
+    [
+     "Rvihh",
+     "PORT.g85ca",
+     "g85ca",
+     "hs_data"
+    ],
+    [
+     "PORT.z4yfga",
+     "Msmp5q2.g",
+     "z4yfga",
+     "hs_data"
+    ],
+    [
+     "Msmp5q2.d",
+     "Rsyrz",
+     "kbkg4",
+     "hs_data"
+    ],
+    [
+     "Rsyrz",
+     "PORT.g85ca",
+     "g85ca",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Series resistors linearize the output impedance."
+  },
+  "xz3c": {
+   "role": "Two-stage lvt clock buffer, 2x yydl strength",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.goo5",
+     "Mopw1.g",
+     "goo5",
+     "clock"
+    ],
+    [
+     "Mopw1.d",
+     "Mhj67m.g",
+     "yem9g",
+     "clock"
+    ],
+    [
+     "Mhj67m.d",
+     "PORT.eos5",
+     "eos5",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "ajlh": {
+   "role": "Two-stage lvt repeater for long clock wires",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.h77r",
+     "Muwwvgh.g",
+     "h77r",
+     "clock"
+    ],
+    [
+     "Muwwvgh.d",
+     "Mfveqd.g",
+     "yjxr",
+     "clock"
+    ],
+    [
+     "Mfveqd.d",
+     "PORT.ypzua",
+     "ypzua",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "uq60": {
+   "role": "Tie-high / tie-low cell",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "Mjsw5.d",
+     "PORT.r5j7y",
+     "r5j7y",
+     "general_control"
+    ],
+    [
+     "Ma30z.d",
+     "PORT.bt2g",
+     "bt2g",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": "Provides constant odd-phase DQS/DQSB pattern bits."
+  },
+  "cathu": {
+   "role": "Thick-ox inverter on VCCQ",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.rm91",
+     "Mejae.g",
+     "rm91",
+     "hs_data"
+    ],
+    [
+     "Mejae.d",
+     "PORT.kkjm54",
+     "kkjm54",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Pre-driver stages and control gating."
+  },
+  "uqsz": {
+   "role": "Thick-ox 2-input NAND on VCCQ",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.iyh7t3",
+     "Me5jr9.g",
+     "iyh7t3",
+     "hs_data"
+    ],
+    [
+     "PORT.qavq",
+     "Mg661vj.g",
+     "qavq",
+     "important_control"
+    ],
+    [
+     "Me5jr9.d",
+     "PORT.g6wk",
+     "g6wk",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Pre-driver PU gating (iyh7t3 = data) and static code gating."
+  },
+  "m5vzy": {
+   "role": "Thick-ox 2-input NOR on VCCQ",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.jewpc0",
+     "Mnt8o.g",
+     "jewpc0",
+     "hs_data"
+    ],
+    [
+     "PORT.z88s",
+     "Mpwzr.g",
+     "z88s",
+     "important_control"
+    ],
+    [
+     "Mnt8o.d",
+     "PORT.bopi",
+     "bopi",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Pre-driver PD gating."
+  },
+  "i6p6kc": {
+   "role": "IO pad ESD cell: GDPMOS to VCCQ and GGNMOS to VSSQ (primary, gate-coupled through 10k), 200 ohm series R and secondary GGNMOS on the receiver side",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.y3akw4",
+     "Rv9j046",
+     "y3akw4",
+     "hs_data"
+    ],
+    [
+     "Rv9j046",
+     "PORT.vfryt",
+     "vfryt",
+     "hs_data"
+    ],
+    [
+     "PORT.y3akw4",
+     "Mk3q5.d",
+     "y3akw4",
+     "power"
+    ],
+    [
+     "PORT.y3akw4",
+     "Mr33a.d",
+     "y3akw4",
+     "power"
+    ],
+    [
+     "PORT.vfryt",
+     "Mgjykmj.d",
+     "vfryt",
+     "power"
+    ]
+   ],
+   "controls": {},
+   "notes": "Mk3q5 (ycgzf, gate to VCCQ via Rj57v) and Mr33a (jil3gy, gate to VSSQ via Rj26d) are off in normal operation; Mgjykmj is a gate-grounded secondary clamp protecting receiver gate oxide (CDM). Used in fwhwl (DQ, DQS, DQSB) and ye8xk0 (RE, nRE, VREF_EXT); the receivers tap vfryt, the drivers and ODT attach at y3akw4."
+  },
+  "texe": {
+   "role": "Primary-only pad ESD (GDPMOS + GGNMOS) for the ZQ pin",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.q6ve",
+     "Mzfkfti.d",
+     "q6ve",
+     "bias"
+    ],
+    [
+     "PORT.q6ve",
+     "Mig72ly.d",
+     "q6ve",
+     "bias"
+    ]
+   ],
+   "controls": {},
+   "notes": "ZQ pad (udmp/Xgxymzp): primary clamps only, no series R (calibration accuracy)."
+  },
+  "so79m": {
+   "role": "RC-triggered active rail clamp: 500k/1p trigger, 3-inverter driver, large thick-ox NMOS clamp (Mbgob)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.yuzoi",
+     "Rl8yoj",
+     "yuzoi",
+     "power"
+    ],
+    [
+     "Rl8yoj",
+     "Mw28a6.g",
+     "v5uxb",
+     "power"
+    ],
+    [
+     "Mw28a6.d",
+     "Md9jl.g",
+     "yttrs",
+     "power"
+    ],
+    [
+     "Md9jl.d",
+     "Ms27x7.g",
+     "hye86",
+     "power"
+    ],
+    [
+     "Ms27x7.d",
+     "Mbgob.g",
+     "t9y58",
+     "power"
+    ],
+    [
+     "Mbgob.d",
+     "PORT.yuzoi",
+     "yuzoi",
+     "power"
+    ]
+   ],
+   "controls": {},
+   "notes": "Normal operation: v5uxb = yuzoi -> clamp gate low (off). Fast ESD ramp holds v5uxb low for ~0.5 us -> clamp on. Two instances in gja4: VCCQ-VSSQ and VDD-VSS."
+  },
+  "epfg": {
+   "role": "Back-to-back diode-connected thick-ox NMOS pair coupling VSS and VSSQ",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.xuo51",
+     "Mq5wf7q.d",
+     "xuo51",
+     "power"
+    ],
+    [
+     "PORT.kbxtf",
+     "Mbsj8.d",
+     "kbxtf",
+     "power"
+    ]
+   ],
+   "controls": {},
+   "notes": "Conducts only when the grounds separate by more than a Vt."
+  },
+  "ryk2": {
+   "role": "Per-pin termination: 3 binary PU legs (ycgzf + 480/240/120 ohm) to VCCQ and 3 PD legs (jil3gy + R) to VSSQ, center-tapped at the pad",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.htzjl<2>",
+     "Mspzmg.g",
+     "htzjl<2>",
+     "important_control"
+    ],
+    [
+     "Mspzmg.d",
+     "Rzj8sy",
+     "m4ir<2>",
+     "bias"
+    ],
+    [
+     "Rzj8sy",
+     "PORT.jo1e5g",
+     "jo1e5g",
+     "hs_data"
+    ],
+    [
+     "PORT.lzeog<2>",
+     "Mf8a4vs.g",
+     "lzeog<2>",
+     "important_control"
+    ],
+    [
+     "Mf8a4vs.d",
+     "Rv3wvt",
+     "eejsx<2>",
+     "bias"
+    ],
+    [
+     "Rv3wvt",
+     "PORT.jo1e5g",
+     "jo1e5g",
+     "hs_data"
+    ]
+   ],
+   "controls": {
+    "htzjl<2:0>": "PU leg on when low",
+    "lzeog<2:0>": "PD leg on when high"
+   },
+   "notes": "Unit leg ~600 ohm each side; Thevenin at VCCQ/2. One per pad cell (fwhwl/Xuuqsg); gates come from kwgk, which forces the legs off while that pin group drives."
+  },
+  "vwt2x6": {
+   "role": "ZQ calibration: VCCQ/2 reference, PU replica legs on the ZQ pin vs external RZQ with comparator + 5-bit SAR, PD replica legs against an internal PU copy with comparator + up/down tracking counter, code-to-gate level shifting; codes go to the DQ/DQS driver strength",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xzbhho",
+     "cell": "sprh",
+     "role": "weve -> iu5i/xhhhbx (VCCQ)"
+    },
+    {
+     "inst": "Xagfy",
+     "cell": "z78y9",
+     "role": "VCCQ/2 reference divider"
+    },
+    {
+     "inst": "Xlly87",
+     "cell": "zhq5",
+     "role": "PU comparator: VREF vs ZQ pin"
+    },
+    {
+     "inst": "Xeq82m",
+     "cell": "mlg3h7",
+     "role": "5-bit SAR for pull-up code"
+    },
+    {
+     "inst": "Xx8k9i",
+     "cell": "jw9qyf",
+     "role": "orzf -> PU replica gates (active-low)"
+    },
+    {
+     "inst": "Xujit",
+     "cell": "vmswp",
+     "role": "PU replica legs driving the ZQ pin"
+    },
+    {
+     "inst": "Xxhfc",
+     "cell": "jrilr9",
+     "role": "internal PU copy + PD replica legs (node v79w)"
+    },
+    {
+     "inst": "Xgeyt",
+     "cell": "jw9qyf",
+     "role": "ebqty -> PD replica gates (active-high)"
+    },
+    {
+     "inst": "Xs9tjaq",
+     "cell": "zhq5",
+     "role": "PD comparator: VREF vs v79w"
+    },
+    {
+     "inst": "Xljla",
+     "cell": "fn5wjn",
+     "role": "PD up/down tracking counter"
+    },
+    {
+     "inst": "Xomko8g",
+     "cell": "yavkxw",
+     "role": "weve NAND wqqd4l"
+    },
+    {
+     "inst": "Xu01k5",
+     "cell": "l5tu7",
+     "role": "t0t3w5 = weve & wqqd4l"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.weve",
+     "Xzbhho.ya3zs",
+     "weve",
+     "important_control"
+    ],
+    [
+     "Xzbhho.p67ma",
+     "Xagfy.siir",
+     "xhhhbx",
+     "important_control"
+    ],
+    [
+     "Xzbhho.vd4xb",
+     "Xx8k9i.sso1",
+     "iu5i",
+     "important_control"
+    ],
+    [
+     "Xagfy.dk75u",
+     "Xlly87.beay8",
+     "jp74k",
+     "reference"
+    ],
+    [
+     "PORT.lwz7yh",
+     "Xlly87.nj6dtl",
+     "lwz7yh",
+     "reference"
+    ],
+    [
+     "PORT.ici43i",
+     "Mjqc0jq.d",
+     "ici43i",
+     "bias"
+    ],
+    [
+     "PORT.ici43i",
+     "Xlly87.hgvv",
+     "ici43i",
+     "bias"
+    ],
+    [
+     "Xlly87.kdzjl0",
+     "Xeq82m.wmrv",
+     "sfqi",
+     "slow_signal"
+    ],
+    [
+     "PORT.jxzrv",
+     "Xeq82m.xnec38",
+     "jxzrv",
+     "clock"
+    ],
+    [
+     "PORT.jitjma",
+     "Xeq82m.smp7x",
+     "jitjma",
+     "command"
+    ],
+    [
+     "Xeq82m.ia95r9<4:0>",
+     "PORT.orzf<4:0>",
+     "orzf<4:0>",
+     "important_control"
+    ],
+    [
+     "Xeq82m.ia95r9<4:0>",
+     "Xx8k9i.p2wx<4:0>",
+     "orzf<4:0>",
+     "important_control"
+    ],
+    [
+     "Xx8k9i.aoqpe<4:0>",
+     "Xujit.uvvoh<4:0>",
+     "ikiq<4:0>",
+     "important_control"
+    ],
+    [
+     "Xujit.trqhu",
+     "PORT.lwz7yh",
+     "lwz7yh",
+     "reference"
+    ],
+    [
+     "Xx8k9i.aoqpe<4:0>",
+     "Xxhfc.yz6qt<4:0>",
+     "ikiq<4:0>",
+     "important_control"
+    ],
+    [
+     "Xxhfc.mh4eq",
+     "Xs9tjaq.nj6dtl",
+     "v79w",
+     "reference"
+    ],
+    [
+     "Xagfy.dk75u",
+     "Xs9tjaq.beay8",
+     "jp74k",
+     "reference"
+    ],
+    [
+     "Xs9tjaq.kdzjl0",
+     "Xljla.hgpa",
+     "kuda4",
+     "slow_signal"
+    ],
+    [
+     "PORT.jxzrv",
+     "Xljla.fm57",
+     "jxzrv",
+     "clock"
+    ],
+    [
+     "Xljla.fwkdy<4:0>",
+     "PORT.ebqty<4:0>",
+     "ebqty<4:0>",
+     "important_control"
+    ],
+    [
+     "Xljla.fwkdy<4:0>",
+     "Xgeyt.p2wx<4:0>",
+     "ebqty<4:0>",
+     "important_control"
+    ],
+    [
+     "Xgeyt.ppp9<4:0>",
+     "Xxhfc.afu0<4:0>",
+     "j4tbt<4:0>",
+     "important_control"
+    ],
+    [
+     "Xeq82m.t84nq",
+     "PORT.wqqd4l",
+     "wqqd4l",
+     "status"
+    ],
+    [
+     "Xeq82m.t84nq",
+     "Xomko8g.n7av",
+     "wqqd4l",
+     "status"
+    ],
+    [
+     "Xomko8g.cwi5m",
+     "Xu01k5.dgta",
+     "y433b",
+     "general_control"
+    ],
+    [
+     "Xu01k5.rsu1kh",
+     "Xljla.j8kvf",
+     "t0t3w5",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "weve": "powers VREF divider, comparators (via xhhhbx) and enables replica gates",
+    "jitjma": "starts PU successive approximation",
+    "al9b": "resets SAR (code 0) and PD counter (10000)"
+   },
+   "notes": "Two feedback loops. PU: SAR code -> gate driver -> replica PMOS legs into the ZQ pin against external RZQ -> comparator (kdzjl0=1 when ZQ > VREF, i.e. PU too strong) -> SAR clears the trial bit; 5 decisions after start, then wqqd4l. PD: counter code -> gate driver -> PD replica legs against an internal copy of the calibrated PU at v79w -> comparator (kdzjl0=1 when v79w > VREF, PD too weak) -> count up; runs continuously once wqqd4l (dithers +/-1 LSB). r19gn<4:0> and xydzi<4:0> gate-driver outputs are unused; the counter t1ehl9 input is tied to vss. Mjqc0jq is the PMOS diode receiving ici43i, giving the comparator tail bias. In udmp jxzrv is the shared slow calibration clock tvxkez; orzf/ebqty feed pk25sw (z0nj9x -> gugmik -> leg enables of all DQ/DQS drivers) and are also read back as mu0x/yxapm. Replica unit is 1/8 of the driver unit, so the calibrated code gives Rpu = RZQ/8 at the pad (37.5 ohm for RZQ = 300 ohm)."
+  },
+  "z78y9": {
+   "role": "Switched resistive VCCQ/2 divider with decap",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.siir",
+     "Mic1ra.g",
+     "siir",
+     "important_control"
+    ],
+    [
+     "Mic1ra.d",
+     "Ry4pe",
+     "kos8",
+     "reference"
+    ],
+    [
+     "Ry4pe",
+     "PORT.dk75u",
+     "dk75u",
+     "reference"
+    ]
+   ],
+   "controls": {
+    "siir": "divider on when low"
+   },
+   "notes": ""
+  },
+  "zhq5": {
+   "role": "Static two-stage comparator (PMOS input pair, NMOS mirror, NMOS CS second stage) on VCCQ with enable, plus VCCQ->VDD level shift",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [
+    {
+     "inst": "Xldtd",
+     "cell": "zmf6",
+     "role": "output level shift to VDD"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.beay8",
+     "Mvt0k1.g",
+     "beay8",
+     "reference"
+    ],
+    [
+     "PORT.nj6dtl",
+     "Mzf62b.g",
+     "nj6dtl",
+     "reference"
+    ],
+    [
+     "Mzf62b.d",
+     "Mpje9.g",
+     "rwoz1i",
+     "slow_signal"
+    ],
+    [
+     "Mpje9.d",
+     "Xldtd.wjuku",
+     "kavl2r",
+     "slow_signal"
+    ],
+    [
+     "Xldtd.w8ln6b",
+     "PORT.kdzjl0",
+     "kdzjl0",
+     "slow_signal"
+    ],
+    [
+     "PORT.hgvv",
+     "Meti8ar.g",
+     "hgvv",
+     "bias"
+    ],
+    [
+     "PORT.xo1a",
+     "Mq8ejwv.g",
+     "xo1a",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "xo1a": "power-down when high"
+   },
+   "notes": "kdzjl0 = 1 when nj6dtl > beay8 (inverting with respect to beay8). Used with beay8 = VREF."
+  },
+  "mlg3h7": {
+   "role": "5-bit SAR register: one-hot pointer shift register taot5e<5:0>, per-bit set/decide/hold logic, code flops, done flag",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xmq9v0",
+     "cell": "l5tu7",
+     "role": "jju5 = ~wmrv (keep-bit decision)"
+    },
+    {
+     "inst": "Xfuedi<5:0>",
+     "cell": "zuhc6m",
+     "role": "pointer shift register (taot5e<5> = smp7x captured)"
+    },
+    {
+     "inst": "Xyhcl<4:0>",
+     "cell": "mu5k",
+     "role": "hold enable meqzo<i> = ~(taot5e<5> | taot5e<i+1> | taot5e<i>)"
+    },
+    {
+     "inst": "Xtc75p<4:0>",
+     "cell": "yavkxw",
+     "role": "decision term taot5e<i> & jju5"
+    },
+    {
+     "inst": "Xu9ilaq<4:0>",
+     "cell": "yavkxw",
+     "role": "hold term ia95r9<i> & meqzo<i>"
+    },
+    {
+     "inst": "Xvh92<4:0>",
+     "cell": "l5tu7",
+     "role": "trial-set term ~taot5e<i+1>"
+    },
+    {
+     "inst": "Xftcjbc<4:0>",
+     "cell": "p7glz",
+     "role": "next-code OR of the three terms"
+    },
+    {
+     "inst": "Xxwav<4:0>",
+     "cell": "zuhc6m",
+     "role": "code register"
+    },
+    {
+     "inst": "Xtyl6yi",
+     "cell": "yavkxw",
+     "role": "t84nq & ~taot5e<5>"
+    },
+    {
+     "inst": "Xm4v3",
+     "cell": "l5tu7",
+     "role": "~taot5e<0>"
+    },
+    {
+     "inst": "Xamjl",
+     "cell": "yavkxw",
+     "role": "done next-state OR"
+    },
+    {
+     "inst": "Xl3q0k6",
+     "cell": "zuhc6m",
+     "role": "done flag"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.wmrv",
+     "Xmq9v0.dgta",
+     "wmrv",
+     "slow_signal"
+    ],
+    [
+     "Xmq9v0.rsu1kh",
+     "Xtc75p<4:0>.n7av",
+     "jju5",
+     "slow_signal"
+    ],
+    [
+     "PORT.smp7x",
+     "Xfuedi<5>.u79k",
+     "smp7x",
+     "command"
+    ],
+    [
+     "Xfuedi<5:1>.rzaf",
+     "Xfuedi<4:0>.u79k",
+     "taot5e<5:1>",
+     "slow_signal"
+    ],
+    [
+     "PORT.xnec38",
+     "Xfuedi<5:0>.er9lh",
+     "xnec38",
+     "clock"
+    ],
+    [
+     "Xfuedi<4:0>.rzaf",
+     "Xtc75p<4:0>.d470n",
+     "taot5e<4:0>",
+     "slow_signal"
+    ],
+    [
+     "Xfuedi<5:1>.rzaf",
+     "Xvh92<4:0>.dgta",
+     "taot5e<5:1>",
+     "slow_signal"
+    ],
+    [
+     "Xyhcl<4:0>.vem9ep",
+     "Xu9ilaq<4:0>.n7av",
+     "meqzo<4:0>",
+     "slow_signal"
+    ],
+    [
+     "Xtc75p<4:0>.cwi5m",
+     "Xftcjbc<4:0>.rtpwb",
+     "cle72<4:0>",
+     "slow_signal"
+    ],
+    [
+     "Xu9ilaq<4:0>.cwi5m",
+     "Xftcjbc<4:0>.yim6",
+     "vtyk<4:0>",
+     "slow_signal"
+    ],
+    [
+     "Xvh92<4:0>.rsu1kh",
+     "Xftcjbc<4:0>.dzywsx",
+     "u1h2<4:0>",
+     "slow_signal"
+    ],
+    [
+     "Xftcjbc<4:0>.mg5z23",
+     "Xxwav<4:0>.u79k",
+     "yhueki<4:0>",
+     "slow_signal"
+    ],
+    [
+     "Xxwav<4:0>.rzaf",
+     "PORT.ia95r9<4:0>",
+     "ia95r9<4:0>",
+     "important_control"
+    ],
+    [
+     "Xxwav<4:0>.rzaf",
+     "Xu9ilaq<4:0>.d470n",
+     "ia95r9<4:0>",
+     "important_control"
+    ],
+    [
+     "Xfuedi<0>.rzaf",
+     "Xm4v3.dgta",
+     "taot5e<0>",
+     "slow_signal"
+    ],
+    [
+     "Xtyl6yi.cwi5m",
+     "Xamjl.d470n",
+     "pc3z",
+     "slow_signal"
+    ],
+    [
+     "Xm4v3.rsu1kh",
+     "Xamjl.n7av",
+     "o0u4s",
+     "slow_signal"
+    ],
+    [
+     "Xamjl.cwi5m",
+     "Xl3q0k6.u79k",
+     "cjexx",
+     "slow_signal"
+    ],
+    [
+     "Xl3q0k6.rzaf",
+     "PORT.t84nq",
+     "t84nq",
+     "status"
+    ],
+    [
+     "Xl3q0k6.rzaf",
+     "Xtyl6yi.d470n",
+     "t84nq",
+     "status"
+    ],
+    [
+     "PORT.weqh8",
+     "Xxwav<4:0>.ln1ps",
+     "weqh8",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "smp7x": "one-cycle start pulse",
+    "weqh8": "clears pointer, code and done"
+   },
+   "notes": "Sequence: taot5e<5> (start) sets ia95r9=10000; during taot5e<i> bit i is on trial and at the end of taot5e<i> it is kept if wmrv=0 (jju5=1) while bit i-1 is set; after taot5e<0> t84nq=1 and the code holds. Feedback: ia95r9<i> -> hold term -> next code. x8qi1<5:0>, kie1<4:0>, xek4 unused."
+  },
+  "jw9qyf": {
+   "role": "Code-to-replica-gate driver: VDD->VCCQ level shift, NAND with enable (active-low gate aoqpe), inverter (active-high ppp9)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xnm9a9l<4:0>",
+     "cell": "sprh",
+     "role": "code level shift"
+    },
+    {
+     "inst": "Xm6tdah<4:0>",
+     "cell": "uqsz",
+     "role": "aoqpe = ~(p2wx & sso1) for PMOS legs"
+    },
+    {
+     "inst": "Xc0kx7<4:0>",
+     "cell": "cathu",
+     "role": "ppp9 = p2wx & sso1 for NMOS legs"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.p2wx<4:0>",
+     "Xnm9a9l<4:0>.ya3zs",
+     "p2wx<4:0>",
+     "important_control"
+    ],
+    [
+     "Xnm9a9l<4:0>.vd4xb",
+     "Xm6tdah<4:0>.iyh7t3",
+     "nzkv<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.sso1",
+     "Xm6tdah<4:0>.qavq",
+     "sso1",
+     "important_control"
+    ],
+    [
+     "Xm6tdah<4:0>.g6wk",
+     "PORT.aoqpe<4:0>",
+     "aoqpe<4:0>",
+     "important_control"
+    ],
+    [
+     "Xm6tdah<4:0>.g6wk",
+     "Xc0kx7<4:0>.rm91",
+     "aoqpe<4:0>",
+     "important_control"
+    ],
+    [
+     "Xc0kx7<4:0>.kkjm54",
+     "PORT.ppp9<4:0>",
+     "ppp9<4:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "sso1": "enables all replica legs"
+   },
+   "notes": "l2kk<4:0> unused. Each instance uses only one of ppp9 / aoqpe."
+  },
+  "fn5wjn": {
+   "role": "5-bit synchronous saturating up/down counter (XNOR propagate, AND carry chain, XOR next state), reset to 10000, enable and hold",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xgztb",
+     "cell": "l5tu7",
+     "role": "sxk8i: counter updates on fm57 falling"
+    },
+    {
+     "inst": "Xr5lnz<4:0>",
+     "cell": "wfrbt",
+     "role": "a4pp<i> = fwkdy<i> XNOR hgpa"
+    },
+    {
+     "inst": "Xhex60",
+     "cell": "p7glz",
+     "role": "saturation detect (a4pp<0>..a4pp<2>)"
+    },
+    {
+     "inst": "Xmq2a2k",
+     "cell": "yavkxw",
+     "role": "saturation detect (a4pp<3>,a4pp<4>)"
+    },
+    {
+     "inst": "Xktw9",
+     "cell": "wxlvj5",
+     "role": "mezh = all a4pp"
+    },
+    {
+     "inst": "Xqx78ew",
+     "cell": "l5tu7",
+     "role": "p9fro"
+    },
+    {
+     "inst": "Xa6wmnv",
+     "cell": "mu5k",
+     "role": "b6ut<0> = j8kvf & ~t1ehl9 & ~mezh"
+    },
+    {
+     "inst": "Xp39l5o<3:0>",
+     "cell": "yavkxw",
+     "role": "carry chain"
+    },
+    {
+     "inst": "Xs4yq<3:0>",
+     "cell": "l5tu7",
+     "role": "carry chain, b6ut<i+1> = b6ut<i> & a4pp<i>"
+    },
+    {
+     "inst": "Xw8ut4<4:0>",
+     "cell": "d9b5zl",
+     "role": "next state fwkdy<i> XOR b6ut<i>"
+    },
+    {
+     "inst": "Xedjqf",
+     "cell": "z1nko",
+     "role": "bit 4 register (set on reset)"
+    },
+    {
+     "inst": "Xclub4<3:0>",
+     "cell": "zuhc6m",
+     "role": "bits 3:0 registers (reset to 0)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.hgpa",
+     "Xr5lnz<4:0>.g5s2",
+     "hgpa",
+     "slow_signal"
+    ],
+    [
+     "PORT.fwkdy<4:0>",
+     "Xr5lnz<4:0>.okacgj",
+     "fwkdy<4:0>",
+     "important_control"
+    ],
+    [
+     "Xr5lnz<0>.g9n4zp",
+     "Xhex60.rtpwb",
+     "a4pp<0>",
+     "slow_signal"
+    ],
+    [
+     "Xhex60.mg5z23",
+     "Xktw9.dt9b",
+     "budac9",
+     "slow_signal"
+    ],
+    [
+     "Xmq2a2k.cwi5m",
+     "Xktw9.yj5sd",
+     "a3zjvd",
+     "slow_signal"
+    ],
+    [
+     "Xktw9.ivw5",
+     "Xa6wmnv.c28g",
+     "mezh",
+     "slow_signal"
+    ],
+    [
+     "PORT.j8kvf",
+     "Xqx78ew.dgta",
+     "j8kvf",
+     "general_control"
+    ],
+    [
+     "Xqx78ew.rsu1kh",
+     "Xa6wmnv.ef1pig",
+     "p9fro",
+     "general_control"
+    ],
+    [
+     "PORT.t1ehl9",
+     "Xa6wmnv.bofaru",
+     "t1ehl9",
+     "general_control"
+    ],
+    [
+     "Xa6wmnv.vem9ep",
+     "Xp39l5o<0>.d470n",
+     "b6ut<0>",
+     "slow_signal"
+    ],
+    [
+     "Xp39l5o<3:0>.cwi5m",
+     "Xs4yq<3:0>.dgta",
+     "t5ptau<4:1>",
+     "slow_signal"
+    ],
+    [
+     "Xs4yq<3:0>.rsu1kh",
+     "Xw8ut4<4:1>.h2mq0",
+     "b6ut<4:1>",
+     "slow_signal"
+    ],
+    [
+     "Xw8ut4<4>.r5ly",
+     "Xedjqf.hheuw",
+     "hmut<4>",
+     "slow_signal"
+    ],
+    [
+     "Xw8ut4<3:0>.r5ly",
+     "Xclub4<3:0>.u79k",
+     "hmut<3:0>",
+     "slow_signal"
+    ],
+    [
+     "PORT.fm57",
+     "Xgztb.dgta",
+     "fm57",
+     "clock"
+    ],
+    [
+     "Xgztb.rsu1kh",
+     "Xedjqf.ekzl8",
+     "sxk8i",
+     "clock"
+    ],
+    [
+     "Xgztb.rsu1kh",
+     "Xclub4<3:0>.er9lh",
+     "sxk8i",
+     "clock"
+    ],
+    [
+     "Xedjqf.z2xp",
+     "PORT.fwkdy<4>",
+     "fwkdy<4>",
+     "important_control"
+    ],
+    [
+     "Xclub4<3:0>.rzaf",
+     "PORT.fwkdy<3:0>",
+     "fwkdy<3:0>",
+     "important_control"
+    ],
+    [
+     "PORT.yhy5i",
+     "Xedjqf.rmpjk",
+     "yhy5i",
+     "general_control"
+    ],
+    [
+     "PORT.yhy5i",
+     "Xclub4<3:0>.ln1ps",
+     "yhy5i",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "hgpa": "count direction",
+    "j8kvf": "count enable",
+    "t1ehl9": "freeze",
+    "yhy5i": "reset to 10000 (mid-scale)"
+   },
+   "notes": "Feedback through fwkdy<4:0> -> XNOR/XOR. Saturates at 11111 (up) and 00000 (down). of41s (bit-4 i0d54c) and ye9xuu<3:0> unused. Shared by DCC and ZQ-PD. Two instances: vwt2x6/Xljla (PD tracking, t1ehl9 tied to vss) and wlyjd/Xhugq (DCC code, t1ehl9 = i7zg)."
+  },
+  "vui2": {
+   "role": "StrongARM latched comparator with NAND SR latch",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xh0w4",
+     "cell": "yavkxw",
+     "role": "SR latch, aqhzb8 side"
+    },
+    {
+     "inst": "Xt5bitv",
+     "cell": "yavkxw",
+     "role": "SR latch, j1agx4 side"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ok1s8r",
+     "Mgpswqz.g",
+     "ok1s8r",
+     "slow_signal"
+    ],
+    [
+     "PORT.nuje",
+     "Mj217.g",
+     "nuje",
+     "slow_signal"
+    ],
+    [
+     "PORT.dtkw",
+     "Mbf7v2.g",
+     "dtkw",
+     "clock"
+    ],
+    [
+     "Mky92.d",
+     "Xh0w4.d470n",
+     "wt2p",
+     "slow_signal"
+    ],
+    [
+     "Mpctvyj.d",
+     "Xt5bitv.d470n",
+     "i82z",
+     "slow_signal"
+    ],
+    [
+     "Xh0w4.cwi5m",
+     "PORT.aqhzb8",
+     "aqhzb8",
+     "slow_signal"
+    ],
+    [
+     "Xt5bitv.cwi5m",
+     "PORT.j1agx4",
+     "j1agx4",
+     "slow_signal"
+    ]
+   ],
+   "controls": {},
+   "notes": "aqhzb8 = 1 when ok1s8r > nuje at the dtkw rising edge. Used as the DCC comparator (wlyjd/Xjfgd), strobed by the gated calibration clock rz2bge."
+  },
+  "z1nko": {
+   "role": "Static TG master-slave DFF with active-low lelk8 and i0d54c",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xjoq7p",
+     "cell": "l5tu7",
+     "role": "zp66m"
+    },
+    {
+     "inst": "Xhudj",
+     "cell": "l5tu7",
+     "role": "zz3s28"
+    },
+    {
+     "inst": "Xh5aso",
+     "cell": "l5tu7",
+     "role": "lelk8"
+    },
+    {
+     "inst": "Xwxd819",
+     "cell": "wxlvj5",
+     "role": "master forward with lelk8"
+    },
+    {
+     "inst": "Xap3l2",
+     "cell": "l5tu7",
+     "role": "master keeper"
+    },
+    {
+     "inst": "Xoa08y",
+     "cell": "yavkxw",
+     "role": "slave forward with lelk8"
+    },
+    {
+     "inst": "Xh24xp",
+     "cell": "l5tu7",
+     "role": "slave keeper"
+    },
+    {
+     "inst": "Xxaoy42",
+     "cell": "l5tu7",
+     "role": "i0d54c"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.hheuw",
+     "Mpjn9.d",
+     "hheuw",
+     "slow_signal"
+    ],
+    [
+     "Mpjn9.s",
+     "Xwxd819.dt9b",
+     "ynkq",
+     "slow_signal"
+    ],
+    [
+     "Xwxd819.ivw5",
+     "Mcmr2.d",
+     "p9y8w",
+     "slow_signal"
+    ],
+    [
+     "Mcmr2.s",
+     "Xoa08y.d470n",
+     "zd7cw",
+     "slow_signal"
+    ],
+    [
+     "Xoa08y.cwi5m",
+     "PORT.z2xp",
+     "z2xp",
+     "slow_signal"
+    ],
+    [
+     "PORT.rmpjk",
+     "Xoa08y.n7av",
+     "rmpjk",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "rmpjk": "active-low lelk8 (z2xp=1)"
+   },
+   "notes": "Bit-4 flop of fn5wjn, so the counter resets to 10000."
+  },
+  "p7glz": {
+   "role": "Standard 3-input NAND",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.rtpwb",
+     "Mzblkgt.g",
+     "rtpwb",
+     "general_control"
+    ],
+    [
+     "Mzblkgt.d",
+     "PORT.mg5z23",
+     "mg5z23",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "mu5k": {
+   "role": "Standard 3-input NOR",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.ef1pig",
+     "Mswgt.g",
+     "ef1pig",
+     "general_control"
+    ],
+    [
+     "Mswgt.d",
+     "PORT.vem9ep",
+     "vem9ep",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "d9b5zl": {
+   "role": "Static CMOS XOR2 (12T, internal input inverters)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.ehcrkj",
+     "Mbp5t.g",
+     "ehcrkj",
+     "general_control"
+    ],
+    [
+     "PORT.h2mq0",
+     "Mbj1c7u.g",
+     "h2mq0",
+     "general_control"
+    ],
+    [
+     "Mw0w1nq.d",
+     "PORT.r5ly",
+     "r5ly",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "wfrbt": {
+   "role": "Static CMOS XNOR2 (12T, internal input inverters)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.okacgj",
+     "Miiulm6.g",
+     "okacgj",
+     "general_control"
+    ],
+    [
+     "PORT.g5s2",
+     "My82t4i.g",
+     "g5s2",
+     "general_control"
+    ],
+    [
+     "Msm8l.d",
+     "PORT.g9n4zp",
+     "g9n4zp",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "zmf6": {
+   "role": "VCCQ->VDD down level converter (2 inverters)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.wjuku",
+     "Mz4mh.g",
+     "wjuku",
+     "slow_signal"
+    ],
+    [
+     "Mz4mh.d",
+     "Mnaktll.g",
+     "g9e1",
+     "slow_signal"
+    ],
+    [
+     "Mnaktll.d",
+     "PORT.w8ln6b",
+     "w8ln6b",
+     "slow_signal"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "l5tu7": {
+   "role": "Standard inverter",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.dgta",
+     "Ma3le20.g",
+     "dgta",
+     "hs_data"
+    ],
+    [
+     "Ma3le20.d",
+     "PORT.rsu1kh",
+     "rsu1kh",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Used inside bj6r/zuhc6m (Rx deser, DQS/2 divider, Tx serializer) and in control/calibration logic."
+  },
+  "w4yyx": {
+   "role": "Standard inverter, 2x",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.skjz",
+     "Mhract6.g",
+     "skjz",
+     "general_control"
+    ],
+    [
+     "Mhract6.d",
+     "PORT.j0tii8",
+     "j0tii8",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": "Static control buffers (qp91a5, gugmik, z0nj9x, j19e)."
+  },
+  "kfwj": {
+   "role": "Low-Vt inverter, 2x",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.lajhyo",
+     "Mv8vr.g",
+     "lajhyo",
+     "hs_data"
+    ],
+    [
+     "Mv8vr.d",
+     "PORT.b3vsp",
+     "b3vsp",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "HS inverter: uye5vz, ismh, u0vlr, xoa6 output, n26dpi, wtth output."
+  },
+  "yavkxw": {
+   "role": "Standard 2-input NAND",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.d470n",
+     "Mo509jr.g",
+     "d470n",
+     "general_control"
+    ],
+    [
+     "PORT.n7av",
+     "Mdm5zc1.g",
+     "n7av",
+     "general_control"
+    ],
+    [
+     "Mo509jr.d",
+     "PORT.cwi5m",
+     "cwi5m",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": "On the HS path inside zuhc6m of the DQS/2 divider; elsewhere static/calibration logic."
+  },
+  "wxlvj5": {
+   "role": "Standard 2-input NOR",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.dt9b",
+     "Mooslpk.g",
+     "dt9b",
+     "clock"
+    ],
+    [
+     "PORT.yj5sd",
+     "Mpekes.g",
+     "yj5sd",
+     "general_control"
+    ],
+    [
+     "Mooslpk.d",
+     "PORT.ivw5",
+     "ivw5",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "On the HS path inside zuhc6m of the DQS/2 divider; elsewhere DCA decode, ODT gating, counters."
+  },
+  "yo4ne": {
+   "role": "Low-Vt 2-input NAND",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.btpi6",
+     "Mrlxfw.g",
+     "btpi6",
+     "hs_data"
+    ],
+    [
+     "PORT.lmlt",
+     "Mak81sd.g",
+     "lmlt",
+     "hs_data"
+    ],
+    [
+     "Mrlxfw.d",
+     "PORT.muua0",
+     "muua0",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "uye5vz, kr7x and u0vlr SR latch."
+  },
+  "yydl": {
+   "role": "Two-stage lvt clock buffer (1x -> 4x)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.o822u",
+     "Myro58s.g",
+     "o822u",
+     "clock"
+    ],
+    [
+     "Myro58s.d",
+     "Mlz55.g",
+     "taw7",
+     "clock"
+    ],
+    [
+     "Mlz55.d",
+     "PORT.lnolwu",
+     "lnolwu",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Rx H-tree, DQ replica delay, divider buffers, Tx tree branches/leaves, DCA input buffer."
+  },
+  "uye5vz": {
+   "role": "AND clock/data gate (yo4ne + kfwj)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xugo9",
+     "cell": "yo4ne",
+     "role": "gate"
+    },
+    {
+     "inst": "Xrq87r",
+     "cell": "kfwj",
+     "role": "restore polarity"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.k8hwgq",
+     "Xugo9.btpi6",
+     "k8hwgq",
+     "clock"
+    ],
+    [
+     "PORT.adj5",
+     "Xugo9.lmlt",
+     "adj5",
+     "important_control"
+    ],
+    [
+     "Xugo9.muua0",
+     "Xrq87r.lajhyo",
+     "j4ii",
+     "clock"
+    ],
+    [
+     "Xrq87r.b3vsp",
+     "PORT.ovk306",
+     "ovk306",
+     "clock"
+    ]
+   ],
+   "controls": {
+    "adj5": "1 passes k8hwgq, 0 forces ovk306 low"
+   },
+   "notes": "Rx strobe gating (matched/unmatched) and the DQ replica gate in xbcz59."
+  },
+  "bj6r": {
+   "role": "Static transmission-gate master-slave positive-edge DFF with local clock inverters and keeper loops",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xmd2853",
+     "cell": "l5tu7",
+     "role": "i03t"
+    },
+    {
+     "inst": "Xjppv",
+     "cell": "l5tu7",
+     "role": "pk1ach"
+    },
+    {
+     "inst": "Xfk5z",
+     "cell": "l5tu7",
+     "role": "master forward"
+    },
+    {
+     "inst": "Xbwmhlx",
+     "cell": "l5tu7",
+     "role": "master keeper"
+    },
+    {
+     "inst": "Xfrw71",
+     "cell": "l5tu7",
+     "role": "slave forward / tywlx"
+    },
+    {
+     "inst": "Xc5kno4",
+     "cell": "l5tu7",
+     "role": "slave keeper"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.zt7ee8",
+     "Mn7nehr.d",
+     "zt7ee8",
+     "hs_data"
+    ],
+    [
+     "Mn7nehr.s",
+     "Xfk5z.dgta",
+     "mhh3s",
+     "hs_data"
+    ],
+    [
+     "Xfk5z.rsu1kh",
+     "Mnkfax.d",
+     "wmzx",
+     "hs_data"
+    ],
+    [
+     "Mnkfax.s",
+     "Xfrw71.dgta",
+     "b9v55",
+     "hs_data"
+    ],
+    [
+     "Xfrw71.rsu1kh",
+     "PORT.tywlx",
+     "tywlx",
+     "hs_data"
+    ],
+    [
+     "PORT.vtam",
+     "Xmd2853.dgta",
+     "vtam",
+     "clock"
+    ],
+    [
+     "Xmd2853.rsu1kh",
+     "Xjppv.dgta",
+     "i03t",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Rx deserializer flops and Tx serializer even/odd flops."
+  },
+  "zuhc6m": {
+   "role": "Static TG master-slave DFF with active-low asynchronous reset (NAND in master, NOR in slave) and qz5196 output",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xprl6xl",
+     "cell": "l5tu7",
+     "role": "qtycf"
+    },
+    {
+     "inst": "Xe9su",
+     "cell": "l5tu7",
+     "role": "bqfj"
+    },
+    {
+     "inst": "Xrv12",
+     "cell": "l5tu7",
+     "role": "l27ue5 = ~ln1ps"
+    },
+    {
+     "inst": "Xoyhw",
+     "cell": "yavkxw",
+     "role": "master forward with reset"
+    },
+    {
+     "inst": "Xfh1t",
+     "cell": "l5tu7",
+     "role": "master keeper"
+    },
+    {
+     "inst": "Xq1uq8b",
+     "cell": "wxlvj5",
+     "role": "slave forward with reset"
+    },
+    {
+     "inst": "Xefqc",
+     "cell": "l5tu7",
+     "role": "slave keeper"
+    },
+    {
+     "inst": "Xswb0w8",
+     "cell": "l5tu7",
+     "role": "qz5196 output"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.u79k",
+     "Mcbwhg.d",
+     "u79k",
+     "clock"
+    ],
+    [
+     "Mcbwhg.s",
+     "Xoyhw.d470n",
+     "kj7a",
+     "clock"
+    ],
+    [
+     "Xoyhw.cwi5m",
+     "Mnrsfz.d",
+     "ydmep",
+     "clock"
+    ],
+    [
+     "Mnrsfz.s",
+     "Xq1uq8b.dt9b",
+     "myapv",
+     "clock"
+    ],
+    [
+     "Xq1uq8b.ivw5",
+     "PORT.rzaf",
+     "rzaf",
+     "clock"
+    ],
+    [
+     "Xq1uq8b.ivw5",
+     "Xswb0w8.dgta",
+     "rzaf",
+     "clock"
+    ],
+    [
+     "Xswb0w8.rsu1kh",
+     "PORT.qz5196",
+     "qz5196",
+     "clock"
+    ],
+    [
+     "PORT.er9lh",
+     "Xprl6xl.dgta",
+     "er9lh",
+     "clock"
+    ],
+    [
+     "PORT.ln1ps",
+     "Xoyhw.n7av",
+     "ln1ps",
+     "general_control"
+    ],
+    [
+     "Xrv12.rsu1kh",
+     "Xq1uq8b.yj5sd",
+     "l27ue5",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "ln1ps": "active-low reset, forces rzaf=0"
+   },
+   "notes": "DQS/2 divider (HS); ZQ SAR, counters and DCC lock detector (not HS)."
+  },
+  "sprh": {
+   "role": "Static VDD->VCCQ cross-coupled level shifter with true/complement outputs",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.ya3zs",
+     "Mqctq.g",
+     "ya3zs",
+     "general_control"
+    ],
+    [
+     "Mqctq.d",
+     "Mj8q1.g",
+     "cwhtb7",
+     "general_control"
+    ],
+    [
+     "Mj8q1.d",
+     "PORT.vd4xb",
+     "vd4xb",
+     "general_control"
+    ],
+    [
+     "Mcuvs22.d",
+     "PORT.p67ma",
+     "p67ma",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": "Static VDD->VCCQ shifting of enables and codes (qp91a5, gugmik, kwgk, zq, vref, sr bias)."
+  },
+  "l0sxx": {
+   "role": "1:4 deserializer per bit: retime the rise sample onto the fall strobe, capture (UI0,UI1) on y3h4vh, re-register them and capture (UI2,UI3) on fj7kaj so all four outputs update together",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xv3o0",
+     "cell": "bj6r",
+     "role": "retime rfomo onto yb1z -> woj6"
+    },
+    {
+     "inst": "Xpaz53w",
+     "cell": "bj6r",
+     "role": "UI0 (woj6) on y3h4vh -> jcjxgh"
+    },
+    {
+     "inst": "Xgsu13",
+     "cell": "bj6r",
+     "role": "UI1 (ej5ebo) on y3h4vh -> btk1"
+    },
+    {
+     "inst": "Xjjxh",
+     "cell": "bj6r",
+     "role": "y07ql<0> = jcjxgh re-registered on fj7kaj"
+    },
+    {
+     "inst": "Xt9ui",
+     "cell": "bj6r",
+     "role": "y07ql<1> = btk1 re-registered on fj7kaj"
+    },
+    {
+     "inst": "Xgl2uo",
+     "cell": "bj6r",
+     "role": "y07ql<2> (UI2, woj6) on fj7kaj"
+    },
+    {
+     "inst": "Xt847",
+     "cell": "bj6r",
+     "role": "y07ql<3> (UI3, ej5ebo) on fj7kaj"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.rfomo",
+     "Xv3o0.zt7ee8",
+     "rfomo",
+     "hs_data"
+    ],
+    [
+     "PORT.yb1z",
+     "Xv3o0.vtam",
+     "yb1z",
+     "clock"
+    ],
+    [
+     "Xv3o0.tywlx",
+     "Xpaz53w.zt7ee8",
+     "woj6",
+     "hs_data"
+    ],
+    [
+     "Xv3o0.tywlx",
+     "Xgl2uo.zt7ee8",
+     "woj6",
+     "hs_data"
+    ],
+    [
+     "PORT.ej5ebo",
+     "Xgsu13.zt7ee8",
+     "ej5ebo",
+     "hs_data"
+    ],
+    [
+     "PORT.ej5ebo",
+     "Xt847.zt7ee8",
+     "ej5ebo",
+     "hs_data"
+    ],
+    [
+     "PORT.y3h4vh",
+     "Xpaz53w.vtam",
+     "y3h4vh",
+     "clock"
+    ],
+    [
+     "PORT.y3h4vh",
+     "Xgsu13.vtam",
+     "y3h4vh",
+     "clock"
+    ],
+    [
+     "Xpaz53w.tywlx",
+     "Xjjxh.zt7ee8",
+     "jcjxgh",
+     "word_rate_data"
+    ],
+    [
+     "Xgsu13.tywlx",
+     "Xt9ui.zt7ee8",
+     "btk1",
+     "word_rate_data"
+    ],
+    [
+     "PORT.fj7kaj",
+     "Xjjxh.vtam",
+     "fj7kaj",
+     "clock"
+    ],
+    [
+     "PORT.fj7kaj",
+     "Xt9ui.vtam",
+     "fj7kaj",
+     "clock"
+    ],
+    [
+     "PORT.fj7kaj",
+     "Xgl2uo.vtam",
+     "fj7kaj",
+     "clock"
+    ],
+    [
+     "PORT.fj7kaj",
+     "Xt847.vtam",
+     "fj7kaj",
+     "clock"
+    ],
+    [
+     "Xjjxh.tywlx",
+     "PORT.y07ql<0>",
+     "y07ql<0>",
+     "word_rate_data"
+    ],
+    [
+     "Xt9ui.tywlx",
+     "PORT.y07ql<1>",
+     "y07ql<1>",
+     "word_rate_data"
+    ],
+    [
+     "Xgl2uo.tywlx",
+     "PORT.y07ql<2>",
+     "y07ql<2>",
+     "word_rate_data"
+    ],
+    [
+     "Xt847.tywlx",
+     "PORT.y07ql<3>",
+     "y07ql<3>",
+     "word_rate_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "(woj6, ej5ebo) is valid for one DQS period after each yb1z edge. y3h4vh rise captures UI0/UI1 into jcjxgh/btk1; the next fj7kaj rise (one DQS period later) captures UI2/UI3 and re-registers jcjxgh/btk1, so y07ql<3:0> changes once per word (every 2 DQS periods) and the core can capture it on bodg (= y3h4vh) rising, mid-window. y07ql<0> is the first UI. Burst-to-word alignment depends on the divider reset phase (wcu58e release). Switch-level check: 11 random words reproduced in UI order."
+  },
+  "w4tk6": {
+   "role": "Per-pin Tx core slice: local clock phase split, 2:1 DDR serializer, VDD->VCCQ HS level shifter, 5-leg slew-controlled pre-driver; drives the main-driver leg gates e5bxo/bn1xm of the pad cell",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xslpfuj",
+     "cell": "siyoi",
+     "role": "aoar1/owc3 generation from the tree leaf clock"
+    },
+    {
+     "inst": "Xyzl2",
+     "cell": "xoa6",
+     "role": "even/odd 2:1 serializer"
+    },
+    {
+     "inst": "Xhwd5",
+     "cell": "v1zh",
+     "role": "VDD->VCCQ data level shifter"
+    },
+    {
+     "inst": "Xv3q9r",
+     "cell": "i8uv",
+     "role": "per-leg pre-drivers with enables and slew bias"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.y9bamv",
+     "Xslpfuj.l0z1uw",
+     "y9bamv",
+     "clock"
+    ],
+    [
+     "Xslpfuj.xfij",
+     "Xyzl2.r86k3",
+     "aoar1",
+     "clock"
+    ],
+    [
+     "Xslpfuj.z1xj",
+     "Xyzl2.r9nk9",
+     "owc3",
+     "clock"
+    ],
+    [
+     "PORT.fz5p9",
+     "Xyzl2.g6nmv",
+     "fz5p9",
+     "word_rate_data"
+    ],
+    [
+     "PORT.gvsv",
+     "Xyzl2.nql66",
+     "gvsv",
+     "word_rate_data"
+    ],
+    [
+     "Xyzl2.ynj1co",
+     "Xhwd5.eskzp",
+     "x7xcd",
+     "hs_data"
+    ],
+    [
+     "Xhwd5.xjezk4",
+     "Xv3q9r.jzyuz",
+     "d78f",
+     "hs_data"
+    ],
+    [
+     "Xv3q9r.l89fyg<4:0>",
+     "PORT.e5bxo<4:0>",
+     "e5bxo<4:0>",
+     "hs_data"
+    ],
+    [
+     "Xv3q9r.lmh4<4:0>",
+     "PORT.bn1xm<4:0>",
+     "bn1xm<4:0>",
+     "hs_data"
+    ],
+    [
+     "PORT.jrf7<4:0>",
+     "Xv3q9r.by73<4:0>",
+     "jrf7<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.c79ay<4:0>",
+     "Xv3q9r.cn4cm<4:0>",
+     "c79ay<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.k0zg",
+     "Xv3q9r.kl8id",
+     "k0zg",
+     "bias"
+    ],
+    [
+     "PORT.xun2gj",
+     "Xv3q9r.v1yg",
+     "xun2gj",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "jrf7<4:0>": "PU leg enables (code & oe)",
+    "c79ay<4:0>": "PD leg disables (~(code & oe))",
+    "k0zg": "slew bias",
+    "xun2gj": "slew bias"
+   },
+   "notes": "The main driver legs moved into the pad cell (fwhwl/Xag486n f8zz), so this slice ends at the leg gates: e5bxo<i> low = PU leg on (data 1 & jrf7<i>), bn1xm<i> high = PD leg on (data 0 & ~c79ay<i>). Output has two buses, so inverting is null; data to pad is non-inverting. aoar1 high sends the even bit, aoar1 low the odd bit (switch-level checked). Same cell for DQS/DQSB with constant patterns."
+  },
+  "f8zz": {
+   "role": "Main output driver: 5 binary-weighted PU/PD unit legs (x16/x8/x4/x2/x1) to the pad",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [
+    {
+     "inst": "Xtln1c",
+     "cell": "ewiu3i",
+     "role": "leg 4, m=16"
+    },
+    {
+     "inst": "Xog257k",
+     "cell": "ewiu3i",
+     "role": "leg 3, m=8"
+    },
+    {
+     "inst": "Xsim8kt",
+     "cell": "ewiu3i",
+     "role": "leg 2, m=4"
+    },
+    {
+     "inst": "Xqy9f2",
+     "cell": "ewiu3i",
+     "role": "leg 1, m=2"
+    },
+    {
+     "inst": "Xwcfz8",
+     "cell": "ewiu3i",
+     "role": "leg 0, m=1"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.vm8mz<4>",
+     "Xtln1c.corbyn",
+     "vm8mz<4>",
+     "hs_data"
+    ],
+    [
+     "PORT.tejk<4>",
+     "Xtln1c.z4yfga",
+     "tejk<4>",
+     "hs_data"
+    ],
+    [
+     "PORT.vm8mz<0>",
+     "Xwcfz8.corbyn",
+     "vm8mz<0>",
+     "hs_data"
+    ],
+    [
+     "PORT.tejk<0>",
+     "Xwcfz8.z4yfga",
+     "tejk<0>",
+     "hs_data"
+    ],
+    [
+     "Xtln1c.g85ca",
+     "PORT.fegzn",
+     "fegzn",
+     "hs_data"
+    ],
+    [
+     "Xwcfz8.g85ca",
+     "PORT.fegzn",
+     "fegzn",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Strength is selected by which leg gates are enabled (ZQ/override code applied in gugmik, pre-driver per leg). Unit leg = ycgzf 8u + 300 ohm, jil3gy 4u + 300 ohm (ZQ replica unit is 1/8 of this). Pad cap now in fwhwl (Ctk4uyq)."
+  },
+  "i8uv": {
+   "role": "Pre-driver bank: data buffer plus 5 slew-controlled pre-driver legs sized x8/x4/x2/x1/x1 for driver legs x16/x8/x4/x2/x1",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [
+    {
+     "inst": "Xcur4",
+     "cell": "cathu",
+     "role": "data buffer stage 1"
+    },
+    {
+     "inst": "Xducwl",
+     "cell": "cathu",
+     "role": "data buffer stage 2 (m=4)"
+    },
+    {
+     "inst": "Xhjcn5",
+     "cell": "v18jr",
+     "role": "leg 4 pre-driver (m=8)"
+    },
+    {
+     "inst": "Xmlge16",
+     "cell": "v18jr",
+     "role": "leg 3 pre-driver (m=4)"
+    },
+    {
+     "inst": "Xv6vs",
+     "cell": "v18jr",
+     "role": "leg 2 pre-driver (m=2)"
+    },
+    {
+     "inst": "Xob95",
+     "cell": "v18jr",
+     "role": "leg 1 pre-driver"
+    },
+    {
+     "inst": "Xthhcu",
+     "cell": "v18jr",
+     "role": "leg 0 pre-driver"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.jzyuz",
+     "Xcur4.rm91",
+     "jzyuz",
+     "hs_data"
+    ],
+    [
+     "Xcur4.kkjm54",
+     "Xducwl.rm91",
+     "p4ogt",
+     "hs_data"
+    ],
+    [
+     "Xducwl.kkjm54",
+     "Xhjcn5.x8g750",
+     "jj2gv",
+     "hs_data"
+    ],
+    [
+     "Xducwl.kkjm54",
+     "Xthhcu.x8g750",
+     "jj2gv",
+     "hs_data"
+    ],
+    [
+     "Xhjcn5.rq3o",
+     "PORT.l89fyg<4>",
+     "l89fyg<4>",
+     "hs_data"
+    ],
+    [
+     "Xhjcn5.d3v2w",
+     "PORT.lmh4<4>",
+     "lmh4<4>",
+     "hs_data"
+    ],
+    [
+     "Xthhcu.rq3o",
+     "PORT.l89fyg<0>",
+     "l89fyg<0>",
+     "hs_data"
+    ],
+    [
+     "Xthhcu.d3v2w",
+     "PORT.lmh4<0>",
+     "lmh4<0>",
+     "hs_data"
+    ],
+    [
+     "PORT.by73<4>",
+     "Xhjcn5.rhxtq",
+     "by73<4>",
+     "important_control"
+    ],
+    [
+     "PORT.cn4cm<4>",
+     "Xhjcn5.atea",
+     "cn4cm<4>",
+     "important_control"
+    ],
+    [
+     "PORT.kl8id",
+     "Xhjcn5.gea1",
+     "kl8id",
+     "bias"
+    ],
+    [
+     "PORT.v1yg",
+     "Xhjcn5.gquo",
+     "v1yg",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "by73<4:0>": "per-leg PU enable",
+    "cn4cm<4:0>": "per-leg PD disable",
+    "kl8id": "slew bias",
+    "v1yg": "slew bias"
+   },
+   "notes": "l89fyg/lmh4 are both low when data is 1 (PMOS on, NMOS off): inverting w.r.t. jzyuz, the pad is not. jj2gv is the twice-buffered (true) jzyuz fanning out to all 5 legs."
+  },
+  "unj9o": {
+   "role": "RE clock buffer with the in-path duty-cycle adjuster: yydl -> wtth -> xz3c into the RPT chain",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xy6iq",
+     "cell": "yydl",
+     "role": "input buffer"
+    },
+    {
+     "inst": "Xpz90",
+     "cell": "wtth",
+     "role": "duty-cycle adjuster (DCC actuator)"
+    },
+    {
+     "inst": "Xjgg1k",
+     "cell": "xz3c",
+     "role": "output driver into RPT chain"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.i5q7",
+     "Xy6iq.o822u",
+     "i5q7",
+     "clock"
+    ],
+    [
+     "Xy6iq.lnolwu",
+     "Xpz90.qqmq",
+     "u9myn",
+     "clock"
+    ],
+    [
+     "Xpz90.wyfs90",
+     "Xjgg1k.goo5",
+     "co7nh",
+     "clock"
+    ],
+    [
+     "Xjgg1k.eos5",
+     "PORT.yqfl",
+     "yqfl",
+     "clock"
+    ],
+    [
+     "PORT.s885oa<4:0>",
+     "Xpz90.v2qwm<4:0>",
+     "s885oa<4:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "s885oa<4:0>": "duty adjust from wlyjd (offset binary, 10000/01111 neutral)"
+   },
+   "notes": "No local monitor tap any more: the DCC detector senses the distributed clock at the tree leaf l95t3."
+  },
+  "hux9": {
+   "role": "Local Tx clock tree: xz3c root, 2 branches, 10 slice leaves (ne8j3p<7:0> DQ, ne8j3p<8> DQS, ne8j3p<9> DQSB), core-clock tap and the DCC sense leaf",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xh6aem",
+     "cell": "xz3c",
+     "role": "root"
+    },
+    {
+     "inst": "Xjj2g74<1:0>",
+     "cell": "yydl",
+     "role": "branches"
+    },
+    {
+     "inst": "Xpaw1c<9:0>",
+     "cell": "yydl",
+     "role": "slice leaves"
+    },
+    {
+     "inst": "Xh14igt",
+     "cell": "yydl",
+     "role": "core clock leaf on branch 0"
+    },
+    {
+     "inst": "Xuu37",
+     "cell": "yydl",
+     "role": "DCC sense leaf on branch 1 (jq5c)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.u4yvu4",
+     "Xh6aem.goo5",
+     "u4yvu4",
+     "clock"
+    ],
+    [
+     "Xh6aem.eos5",
+     "Xjj2g74<1:0>.o822u",
+     "xthed",
+     "clock"
+    ],
+    [
+     "Xjj2g74<1>.lnolwu",
+     "Xpaw1c<9:5>.o822u",
+     "qyapv<1>",
+     "clock"
+    ],
+    [
+     "Xjj2g74<0>.lnolwu",
+     "Xpaw1c<4:0>.o822u",
+     "qyapv<0>",
+     "clock"
+    ],
+    [
+     "Xjj2g74<0>.lnolwu",
+     "Xh14igt.o822u",
+     "qyapv<0>",
+     "clock"
+    ],
+    [
+     "Xjj2g74<1>.lnolwu",
+     "Xuu37.o822u",
+     "qyapv<1>",
+     "clock"
+    ],
+    [
+     "Xpaw1c<9:0>.lnolwu",
+     "PORT.ne8j3p<9:0>",
+     "ne8j3p<9:0>",
+     "clock"
+    ],
+    [
+     "Xh14igt.lnolwu",
+     "PORT.sfzfn",
+     "sfzfn",
+     "clock"
+    ],
+    [
+     "Xuu37.lnolwu",
+     "PORT.jq5c",
+     "jq5c",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Each branch drives 6 identical yydl leaves (branch 0: ne8j3p<4:0> + core tap; branch 1: ne8j3p<9:5> + DCC sense leaf), so jq5c has the same latency/duty as the DQS/DQSB leaves it sits next to."
+  },
+  "qiex8": {
+   "role": "Duty detector: gated clock and complement drive two matched 2-pole RC low-pass filters (50k/0.5p, 50k/0.25p)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xgyiz",
+     "cell": "yavkxw",
+     "role": "enable gate, produces ~yhliyw"
+    },
+    {
+     "inst": "Xwkno4",
+     "cell": "l5tu7",
+     "role": "true clock for z3f38 filter"
+    },
+    {
+     "inst": "Xq12z",
+     "cell": "l5tu7",
+     "role": "dummy load balancing bgf4e/hb2uf (output unused)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.yhliyw",
+     "Xgyiz.d470n",
+     "yhliyw",
+     "clock"
+    ],
+    [
+     "PORT.qhjzw",
+     "Xgyiz.n7av",
+     "qhjzw",
+     "important_control"
+    ],
+    [
+     "Xgyiz.cwi5m",
+     "Xwkno4.dgta",
+     "bgf4e",
+     "clock"
+    ],
+    [
+     "Xwkno4.rsu1kh",
+     "Rb01jjf",
+     "hb2uf",
+     "clock"
+    ],
+    [
+     "Ri19jcs",
+     "PORT.z3f38",
+     "z3f38",
+     "slow_signal"
+    ],
+    [
+     "Xgyiz.cwi5m",
+     "Ry89rft",
+     "bgf4e",
+     "clock"
+    ],
+    [
+     "Rzawg",
+     "PORT.m45q",
+     "m45q",
+     "slow_signal"
+    ],
+    [
+     "Xwkno4.rsu1kh",
+     "Xq12z.dgta",
+     "hb2uf",
+     "clock"
+    ]
+   ],
+   "controls": {
+    "qhjzw": "gates the clock into the detector"
+   },
+   "notes": "Loads the DCC sense leaf but is not in series with any clock. z3f38 ~ D*VDD, m45q ~ (1-D)*VDD; tau = 25 ns / 12.5 ns, settles within a few owbme periods. ugr2g is a dummy load (unused) balancing bgf4e/hb2uf."
+  },
+  "vmswp": {
+   "role": "Pull-up replica: 5 binary-weighted ycgzf + series-R legs, unit = 1/8 of the Tx driver PU unit (1u + 2.4k vs 8u + 300 ohm)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.uvvoh<4>",
+     "Maiu11n.g",
+     "uvvoh<4>",
+     "important_control"
+    ],
+    [
+     "Maiu11n.d",
+     "Rijtr",
+     "l8klk<4>",
+     "reference"
+    ],
+    [
+     "Rijtr",
+     "PORT.trqhu",
+     "trqhu",
+     "reference"
+    ],
+    [
+     "PORT.uvvoh<0>",
+     "Mbpwel2.g",
+     "uvvoh<0>",
+     "important_control"
+    ],
+    [
+     "Mbpwel2.d",
+     "Rpo0v2z",
+     "l8klk<0>",
+     "reference"
+    ],
+    [
+     "Rpo0v2z",
+     "PORT.trqhu",
+     "trqhu",
+     "reference"
+    ]
+   ],
+   "controls": {
+    "uvvoh<4:0>": "active-low leg enables (x16..x1)"
+   },
+   "notes": "Device m and R scale together (m=16 with 150 ohm ... m=1 with 2.4k). Rpu_rep = 8 x Rpu_driver for the same code, so calibrating against RZQ = 300 ohm sets the driver to ~37.5 ohm."
+  },
+  "jrilr9": {
+   "role": "Pull-down calibration network: internal PU replica copy (calibrated code) on top of 5 binary jil3gy + R PD legs (1/8 driver unit), node mh4eq",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xkt2g",
+     "cell": "vmswp",
+     "role": "internal copy of the calibrated pull-up"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.yz6qt<4:0>",
+     "Xkt2g.uvvoh<4:0>",
+     "yz6qt<4:0>",
+     "important_control"
+    ],
+    [
+     "Xkt2g.trqhu",
+     "PORT.mh4eq",
+     "mh4eq",
+     "reference"
+    ],
+    [
+     "PORT.afu0<4>",
+     "Mf621f.g",
+     "afu0<4>",
+     "important_control"
+    ],
+    [
+     "Mf621f.d",
+     "Ru85qz",
+     "lyh4<4>",
+     "reference"
+    ],
+    [
+     "Ru85qz",
+     "PORT.mh4eq",
+     "mh4eq",
+     "reference"
+    ]
+   ],
+   "controls": {
+    "afu0<4:0>": "active-high PD leg enables",
+    "yz6qt<4:0>": "calibrated PU code"
+   },
+   "notes": "mh4eq = VCCQ * Rpd / (Rpu + Rpd); the VCCQ/2 target makes Rpd equal the calibrated Rpu."
+  },
+  "lyoln": {
+   "role": "Reference current distribution: NMOS diode on vfw3l, NMOS sink mirror for ZQ, NMOS->PMOS mirror sourcing the VREF buffer bias",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.vfw3l",
+     "Mn53lpo.d",
+     "vfw3l",
+     "bias"
+    ],
+    [
+     "Mj63o.d",
+     "PORT.ve6oy",
+     "ve6oy",
+     "bias"
+    ],
+    [
+     "Mzonmf.d",
+     "Mv1ac.d",
+     "ufpsl",
+     "bias"
+    ],
+    [
+     "Mr98eyh.d",
+     "PORT.bma5",
+     "bma5",
+     "bias"
+    ]
+   ],
+   "controls": {},
+   "notes": "ve6oy sinks current from the PMOS diode in vwt2x6; bma5 sources current into the NMOS diode of fgjco. All 1:1 (W=2u/L=1u m=2 N side, 4u/1u m=2 P side)."
+  },
+  "kwgk": {
+   "role": "ODT control: termination enable gated off per pin group while that group drives (rj921 & ~sjh5s, rj921 & ~i8la), VCCQ level shift, code gating, PU (active-low) and PD (active-high) gate drivers for the DQ group and the DQS/DQSB group",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xza767",
+     "cell": "l5tu7",
+     "role": "~rj921"
+    },
+    {
+     "inst": "Xb8gtc",
+     "cell": "wxlvj5",
+     "role": "DQ group enable = rj921 & ~sjh5s"
+    },
+    {
+     "inst": "Xw8blig",
+     "cell": "wxlvj5",
+     "role": "DQS group enable = rj921 & ~i8la"
+    },
+    {
+     "inst": "Xwvh1e",
+     "cell": "sprh",
+     "role": "DQ group enable level shift -> f8urs"
+    },
+    {
+     "inst": "Xpt7eg",
+     "cell": "sprh",
+     "role": "DQS group enable level shift -> gmbd2x"
+    },
+    {
+     "inst": "Xmrkirk<2:0>",
+     "cell": "sprh",
+     "role": "n1tu level shift"
+    },
+    {
+     "inst": "Xgk5nz<2:0>",
+     "cell": "uqsz",
+     "role": "DQ: code & enable (active-low o3zhc)"
+    },
+    {
+     "inst": "Xber4jk<2:0>",
+     "cell": "cathu",
+     "role": "DQ: re-invert"
+    },
+    {
+     "inst": "Xajvm9<2:0>",
+     "cell": "cathu",
+     "role": "DQ PU gate drivers (m=4), i8t88i low = on"
+    },
+    {
+     "inst": "Xnzf7zh<2:0>",
+     "cell": "cathu",
+     "role": "DQ PD gate drivers (m=4), ve2gc high = on"
+    },
+    {
+     "inst": "Xu8p5o<2:0>",
+     "cell": "uqsz",
+     "role": "DQS: code & enable (active-low oqpq6)"
+    },
+    {
+     "inst": "Xgq95p<2:0>",
+     "cell": "cathu",
+     "role": "DQS: re-invert"
+    },
+    {
+     "inst": "Xxnaw<2:0>",
+     "cell": "cathu",
+     "role": "DQS PU gate drivers (m=4)"
+    },
+    {
+     "inst": "Xmpj5<2:0>",
+     "cell": "cathu",
+     "role": "DQS PD gate drivers (m=4)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.rj921",
+     "Xza767.dgta",
+     "rj921",
+     "important_control"
+    ],
+    [
+     "Xza767.rsu1kh",
+     "Xb8gtc.dt9b",
+     "figew",
+     "important_control"
+    ],
+    [
+     "PORT.sjh5s",
+     "Xb8gtc.yj5sd",
+     "sjh5s",
+     "important_control"
+    ],
+    [
+     "Xza767.rsu1kh",
+     "Xw8blig.dt9b",
+     "figew",
+     "important_control"
+    ],
+    [
+     "PORT.i8la",
+     "Xw8blig.yj5sd",
+     "i8la",
+     "important_control"
+    ],
+    [
+     "Xb8gtc.ivw5",
+     "Xwvh1e.ya3zs",
+     "uch9",
+     "important_control"
+    ],
+    [
+     "Xw8blig.ivw5",
+     "Xpt7eg.ya3zs",
+     "e7hf38",
+     "important_control"
+    ],
+    [
+     "Xwvh1e.vd4xb",
+     "Xgk5nz<2:0>.qavq",
+     "f8urs",
+     "important_control"
+    ],
+    [
+     "Xpt7eg.vd4xb",
+     "Xu8p5o<2:0>.qavq",
+     "gmbd2x",
+     "important_control"
+    ],
+    [
+     "PORT.n1tu<2:0>",
+     "Xmrkirk<2:0>.ya3zs",
+     "n1tu<2:0>",
+     "important_control"
+    ],
+    [
+     "Xmrkirk<2:0>.vd4xb",
+     "Xgk5nz<2:0>.iyh7t3",
+     "htfc<2:0>",
+     "important_control"
+    ],
+    [
+     "Xmrkirk<2:0>.vd4xb",
+     "Xu8p5o<2:0>.iyh7t3",
+     "htfc<2:0>",
+     "important_control"
+    ],
+    [
+     "Xgk5nz<2:0>.g6wk",
+     "Xber4jk<2:0>.rm91",
+     "o3zhc<2:0>",
+     "important_control"
+    ],
+    [
+     "Xber4jk<2:0>.kkjm54",
+     "Xajvm9<2:0>.rm91",
+     "vqr5l<2:0>",
+     "important_control"
+    ],
+    [
+     "Xajvm9<2:0>.kkjm54",
+     "PORT.i8t88i<2:0>",
+     "i8t88i<2:0>",
+     "important_control"
+    ],
+    [
+     "Xgk5nz<2:0>.g6wk",
+     "Xnzf7zh<2:0>.rm91",
+     "o3zhc<2:0>",
+     "important_control"
+    ],
+    [
+     "Xnzf7zh<2:0>.kkjm54",
+     "PORT.ve2gc<2:0>",
+     "ve2gc<2:0>",
+     "important_control"
+    ],
+    [
+     "Xu8p5o<2:0>.g6wk",
+     "Xgq95p<2:0>.rm91",
+     "oqpq6<2:0>",
+     "important_control"
+    ],
+    [
+     "Xgq95p<2:0>.kkjm54",
+     "Xxnaw<2:0>.rm91",
+     "n81jl<2:0>",
+     "important_control"
+    ],
+    [
+     "Xxnaw<2:0>.kkjm54",
+     "PORT.t8wk<2:0>",
+     "t8wk<2:0>",
+     "important_control"
+    ],
+    [
+     "Xu8p5o<2:0>.g6wk",
+     "Xmpj5<2:0>.rm91",
+     "oqpq6<2:0>",
+     "important_control"
+    ],
+    [
+     "Xmpj5<2:0>.kkjm54",
+     "PORT.fvqxf<2:0>",
+     "fvqxf<2:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "rj921": "global ODT enable (writes)",
+    "sjh5s": "forces DQ-group ODT off while DQ drives",
+    "i8la": "forces DQS-group ODT off while DQS/DQSB drive",
+    "n1tu<2:0>": "leg selection: ~300/150/100/75/60/50/43 ohm Thevenin for codes 1..7"
+   },
+   "notes": "LS complements i2e2, wurv and okrg<2:0> are unused. Termination auto-off avoids fighting the own driver during reads (switch-level checked against random enable/code vectors)."
+  },
+  "yqsu": {
+   "role": "Pi RC wire segment model of the Rx strobe RPT chain (8f-120ohm-8f)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.z2i9an",
+     "Ryt2n6",
+     "z2i9an",
+     "clock"
+    ],
+    [
+     "Ryt2n6",
+     "PORT.xtr5",
+     "xtr5",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Passive; renamed from wire_rc (Rx) to keep cell names unique."
+  },
+  "l8ij1": {
+   "role": "Pi RC wire segment model of the Tx RE RPT chain (15f-200ohm-15f)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.sxkfbs",
+     "Rv1skc",
+     "sxkfbs",
+     "clock"
+    ],
+    [
+     "Rv1skc",
+     "PORT.jvzv",
+     "jvzv",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Passive; renamed from wire_rc (Tx) to keep cell names unique."
+  },
+  "mzrz": {
+   "role": "Static NAND-NAND 2:1 mux, sj7n = n7dx ? opsm : nwa8 (standard-Vt control version of kr7x)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xkbhcu",
+     "cell": "yavkxw",
+     "role": "nwa8 AND m5o5"
+    },
+    {
+     "inst": "Xsfvu6d",
+     "cell": "yavkxw",
+     "role": "opsm AND n7dx"
+    },
+    {
+     "inst": "Xwmzi",
+     "cell": "yavkxw",
+     "role": "OR"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.nwa8",
+     "Xkbhcu.d470n",
+     "nwa8",
+     "important_control"
+    ],
+    [
+     "PORT.m5o5",
+     "Xkbhcu.n7av",
+     "m5o5",
+     "general_control"
+    ],
+    [
+     "PORT.opsm",
+     "Xsfvu6d.d470n",
+     "opsm",
+     "important_control"
+    ],
+    [
+     "PORT.n7dx",
+     "Xsfvu6d.n7av",
+     "n7dx",
+     "general_control"
+    ],
+    [
+     "Xkbhcu.cwi5m",
+     "Xwmzi.d470n",
+     "arb6",
+     "important_control"
+    ],
+    [
+     "Xsfvu6d.cwi5m",
+     "Xwmzi.n7av",
+     "b8eo2",
+     "important_control"
+    ],
+    [
+     "Xwmzi.cwi5m",
+     "PORT.sj7n",
+     "sj7n",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "n7dx": "select (m5o5 must be its complement)"
+   },
+   "notes": "Used only in z0nj9x."
+  },
+  "z0nj9x": {
+   "role": "Driver strength code source select: ZQ calibration result (default) or register override, per bit",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xhz2ea",
+     "cell": "w4yyx",
+     "role": "~s9yo (mux m5o5)"
+    },
+    {
+     "inst": "Xaw47a2",
+     "cell": "w4yyx",
+     "role": "buffered s9yo (mux n7dx)"
+    },
+    {
+     "inst": "Xxcjkk<4:0>",
+     "cell": "mzrz",
+     "role": "pull-up code select"
+    },
+    {
+     "inst": "Xqm45n4<4:0>",
+     "cell": "mzrz",
+     "role": "pull-down code select"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.s9yo",
+     "Xhz2ea.skjz",
+     "s9yo",
+     "general_control"
+    ],
+    [
+     "Xhz2ea.j0tii8",
+     "Xaw47a2.skjz",
+     "bf6o",
+     "general_control"
+    ],
+    [
+     "Xaw47a2.j0tii8",
+     "Xxcjkk<4:0>.n7dx",
+     "s2rg",
+     "general_control"
+    ],
+    [
+     "Xhz2ea.j0tii8",
+     "Xxcjkk<4:0>.m5o5",
+     "bf6o",
+     "general_control"
+    ],
+    [
+     "PORT.pvye3<4:0>",
+     "Xxcjkk<4:0>.nwa8",
+     "pvye3<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.a56fy<4:0>",
+     "Xxcjkk<4:0>.opsm",
+     "a56fy<4:0>",
+     "general_control"
+    ],
+    [
+     "Xxcjkk<4:0>.sj7n",
+     "PORT.oz24o<4:0>",
+     "oz24o<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.gxfh8k<4:0>",
+     "Xqm45n4<4:0>.nwa8",
+     "gxfh8k<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.erhxo<4:0>",
+     "Xqm45n4<4:0>.opsm",
+     "erhxo<4:0>",
+     "general_control"
+    ],
+    [
+     "Xqm45n4<4:0>.sj7n",
+     "PORT.g7sku<4:0>",
+     "g7sku<4:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "s9yo": "0 = use ZQ codes, 1 = use a56fy/erhxo",
+    "a56fy<4:0>": "manual PU strength",
+    "erhxo<4:0>": "manual PD strength"
+   },
+   "notes": "VDD-domain; outputs go to gugmik, which level-shifts them and gates with zkl7/eiu8s."
+  },
+  "ji9j": {
+   "role": "Bang-bang DCC lock detector: remembers the previous comparator decision, flags a valid dither (decision change) and sets lock after two dither events",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xtafu2y",
+     "cell": "l5tu7",
+     "role": "cbgn = ~ns8xwf (same edge as the code counter)"
+    },
+    {
+     "inst": "Xtjg6",
+     "cell": "zuhc6m",
+     "role": "previous decision qtqp"
+    },
+    {
+     "inst": "Xural",
+     "cell": "zuhc6m",
+     "role": "valid flag (u79k tied to vdd): ignores the first decision after reset"
+    },
+    {
+     "inst": "Xdv9mi3",
+     "cell": "d9b5zl",
+     "role": "decision change zueh ^ qtqp"
+    },
+    {
+     "inst": "Xw15uhu",
+     "cell": "yavkxw",
+     "role": "p7uifz = ~(change & iirk)"
+    },
+    {
+     "inst": "Xt4vi16",
+     "cell": "l5tu7",
+     "role": "oy5v"
+    },
+    {
+     "inst": "Xsy6w7",
+     "cell": "yavkxw",
+     "role": "egkf2y = aga5n | oy5v"
+    },
+    {
+     "inst": "Xwqz7",
+     "cell": "zuhc6m",
+     "role": "first dither seen (sticky)"
+    },
+    {
+     "inst": "Xe6w3",
+     "cell": "yavkxw",
+     "role": "~(aga5n & oy5v)"
+    },
+    {
+     "inst": "Xe8pf32",
+     "cell": "yavkxw",
+     "role": "iiukb = e5s98 | (aga5n & oy5v)"
+    },
+    {
+     "inst": "Xrvyt5i",
+     "cell": "zuhc6m",
+     "role": "lock flag (sticky)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ns8xwf",
+     "Xtafu2y.dgta",
+     "ns8xwf",
+     "clock"
+    ],
+    [
+     "Xtafu2y.rsu1kh",
+     "Xtjg6.er9lh",
+     "cbgn",
+     "clock"
+    ],
+    [
+     "PORT.zueh",
+     "Xtjg6.u79k",
+     "zueh",
+     "slow_signal"
+    ],
+    [
+     "PORT.zueh",
+     "Xdv9mi3.ehcrkj",
+     "zueh",
+     "slow_signal"
+    ],
+    [
+     "Xtjg6.rzaf",
+     "Xdv9mi3.h2mq0",
+     "qtqp",
+     "slow_signal"
+    ],
+    [
+     "Xdv9mi3.r5ly",
+     "Xw15uhu.d470n",
+     "yhqg",
+     "slow_signal"
+    ],
+    [
+     "Xural.rzaf",
+     "Xw15uhu.n7av",
+     "iirk",
+     "slow_signal"
+    ],
+    [
+     "Xw15uhu.cwi5m",
+     "Xt4vi16.dgta",
+     "p7uifz",
+     "slow_signal"
+    ],
+    [
+     "Xw15uhu.cwi5m",
+     "Xsy6w7.n7av",
+     "p7uifz",
+     "slow_signal"
+    ],
+    [
+     "Xwqz7.qz5196",
+     "Xsy6w7.d470n",
+     "edx908",
+     "slow_signal"
+    ],
+    [
+     "Xsy6w7.cwi5m",
+     "Xwqz7.u79k",
+     "egkf2y",
+     "slow_signal"
+    ],
+    [
+     "Xwqz7.rzaf",
+     "Xe6w3.d470n",
+     "aga5n",
+     "slow_signal"
+    ],
+    [
+     "Xt4vi16.rsu1kh",
+     "Xe6w3.n7av",
+     "oy5v",
+     "slow_signal"
+    ],
+    [
+     "Xe6w3.cwi5m",
+     "Xe8pf32.n7av",
+     "mqims",
+     "slow_signal"
+    ],
+    [
+     "Xrvyt5i.qz5196",
+     "Xe8pf32.d470n",
+     "ii2ly3",
+     "slow_signal"
+    ],
+    [
+     "Xe8pf32.cwi5m",
+     "Xrvyt5i.u79k",
+     "iiukb",
+     "slow_signal"
+    ],
+    [
+     "Xrvyt5i.rzaf",
+     "PORT.e5s98",
+     "e5s98",
+     "status"
+    ],
+    [
+     "PORT.l0zypq",
+     "Xrvyt5i.ln1ps",
+     "l0zypq",
+     "command"
+    ]
+   ],
+   "controls": {
+    "l0zypq": "clears lock state (tied to y95wm in wlyjd)"
+   },
+   "notes": "All flops on cbgn (ns8xwf falling), aligned with the fn5wjn update. qz5196 of Xtjg6/Xural (d5ewky, fskbcd) unused. Lock is sticky until l0zypq goes low."
+  },
+  "wlyjd": {
+   "role": "DCC loop controller: gated update clock, RC duty detector on the distributed-clock sense leaf, StrongARM comparator, 5-bit up/down code counter, dither lock detector that freezes the code",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xwe14",
+     "cell": "yavkxw",
+     "role": "owbme & y95wm gate"
+    },
+    {
+     "inst": "Xpn2mu",
+     "cell": "l5tu7",
+     "role": "rz2bge"
+    },
+    {
+     "inst": "Xh0o48",
+     "cell": "qiex8",
+     "role": "duty detector on ehcfwv"
+    },
+    {
+     "inst": "Xjfgd",
+     "cell": "vui2",
+     "role": "duty comparator t5n19 vs op7f"
+    },
+    {
+     "inst": "Xhugq",
+     "cell": "fn5wjn",
+     "role": "DCC code counter (reset 10000)"
+    },
+    {
+     "inst": "Xp215zj",
+     "cell": "ji9j",
+     "role": "lock detector, freezes the counter"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ehcfwv",
+     "Xh0o48.yhliyw",
+     "ehcfwv",
+     "clock"
+    ],
+    [
+     "PORT.y95wm",
+     "Xh0o48.qhjzw",
+     "y95wm",
+     "command"
+    ],
+    [
+     "Xh0o48.z3f38",
+     "Xjfgd.ok1s8r",
+     "t5n19",
+     "slow_signal"
+    ],
+    [
+     "Xh0o48.m45q",
+     "Xjfgd.nuje",
+     "op7f",
+     "slow_signal"
+    ],
+    [
+     "PORT.owbme",
+     "Xwe14.d470n",
+     "owbme",
+     "clock"
+    ],
+    [
+     "PORT.y95wm",
+     "Xwe14.n7av",
+     "y95wm",
+     "command"
+    ],
+    [
+     "Xwe14.cwi5m",
+     "Xpn2mu.dgta",
+     "dwuax",
+     "clock"
+    ],
+    [
+     "Xpn2mu.rsu1kh",
+     "Xjfgd.dtkw",
+     "rz2bge",
+     "clock"
+    ],
+    [
+     "Xpn2mu.rsu1kh",
+     "Xhugq.fm57",
+     "rz2bge",
+     "clock"
+    ],
+    [
+     "Xpn2mu.rsu1kh",
+     "Xp215zj.ns8xwf",
+     "rz2bge",
+     "clock"
+    ],
+    [
+     "Xjfgd.aqhzb8",
+     "Xhugq.hgpa",
+     "gidww",
+     "slow_signal"
+    ],
+    [
+     "Xjfgd.aqhzb8",
+     "Xp215zj.zueh",
+     "gidww",
+     "slow_signal"
+    ],
+    [
+     "PORT.y95wm",
+     "Xhugq.j8kvf",
+     "y95wm",
+     "command"
+    ],
+    [
+     "PORT.y95wm",
+     "Xp215zj.l0zypq",
+     "y95wm",
+     "command"
+    ],
+    [
+     "Xp215zj.e5s98",
+     "Xhugq.t1ehl9",
+     "i7zg",
+     "status"
+    ],
+    [
+     "Xp215zj.e5s98",
+     "PORT.i7zg",
+     "i7zg",
+     "status"
+    ],
+    [
+     "PORT.c3ykk1",
+     "Xhugq.yhy5i",
+     "c3ykk1",
+     "general_control"
+    ],
+    [
+     "Xhugq.fwkdy<4:0>",
+     "PORT.lze378<4:0>",
+     "lze378<4:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "y95wm": "1 = run DCC training (detector, update clock, counter enabled); 0 = code held, lock cleared",
+    "c3ykk1": "resets the code to 10000 (neutral)",
+    "lze378<4:0>": "DCA setting (loop state)"
+   },
+   "notes": "Closes the DCC loop through ne2krl: lze378 -> wtth -> RPT chain -> tree -> ehcfwv leaf -> qiex8 -> vui2 -> fn5wjn -> lze378. Duty > 50% -> t5n19 > op7f -> gidww=1 -> fwkdy counts gidww -> DCA PU legs shorten the high phase (negative feedback). Comparator evaluates on rz2bge rising, counter and lock detector update on rz2bge falling. After two valid dithers i7zg=1 drives hold. Comparator j1agx4 (rlip) unused. Switch-level check with a behavioural duty model: locks within +/-1 LSB from both sides and freezes. Not on the HS path (it only loads the sense leaf)."
+  },
+  "gja4": {
+   "role": "Rail ESD: RC-triggered clamps VCCQ-VSSQ and VDD-VSS, back-to-back diodes VSS-VSSQ",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xp4tu",
+     "cell": "so79m",
+     "role": "VCCQ-VSSQ rail clamp"
+    },
+    {
+     "inst": "Xu7002u",
+     "cell": "so79m",
+     "role": "VDD-VSS rail clamp"
+    },
+    {
+     "inst": "Xq817",
+     "cell": "epfg",
+     "role": "VSS-VSSQ coupling"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.vccq",
+     "Xp4tu.yuzoi",
+     "vccq",
+     "power"
+    ],
+    [
+     "PORT.vssq",
+     "Xp4tu.bq58xy",
+     "vssq",
+     "power"
+    ],
+    [
+     "PORT.vdd",
+     "Xu7002u.yuzoi",
+     "vdd",
+     "power"
+    ],
+    [
+     "PORT.vss",
+     "Xu7002u.bq58xy",
+     "vss",
+     "power"
+    ],
+    [
+     "PORT.vss",
+     "Xq817.xuo51",
+     "vss",
+     "power"
+    ],
+    [
+     "PORT.vssq",
+     "Xq817.kbxtf",
+     "vssq",
+     "power"
+    ]
+   ],
+   "controls": {},
+   "notes": "Off in normal operation."
+  },
+  "fwhwl": {
+   "role": "Bidirectional pad cell (DQ, DQS, DQSB): primary + secondary ESD, main PU/PD driver legs, ODT legs, pad cap",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xe58n",
+     "cell": "i6p6kc",
+     "role": "primary clamps + 200 ohm / GGNMOS secondary to xx9mog"
+    },
+    {
+     "inst": "Xag486n",
+     "cell": "f8zz",
+     "role": "main driver legs x16..x1"
+    },
+    {
+     "inst": "Xuuqsg",
+     "cell": "ryk2",
+     "role": "ODT legs (3 binary center-tapped pairs)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.sq6v18",
+     "Xe58n.y3akw4",
+     "sq6v18",
+     "hs_data"
+    ],
+    [
+     "Xe58n.vfryt",
+     "PORT.xx9mog",
+     "xx9mog",
+     "hs_data"
+    ],
+    [
+     "PORT.c2108<4:0>",
+     "Xag486n.vm8mz<4:0>",
+     "c2108<4:0>",
+     "hs_data"
+    ],
+    [
+     "PORT.mita<4:0>",
+     "Xag486n.tejk<4:0>",
+     "mita<4:0>",
+     "hs_data"
+    ],
+    [
+     "Xag486n.fegzn",
+     "PORT.sq6v18",
+     "sq6v18",
+     "hs_data"
+    ],
+    [
+     "PORT.xt581u<2:0>",
+     "Xuuqsg.htzjl<2:0>",
+     "xt581u<2:0>",
+     "important_control"
+    ],
+    [
+     "PORT.jx9e<2:0>",
+     "Xuuqsg.lzeog<2:0>",
+     "jx9e<2:0>",
+     "important_control"
+    ],
+    [
+     "Xuuqsg.jo1e5g",
+     "PORT.sq6v18",
+     "sq6v18",
+     "hs_data"
+    ]
+   ],
+   "controls": {
+    "xt581u<2:0>": "ODT PU legs (active low)",
+    "jx9e<2:0>": "ODT PD legs (active high)"
+   },
+   "notes": "Two directions: sq6v18 -> xx9mog (receive, passive 200 ohm) and c2108/mita -> driver -> sq6v18 (transmit). Driver and ODT sit on the pad side of the series R; the receiver taps after it. Ctk4uyq 0.2p pad/bond cap. The same cell on DQS/DQSB keeps strobe and data pad loading equal."
+  },
+  "ye8xk0": {
+   "role": "Input-only pad cell: i6p6kc (primary + secondary) and pad cap; used on RE, nRE and VREF_EXT",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xx44wou",
+     "cell": "i6p6kc",
+     "role": "pad ESD with secondary protection"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.k1x6x",
+     "Xx44wou.y3akw4",
+     "k1x6x",
+     "clock"
+    ],
+    [
+     "Xx44wou.vfryt",
+     "PORT.a87hc",
+     "a87hc",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "HS for the RE/nRE instances; the VREF_EXT instance (udmp/Xsuj0kt) carries a static reference. No ODT on these pads."
+  },
+  "ne2krl": {
+   "role": "Read clock path: RE/nRE receiver -> in-path DCA buffer -> global RPT chain -> local clock tree (10 slice leaves, core tap, DCC sense leaf) -> core clock driver",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "Xjwlg0f",
+     "cell": "ciz0t2",
+     "role": "RE/nRE receiver (diff or SE vs VREF) to VDD"
+    },
+    {
+     "inst": "Xfzn10e",
+     "cell": "unj9o",
+     "role": "clock buffer with the DCC duty adjuster"
+    },
+    {
+     "inst": "Xhw5d",
+     "cell": "f7hz",
+     "role": "4-stage global repeater chain with wire RC"
+    },
+    {
+     "inst": "Xbimsss",
+     "cell": "hux9",
+     "role": "local tree: 10 slice leaves + core tap + DCC sense leaf"
+    },
+    {
+     "inst": "Xug4k",
+     "cell": "ajlh",
+     "role": "core clock driver (xagan)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.muv94i",
+     "Xjwlg0f.mkdw1",
+     "muv94i",
+     "clock"
+    ],
+    [
+     "PORT.g9sl",
+     "Xjwlg0f.oi8e",
+     "g9sl",
+     "clock"
+    ],
+    [
+     "PORT.oyg9a",
+     "Xjwlg0f.edkvt",
+     "oyg9a",
+     "reference"
+    ],
+    [
+     "Xjwlg0f.c3qhh",
+     "Xfzn10e.i5q7",
+     "q2wale",
+     "clock"
+    ],
+    [
+     "Xfzn10e.yqfl",
+     "Xhw5d.epzwg5",
+     "hc7sd",
+     "clock"
+    ],
+    [
+     "Xhw5d.f6sf",
+     "Xbimsss.u4yvu4",
+     "t48x",
+     "clock"
+    ],
+    [
+     "Xbimsss.ne8j3p<9:0>",
+     "PORT.u7979u<9:0>",
+     "u7979u<9:0>",
+     "clock"
+    ],
+    [
+     "Xbimsss.jq5c",
+     "PORT.l95t3",
+     "l95t3",
+     "clock"
+    ],
+    [
+     "Xbimsss.sfzfn",
+     "Xug4k.h77r",
+     "ectk",
+     "clock"
+    ],
+    [
+     "Xug4k.ypzua",
+     "PORT.xagan",
+     "xagan",
+     "clock"
+    ],
+    [
+     "PORT.g7xd<4:0>",
+     "Xfzn10e.s885oa<4:0>",
+     "g7xd<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.pt8gu",
+     "Xjwlg0f.wbac",
+     "pt8gu",
+     "important_control"
+    ],
+    [
+     "PORT.qg5xh",
+     "Xjwlg0f.g8jthl",
+     "qg5xh",
+     "important_control"
+    ],
+    [
+     "PORT.dwoow",
+     "Xjwlg0f.bt0b1y",
+     "dwoow",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "g7xd<4:0>": "duty adjust (from wlyjd)",
+    "pt8gu": "single-ended RE (vs VREF)",
+    "qg5xh": "differential RE/nRE",
+    "dwoow": "RE receiver enable (ae9l complement)"
+   },
+   "notes": "Non-inverting RE -> leaves. The DCA is upstream of the repeaters and tree, so the DCC loop corrects the duty error of receiver + DCA + RPT + tree as seen at l95t3, a leaf matched to the DQS/DQSB leaves."
+  },
+  "c4ar97": {
+   "role": "Per-DQ bidirectional slice: pad cell (ESD, main driver legs, ODT), Rx slice from the protected pad node (receiver, deskew, matched/unmatched select, DDR samplers, 1:4 deser), Tx slice (2:1 serializer, LS, pre-driver)",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xal7gi",
+     "cell": "fwhwl",
+     "role": "pad: ESD + driver legs + ODT legs"
+    },
+    {
+     "inst": "Xv5u7z",
+     "cell": "we5v",
+     "role": "receive slice"
+    },
+    {
+     "inst": "Xzkbs9",
+     "cell": "w4tk6",
+     "role": "transmit slice"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.juby",
+     "Xal7gi.sq6v18",
+     "juby",
+     "hs_data"
+    ],
+    [
+     "Xal7gi.xx9mog",
+     "Xv5u7z.bqc6",
+     "gh1dv",
+     "hs_data"
+    ],
+    [
+     "PORT.wqhk",
+     "Xv5u7z.gvr6",
+     "wqhk",
+     "reference"
+    ],
+    [
+     "PORT.w0zvi",
+     "Xv5u7z.z1zpqz",
+     "w0zvi",
+     "clock"
+    ],
+    [
+     "PORT.jla3n",
+     "Xv5u7z.j3zd",
+     "jla3n",
+     "clock"
+    ],
+    [
+     "PORT.sl4q",
+     "Xv5u7z.u1d4",
+     "sl4q",
+     "clock"
+    ],
+    [
+     "PORT.la6qn",
+     "Xv5u7z.faqfgf",
+     "la6qn",
+     "clock"
+    ],
+    [
+     "PORT.b41v2u",
+     "Xv5u7z.eyha",
+     "b41v2u",
+     "clock"
+    ],
+    [
+     "PORT.t8soy",
+     "Xv5u7z.omlh",
+     "t8soy",
+     "clock"
+    ],
+    [
+     "Xv5u7z.agnm<3:0>",
+     "PORT.h5gc66<3:0>",
+     "h5gc66<3:0>",
+     "word_rate_data"
+    ],
+    [
+     "PORT.niwz46",
+     "Xzkbs9.fz5p9",
+     "niwz46",
+     "word_rate_data"
+    ],
+    [
+     "PORT.xju54u",
+     "Xzkbs9.gvsv",
+     "xju54u",
+     "word_rate_data"
+    ],
+    [
+     "PORT.rqqv",
+     "Xzkbs9.y9bamv",
+     "rqqv",
+     "clock"
+    ],
+    [
+     "Xzkbs9.e5bxo<4:0>",
+     "Xal7gi.c2108<4:0>",
+     "gw5es<4:0>",
+     "hs_data"
+    ],
+    [
+     "Xzkbs9.bn1xm<4:0>",
+     "Xal7gi.mita<4:0>",
+     "v1v5<4:0>",
+     "hs_data"
+    ],
+    [
+     "Xal7gi.sq6v18",
+     "PORT.juby",
+     "juby",
+     "hs_data"
+    ],
+    [
+     "PORT.hglux7",
+     "Xv5u7z.wy3vv",
+     "hglux7",
+     "important_control"
+    ],
+    [
+     "PORT.vfk9b",
+     "Xv5u7z.zdjooo",
+     "vfk9b",
+     "important_control"
+    ],
+    [
+     "PORT.gusg",
+     "Xv5u7z.qm5cj",
+     "gusg",
+     "important_control"
+    ],
+    [
+     "PORT.h7prkn<2:0>",
+     "Xv5u7z.e1eb<2:0>",
+     "h7prkn<2:0>",
+     "general_control"
+    ],
+    [
+     "PORT.ku2m<4:0>",
+     "Xzkbs9.jrf7<4:0>",
+     "ku2m<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.zhyrhp<4:0>",
+     "Xzkbs9.c79ay<4:0>",
+     "zhyrhp<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.i391",
+     "Xzkbs9.k0zg",
+     "i391",
+     "bias"
+    ],
+    [
+     "PORT.ywgc6",
+     "Xzkbs9.xun2gj",
+     "ywgc6",
+     "bias"
+    ],
+    [
+     "PORT.xc9i4d<2:0>",
+     "Xal7gi.xt581u<2:0>",
+     "xc9i4d<2:0>",
+     "important_control"
+    ],
+    [
+     "PORT.b2ceco<2:0>",
+     "Xal7gi.jx9e<2:0>",
+     "b2ceco<2:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "hglux7": "receiver enable",
+    "vfk9b": "Rx matched (0) / unmatched (1) path select (gusg complement)",
+    "h7prkn<2:0>": "per-bit Rx deskew",
+    "ku2m<4:0>": "Tx PU leg enables (code & fv9mp)",
+    "zhyrhp<4:0>": "Tx PD leg disables",
+    "xc9i4d<2:0>": "ODT PU legs (active low)",
+    "b2ceco<2:0>": "ODT PD legs (active high)",
+    "i391": "pre-driver slew bias",
+    "ywgc6": "pre-driver slew bias"
+   },
+   "notes": "The pad is bidirectional: writes come in through Xal7gi gh1dv -> Xv5u7z, reads go out Xzkbs9 -> gw5es/v1v5 -> Xal7gi driver -> juby. In write mode fv9mp=0 puts all driver legs off and ODT may be on; in read mode ODT is forced off by fv9mp. h5gc66<0> is the first UI of the 4-UI word."
+  },
+  "jq2jj": {
+   "role": "Per-strobe pad slice (DQS or DQSB): the same pad cell and Tx slice as a DQ bit; the protected pad node goes up to the strobe receiver",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xvr2h",
+     "cell": "fwhwl",
+     "role": "pad: ESD + driver legs + ODT legs"
+    },
+    {
+     "inst": "Xzol5aw",
+     "cell": "w4tk6",
+     "role": "strobe transmit slice (constant even/odd pattern)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.o9l5",
+     "Xvr2h.sq6v18",
+     "o9l5",
+     "clock"
+    ],
+    [
+     "Xvr2h.xx9mog",
+     "PORT.pksyp",
+     "pksyp",
+     "clock"
+    ],
+    [
+     "PORT.bmsxl",
+     "Xzol5aw.fz5p9",
+     "bmsxl",
+     "important_control"
+    ],
+    [
+     "PORT.o4wqa",
+     "Xzol5aw.gvsv",
+     "o4wqa",
+     "important_control"
+    ],
+    [
+     "PORT.li3i2",
+     "Xzol5aw.y9bamv",
+     "li3i2",
+     "clock"
+    ],
+    [
+     "Xzol5aw.e5bxo<4:0>",
+     "Xvr2h.c2108<4:0>",
+     "vxf7<4:0>",
+     "clock"
+    ],
+    [
+     "Xzol5aw.bn1xm<4:0>",
+     "Xvr2h.mita<4:0>",
+     "qgqqq<4:0>",
+     "clock"
+    ],
+    [
+     "Xvr2h.sq6v18",
+     "PORT.o9l5",
+     "o9l5",
+     "clock"
+    ],
+    [
+     "PORT.msw9c<4:0>",
+     "Xzol5aw.jrf7<4:0>",
+     "msw9c<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.b1r77<4:0>",
+     "Xzol5aw.c79ay<4:0>",
+     "b1r77<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.cuu5s<2:0>",
+     "Xvr2h.xt581u<2:0>",
+     "cuu5s<2:0>",
+     "important_control"
+    ],
+    [
+     "PORT.lehf6<2:0>",
+     "Xvr2h.jx9e<2:0>",
+     "lehf6<2:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "bmsxl": "even pattern (ae1v for DQS, ~ae1v for DQSB)",
+    "o4wqa": "odd pattern (0 for DQS, 1 for DQSB)",
+    "msw9c<4:0>": "PU leg enables (code & lxv2s)",
+    "b1r77<4:0>": "PD leg disables",
+    "cuu5s<2:0>": "ODT PU legs",
+    "lehf6<2:0>": "ODT PD legs"
+   },
+   "notes": "Instance names Xvr2h/Xzol5aw match c4ar97 (Xv5u7z, the Rx slice, is absent: both strobe pads feed the differential strobe receiver un713b at the top). Output DQS is edge-aligned with DQ by construction (same leaf, serializer, LS, pre-driver, driver)."
+  },
+  "pk25sw": {
+   "role": "Control hub (static/slow): Rx enables and mode decode, driver code source select, Tx enable/code & oe gating to leg enables plus DQS patterns, ODT gating; level shifting to VCCQ where needed",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xllzf7",
+     "cell": "qp91a5",
+     "role": "Rx enables, matched/unmatched decode, SE DQS, VREF select, observe enable"
+    },
+    {
+     "inst": "Xltv5nm",
+     "cell": "z0nj9x",
+     "role": "ZQ code vs override select"
+    },
+    {
+     "inst": "Xl88vos",
+     "cell": "gugmik",
+     "role": "Tx enables, code & oe gating, DQS/DQSB patterns"
+    },
+    {
+     "inst": "Xymkoo3",
+     "cell": "kwgk",
+     "role": "ODT enable/code with auto-off while driving"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.rv4v",
+     "Xllzf7.ikliqn",
+     "rv4v",
+     "important_control"
+    ],
+    [
+     "PORT.hx7e",
+     "Xllzf7.mj8kv",
+     "hx7e",
+     "important_control"
+    ],
+    [
+     "PORT.y9g3",
+     "Xllzf7.djfa",
+     "y9g3",
+     "important_control"
+    ],
+    [
+     "PORT.tf33qx",
+     "Xllzf7.ukid",
+     "tf33qx",
+     "general_control"
+    ],
+    [
+     "PORT.xoly7",
+     "Xllzf7.t2tu01",
+     "xoly7",
+     "test_digital"
+    ],
+    [
+     "Xllzf7.i7frj",
+     "PORT.k1l7",
+     "k1l7",
+     "important_control"
+    ],
+    [
+     "Xllzf7.yavt3",
+     "PORT.rthrq",
+     "rthrq",
+     "important_control"
+    ],
+    [
+     "Xllzf7.z207",
+     "PORT.mghp",
+     "mghp",
+     "important_control"
+    ],
+    [
+     "Xllzf7.m4x6",
+     "PORT.wcueo",
+     "wcueo",
+     "important_control"
+    ],
+    [
+     "Xllzf7.wihj",
+     "PORT.y738z",
+     "y738z",
+     "important_control"
+    ],
+    [
+     "Xllzf7.qagu5",
+     "PORT.e7kwb",
+     "e7kwb",
+     "important_control"
+    ],
+    [
+     "Xllzf7.a3si7p",
+     "PORT.yfwdms",
+     "yfwdms",
+     "important_control"
+    ],
+    [
+     "Xllzf7.k8ji",
+     "PORT.mf1ax",
+     "mf1ax",
+     "general_control"
+    ],
+    [
+     "Xllzf7.h33l0e",
+     "PORT.o80w7c",
+     "o80w7c",
+     "test_digital"
+    ],
+    [
+     "PORT.wh97l<4:0>",
+     "Xltv5nm.pvye3<4:0>",
+     "wh97l<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.mf7h<4:0>",
+     "Xltv5nm.gxfh8k<4:0>",
+     "mf7h<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.eb8dw4",
+     "Xltv5nm.s9yo",
+     "eb8dw4",
+     "general_control"
+    ],
+    [
+     "PORT.ucs47<4:0>",
+     "Xltv5nm.a56fy<4:0>",
+     "ucs47<4:0>",
+     "general_control"
+    ],
+    [
+     "PORT.oq2fh<4:0>",
+     "Xltv5nm.erhxo<4:0>",
+     "oq2fh<4:0>",
+     "general_control"
+    ],
+    [
+     "Xltv5nm.oz24o<4:0>",
+     "Xl88vos.ga5p<4:0>",
+     "sl0ay<4:0>",
+     "important_control"
+    ],
+    [
+     "Xltv5nm.g7sku<4:0>",
+     "Xl88vos.wsx8n<4:0>",
+     "w21eq<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.d7ug",
+     "Xl88vos.j4u4x",
+     "d7ug",
+     "important_control"
+    ],
+    [
+     "PORT.sx8f",
+     "Xl88vos.c204",
+     "sx8f",
+     "important_control"
+    ],
+    [
+     "PORT.e5ouu5",
+     "Xl88vos.zkl7",
+     "e5ouu5",
+     "important_control"
+    ],
+    [
+     "PORT.z4gmk",
+     "Xl88vos.eiu8s",
+     "z4gmk",
+     "important_control"
+    ],
+    [
+     "PORT.nv7l",
+     "Xl88vos.pmv9",
+     "nv7l",
+     "important_control"
+    ],
+    [
+     "Xl88vos.f74rbw",
+     "PORT.lw0od",
+     "lw0od",
+     "important_control"
+    ],
+    [
+     "Xl88vos.fa6b5",
+     "PORT.vvqk",
+     "vvqk",
+     "important_control"
+    ],
+    [
+     "Xl88vos.a3wl<4:0>",
+     "PORT.fc07cv<4:0>",
+     "fc07cv<4:0>",
+     "important_control"
+    ],
+    [
+     "Xl88vos.d63tq<4:0>",
+     "PORT.w0ai<4:0>",
+     "w0ai<4:0>",
+     "important_control"
+    ],
+    [
+     "Xl88vos.b1qd<4:0>",
+     "PORT.moxhkk<4:0>",
+     "moxhkk<4:0>",
+     "important_control"
+    ],
+    [
+     "Xl88vos.w13km<4:0>",
+     "PORT.w7yq21<4:0>",
+     "w7yq21<4:0>",
+     "important_control"
+    ],
+    [
+     "Xl88vos.u68ig",
+     "PORT.l2kqux",
+     "l2kqux",
+     "important_control"
+    ],
+    [
+     "Xl88vos.c5iy",
+     "PORT.ru1afb",
+     "ru1afb",
+     "important_control"
+    ],
+    [
+     "Xl88vos.prz11",
+     "PORT.thrzz",
+     "thrzz",
+     "important_control"
+    ],
+    [
+     "Xl88vos.wy8qmy",
+     "PORT.erzo9",
+     "erzo9",
+     "important_control"
+    ],
+    [
+     "PORT.fwb3",
+     "Xymkoo3.rj921",
+     "fwb3",
+     "important_control"
+    ],
+    [
+     "PORT.e5ouu5",
+     "Xymkoo3.sjh5s",
+     "e5ouu5",
+     "important_control"
+    ],
+    [
+     "PORT.z4gmk",
+     "Xymkoo3.i8la",
+     "z4gmk",
+     "important_control"
+    ],
+    [
+     "PORT.h85b<2:0>",
+     "Xymkoo3.n1tu<2:0>",
+     "h85b<2:0>",
+     "important_control"
+    ],
+    [
+     "Xymkoo3.i8t88i<2:0>",
+     "PORT.cx5y6w<2:0>",
+     "cx5y6w<2:0>",
+     "important_control"
+    ],
+    [
+     "Xymkoo3.ve2gc<2:0>",
+     "PORT.q89m5x<2:0>",
+     "q89m5x<2:0>",
+     "important_control"
+    ],
+    [
+     "Xymkoo3.t8wk<2:0>",
+     "PORT.cfei8y<2:0>",
+     "cfei8y<2:0>",
+     "important_control"
+    ],
+    [
+     "Xymkoo3.fvqxf<2:0>",
+     "PORT.h3wh<2:0>",
+     "h3wh<2:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "rv4v": "Rx enable",
+    "hx7e": "Rx matched/unmatched",
+    "y9g3": "SE DQS",
+    "tf33qx": "internal VREF",
+    "xoly7": "observe enable",
+    "d7ug": "RE receiver enable",
+    "sx8f": "SE RE",
+    "e5ouu5": "DQ drive enable (also ODT off for DQ)",
+    "z4gmk": "DQS drive enable (also ODT off for DQS)",
+    "nv7l": "DQS toggle vs preamble level",
+    "fwb3": "termination enable",
+    "h85b<2:0>": "termination strength",
+    "eb8dw4": "driver code source (ZQ / override)",
+    "ucs47<4:0>": "override PU code",
+    "oq2fh<4:0>": "override PD code",
+    "wh97l<4:0>": "ZQ PU code",
+    "mf7h<4:0>": "ZQ PD code"
+   },
+   "notes": "All inputs are VDD-domain register/command bits; outputs ending in _q and all leg/ODT gate buses are VCCQ-domain. Switch-level checked (40 random vectors): leg enables = code & oe, ODT = fwb3 & ~oe, DQS patterns, enable/mode decode."
+  },
+  "hggq3i": {
+   "role": "Bias and reference block: current distribution, pre-driver slew bias, VREFQ generator/select",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xzskm",
+     "cell": "lyoln",
+     "role": "lgrjzh mirrors to ZQ comparators and VREF buffer"
+    },
+    {
+     "inst": "Xzagd",
+     "cell": "h1n10i",
+     "role": "slew-rate bias cv8o/lici"
+    },
+    {
+     "inst": "Xe5hm",
+     "cell": "a44p",
+     "role": "internal VREF DAC + buffer, ext/int select"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.lgrjzh",
+     "Xzskm.vfw3l",
+     "lgrjzh",
+     "bias"
+    ],
+    [
+     "Xzskm.ve6oy",
+     "PORT.ztsou0",
+     "ztsou0",
+     "bias"
+    ],
+    [
+     "Xzskm.bma5",
+     "Xe5hm.yh2uhk",
+     "xfz1zm",
+     "bias"
+    ],
+    [
+     "PORT.tjt1w<1:0>",
+     "Xzagd.vdm8zj<1:0>",
+     "tjt1w<1:0>",
+     "general_control"
+    ],
+    [
+     "Xzagd.y52pv7",
+     "PORT.cv8o",
+     "cv8o",
+     "bias"
+    ],
+    [
+     "Xzagd.o9b9u4",
+     "PORT.lici",
+     "lici",
+     "bias"
+    ],
+    [
+     "PORT.a9zfaz",
+     "Xe5hm.gcyl",
+     "a9zfaz",
+     "reference"
+    ],
+    [
+     "PORT.f8cf<4:0>",
+     "Xe5hm.horj<4:0>",
+     "f8cf<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.oizj",
+     "Xe5hm.n1tzk",
+     "oizj",
+     "general_control"
+    ],
+    [
+     "Xe5hm.sj8uy",
+     "PORT.h9cgax",
+     "h9cgax",
+     "reference"
+    ]
+   ],
+   "controls": {
+    "tjt1w<1:0>": "pre-driver slew",
+    "f8cf<4:0>": "internal VREF tap",
+    "oizj": "internal (1) / external (0) VREF"
+   },
+   "notes": "Static; nothing here is on the high-speed path. h9cgax feeds all DQ receivers, the SE strobe reference and the SE RE reference."
+  },
+  "udmp": {
+   "role": "Full NAND-flash DDR (Toggle/ONFI style) byte IO: 8 bidirectional DQ slices (pad ESD + main driver + ODT, VREF receiver with matched/unmatched strobe paths, DDR samplers, 1:4 deser, 2:1 serializer + pre-driver), bidirectional DQS/DQSB pads, DQS strobe receiver/distribution and DQS/2 word clock, RE/nRE read-clock path with in-path DCA and closed DCC loop, ZQ calibration feeding the driver strength codes, VREF/bias generation, control decode, pad and rail ESD",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "Xqxg6k",
+     "cell": "pk25sw",
+     "role": "control decode / level shift / leg-enable and ODT gating"
+    },
+    {
+     "inst": "Xgtozu",
+     "cell": "hggq3i",
+     "role": "bias currents, slew bias, VREFQ"
+    },
+    {
+     "inst": "Xdgf0zu",
+     "cell": "vwt2x6",
+     "role": "ZQ calibration engine (PU SAR + PD tracking)"
+    },
+    {
+     "inst": "Xzvie",
+     "cell": "ne2krl",
+     "role": "RE/nRE receiver, DCA, RPT chain, Tx clock tree"
+    },
+    {
+     "inst": "Xmvda6v",
+     "cell": "wlyjd",
+     "role": "DCC detector, comparator, counter, lock detect"
+    },
+    {
+     "inst": "Xmp8aqt",
+     "cell": "un713b",
+     "role": "DQS/DQSB strobe receiver, matched trees and unmatched RPT chains"
+    },
+    {
+     "inst": "Xrwnkhp",
+     "cell": "xeip",
+     "role": "DQS/2 divider, deser clocks, bodg driver"
+    },
+    {
+     "inst": "Xua319<7:0>",
+     "cell": "c4ar97",
+     "role": "DQ<7:0> bidirectional slices"
+    },
+    {
+     "inst": "Xqvsu1b",
+     "cell": "jq2jj",
+     "role": "DQS pad slice"
+    },
+    {
+     "inst": "Xvemppa",
+     "cell": "jq2jj",
+     "role": "DQSB pad slice"
+    },
+    {
+     "inst": "Xo3irq",
+     "cell": "ye8xk0",
+     "role": "RE pad"
+    },
+    {
+     "inst": "Xoi61",
+     "cell": "ye8xk0",
+     "role": "nRE pad"
+    },
+    {
+     "inst": "Xsuj0kt",
+     "cell": "ye8xk0",
+     "role": "VREF_EXT pad"
+    },
+    {
+     "inst": "Xgxymzp",
+     "cell": "texe",
+     "role": "ZQ pad primary ESD"
+    },
+    {
+     "inst": "Xuaq5",
+     "cell": "gja4",
+     "role": "rail clamps and VSS-VSSQ coupling"
+    },
+    {
+     "inst": "Xha8j9l",
+     "cell": "j19e",
+     "role": "test observe of xquh"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.dxmd<7:0>",
+     "Xua319<7:0>.juby",
+     "dxmd<7:0>",
+     "hs_data"
+    ],
+    [
+     "Xua319<7:0>.juby",
+     "PORT.dxmd<7:0>",
+     "dxmd<7:0>",
+     "hs_data"
+    ],
+    [
+     "PORT.a2djg",
+     "Xqvsu1b.o9l5",
+     "a2djg",
+     "clock"
+    ],
+    [
+     "PORT.kd9h",
+     "Xvemppa.o9l5",
+     "kd9h",
+     "clock"
+    ],
+    [
+     "Xqvsu1b.pksyp",
+     "Xmp8aqt.o9g8",
+     "iyul",
+     "clock"
+    ],
+    [
+     "Xvemppa.pksyp",
+     "Xmp8aqt.yly3",
+     "noy8c",
+     "clock"
+    ],
+    [
+     "Xmp8aqt.n45ct<7:0>",
+     "Xua319<7:0>.w0zvi",
+     "co4b96<7:0>",
+     "clock"
+    ],
+    [
+     "Xmp8aqt.n1jm<7:0>",
+     "Xua319<7:0>.jla3n",
+     "i9c6fh<7:0>",
+     "clock"
+    ],
+    [
+     "Xmp8aqt.wkqkft<7:0>",
+     "Xua319<7:0>.sl4q",
+     "ewdhfx<7:0>",
+     "clock"
+    ],
+    [
+     "Xmp8aqt.vgvk6<7:0>",
+     "Xua319<7:0>.la6qn",
+     "unig<7:0>",
+     "clock"
+    ],
+    [
+     "Xmp8aqt.n45ct<8>",
+     "Xrwnkhp.e791n",
+     "co4b96<8>",
+     "clock"
+    ],
+    [
+     "Xmp8aqt.wkqkft<8>",
+     "Xrwnkhp.ud2h",
+     "ewdhfx<8>",
+     "clock"
+    ],
+    [
+     "Xrwnkhp.k1rmky",
+     "Xua319<7:0>.b41v2u",
+     "xquh",
+     "clock"
+    ],
+    [
+     "Xrwnkhp.lpksua",
+     "Xua319<7:0>.t8soy",
+     "v6qvx",
+     "clock"
+    ],
+    [
+     "Xrwnkhp.jjezn",
+     "PORT.bodg",
+     "bodg",
+     "clock"
+    ],
+    [
+     "Xua319<7:0>.h5gc66<3:0>",
+     "PORT.erflz2<31:0>",
+     "erflz2<31:0>",
+     "word_rate_data"
+    ],
+    [
+     "PORT.d53w",
+     "Xsuj0kt.k1x6x",
+     "d53w",
+     "reference"
+    ],
+    [
+     "Xsuj0kt.a87hc",
+     "Xgtozu.a9zfaz",
+     "g3t2c",
+     "reference"
+    ],
+    [
+     "Xgtozu.h9cgax",
+     "Xua319<7:0>.wqhk",
+     "k8aj95",
+     "reference"
+    ],
+    [
+     "Xgtozu.h9cgax",
+     "Xmp8aqt.r8qt33",
+     "k8aj95",
+     "reference"
+    ],
+    [
+     "Xgtozu.h9cgax",
+     "Xzvie.oyg9a",
+     "k8aj95",
+     "reference"
+    ],
+    [
+     "PORT.iu7a",
+     "Xo3irq.k1x6x",
+     "iu7a",
+     "clock"
+    ],
+    [
+     "PORT.ydj9",
+     "Xoi61.k1x6x",
+     "ydj9",
+     "clock"
+    ],
+    [
+     "Xo3irq.a87hc",
+     "Xzvie.muv94i",
+     "ktu6j",
+     "clock"
+    ],
+    [
+     "Xoi61.a87hc",
+     "Xzvie.g9sl",
+     "c4vsk",
+     "clock"
+    ],
+    [
+     "Xzvie.u7979u<7:0>",
+     "Xua319<7:0>.rqqv",
+     "e4ajkt<7:0>",
+     "clock"
+    ],
+    [
+     "Xzvie.u7979u<8>",
+     "Xqvsu1b.li3i2",
+     "e4ajkt<8>",
+     "clock"
+    ],
+    [
+     "Xzvie.u7979u<9>",
+     "Xvemppa.li3i2",
+     "e4ajkt<9>",
+     "clock"
+    ],
+    [
+     "Xzvie.xagan",
+     "PORT.z6y7x",
+     "z6y7x",
+     "clock"
+    ],
+    [
+     "PORT.j9y56<7:0>",
+     "Xua319<7:0>.niwz46",
+     "j9y56<7:0>",
+     "word_rate_data"
+    ],
+    [
+     "PORT.o83e<7:0>",
+     "Xua319<7:0>.xju54u",
+     "o83e<7:0>",
+     "word_rate_data"
+    ],
+    [
+     "Xqxg6k.l2kqux",
+     "Xqvsu1b.bmsxl",
+     "rm5yv5",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.ru1afb",
+     "Xqvsu1b.o4wqa",
+     "f2im",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.thrzz",
+     "Xvemppa.bmsxl",
+     "pjbk1",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.erzo9",
+     "Xvemppa.o4wqa",
+     "qkb02",
+     "important_control"
+    ],
+    [
+     "Xqvsu1b.o9l5",
+     "PORT.a2djg",
+     "a2djg",
+     "clock"
+    ],
+    [
+     "Xvemppa.o9l5",
+     "PORT.kd9h",
+     "kd9h",
+     "clock"
+    ],
+    [
+     "Xzvie.l95t3",
+     "Xmvda6v.ehcfwv",
+     "ohychn",
+     "clock"
+    ],
+    [
+     "Xmvda6v.lze378<4:0>",
+     "Xzvie.g7xd<4:0>",
+     "jmfj<4:0>",
+     "important_control"
+    ],
+    [
+     "Xmvda6v.lze378<4:0>",
+     "PORT.jmfj<4:0>",
+     "jmfj<4:0>",
+     "status"
+    ],
+    [
+     "Xmvda6v.i7zg",
+     "PORT.wvk9mh",
+     "wvk9mh",
+     "status"
+    ],
+    [
+     "PORT.ps7xf1",
+     "Xmvda6v.y95wm",
+     "ps7xf1",
+     "command"
+    ],
+    [
+     "PORT.bo8fy",
+     "Xmvda6v.c3ykk1",
+     "bo8fy",
+     "general_control"
+    ],
+    [
+     "PORT.tvxkez",
+     "Xmvda6v.owbme",
+     "tvxkez",
+     "clock"
+    ],
+    [
+     "PORT.tvxkez",
+     "Xdgf0zu.jxzrv",
+     "tvxkez",
+     "clock"
+    ],
+    [
+     "PORT.aed2r",
+     "Xdgf0zu.lwz7yh",
+     "aed2r",
+     "reference"
+    ],
+    [
+     "PORT.aed2r",
+     "Xgxymzp.q6ve",
+     "aed2r",
+     "reference"
+    ],
+    [
+     "PORT.k0qtd",
+     "Xdgf0zu.weve",
+     "k0qtd",
+     "important_control"
+    ],
+    [
+     "PORT.d4ih7z",
+     "Xdgf0zu.jitjma",
+     "d4ih7z",
+     "command"
+    ],
+    [
+     "PORT.wzymw4",
+     "Xdgf0zu.al9b",
+     "wzymw4",
+     "general_control"
+    ],
+    [
+     "Xdgf0zu.wqqd4l",
+     "PORT.wbjp",
+     "wbjp",
+     "status"
+    ],
+    [
+     "Xdgf0zu.orzf<4:0>",
+     "Xqxg6k.wh97l<4:0>",
+     "mu0x<4:0>",
+     "important_control"
+    ],
+    [
+     "Xdgf0zu.ebqty<4:0>",
+     "Xqxg6k.mf7h<4:0>",
+     "yxapm<4:0>",
+     "important_control"
+    ],
+    [
+     "Xdgf0zu.orzf<4:0>",
+     "PORT.mu0x<4:0>",
+     "mu0x<4:0>",
+     "status"
+    ],
+    [
+     "Xdgf0zu.ebqty<4:0>",
+     "PORT.yxapm<4:0>",
+     "yxapm<4:0>",
+     "status"
+    ],
+    [
+     "PORT.ww3p",
+     "Xqxg6k.eb8dw4",
+     "ww3p",
+     "general_control"
+    ],
+    [
+     "PORT.ymob<4:0>",
+     "Xqxg6k.ucs47<4:0>",
+     "ymob<4:0>",
+     "general_control"
+    ],
+    [
+     "PORT.u09t92<4:0>",
+     "Xqxg6k.oq2fh<4:0>",
+     "u09t92<4:0>",
+     "general_control"
+    ],
+    [
+     "Xqxg6k.fc07cv<4:0>",
+     "Xua319<7:0>.ku2m<4:0>",
+     "iwhf<4:0>",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.w0ai<4:0>",
+     "Xua319<7:0>.zhyrhp<4:0>",
+     "a30s<4:0>",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.moxhkk<4:0>",
+     "Xqvsu1b.msw9c<4:0>",
+     "fig90<4:0>",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.moxhkk<4:0>",
+     "Xvemppa.msw9c<4:0>",
+     "fig90<4:0>",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.w7yq21<4:0>",
+     "Xqvsu1b.b1r77<4:0>",
+     "wo9gkl<4:0>",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.w7yq21<4:0>",
+     "Xvemppa.b1r77<4:0>",
+     "wo9gkl<4:0>",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.cx5y6w<2:0>",
+     "Xua319<7:0>.xc9i4d<2:0>",
+     "kqlkvr<2:0>",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.q89m5x<2:0>",
+     "Xua319<7:0>.b2ceco<2:0>",
+     "ki6i<2:0>",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.cfei8y<2:0>",
+     "Xqvsu1b.cuu5s<2:0>",
+     "dii8j<2:0>",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.h3wh<2:0>",
+     "Xvemppa.lehf6<2:0>",
+     "uae4<2:0>",
+     "important_control"
+    ],
+    [
+     "Xgtozu.cv8o",
+     "Xua319<7:0>.i391",
+     "tvw39",
+     "bias"
+    ],
+    [
+     "Xgtozu.lici",
+     "Xua319<7:0>.ywgc6",
+     "eg3j",
+     "bias"
+    ],
+    [
+     "Xgtozu.cv8o",
+     "Xqvsu1b.gs4i3y",
+     "tvw39",
+     "bias"
+    ],
+    [
+     "Xgtozu.ztsou0",
+     "Xdgf0zu.ici43i",
+     "q5bmjf",
+     "bias"
+    ],
+    [
+     "PORT.e92if2",
+     "Xgtozu.lgrjzh",
+     "e92if2",
+     "bias"
+    ],
+    [
+     "PORT.afvfm",
+     "Xqxg6k.rv4v",
+     "afvfm",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.k1l7",
+     "Xmp8aqt.l5d9x",
+     "pvfsp",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.k1l7",
+     "Xua319<7:0>.hglux7",
+     "pvfsp",
+     "important_control"
+    ],
+    [
+     "PORT.hhqjm",
+     "Xqxg6k.hx7e",
+     "hhqjm",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.mghp",
+     "Xua319<7:0>.vfk9b",
+     "wefw",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.mghp",
+     "Xrwnkhp.rwbe",
+     "wefw",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.y738z",
+     "Xmp8aqt.jhzo",
+     "nj7z",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.e7kwb",
+     "Xmp8aqt.wap5kq",
+     "muaybf",
+     "important_control"
+    ],
+    [
+     "PORT.p4xy",
+     "Xqxg6k.y9g3",
+     "p4xy",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.yfwdms",
+     "Xmp8aqt.wqm5q1",
+     "jg2jd8",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.h11f",
+     "Xmp8aqt.s8ql",
+     "pkwroo",
+     "important_control"
+    ],
+    [
+     "PORT.oaov36",
+     "Xqxg6k.tf33qx",
+     "oaov36",
+     "general_control"
+    ],
+    [
+     "Xqxg6k.mf1ax",
+     "Xgtozu.oizj",
+     "v5uf",
+     "general_control"
+    ],
+    [
+     "PORT.jsfy<4:0>",
+     "Xgtozu.f8cf<4:0>",
+     "jsfy<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.jc9f4p<2:0>",
+     "Xmp8aqt.lgp56p<2:0>",
+     "jc9f4p<2:0>",
+     "general_control"
+    ],
+    [
+     "PORT.cu2af5<23:0>",
+     "Xua319<7:0>.h7prkn<2:0>",
+     "cu2af5<23:0>",
+     "general_control"
+    ],
+    [
+     "PORT.wcu58e",
+     "Xrwnkhp.jxah5g",
+     "wcu58e",
+     "general_control"
+    ],
+    [
+     "PORT.yemsy",
+     "Xqxg6k.xoly7",
+     "yemsy",
+     "test_digital"
+    ],
+    [
+     "Xqxg6k.o80w7c",
+     "Xha8j9l.gkrpou",
+     "gf7hqy",
+     "test_digital"
+    ],
+    [
+     "Xrwnkhp.k1rmky",
+     "Xha8j9l.q57a",
+     "xquh",
+     "clock"
+    ],
+    [
+     "Xha8j9l.meld",
+     "PORT.f84c0z",
+     "f84c0z",
+     "test_digital"
+    ],
+    [
+     "PORT.y4hg",
+     "Xqxg6k.d7ug",
+     "y4hg",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.lw0od",
+     "Xzvie.dwoow",
+     "bfhaz",
+     "important_control"
+    ],
+    [
+     "PORT.hpaa",
+     "Xqxg6k.sx8f",
+     "hpaa",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.vvqk",
+     "Xzvie.pt8gu",
+     "utri",
+     "important_control"
+    ],
+    [
+     "Xqxg6k.zd9cz",
+     "Xzvie.qg5xh",
+     "n0f91i",
+     "important_control"
+    ],
+    [
+     "PORT.fv9mp",
+     "Xqxg6k.e5ouu5",
+     "fv9mp",
+     "important_control"
+    ],
+    [
+     "PORT.lxv2s",
+     "Xqxg6k.z4gmk",
+     "lxv2s",
+     "important_control"
+    ],
+    [
+     "PORT.ae1v",
+     "Xqxg6k.nv7l",
+     "ae1v",
+     "important_control"
+    ],
+    [
+     "PORT.e9k4l<1:0>",
+     "Xgtozu.tjt1w<1:0>",
+     "e9k4l<1:0>",
+     "general_control"
+    ],
+    [
+     "PORT.a46hb",
+     "Xqxg6k.fwb3",
+     "a46hb",
+     "important_control"
+    ],
+    [
+     "PORT.yo1i<2:0>",
+     "Xqxg6k.h85b<2:0>",
+     "yo1i<2:0>",
+     "important_control"
+    ],
+    [
+     "PORT.vccq",
+     "Xuaq5.vccq",
+     "vccq",
+     "power"
+    ],
+    [
+     "PORT.vdd",
+     "Xuaq5.vdd",
+     "vdd",
+     "power"
+    ]
+   ],
+   "controls": {
+    "afvfm": "Rx enable: DQ/DQS receivers, strobe distribution",
+    "hhqjm": "0 = matched Rx path, 1 = unmatched",
+    "p4xy": "single-ended DQS",
+    "oaov36": "internal VREF DAC (vs d53w)",
+    "jsfy<4:0>": "internal VREF level",
+    "jc9f4p<2:0>": "Rx strobe delay trim",
+    "cu2af5<23:0>": "per-bit Rx deskew (3 bits per DQ)",
+    "wcu58e": "DQS/2 divider reset (word alignment)",
+    "y4hg": "RE receiver enable",
+    "hpaa": "single-ended RE",
+    "fv9mp": "DQ driver enable (and DQ ODT off)",
+    "lxv2s": "DQS/DQSB driver enable (and DQS ODT off)",
+    "ae1v": "DQS toggling vs preamble/postamble level",
+    "e9k4l<1:0>": "pre-driver slew",
+    "a46hb": "termination enable",
+    "yo1i<2:0>": "termination strength",
+    "k0qtd": "ZQ engine enable",
+    "d4ih7z": "start ZQ PU SAR (command)",
+    "wzymw4": "ZQ reset",
+    "ww3p": "driver strength from override instead of ZQ",
+    "ymob<4:0>": "override PU code",
+    "u09t92<4:0>": "override PD code",
+    "ps7xf1": "run DCC training (command)",
+    "bo8fy": "DCC code reset",
+    "yemsy": "test observe enable"
+   },
+   "notes": "Bidirectional pads: dxmd<7:0>/a2djg/kd9h appear as inputs (write data/strobe) and outputs (read data/strobe). Two Rx paths coexist, chosen by hhqjm: matched (DQ through xbcz59, DQS through H-trees) and unmatched (DQ direct, DQS through the 9-tap repeater chain, tap n -> DQ<n>). Feedback loops: DCC (ne2krl Xzvie -> ohychn -> wlyjd Xmvda6v -> jmfj -> Xzvie), ZQ PU SAR and PD tracking inside Xdgf0zu, and the ZQ code path Xdgf0zu -> Xqxg6k -> leg enables of Xua319/Xqvsu1b/Xvemppa (open loop at run time). Unused by design: i9c6fh<8>, unig<8> (dummy leaf/tap of the complement strobe). Mwizki/Ms9a9p are MOS decaps. Not on the HS path: pk25sw, hggq3i, vwt2x6, wlyjd, gja4, texe, j19e."
+  }
+ }
+}

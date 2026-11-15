@@ -1,0 +1,8180 @@
+{
+ "netlist": "nand_io_full.sp",
+ "top": "nf_io_top",
+ "supplies": [
+  "vdd",
+  "vccq"
+ ],
+ "grounds": [
+  "vss",
+  "vssq"
+ ],
+ "ports": {
+  "dq<7:0>": {
+   "class": "hs_data_io",
+   "function": "DQ pads, bidirectional DDR data: write data in (to the Rx slices), read data out (from the Tx slices)"
+  },
+  "dqs": {
+   "class": "clock_in",
+   "function": "DQS pad, bidirectional strobe: write strobe in (center-aligned, both edges sample DQ); driven as read strobe (from RE) by the Tx"
+  },
+  "dqsb": {
+   "class": "clock_in",
+   "function": "DQSB pad, complementary bidirectional strobe (replaced by VREF in SE DQS mode; driven as ~DQS on reads)"
+  },
+  "re": {
+   "class": "clock_in",
+   "function": "RE read-enable pad (true phase); read clock from which DQ/DQS outputs and rclk_core are timed"
+  },
+  "reb": {
+   "class": "clock_in",
+   "function": "nRE pad (complement); replaced by VREF when re_se=1"
+  },
+  "zq": {
+   "class": "reference",
+   "function": "ZQ pad to external precision RZQ (300 ohm to VSSQ); PU replica legs drive it during calibration"
+  },
+  "vref_ext": {
+   "class": "reference",
+   "function": "external VREFQ pad for DQ receivers / SE strobes (used when vref_int_en=0)"
+  },
+  "din<31:0>": {
+   "class": "word_rate_data",
+   "function": "deserialized write data to the core, din<4n+3:4n> = DQ<n> UI3..UI0, updated once per DQS/2 word"
+  },
+  "din_clk": {
+   "class": "clock_out",
+   "function": "DQS/2 word clock to the core (buffered div_p); core captures din on its rising edge"
+  },
+  "dout_e<7:0>": {
+   "class": "word_rate_data",
+   "function": "even read data per DQ from the core (sent while the RE-derived clock is high)"
+  },
+  "dout_o<7:0>": {
+   "class": "word_rate_data",
+   "function": "odd read data per DQ from the core (sent while the RE-derived clock is low)"
+  },
+  "rclk_core": {
+   "class": "clock_out",
+   "function": "RE-derived clock to the core read pipeline (launches dout_e/dout_o and dqs_burst)"
+  },
+  "rx_en": {
+   "class": "important_control",
+   "function": "Rx enable: DQ/DQS receivers and strobe distribution (power-down when 0)"
+  },
+  "rx_mode_um": {
+   "class": "important_control",
+   "function": "Rx path select: 0 = matched (DQ replica delay + DQS H-tree), 1 = unmatched (DQ direct + DQS repeater chain)"
+  },
+  "dqs_se": {
+   "class": "important_control",
+   "function": "1 = single-ended DQS (DQS vs VREF), 0 = differential DQS/DQSB"
+  },
+  "vref_int_en": {
+   "class": "general_control",
+   "function": "1 = internal VREF DAC, 0 = vref_ext; also powers the ladder/OTA"
+  },
+  "vref_code<4:0>": {
+   "class": "important_control",
+   "function": "internal VREF tap, ~34.5%..71.4% of VCCQ in ~1.2% steps"
+  },
+  "dqs_dly<2:0>": {
+   "class": "general_control",
+   "function": "Rx DQS delay trim on both strobe phases"
+  },
+  "dq_dskw<23:0>": {
+   "class": "general_control",
+   "function": "per-bit Rx DQ deskew, dq_dskw<3n+2:3n> for DQ<n> (training, mainly unmatched mode)"
+  },
+  "rx_rst_n": {
+   "class": "general_control",
+   "function": "active-low reset of the DQS/2 divider; release sets the deser word alignment"
+  },
+  "tm_rxobs": {
+   "class": "test_digital",
+   "function": "test mode: observe div_p on rx_obs"
+  },
+  "rx_obs": {
+   "class": "test_digital",
+   "function": "test observation output (div_p gated by tm_rxobs & rx_en)"
+  },
+  "tx_en": {
+   "class": "important_control",
+   "function": "Tx enable: RE receiver bias/power-down"
+  },
+  "re_se": {
+   "class": "important_control",
+   "function": "1 = single-ended RE (vs VREF), 0 = differential RE/nRE"
+  },
+  "dq_oe": {
+   "class": "important_control",
+   "function": "DQ output enable; 0 = all DQ driver legs off (Hi-Z); 1 also forces DQ ODT off"
+  },
+  "dqs_oe": {
+   "class": "important_control",
+   "function": "DQS/DQSB output enable (preamble..postamble); 1 also forces DQS ODT off"
+  },
+  "dqs_burst": {
+   "class": "important_control",
+   "function": "1 = DQS/DQSB toggle with RE, 0 = DQS low / DQSB high (preamble/postamble)"
+  },
+  "sr_code<1:0>": {
+   "class": "general_control",
+   "function": "output slew rate: pre-driver starving current"
+  },
+  "odt_en": {
+   "class": "important_control",
+   "function": "on-die termination enable (writes); auto-gated off per group by dq_oe/dqs_oe"
+  },
+  "odt_code<2:0>": {
+   "class": "important_control",
+   "function": "ODT strength: ~300/150/100/75/60/50/43 ohm Thevenin for codes 1..7"
+  },
+  "cal_clk": {
+   "class": "clock_in",
+   "function": "slow calibration clock (~10 MHz, core oscillator): ZQ SAR/counter and DCC comparator/counter; not a high-speed clock"
+  },
+  "zq_en": {
+   "class": "important_control",
+   "function": "ZQ calibration enable: VREF divider, comparators, replica legs, PD tracking"
+  },
+  "zq_start": {
+   "class": "command",
+   "function": "ZQ calibration start pulse (cal_clk domain): starts the PU SAR"
+  },
+  "zq_rst_n": {
+   "class": "general_control",
+   "function": "ZQ reset: SAR code 0, PD counter mid-scale"
+  },
+  "zq_done": {
+   "class": "status_out",
+   "function": "PU SAR finished (also enables PD tracking)"
+  },
+  "zq_pu_code<4:0>": {
+   "class": "status_out",
+   "function": "calibrated pull-up code (readback); internally drives the DQ/DQS PU leg enables"
+  },
+  "zq_pd_code<4:0>": {
+   "class": "status_out",
+   "function": "calibrated pull-down code (readback); internally drives the DQ/DQS PD leg enables"
+  },
+  "drv_ovr_en": {
+   "class": "general_control",
+   "function": "1 = driver strength from pu_ovr/pd_ovr instead of ZQ codes"
+  },
+  "pu_ovr<4:0>": {
+   "class": "general_control",
+   "function": "override pull-up code (binary legs x16..x1)"
+  },
+  "pd_ovr<4:0>": {
+   "class": "general_control",
+   "function": "override pull-down code (binary legs x16..x1)"
+  },
+  "dcc_train": {
+   "class": "command",
+   "function": "DCC training command: 1 = run the duty-cycle loop while RE toggles; 0 = hold the code, clear lock"
+  },
+  "dcc_rst_n": {
+   "class": "general_control",
+   "function": "resets the DCC code to 10000 (neutral)"
+  },
+  "dcc_lock": {
+   "class": "status_out",
+   "function": "DCC loop locked (two dither events); also freezes the code"
+  },
+  "dcc_code<4:0>": {
+   "class": "status_out",
+   "function": "current DCC code readback (offset binary, 10000 neutral)"
+  },
+  "ibias": {
+   "class": "bias",
+   "function": "~10 uA reference current from the bandgap; mirrored to ZQ comparators and the VREF buffer"
+  },
+  "vdd": {
+   "class": "power",
+   "function": "core supply (~1.0 V): Rx back end, clock trees, serializer/deser, calibration logic"
+  },
+  "vccq": {
+   "class": "power",
+   "function": "IO supply (1.2 V): receivers, level shifters, pre-drivers, drivers, ODT, ESD, ZQ analog, VREF"
+  },
+  "vss": {
+   "class": "power",
+   "function": "core ground"
+  },
+  "vssq": {
+   "class": "power",
+   "function": "IO ground"
+  }
+ },
+ "cells": {
+  "rx_ctrl": {
+   "role": "Enable/mode control: level-shifts rx_en, dqs_se and internal-VREF select to VCCQ, decodes rx_mode_um into mux selects and strobe clock-gate enables, test observe enable",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "ls_up",
+     "role": "rx_en -> en_q/enb_q (VCCQ) for receivers"
+    },
+    {
+     "inst": "XI1",
+     "cell": "ls_up",
+     "role": "dqs_se -> dqs_se_q/dqs_dif_q (VCCQ) for DQS input TG select"
+    },
+    {
+     "inst": "XI2",
+     "cell": "ls_up",
+     "role": "(vref_int_en & rx_en) -> vint_q/vintb_q (VCCQ)"
+    },
+    {
+     "inst": "XI3",
+     "cell": "nand2_x1",
+     "role": "vref_int_en NAND rx_en"
+    },
+    {
+     "inst": "XI4",
+     "cell": "inv_x1",
+     "role": "AND completion for internal-VREF enable"
+    },
+    {
+     "inst": "XI5",
+     "cell": "inv_x2",
+     "role": "selub = ~rx_mode_um (mux select buffer)"
+    },
+    {
+     "inst": "XI6",
+     "cell": "inv_x2",
+     "role": "selu = rx_mode_um (mux select buffer)"
+    },
+    {
+     "inst": "XI7",
+     "cell": "nand2_x1",
+     "role": "rx_en NAND selub"
+    },
+    {
+     "inst": "XI8",
+     "cell": "inv_x1",
+     "role": "en_m = rx_en & matched mode"
+    },
+    {
+     "inst": "XI9",
+     "cell": "nand2_x1",
+     "role": "rx_en NAND selu"
+    },
+    {
+     "inst": "XI10",
+     "cell": "inv_x1",
+     "role": "en_u = rx_en & unmatched mode"
+    },
+    {
+     "inst": "XI11",
+     "cell": "nand2_x1",
+     "role": "tm_rxobs NAND rx_en"
+    },
+    {
+     "inst": "XI12",
+     "cell": "inv_x1",
+     "role": "obs_en"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.rx_en",
+     "XI0.in",
+     "rx_en",
+     "important_control"
+    ],
+    [
+     "XI0.out",
+     "PORT.en_q",
+     "en_q",
+     "important_control"
+    ],
+    [
+     "XI0.outb",
+     "PORT.enb_q",
+     "enb_q",
+     "important_control"
+    ],
+    [
+     "PORT.dqs_se",
+     "XI1.in",
+     "dqs_se",
+     "important_control"
+    ],
+    [
+     "XI1.out",
+     "PORT.dqs_se_q",
+     "dqs_se_q",
+     "important_control"
+    ],
+    [
+     "XI1.outb",
+     "PORT.dqs_dif_q",
+     "dqs_dif_q",
+     "important_control"
+    ],
+    [
+     "PORT.vref_int_en",
+     "XI3.a",
+     "vref_int_en",
+     "general_control"
+    ],
+    [
+     "XI3.out",
+     "XI4.in",
+     "net010",
+     "general_control"
+    ],
+    [
+     "XI4.out",
+     "XI2.in",
+     "net011",
+     "general_control"
+    ],
+    [
+     "XI2.out",
+     "PORT.vint_q",
+     "vint_q",
+     "general_control"
+    ],
+    [
+     "XI2.outb",
+     "PORT.vintb_q",
+     "vintb_q",
+     "general_control"
+    ],
+    [
+     "PORT.rx_mode_um",
+     "XI5.in",
+     "rx_mode_um",
+     "important_control"
+    ],
+    [
+     "XI5.out",
+     "XI6.in",
+     "selub",
+     "important_control"
+    ],
+    [
+     "XI5.out",
+     "PORT.selub",
+     "selub",
+     "important_control"
+    ],
+    [
+     "XI6.out",
+     "PORT.selu",
+     "selu",
+     "important_control"
+    ],
+    [
+     "XI5.out",
+     "XI7.b",
+     "selub",
+     "important_control"
+    ],
+    [
+     "XI7.out",
+     "XI8.in",
+     "net012",
+     "important_control"
+    ],
+    [
+     "XI8.out",
+     "PORT.en_m",
+     "en_m",
+     "important_control"
+    ],
+    [
+     "XI6.out",
+     "XI9.b",
+     "selu",
+     "important_control"
+    ],
+    [
+     "XI9.out",
+     "XI10.in",
+     "net013",
+     "important_control"
+    ],
+    [
+     "XI10.out",
+     "PORT.en_u",
+     "en_u",
+     "important_control"
+    ],
+    [
+     "PORT.tm_rxobs",
+     "XI11.a",
+     "tm_rxobs",
+     "test_digital"
+    ],
+    [
+     "XI11.out",
+     "XI12.in",
+     "net014",
+     "test_digital"
+    ],
+    [
+     "XI12.out",
+     "PORT.obs_en",
+     "obs_en",
+     "test_digital"
+    ]
+   ],
+   "controls": {
+    "rx_en": "global receive enable",
+    "rx_mode_um": "matched/unmatched mode",
+    "dqs_se": "single-ended vs differential DQS",
+    "vref_int_en": "internal VREF select (qualified by rx_en)",
+    "tm_rxobs": "test observe enable (qualified by rx_en)"
+   },
+   "notes": "Static control decode; all outputs are quasi-static mode signals."
+  },
+  "rx_vref_gen": {
+   "role": "Internal VREFQ generator: enable PMOS + 32-tap resistor ladder on VCCQ, 5-bit TG tree mux, unity-gain OTA buffer, external/internal select mux, VREF decap",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0<4:0>",
+     "cell": "ls_up",
+     "role": "vref_code<4:0> -> VCCQ select/selectb"
+    },
+    {
+     "inst": "XI1",
+     "cell": "vref_mux32",
+     "role": "32:1 ladder tap selection"
+    },
+    {
+     "inst": "XI2",
+     "cell": "vref_buf_ota",
+     "role": "unity-gain VREF buffer"
+    },
+    {
+     "inst": "XI3",
+     "cell": "amux2_q",
+     "role": "vref_ext vs buffered internal VREF select"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.vintb_q",
+     "MM0.g",
+     "vintb_q",
+     "general_control"
+    ],
+    [
+     "MM0.d",
+     "RR0",
+     "vtop",
+     "reference"
+    ],
+    [
+     "RR1<30:0>",
+     "XI1.t<31:0>",
+     "t<31:0>",
+     "reference"
+    ],
+    [
+     "PORT.vref_code<4:0>",
+     "XI0<4:0>.in",
+     "vref_code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI0<4:0>.out",
+     "XI1.s<4:0>",
+     "vc<4:0>",
+     "important_control"
+    ],
+    [
+     "XI0<4:0>.outb",
+     "XI1.sb<4:0>",
+     "vcb<4:0>",
+     "important_control"
+    ],
+    [
+     "XI1.z",
+     "XI2.inp",
+     "vint",
+     "reference"
+    ],
+    [
+     "XI2.out",
+     "XI2.inn",
+     "vbuf",
+     "reference"
+    ],
+    [
+     "XI2.out",
+     "XI3.d1",
+     "vbuf",
+     "reference"
+    ],
+    [
+     "PORT.ib_vref",
+     "XI2.ib",
+     "ib_vref",
+     "bias"
+    ],
+    [
+     "PORT.vref_ext",
+     "XI3.d0",
+     "vref_ext",
+     "reference"
+    ],
+    [
+     "PORT.vint_q",
+     "XI3.s",
+     "vint_q",
+     "general_control"
+    ],
+    [
+     "XI3.z",
+     "PORT.vref_rx",
+     "vref_rx",
+     "reference"
+    ]
+   ],
+   "controls": {
+    "vref_code<4:0>": "selects ladder tap t<code>; t<0>=14.5k/42k (~34.5% VCCQ), t<31> ~71.4% VCCQ, 500 ohm/step (~1.2%)",
+    "vint_q": "1: internal VREF (ladder on via MM0, OTA enabled, XI3 passes vbuf); 0: vref_ext passed, ladder and OTA off"
+   },
+   "notes": "Ladder: RR0 12k (top) + RR1<30:0> 31 x 500 ohm + RR2 14.5k (bottom), ~29 uA from VCCQ when on. OTA in unity-gain feedback (inn = out). CC0 2p and MOS cap MM1 decouple vref_rx. Static bias; not on the high-speed path. In nf_io_top vref_ext arrives through the VREF pad cell (XI12 io_pad_in)."
+  },
+  "vref_mux32": {
+   "role": "32:1 binary-tree analog TG mux (thick-ox, VCCQ) for VREF tap selection",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0<15:0>",
+     "cell": "amux2_q",
+     "role": "level 0 (s<0>): t<2i+1>/t<2i> -> m0<i>"
+    },
+    {
+     "inst": "XI1<7:0>",
+     "cell": "amux2_q",
+     "role": "level 1 (s<1>)"
+    },
+    {
+     "inst": "XI2<3:0>",
+     "cell": "amux2_q",
+     "role": "level 2 (s<2>)"
+    },
+    {
+     "inst": "XI3<1:0>",
+     "cell": "amux2_q",
+     "role": "level 3 (s<3>)"
+    },
+    {
+     "inst": "XI4",
+     "cell": "amux2_q",
+     "role": "root (s<4>)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.t<30:0:2>",
+     "XI0<15:0>.d0",
+     "t<30:0:2>",
+     "reference"
+    ],
+    [
+     "PORT.t<31:1:2>",
+     "XI0<15:0>.d1",
+     "t<31:1:2>",
+     "reference"
+    ],
+    [
+     "XI0<14:0:2>.z",
+     "XI1<7:0>.d0",
+     "m0<14:0:2>",
+     "reference"
+    ],
+    [
+     "XI0<15:1:2>.z",
+     "XI1<7:0>.d1",
+     "m0<15:1:2>",
+     "reference"
+    ],
+    [
+     "XI1<6:0:2>.z",
+     "XI2<3:0>.d0",
+     "m1<6:0:2>",
+     "reference"
+    ],
+    [
+     "XI1<7:1:2>.z",
+     "XI2<3:0>.d1",
+     "m1<7:1:2>",
+     "reference"
+    ],
+    [
+     "XI2<2:0:2>.z",
+     "XI3<1:0>.d0",
+     "m2<2:0:2>",
+     "reference"
+    ],
+    [
+     "XI2<3:1:2>.z",
+     "XI3<1:0>.d1",
+     "m2<3:1:2>",
+     "reference"
+    ],
+    [
+     "XI3<0>.z",
+     "XI4.d0",
+     "m3<0>",
+     "reference"
+    ],
+    [
+     "XI3<1>.z",
+     "XI4.d1",
+     "m3<1>",
+     "reference"
+    ],
+    [
+     "XI4.z",
+     "PORT.z",
+     "z",
+     "reference"
+    ],
+    [
+     "PORT.s<0>",
+     "XI0<15:0>.s",
+     "s<0>",
+     "important_control"
+    ],
+    [
+     "PORT.s<1>",
+     "XI1<7:0>.s",
+     "s<1>",
+     "important_control"
+    ],
+    [
+     "PORT.s<2>",
+     "XI2<3:0>.s",
+     "s<2>",
+     "important_control"
+    ],
+    [
+     "PORT.s<3>",
+     "XI3<1:0>.s",
+     "s<3>",
+     "important_control"
+    ],
+    [
+     "PORT.s<4>",
+     "XI4.s",
+     "s<4>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "s<4:0>": "binary tap index (s<0> = LSB at the leaf level); sb<4:0> are the complements"
+   },
+   "notes": "Each level halves the candidates; odd taps on d1, even taps on d0. Static."
+  },
+  "vref_buf_ota": {
+   "role": "Two-stage Miller OTA (NMOS input pair, PMOS mirror, PMOS CS second stage), thick-ox on VCCQ, with power-down; used as unity-gain VREF buffer",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.inp",
+     "MM3.g",
+     "inp",
+     "reference"
+    ],
+    [
+     "PORT.inn",
+     "MM2.g",
+     "inn",
+     "reference"
+    ],
+    [
+     "MM3.d",
+     "MM6.g",
+     "net06",
+     "reference"
+    ],
+    [
+     "MM6.d",
+     "PORT.out",
+     "out",
+     "reference"
+    ],
+    [
+     "PORT.ib",
+     "MM0.d",
+     "ib",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "en": "enable (MM9 pulls net06 to VCCQ when en=0)",
+    "enb": "power-down (MM8 grounds bias gate when enb=1)"
+   },
+   "notes": "MM0 diode sets tail (MM1) and 2nd-stage sink (MM7) currents; RR0 5k + CC0 0.8p nulling-resistor Miller compensation."
+  },
+  "rx_dqs_path": {
+   "role": "Strobe receive path: DQS/DQSB input TGs with diff/SE select, two complementary receivers (true and complement strobe), VCCQ->VDD level conversion, DQS delay trim, clock gating, matched H-trees and unmatched RPT chains for both strobe phases",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "rx_tg_q",
+     "role": "always-on TG on DQS (matches the select TG on the ref side and the DQ input TG)"
+    },
+    {
+     "inst": "XI1",
+     "cell": "rx_tg_q",
+     "role": "passes DQSB to ref_m in differential mode"
+    },
+    {
+     "inst": "XI2",
+     "cell": "rx_tg_q",
+     "role": "passes VREF to ref_m in single-ended mode"
+    },
+    {
+     "inst": "XI3",
+     "cell": "rx_amp_bz",
+     "role": "true-strobe receiver (DQS minus ref)"
+    },
+    {
+     "inst": "XI4",
+     "cell": "rx_amp_bz",
+     "role": "complement-strobe receiver (ref minus DQS), inputs swapped"
+    },
+    {
+     "inst": "XI5",
+     "cell": "rx_ls_dn",
+     "role": "true strobe VCCQ->VDD"
+    },
+    {
+     "inst": "XI6",
+     "cell": "rx_ls_dn",
+     "role": "complement strobe VCCQ->VDD"
+    },
+    {
+     "inst": "XI7",
+     "cell": "dly_trim3",
+     "role": "true strobe delay trim (dqs_dly)"
+    },
+    {
+     "inst": "XI8",
+     "cell": "dly_trim3",
+     "role": "complement strobe delay trim (dqs_dly)"
+    },
+    {
+     "inst": "XI9",
+     "cell": "ckgate",
+     "role": "true strobe gate into matched tree (en_m)"
+    },
+    {
+     "inst": "XI10",
+     "cell": "ckgate",
+     "role": "complement strobe gate into matched tree (en_m)"
+    },
+    {
+     "inst": "XI11",
+     "cell": "ckgate",
+     "role": "true strobe gate into RPT chain (en_u)"
+    },
+    {
+     "inst": "XI12",
+     "cell": "ckgate",
+     "role": "complement strobe gate into RPT chain (en_u)"
+    },
+    {
+     "inst": "XI13",
+     "cell": "rx_dqs_tree",
+     "role": "matched H-tree, true strobe -> ckt_m<8:0>"
+    },
+    {
+     "inst": "XI14",
+     "cell": "rx_dqs_tree",
+     "role": "matched H-tree, complement strobe -> ckc_m<8:0>"
+    },
+    {
+     "inst": "XI15",
+     "cell": "rx_rpt_chain",
+     "role": "unmatched RPT chain, true strobe -> ckt_u<8:0>"
+    },
+    {
+     "inst": "XI16",
+     "cell": "rx_rpt_chain",
+     "role": "unmatched RPT chain, complement strobe -> ckc_u<8:0>"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.dqs",
+     "XI0.a",
+     "dqs",
+     "clock"
+    ],
+    [
+     "XI0.z",
+     "XI3.inp",
+     "dqs_m",
+     "clock"
+    ],
+    [
+     "XI0.z",
+     "XI4.inn",
+     "dqs_m",
+     "clock"
+    ],
+    [
+     "PORT.dqsb",
+     "XI1.a",
+     "dqsb",
+     "clock"
+    ],
+    [
+     "PORT.vref_rx",
+     "XI2.a",
+     "vref_rx",
+     "reference"
+    ],
+    [
+     "XI1.z",
+     "XI3.inn",
+     "ref_m",
+     "clock"
+    ],
+    [
+     "XI1.z",
+     "XI4.inp",
+     "ref_m",
+     "clock"
+    ],
+    [
+     "XI2.z",
+     "XI3.inn",
+     "ref_m",
+     "reference"
+    ],
+    [
+     "XI3.out",
+     "XI5.in",
+     "st0",
+     "clock"
+    ],
+    [
+     "XI5.out",
+     "XI7.in",
+     "st1",
+     "clock"
+    ],
+    [
+     "XI7.out",
+     "XI9.ck",
+     "st2",
+     "clock"
+    ],
+    [
+     "XI7.out",
+     "XI11.ck",
+     "st2",
+     "clock"
+    ],
+    [
+     "XI9.out",
+     "XI13.in",
+     "stm",
+     "clock"
+    ],
+    [
+     "XI11.out",
+     "XI15.in",
+     "stu",
+     "clock"
+    ],
+    [
+     "XI4.out",
+     "XI6.in",
+     "sc0",
+     "clock"
+    ],
+    [
+     "XI6.out",
+     "XI8.in",
+     "sc1",
+     "clock"
+    ],
+    [
+     "XI8.out",
+     "XI10.ck",
+     "sc2",
+     "clock"
+    ],
+    [
+     "XI8.out",
+     "XI12.ck",
+     "sc2",
+     "clock"
+    ],
+    [
+     "XI10.out",
+     "XI14.in",
+     "scm",
+     "clock"
+    ],
+    [
+     "XI12.out",
+     "XI16.in",
+     "scu",
+     "clock"
+    ],
+    [
+     "XI13.lf<8:0>",
+     "PORT.ckt_m<8:0>",
+     "ckt_m<8:0>",
+     "clock"
+    ],
+    [
+     "XI14.lf<8:0>",
+     "PORT.ckc_m<8:0>",
+     "ckc_m<8:0>",
+     "clock"
+    ],
+    [
+     "XI15.tap<8:0>",
+     "PORT.ckt_u<8:0>",
+     "ckt_u<8:0>",
+     "clock"
+    ],
+    [
+     "XI16.tap<8:0>",
+     "PORT.ckc_u<8:0>",
+     "ckc_u<8:0>",
+     "clock"
+    ],
+    [
+     "PORT.dqs_dif_q",
+     "XI1.en",
+     "dqs_dif_q",
+     "important_control"
+    ],
+    [
+     "PORT.dqs_se_q",
+     "XI2.en",
+     "dqs_se_q",
+     "important_control"
+    ],
+    [
+     "PORT.en_q",
+     "XI3.en_q",
+     "en_q",
+     "important_control"
+    ],
+    [
+     "PORT.dqs_dly<2:0>",
+     "XI7.code<2:0>",
+     "dqs_dly<2:0>",
+     "general_control"
+    ],
+    [
+     "PORT.dqs_dly<2:0>",
+     "XI8.code<2:0>",
+     "dqs_dly<2:0>",
+     "general_control"
+    ],
+    [
+     "PORT.en_m",
+     "XI9.en",
+     "en_m",
+     "important_control"
+    ],
+    [
+     "PORT.en_u",
+     "XI11.en",
+     "en_u",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "dqs_se_q": "1: VREF drives ref_m (single-ended DQS); dqs_dif_q is its complement (1: DQSB drives ref_m)",
+    "en_q": "receiver enable (enb_q complement)",
+    "dqs_dly<2:0>": "strobe trim delay, same code on both phases",
+    "en_m": "enables the matched H-trees",
+    "en_u": "enables the unmatched RPT chains"
+   },
+   "notes": "Complement strobe is made by a second identical receiver with swapped inputs (not an inverter) so rise/fall sampling clocks have matched latency; in SE mode the complement receiver compares VREF vs DQS. XI0 is an intentionally always-on TG (en tied vccq, enb tied vssq) matching XI1/XI2 and the DQ-slice input TG. Only one distribution network toggles at a time. In nf_io_top dqs/dqsb come from the pad_rx outputs of the two io_dqs_slice pad cells (same io_pad_bidir as DQ), so the DQS input sees the same pad loading as DQ."
+  },
+  "rx_dq_slice": {
+   "role": "Per-DQ receive slice: input TG, VREF-referenced receiver, VCCQ->VDD conversion, per-bit deskew, matched replica delay, mode muxes for data and both strobe phases, rise/fall DDR samplers, 1:4 deserializer (instantiated in io_dq_slice)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI9",
+     "cell": "rx_tg_q",
+     "role": "always-on input TG, matches the DQS input TG"
+    },
+    {
+     "inst": "XI0",
+     "cell": "rx_amp_bz",
+     "role": "DQ receiver, DQ vs VREF"
+    },
+    {
+     "inst": "XI1",
+     "cell": "rx_ls_dn",
+     "role": "VCCQ->VDD level conversion"
+    },
+    {
+     "inst": "XI2",
+     "cell": "dly_trim3",
+     "role": "per-bit deskew trim (dskw<2:0>)"
+    },
+    {
+     "inst": "XI3",
+     "cell": "dq_match_dly",
+     "role": "replica of DQS clock gate + H-tree delay (matched mode)"
+    },
+    {
+     "inst": "XI4",
+     "cell": "mux2_hs",
+     "role": "data select: replica-delayed (d0) vs direct (d1)"
+    },
+    {
+     "inst": "XI5",
+     "cell": "mux2_hs",
+     "role": "rise strobe select: H-tree leaf (d0) vs RPT tap (d1)"
+    },
+    {
+     "inst": "XI6",
+     "cell": "mux2_hs",
+     "role": "fall strobe select: H-tree leaf (d0) vs RPT tap (d1)"
+    },
+    {
+     "inst": "XI7",
+     "cell": "rx_samp_pair",
+     "role": "rise and fall samplers"
+    },
+    {
+     "inst": "XI8",
+     "cell": "rx_deser4",
+     "role": "1:4 deserializer"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.dq",
+     "XI9.a",
+     "dq",
+     "hs_data"
+    ],
+    [
+     "XI9.z",
+     "XI0.inp",
+     "dq_m",
+     "hs_data"
+    ],
+    [
+     "PORT.vref_rx",
+     "XI0.inn",
+     "vref_rx",
+     "reference"
+    ],
+    [
+     "XI0.out",
+     "XI1.in",
+     "net010",
+     "hs_data"
+    ],
+    [
+     "XI1.out",
+     "XI2.in",
+     "net011",
+     "hs_data"
+    ],
+    [
+     "XI2.out",
+     "XI3.in",
+     "dq_d",
+     "hs_data"
+    ],
+    [
+     "XI3.out",
+     "XI4.d0",
+     "dq_mt",
+     "hs_data"
+    ],
+    [
+     "XI2.out",
+     "XI4.d1",
+     "dq_d",
+     "hs_data"
+    ],
+    [
+     "XI4.z",
+     "XI7.d",
+     "dsam",
+     "hs_data"
+    ],
+    [
+     "PORT.ckt_m",
+     "XI5.d0",
+     "ckt_m",
+     "clock"
+    ],
+    [
+     "PORT.ckt_u",
+     "XI5.d1",
+     "ckt_u",
+     "clock"
+    ],
+    [
+     "XI5.z",
+     "XI7.ckr",
+     "ckr",
+     "clock"
+    ],
+    [
+     "PORT.ckc_m",
+     "XI6.d0",
+     "ckc_m",
+     "clock"
+    ],
+    [
+     "PORT.ckc_u",
+     "XI6.d1",
+     "ckc_u",
+     "clock"
+    ],
+    [
+     "XI6.z",
+     "XI7.ckf",
+     "ckf",
+     "clock"
+    ],
+    [
+     "XI6.z",
+     "XI8.ckf",
+     "ckf",
+     "clock"
+    ],
+    [
+     "XI7.dr",
+     "XI8.dr",
+     "dr",
+     "hs_data"
+    ],
+    [
+     "XI7.df",
+     "XI8.df",
+     "df",
+     "hs_data"
+    ],
+    [
+     "PORT.div_p",
+     "XI8.div_p",
+     "div_p",
+     "clock"
+    ],
+    [
+     "PORT.div_n",
+     "XI8.div_n",
+     "div_n",
+     "clock"
+    ],
+    [
+     "XI8.rd<3:0>",
+     "PORT.rd<3:0>",
+     "rd<3:0>",
+     "word_rate_data"
+    ],
+    [
+     "PORT.selu",
+     "XI4.s",
+     "selu",
+     "important_control"
+    ],
+    [
+     "PORT.selu",
+     "XI5.s",
+     "selu",
+     "important_control"
+    ],
+    [
+     "PORT.selu",
+     "XI6.s",
+     "selu",
+     "important_control"
+    ],
+    [
+     "PORT.selub",
+     "XI3.en",
+     "selub",
+     "important_control"
+    ],
+    [
+     "PORT.dskw<2:0>",
+     "XI2.code<2:0>",
+     "dskw<2:0>",
+     "general_control"
+    ],
+    [
+     "PORT.en_q",
+     "XI0.en_q",
+     "en_q",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "selu": "0 = matched (replica data + H-tree strobes), 1 = unmatched (direct data + RPT taps); selub is its complement and also gates the replica",
+    "dskw<2:0>": "per-bit DQ delay trim",
+    "en_q": "receiver enable (enb_q complement)"
+   },
+   "notes": "Matched path is a structural copy of the strobe path: same TG, receiver, ls_dn and dly_trim3 cells, then dq_match_dly (ckgate + 3 ckbuf) replicating ckgate + root/branch/leaf of rx_dqs_tree, and the same mux2_hs cell on data and strobe. In unmatched mode the replica is bypassed and clock-gated. Fall sampler clock ckf also retimes the rise sample inside the deser. In nf_io_top the dq input is the secondary-protected pad node pad_rx of the shared bidirectional pad cell (io_dq_slice/XI0), so the DQ Tx driver and ODT legs load the same pad."
+  },
+  "dq_match_dly": {
+   "role": "DQ replica delay line matching DQS clock gate + 3-level H-tree (gate, root, branch, leaf ckbuf with lumped replica load caps)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "ckgate",
+     "role": "replica of the DQS-path clock gate (en = selub)"
+    },
+    {
+     "inst": "XI1",
+     "cell": "ckbuf",
+     "role": "replica of tree root"
+    },
+    {
+     "inst": "XI2",
+     "cell": "ckbuf",
+     "role": "replica of tree branch"
+    },
+    {
+     "inst": "XI3",
+     "cell": "ckbuf",
+     "role": "replica of tree leaf"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "XI0.ck",
+     "in",
+     "hs_data"
+    ],
+    [
+     "PORT.en",
+     "XI0.en",
+     "en",
+     "important_control"
+    ],
+    [
+     "XI0.out",
+     "XI1.in",
+     "net011",
+     "hs_data"
+    ],
+    [
+     "XI1.out",
+     "XI2.in",
+     "net012",
+     "hs_data"
+    ],
+    [
+     "XI2.out",
+     "XI3.in",
+     "net013",
+     "hs_data"
+    ],
+    [
+     "XI3.out",
+     "PORT.out",
+     "out",
+     "hs_data"
+    ]
+   ],
+   "controls": {
+    "en": "gates the replica off in unmatched mode (power)"
+   },
+   "notes": "CC0 17f / CC1 13f emulate fan-out-3 (two extra ckbuf inputs + wire) seen by the real root/branch; CC2 5f equals the tree leaf wire cap."
+  },
+  "rx_dqs_tree": {
+   "role": "Matched DQS distribution: 1->3->9 buffered H-tree of ckbuf with lumped wire caps; leaves 0..7 to DQ slices, leaf 8 to the divider slice",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "ckbuf",
+     "role": "root buffer"
+    },
+    {
+     "inst": "XI1<2:0>",
+     "cell": "ckbuf",
+     "role": "branch buffers"
+    },
+    {
+     "inst": "XI2<8:0>",
+     "cell": "ckbuf",
+     "role": "leaf buffers"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "XI0.in",
+     "in",
+     "clock"
+    ],
+    [
+     "XI0.out",
+     "XI1<2:0>.in",
+     "net010",
+     "clock"
+    ],
+    [
+     "XI1<2>.out",
+     "XI2<8:6>.in",
+     "br<2>",
+     "clock"
+    ],
+    [
+     "XI1<1>.out",
+     "XI2<5:3>.in",
+     "br<1>",
+     "clock"
+    ],
+    [
+     "XI1<0>.out",
+     "XI2<2:0>.in",
+     "br<0>",
+     "clock"
+    ],
+    [
+     "XI2<8:0>.out",
+     "PORT.lf<8:0>",
+     "lf<8:0>",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Equal depth (3 ckbuf) and equal fan-out to every leaf; replicated on the DQ side by dq_match_dly."
+  },
+  "rx_rpt_chain": {
+   "role": "Unmatched DQS distribution: 9 repeaters (rpt_buf) with pi-RC wire segments; the tap after each repeater drives one slice directly",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0<8:0>",
+     "cell": "rpt_buf",
+     "role": "repeaters"
+    },
+    {
+     "inst": "XI1<7:0>",
+     "cell": "wire_rc_rx",
+     "role": "inter-repeater wire RC"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "XI0<0>.in",
+     "in",
+     "clock"
+    ],
+    [
+     "XI0<7:0>.out",
+     "XI1<7:0>.a",
+     "tap<7:0>",
+     "clock"
+    ],
+    [
+     "XI1<7:0>.b",
+     "XI0<8:1>.in",
+     "rn<8:1>",
+     "clock"
+    ],
+    [
+     "XI0<8:0>.out",
+     "PORT.tap<8:0>",
+     "tap<8:0>",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Latency increases monotonically from tap<0> to tap<8>; no DQ-side replica, so per-bit DQ deskew/training absorbs the skew in unmatched mode."
+  },
+  "rx_samp_pair": {
+   "role": "DDR sampler pair: rise-edge sampler on ckr, fall-edge sampler on ckf (complement strobe)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "rx_saff",
+     "role": "rise sampler"
+    },
+    {
+     "inst": "XI1",
+     "cell": "rx_saff",
+     "role": "fall sampler"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.d",
+     "XI0.d",
+     "d",
+     "hs_data"
+    ],
+    [
+     "PORT.d",
+     "XI1.d",
+     "d",
+     "hs_data"
+    ],
+    [
+     "PORT.ckr",
+     "XI0.ck",
+     "ckr",
+     "clock"
+    ],
+    [
+     "PORT.ckf",
+     "XI1.ck",
+     "ckf",
+     "clock"
+    ],
+    [
+     "XI0.q",
+     "PORT.dr",
+     "dr",
+     "hs_data"
+    ],
+    [
+     "XI1.q",
+     "PORT.df",
+     "df",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "qb outputs net07/net08 are unused."
+  },
+  "rx_saff": {
+   "role": "StrongARM sense-amp flip-flop: always-on TG + inverter make delay-matched d/db, StrongARM latch (lvt), NAND SR latch",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "inv_lvt_x2",
+     "role": "db_i generation"
+    },
+    {
+     "inst": "XI1",
+     "cell": "nand2_lvt",
+     "role": "SR latch, q side"
+    },
+    {
+     "inst": "XI2",
+     "cell": "nand2_lvt",
+     "role": "SR latch, qb side"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.d",
+     "MM13.d",
+     "d",
+     "hs_data"
+    ],
+    [
+     "MM13.s",
+     "MM1.g",
+     "d_i",
+     "hs_data"
+    ],
+    [
+     "PORT.d",
+     "XI0.in",
+     "d",
+     "hs_data"
+    ],
+    [
+     "XI0.out",
+     "MM2.g",
+     "db_i",
+     "hs_data"
+    ],
+    [
+     "PORT.ck",
+     "MMtail.g",
+     "ck",
+     "clock"
+    ],
+    [
+     "MM3.d",
+     "XI1.a",
+     "son",
+     "hs_data"
+    ],
+    [
+     "MM4.d",
+     "XI2.a",
+     "sop",
+     "hs_data"
+    ],
+    [
+     "XI1.out",
+     "PORT.q",
+     "q",
+     "hs_data"
+    ],
+    [
+     "XI2.out",
+     "PORT.qb",
+     "qb",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Evaluates on ck rising, precharges (MM7-MM10) while ck low; son falls when d=1, so q=1. The MM12/MM13 TG intentionally matches the inverter delay of the db side. SR latch holds during precharge."
+  },
+  "rx_ckdiv_slice": {
+   "role": "Deser clock slice: mode mux for strobe leaf/tap 8, divide-by-2 toggle flop, div_p/div_n buffers, rclk_div driver to core",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "mux2_hs",
+     "role": "matched/unmatched strobe select (same cell as bit slices)"
+    },
+    {
+     "inst": "XI1",
+     "cell": "dffr_tg",
+     "role": "DQS/2 toggle divider with reset"
+    },
+    {
+     "inst": "XI2",
+     "cell": "ckbuf",
+     "role": "div_p buffer"
+    },
+    {
+     "inst": "XI3",
+     "cell": "ckbuf",
+     "role": "div_n buffer"
+    },
+    {
+     "inst": "XI4",
+     "cell": "rpt_buf",
+     "role": "rclk_div driver to core"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ckt_m",
+     "XI0.d0",
+     "ckt_m",
+     "clock"
+    ],
+    [
+     "PORT.ckt_u",
+     "XI0.d1",
+     "ckt_u",
+     "clock"
+    ],
+    [
+     "XI0.z",
+     "XI1.ck",
+     "ckd",
+     "clock"
+    ],
+    [
+     "XI1.qb",
+     "XI1.d",
+     "net08",
+     "clock"
+    ],
+    [
+     "XI1.q",
+     "XI2.in",
+     "net07",
+     "clock"
+    ],
+    [
+     "XI1.qb",
+     "XI3.in",
+     "net08",
+     "clock"
+    ],
+    [
+     "XI2.out",
+     "PORT.div_p",
+     "div_p",
+     "clock"
+    ],
+    [
+     "XI3.out",
+     "PORT.div_n",
+     "div_n",
+     "clock"
+    ],
+    [
+     "XI2.out",
+     "XI4.in",
+     "div_p",
+     "clock"
+    ],
+    [
+     "XI4.out",
+     "PORT.rclk_div",
+     "rclk_div",
+     "clock"
+    ],
+    [
+     "PORT.rst_n",
+     "XI1.rn",
+     "rst_n",
+     "general_control"
+    ],
+    [
+     "PORT.selu",
+     "XI0.s",
+     "selu",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "selu": "selects leaf 8 of the H-tree or tap 8 of the RPT chain",
+    "rst_n": "divider reset (q=0: div_p low, div_n high)"
+   },
+   "notes": "Divide-by-2 feedback loop qb -> d. div_n is derived from qb, one inverter later than q, which is tolerated because the deser capture window is one full DQS period. rclk_div is exported as din_clk at nf_io_top."
+  },
+  "rx_obs_buf": {
+   "role": "Test observation gate/driver for the deser clock",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "nand2_x1",
+     "role": "div_p gated by obs_en"
+    },
+    {
+     "inst": "XI1",
+     "cell": "inv_x2",
+     "role": "output driver"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.div_p",
+     "XI0.a",
+     "div_p",
+     "clock"
+    ],
+    [
+     "PORT.obs_en",
+     "XI0.b",
+     "obs_en",
+     "test_digital"
+    ],
+    [
+     "XI0.out",
+     "XI1.in",
+     "net05",
+     "test_digital"
+    ],
+    [
+     "XI1.out",
+     "PORT.rx_obs",
+     "rx_obs",
+     "test_digital"
+    ]
+   ],
+   "controls": {
+    "obs_en": "test observe enable"
+   },
+   "notes": "Test only."
+  },
+  "dly_trim3": {
+   "role": "3-bit binary cap-load delay trim: two lvt inverters with 1x/2x/4x switched MOS-cap loads on the middle node",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "inv_lvt_x2",
+     "role": "first stage, drives loaded node"
+    },
+    {
+     "inst": "XI1",
+     "cell": "inv_lvt_x2",
+     "role": "second stage, restores polarity"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "XI0.in",
+     "in",
+     "hs_data"
+    ],
+    [
+     "XI0.out",
+     "XI1.in",
+     "net05",
+     "hs_data"
+    ],
+    [
+     "XI1.out",
+     "PORT.out",
+     "out",
+     "hs_data"
+    ],
+    [
+     "PORT.code<0>",
+     "MM0.g",
+     "code<0>",
+     "general_control"
+    ],
+    [
+     "PORT.code<1>",
+     "MM1.g",
+     "code<1>",
+     "general_control"
+    ],
+    [
+     "PORT.code<2>",
+     "MM2.g",
+     "code<2>",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "code<2:0>": "switches MM3/MM4/MM5 MOS caps (m=1/2/4) onto net05; larger code = more delay"
+   },
+   "notes": "Used in both DQ (dskw) and DQS (dqs_dly) paths so the code-0 delay matches."
+  },
+  "mux2_hs": {
+   "role": "NAND-NAND 2:1 mux, z = s ? d1 : d0; same cell on data and strobe paths for delay matching",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "nand2_lvt",
+     "role": "d0 AND sb"
+    },
+    {
+     "inst": "XI1",
+     "cell": "nand2_lvt",
+     "role": "d1 AND s"
+    },
+    {
+     "inst": "XI2",
+     "cell": "nand2_lvt",
+     "role": "OR (NAND of NANDs)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.d0",
+     "XI0.a",
+     "d0",
+     "hs_data"
+    ],
+    [
+     "PORT.sb",
+     "XI0.b",
+     "sb",
+     "important_control"
+    ],
+    [
+     "PORT.d1",
+     "XI1.a",
+     "d1",
+     "hs_data"
+    ],
+    [
+     "PORT.s",
+     "XI1.b",
+     "s",
+     "important_control"
+    ],
+    [
+     "XI0.out",
+     "XI2.a",
+     "net05",
+     "hs_data"
+    ],
+    [
+     "XI1.out",
+     "XI2.b",
+     "net06",
+     "hs_data"
+    ],
+    [
+     "XI2.out",
+     "PORT.z",
+     "z",
+     "hs_data"
+    ]
+   ],
+   "controls": {
+    "s": "select (sb must be its complement)"
+   },
+   "notes": "Two-level NAND path is identical for d0 and d1."
+  },
+  "rx_amp_bz": {
+   "role": "Bazes complementary self-biased differential receiver (thick-ox, VCCQ) with power-down",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.inp",
+     "MMN1.g",
+     "inp",
+     "hs_data"
+    ],
+    [
+     "PORT.inp",
+     "MMP1.g",
+     "inp",
+     "hs_data"
+    ],
+    [
+     "PORT.inn",
+     "MMN2.g",
+     "inn",
+     "hs_data"
+    ],
+    [
+     "PORT.inn",
+     "MMP2.g",
+     "inn",
+     "hs_data"
+    ],
+    [
+     "MMN1.d",
+     "MMNT.g",
+     "nbias",
+     "bias"
+    ],
+    [
+     "MMN1.d",
+     "MMPT.g",
+     "nbias",
+     "bias"
+    ],
+    [
+     "MMN2.d",
+     "PORT.out",
+     "out",
+     "hs_data"
+    ]
+   ],
+   "controls": {
+    "en_q": "enables NMOS tail (MMNE) and releases nbias",
+    "enb_q": "enables PMOS tail (MMPE); when high, MM1 clamps out low"
+   },
+   "notes": "nbias is the self-bias feedback node driving both tail devices; out is non-inverting w.r.t. inp and not full-swing (squared by rx_ls_dn). Used for DQ (inn=VREF) and for both DQS phases (swapped inputs)."
+  },
+  "rx_tg_q": {
+   "role": "Thick-oxide transmission gate on VCCQ (input select / delay matching)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MM0.d",
+     "a",
+     "hs_data"
+    ],
+    [
+     "MM0.s",
+     "PORT.z",
+     "z",
+     "hs_data"
+    ]
+   ],
+   "controls": {
+    "en": "NMOS gate",
+    "enb": "PMOS gate"
+   },
+   "notes": "Instances with en tied to vccq / enb to vssq are permanently on (matching elements)."
+  },
+  "rx_ls_dn": {
+   "role": "VCCQ->VDD down level converter: VCCQ inverter then thick-gate inverter on VDD",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "MM0.g",
+     "in",
+     "hs_data"
+    ],
+    [
+     "MM0.d",
+     "MM2.g",
+     "net07",
+     "hs_data"
+    ],
+    [
+     "MM2.d",
+     "PORT.out",
+     "out",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "First stage squares the receiver output to full VCCQ swing; second stage uses hv devices so its gate tolerates VCCQ."
+  },
+  "amux2_q": {
+   "role": "Thick-oxide TG 2:1 analog mux on VCCQ, z = s ? d1 : d0",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.d1",
+     "MM0.d",
+     "d1",
+     "reference"
+    ],
+    [
+     "PORT.d0",
+     "MM2.d",
+     "d0",
+     "reference"
+    ],
+    [
+     "MM0.s",
+     "PORT.z",
+     "z",
+     "reference"
+    ]
+   ],
+   "controls": {
+    "s": "select (sb complement)"
+   },
+   "notes": "Analog VREF routing only."
+  },
+  "rpt_buf": {
+   "role": "Two-stage lvt repeater for long strobe/clock wires",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "MM0.g",
+     "in",
+     "clock"
+    ],
+    [
+     "MM0.d",
+     "MM2.g",
+     "net03",
+     "clock"
+    ],
+    [
+     "MM2.d",
+     "PORT.out",
+     "out",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "tx_re_rx": {
+   "role": "RE/nRE input receiver: input TGs with diff/SE select, Bazes receiver, dummy complementary receiver for input-load symmetry, VCCQ->VDD conversion",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "rx_tg_q",
+     "role": "always-on TG on RE (matches the select TGs)"
+    },
+    {
+     "inst": "XI1",
+     "cell": "rx_tg_q",
+     "role": "passes nRE to ref_m in differential mode"
+    },
+    {
+     "inst": "XI2",
+     "cell": "rx_tg_q",
+     "role": "passes VREF to ref_m in single-ended mode"
+    },
+    {
+     "inst": "XI3",
+     "cell": "rx_amp_bz",
+     "role": "RE receiver (RE minus ref)"
+    },
+    {
+     "inst": "XI5",
+     "cell": "rx_amp_bz",
+     "role": "dummy receiver with swapped inputs, output unused (load balance)"
+    },
+    {
+     "inst": "XI4",
+     "cell": "rx_ls_dn",
+     "role": "VCCQ->VDD level conversion"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.re",
+     "XI0.a",
+     "re",
+     "clock"
+    ],
+    [
+     "XI0.z",
+     "XI3.inp",
+     "re_m",
+     "clock"
+    ],
+    [
+     "XI0.z",
+     "XI5.inn",
+     "re_m",
+     "clock"
+    ],
+    [
+     "PORT.reb",
+     "XI1.a",
+     "reb",
+     "clock"
+    ],
+    [
+     "PORT.vref",
+     "XI2.a",
+     "vref",
+     "reference"
+    ],
+    [
+     "XI1.z",
+     "XI3.inn",
+     "ref_m",
+     "clock"
+    ],
+    [
+     "XI1.z",
+     "XI5.inp",
+     "ref_m",
+     "clock"
+    ],
+    [
+     "XI3.out",
+     "XI4.in",
+     "net010",
+     "clock"
+    ],
+    [
+     "XI4.out",
+     "PORT.ck_re",
+     "ck_re",
+     "clock"
+    ],
+    [
+     "PORT.re_dif_q",
+     "XI1.en",
+     "re_dif_q",
+     "important_control"
+    ],
+    [
+     "PORT.re_se_q",
+     "XI2.en",
+     "re_se_q",
+     "important_control"
+    ],
+    [
+     "PORT.en_q",
+     "XI3.en_q",
+     "en_q",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "re_se_q": "1: VREF is the reference (SE RE); re_dif_q: 1: nRE is the reference",
+    "en_q": "receiver enable"
+   },
+   "notes": "XI5 output net011 is intentionally unused: it only equalizes the capacitive load presented to RE and nRE. In nf_io_top re/reb are the secondary-protected pad nodes re_rx/reb_rx and vref is the internal/external VREFQ (vref_rx), shared with the DQ receivers."
+  },
+  "tx_dca": {
+   "role": "Duty-cycle adjuster: inverter with code-enabled binary PU/PD auxiliary legs (asymmetric edge strength) + output inverter; offset-binary decode",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0<3:0>",
+     "cell": "nand2_x1",
+     "role": "PU leg enable decode pen_b<i> = ~(code<4> & code<i>)"
+    },
+    {
+     "inst": "XI1<3:0>",
+     "cell": "nor2_x1",
+     "role": "PD leg enable decode nen<i> = ~code<4> & ~code<i>"
+    },
+    {
+     "inst": "XI2",
+     "cell": "inv_lvt_x2",
+     "role": "output inverter"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "MM0.g",
+     "in",
+     "clock"
+    ],
+    [
+     "PORT.in",
+     "MM1.g",
+     "in",
+     "clock"
+    ],
+    [
+     "MM0.d",
+     "XI2.in",
+     "x",
+     "clock"
+    ],
+    [
+     "XI2.out",
+     "PORT.out",
+     "out",
+     "clock"
+    ],
+    [
+     "PORT.code<4>",
+     "XI0<3:0>.a",
+     "code<4>",
+     "important_control"
+    ],
+    [
+     "PORT.code<4>",
+     "XI1<3:0>.a",
+     "code<4>",
+     "important_control"
+    ],
+    [
+     "XI0<3>.out",
+     "MM3.g",
+     "pen_b<3>",
+     "important_control"
+    ],
+    [
+     "XI0<0>.out",
+     "MM9.g",
+     "pen_b<0>",
+     "important_control"
+    ],
+    [
+     "XI1<3>.out",
+     "MM11.g",
+     "nen<3>",
+     "important_control"
+    ],
+    [
+     "XI1<0>.out",
+     "MM17.g",
+     "nen<0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "code<4:0>": "offset binary: code<4>=1 enables PU legs (m=8/4/2/1 on code<3:0>) -> faster x rise -> earlier out fall -> lower duty; code<4>=0 enables PD legs on ~code<3:0> -> earlier out rise -> higher duty; 10000/01111 neutral"
+   },
+   "notes": "CC0 6f on x sets the edge rate the legs act on. Intentional rise/fall asymmetry is the adjustment mechanism."
+  },
+  "tx_rpt_chain": {
+   "role": "Global clock repeater (RPT) chain: 4 repeaters with pi-RC wire segments from RE pad area to the byte",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0<3:0>",
+     "cell": "tx_rpt",
+     "role": "repeaters"
+    },
+    {
+     "inst": "XI1<3:0>",
+     "cell": "wire_rc_tx",
+     "role": "wire segments"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "XI0<0>.in",
+     "in",
+     "clock"
+    ],
+    [
+     "XI0<3:0>.out",
+     "XI1<3:0>.a",
+     "r<3:0>",
+     "clock"
+    ],
+    [
+     "XI1<2:0>.b",
+     "XI0<3:1>.in",
+     "w<3:1>",
+     "clock"
+    ],
+    [
+     "XI1<3>.b",
+     "PORT.out",
+     "out",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "tx_sr_bias": {
+   "role": "Slew-rate bias generator: resistor-referenced NMOS mirror, sr_code-switched current DAC into PMOS diode (vbp_sr), mirrored into NMOS diode (vbn_sr)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0<1:0>",
+     "cell": "ls_up",
+     "role": "sr_code level shift to VCCQ"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.sr_code<1:0>",
+     "XI0<1:0>.in",
+     "sr_code<1:0>",
+     "general_control"
+    ],
+    [
+     "XI0<0>.out",
+     "MM4.g",
+     "sr_q<0>",
+     "general_control"
+    ],
+    [
+     "XI0<1>.out",
+     "MM6.g",
+     "sr_q<1>",
+     "general_control"
+    ],
+    [
+     "RR0",
+     "MM1.d",
+     "nref",
+     "bias"
+    ],
+    [
+     "MM2.d",
+     "MM7.d",
+     "vbp_sr",
+     "bias"
+    ],
+    [
+     "MM7.d",
+     "PORT.vbp_sr",
+     "vbp_sr",
+     "bias"
+    ],
+    [
+     "MM8.d",
+     "PORT.vbn_sr",
+     "vbn_sr",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "sr_code<1:0>": "adds 1x (bit0) and 2x (bit1) to the base 2x mirror current; higher code -> more pre-driver current -> faster output edges"
+   },
+   "notes": "Always on (no enable). srb_q<1:0> unused. CC0/CC1 decouple the bias lines distributed to all slices. Lives in io_bias; vbp_sr/vbn_sr go to every DQ/DQS pre-driver."
+  },
+  "tx_ctrl": {
+   "role": "TX control: level-shifts enables and drive codes to VCCQ, gates PU/PD leg enables with dq_oe / dqs_oe, generates DQS/DQSB even/odd patterns from dqs_burst",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "ls_up",
+     "role": "tx_en -> en_q/enb_q"
+    },
+    {
+     "inst": "XI1",
+     "cell": "ls_up",
+     "role": "re_se -> re_se_q/re_dif_q"
+    },
+    {
+     "inst": "XI2",
+     "cell": "ls_up",
+     "role": "dq_oe -> dqoe_q"
+    },
+    {
+     "inst": "XI3",
+     "cell": "ls_up",
+     "role": "dqs_oe -> dqsoe_q"
+    },
+    {
+     "inst": "XI4<4:0>",
+     "cell": "ls_up",
+     "role": "pu_code level shift"
+    },
+    {
+     "inst": "XI5<4:0>",
+     "cell": "ls_up",
+     "role": "pd_code level shift"
+    },
+    {
+     "inst": "XI6<4:0>",
+     "cell": "nand2_q",
+     "role": "pu_code & dq_oe (inverted)"
+    },
+    {
+     "inst": "XI7<4:0>",
+     "cell": "inv_q",
+     "role": "pu_en_d<4:0>"
+    },
+    {
+     "inst": "XI8<4:0>",
+     "cell": "nand2_q",
+     "role": "pd_dis_d<4:0> = ~(pd_code & dq_oe)"
+    },
+    {
+     "inst": "XI9<4:0>",
+     "cell": "nand2_q",
+     "role": "pu_code & dqs_oe (inverted)"
+    },
+    {
+     "inst": "XI10<4:0>",
+     "cell": "inv_q",
+     "role": "pu_en_s<4:0>"
+    },
+    {
+     "inst": "XI11<4:0>",
+     "cell": "nand2_q",
+     "role": "pd_dis_s<4:0> = ~(pd_code & dqs_oe)"
+    },
+    {
+     "inst": "XI12",
+     "cell": "inv_x1",
+     "role": "dqs_burst invert"
+    },
+    {
+     "inst": "XI13",
+     "cell": "inv_x2",
+     "role": "dqs_e = dqs_burst"
+    },
+    {
+     "inst": "XI14",
+     "cell": "inv_x2",
+     "role": "dqsb_e = ~dqs_burst"
+    },
+    {
+     "inst": "XI15",
+     "cell": "tie_hilo",
+     "role": "dqsb_o = 1, dqs_o = 0"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.tx_en",
+     "XI0.in",
+     "tx_en",
+     "important_control"
+    ],
+    [
+     "XI0.out",
+     "PORT.en_q",
+     "en_q",
+     "important_control"
+    ],
+    [
+     "XI0.outb",
+     "PORT.enb_q",
+     "enb_q",
+     "important_control"
+    ],
+    [
+     "PORT.re_se",
+     "XI1.in",
+     "re_se",
+     "important_control"
+    ],
+    [
+     "XI1.out",
+     "PORT.re_se_q",
+     "re_se_q",
+     "important_control"
+    ],
+    [
+     "XI1.outb",
+     "PORT.re_dif_q",
+     "re_dif_q",
+     "important_control"
+    ],
+    [
+     "PORT.dq_oe",
+     "XI2.in",
+     "dq_oe",
+     "important_control"
+    ],
+    [
+     "XI2.out",
+     "XI6<4:0>.b",
+     "dqoe_q",
+     "important_control"
+    ],
+    [
+     "XI2.out",
+     "XI8<4:0>.b",
+     "dqoe_q",
+     "important_control"
+    ],
+    [
+     "PORT.dqs_oe",
+     "XI3.in",
+     "dqs_oe",
+     "important_control"
+    ],
+    [
+     "XI3.out",
+     "XI9<4:0>.b",
+     "dqsoe_q",
+     "important_control"
+    ],
+    [
+     "XI3.out",
+     "XI11<4:0>.b",
+     "dqsoe_q",
+     "important_control"
+    ],
+    [
+     "PORT.pu_code<4:0>",
+     "XI4<4:0>.in",
+     "pu_code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI4<4:0>.out",
+     "XI6<4:0>.a",
+     "puc_q<4:0>",
+     "important_control"
+    ],
+    [
+     "XI6<4:0>.out",
+     "XI7<4:0>.in",
+     "pub_d<4:0>",
+     "important_control"
+    ],
+    [
+     "XI7<4:0>.out",
+     "PORT.pu_en_d<4:0>",
+     "pu_en_d<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.pd_code<4:0>",
+     "XI5<4:0>.in",
+     "pd_code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI5<4:0>.out",
+     "XI8<4:0>.a",
+     "pdc_q<4:0>",
+     "important_control"
+    ],
+    [
+     "XI8<4:0>.out",
+     "PORT.pd_dis_d<4:0>",
+     "pd_dis_d<4:0>",
+     "important_control"
+    ],
+    [
+     "XI4<4:0>.out",
+     "XI9<4:0>.a",
+     "puc_q<4:0>",
+     "important_control"
+    ],
+    [
+     "XI9<4:0>.out",
+     "XI10<4:0>.in",
+     "pub_s<4:0>",
+     "important_control"
+    ],
+    [
+     "XI10<4:0>.out",
+     "PORT.pu_en_s<4:0>",
+     "pu_en_s<4:0>",
+     "important_control"
+    ],
+    [
+     "XI5<4:0>.out",
+     "XI11<4:0>.a",
+     "pdc_q<4:0>",
+     "important_control"
+    ],
+    [
+     "XI11<4:0>.out",
+     "PORT.pd_dis_s<4:0>",
+     "pd_dis_s<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.dqs_burst",
+     "XI12.in",
+     "dqs_burst",
+     "important_control"
+    ],
+    [
+     "XI12.out",
+     "XI13.in",
+     "net012",
+     "important_control"
+    ],
+    [
+     "XI13.out",
+     "PORT.dqs_e",
+     "dqs_e",
+     "important_control"
+    ],
+    [
+     "XI13.out",
+     "XI14.in",
+     "dqs_e",
+     "important_control"
+    ],
+    [
+     "XI14.out",
+     "PORT.dqsb_e",
+     "dqsb_e",
+     "important_control"
+    ],
+    [
+     "XI15.hi",
+     "PORT.dqsb_o",
+     "dqsb_o",
+     "important_control"
+    ],
+    [
+     "XI15.lo",
+     "PORT.dqs_o",
+     "dqs_o",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "dq_oe": "gates DQ leg enables",
+    "dqs_oe": "gates DQS/DQSB leg enables",
+    "pu_code<4:0>": "PU leg enables",
+    "pd_code<4:0>": "PD leg enables (as active-high disables)",
+    "dqs_burst": "DQS pattern select",
+    "tx_en": "receiver enable",
+    "re_se": "SE RE select"
+   },
+   "notes": "pu_en_* is active-high (NAND in pre-driver), pd_dis_* is active-high disable (NOR in pre-driver). Unused LS complements: net010, net011, pucb_q<4:0>, pdcb_q<4:0>. dqs_burst is launched by the core on rclk_core and retimed inside the DQS slices, so its buffering here is not timing-critical. In nf_io_top pu_code/pd_code come from drv_code_mux (ZQ result or override) inside io_ctrl."
+  },
+  "ck_split": {
+   "role": "Clock phase splitter: 2-inverter true path and TG+inverter complement path with matched delay",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "MM0.g",
+     "in",
+     "clock"
+    ],
+    [
+     "MM0.d",
+     "MM2.g",
+     "net05",
+     "clock"
+    ],
+    [
+     "MM2.d",
+     "PORT.ck",
+     "ck",
+     "clock"
+    ],
+    [
+     "PORT.in",
+     "MM4.d",
+     "in",
+     "clock"
+    ],
+    [
+     "MM4.s",
+     "MM6.g",
+     "net06",
+     "clock"
+    ],
+    [
+     "MM6.d",
+     "PORT.ckb",
+     "ckb",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "ck non-inverted, ckb inverted; the always-on TG MM4/MM5 replaces one inverter delay on the ckb side."
+  },
+  "tx_ser2": {
+   "role": "2:1 DDR serializer: even and odd retime flops on ck falling (ckb rising), half-cycle latch on the odd path, clocked TG mux and output buffer",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "dff_tg",
+     "role": "even data retime (clocked by ckb)"
+    },
+    {
+     "inst": "XI1",
+     "cell": "dff_tg",
+     "role": "odd data retime (clocked by ckb)"
+    },
+    {
+     "inst": "XI2",
+     "cell": "latch_tg",
+     "role": "odd half-cycle latch, transparent while ck high"
+    },
+    {
+     "inst": "XI3",
+     "cell": "inv_lvt_x2",
+     "role": "mux output buffer"
+    },
+    {
+     "inst": "XI4",
+     "cell": "inv_lvt_x2",
+     "role": "mux output buffer"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.de",
+     "XI0.d",
+     "de",
+     "word_rate_data"
+    ],
+    [
+     "PORT.do",
+     "XI1.d",
+     "do",
+     "word_rate_data"
+    ],
+    [
+     "PORT.ckb",
+     "XI0.ck",
+     "ckb",
+     "clock"
+    ],
+    [
+     "PORT.ckb",
+     "XI1.ck",
+     "ckb",
+     "clock"
+    ],
+    [
+     "XI1.q",
+     "XI2.d",
+     "qo",
+     "word_rate_data"
+    ],
+    [
+     "PORT.ck",
+     "XI2.en",
+     "ck",
+     "clock"
+    ],
+    [
+     "XI0.q",
+     "MM0.d",
+     "qe",
+     "word_rate_data"
+    ],
+    [
+     "XI2.q",
+     "MM2.d",
+     "qol",
+     "word_rate_data"
+    ],
+    [
+     "PORT.ck",
+     "MM0.g",
+     "ck",
+     "clock"
+    ],
+    [
+     "MM0.s",
+     "XI3.in",
+     "mx",
+     "hs_data"
+    ],
+    [
+     "XI3.out",
+     "XI4.in",
+     "net011",
+     "hs_data"
+    ],
+    [
+     "XI4.out",
+     "PORT.ds",
+     "ds",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "ck high selects qe (even), ck low selects qol (odd). qe changes at ck fall and is stable while selected; qol changes during ck high and is stable during ck low, so the mux output is glitch-free. One clock cycle of latency."
+  },
+  "latch_tg": {
+   "role": "Static TG D-latch, transparent when en=1",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "inv_x1",
+     "role": "forward inverter"
+    },
+    {
+     "inst": "XI1",
+     "cell": "inv_lvt_x2",
+     "role": "output inverter / keeper driver"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.d",
+     "MM0.d",
+     "d",
+     "hs_data"
+    ],
+    [
+     "MM0.s",
+     "XI0.in",
+     "l1",
+     "hs_data"
+    ],
+    [
+     "XI0.out",
+     "XI1.in",
+     "lb",
+     "hs_data"
+    ],
+    [
+     "XI1.out",
+     "PORT.q",
+     "q",
+     "hs_data"
+    ],
+    [
+     "PORT.en",
+     "MM0.g",
+     "en",
+     "clock"
+    ]
+   ],
+   "controls": {
+    "en": "transparent when high (enb complement drives keeper TG MM2/MM3)"
+   },
+   "notes": "Half-cycle latch on the odd path of tx_ser2 (en = ck): holds the odd bit through the ck-low phase."
+  },
+  "ls_up_hs": {
+   "role": "High-speed VDD->VCCQ cross-coupled level shifter for serialized data (lvt input inverter, hv latch, hv output inverter)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "MM0.g",
+     "in",
+     "hs_data"
+    ],
+    [
+     "PORT.in",
+     "MM2.g",
+     "in",
+     "hs_data"
+    ],
+    [
+     "MM0.d",
+     "MM3.g",
+     "inb",
+     "hs_data"
+    ],
+    [
+     "MM2.d",
+     "MM6.g",
+     "net07",
+     "hs_data"
+    ],
+    [
+     "MM6.d",
+     "PORT.out",
+     "out",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Ratioed latch gives unequal rise/fall delay (duty distortion on the data path)."
+  },
+  "tx_predrv_leg": {
+   "role": "One pre-driver leg: NAND(data, pu_en)+inverter+current-starved inverter for the PMOS gate; NOR(data, pd_dis)+inverter+current-starved inverter for the NMOS gate",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "nand2_q",
+     "role": "PU gating"
+    },
+    {
+     "inst": "XI1",
+     "cell": "inv_q",
+     "role": "PU buffer"
+    },
+    {
+     "inst": "XI2",
+     "cell": "nor2_q",
+     "role": "PD gating"
+    },
+    {
+     "inst": "XI3",
+     "cell": "inv_q",
+     "role": "PD buffer"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ds_q",
+     "XI0.a",
+     "ds_q",
+     "hs_data"
+    ],
+    [
+     "PORT.pu_en",
+     "XI0.b",
+     "pu_en",
+     "important_control"
+    ],
+    [
+     "XI0.out",
+     "XI1.in",
+     "net010",
+     "hs_data"
+    ],
+    [
+     "XI1.out",
+     "MM1.g",
+     "net011",
+     "hs_data"
+    ],
+    [
+     "MM1.d",
+     "PORT.pg",
+     "pg",
+     "hs_data"
+    ],
+    [
+     "PORT.ds_q",
+     "XI2.a",
+     "ds_q",
+     "hs_data"
+    ],
+    [
+     "PORT.pd_dis",
+     "XI2.b",
+     "pd_dis",
+     "important_control"
+    ],
+    [
+     "XI2.out",
+     "XI3.in",
+     "net014",
+     "hs_data"
+    ],
+    [
+     "XI3.out",
+     "MM5.g",
+     "net015",
+     "hs_data"
+    ],
+    [
+     "MM5.d",
+     "PORT.ng",
+     "ng",
+     "hs_data"
+    ],
+    [
+     "PORT.vbp_sr",
+     "MM0.g",
+     "vbp_sr",
+     "bias"
+    ],
+    [
+     "PORT.vbn_sr",
+     "MM3.g",
+     "vbn_sr",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "pu_en": "1 enables the leg pull-up",
+    "pd_dis": "1 disables the leg pull-down",
+    "vbp_sr": "PMOS starving bias of the final stages (output slew)",
+    "vbn_sr": "NMOS starving bias of the final stages (output slew)"
+   },
+   "notes": "pg = NAND(ds_q, pu_en), ng = NOR(ds_q, pd_dis); disabled leg gives pg=1, ng=0 (Hi-Z). MM0/MM3 and MM4/MM7 are the starving devices."
+  },
+  "tx_drv_unit": {
+   "role": "Unit output leg: thick-ox PMOS pull-up + series poly R, thick-ox NMOS pull-down + series poly R",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.pg",
+     "MM0.g",
+     "pg",
+     "hs_data"
+    ],
+    [
+     "MM0.d",
+     "RR0",
+     "net05",
+     "hs_data"
+    ],
+    [
+     "RR0",
+     "PORT.pad",
+     "pad",
+     "hs_data"
+    ],
+    [
+     "PORT.ng",
+     "MM1.g",
+     "ng",
+     "hs_data"
+    ],
+    [
+     "MM1.d",
+     "RR1",
+     "net06",
+     "hs_data"
+    ],
+    [
+     "RR1",
+     "PORT.pad",
+     "pad",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Series resistors linearize the output impedance."
+  },
+  "ckbuf_x8": {
+   "role": "Two-stage lvt clock buffer, 2x ckbuf strength",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "MM0.g",
+     "in",
+     "clock"
+    ],
+    [
+     "MM0.d",
+     "MM2.g",
+     "net03",
+     "clock"
+    ],
+    [
+     "MM2.d",
+     "PORT.out",
+     "out",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "tx_rpt": {
+   "role": "Two-stage lvt repeater for long clock wires",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "MM0.g",
+     "in",
+     "clock"
+    ],
+    [
+     "MM0.d",
+     "MM2.g",
+     "net03",
+     "clock"
+    ],
+    [
+     "MM2.d",
+     "PORT.out",
+     "out",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "tie_hilo": {
+   "role": "Tie-high / tie-low cell",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "MM1.d",
+     "PORT.hi",
+     "hi",
+     "general_control"
+    ],
+    [
+     "MM3.d",
+     "PORT.lo",
+     "lo",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": "Provides constant odd-phase DQS/DQSB pattern bits."
+  },
+  "inv_q": {
+   "role": "Thick-ox inverter on VCCQ",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "MM0.g",
+     "in",
+     "hs_data"
+    ],
+    [
+     "MM0.d",
+     "PORT.out",
+     "out",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Pre-driver stages and control gating."
+  },
+  "nand2_q": {
+   "role": "Thick-ox 2-input NAND on VCCQ",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MM0.g",
+     "a",
+     "hs_data"
+    ],
+    [
+     "PORT.b",
+     "MM1.g",
+     "b",
+     "important_control"
+    ],
+    [
+     "MM0.d",
+     "PORT.out",
+     "out",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Pre-driver PU gating (a = data) and static code gating."
+  },
+  "nor2_q": {
+   "role": "Thick-ox 2-input NOR on VCCQ",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MM0.g",
+     "a",
+     "hs_data"
+    ],
+    [
+     "PORT.b",
+     "MM1.g",
+     "b",
+     "important_control"
+    ],
+    [
+     "MM0.d",
+     "PORT.out",
+     "out",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Pre-driver PD gating."
+  },
+  "esd_io_pad": {
+   "role": "IO pad ESD cell: GDPMOS to VCCQ and GGNMOS to VSSQ (primary, gate-coupled through 10k), 200 ohm series R and secondary GGNMOS on the receiver side",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.pad",
+     "RR2",
+     "pad",
+     "hs_data"
+    ],
+    [
+     "RR2",
+     "PORT.pad_rx",
+     "pad_rx",
+     "hs_data"
+    ],
+    [
+     "PORT.pad",
+     "MM0.d",
+     "pad",
+     "power"
+    ],
+    [
+     "PORT.pad",
+     "MM1.d",
+     "pad",
+     "power"
+    ],
+    [
+     "PORT.pad_rx",
+     "MM2.d",
+     "pad_rx",
+     "power"
+    ]
+   ],
+   "controls": {},
+   "notes": "MM0 (pch_hv, gate to VCCQ via RR0) and MM1 (nch_hv, gate to VSSQ via RR1) are off in normal operation; MM2 is a gate-grounded secondary clamp protecting receiver gate oxide (CDM). Used in io_pad_bidir (DQ, DQS, DQSB) and io_pad_in (RE, nRE, VREF_EXT); the receivers tap pad_rx, the drivers and ODT attach at pad."
+  },
+  "esd_prim": {
+   "role": "Primary-only pad ESD (GDPMOS + GGNMOS) for the ZQ pin",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.pad",
+     "MM0.d",
+     "pad",
+     "bias"
+    ],
+    [
+     "PORT.pad",
+     "MM1.d",
+     "pad",
+     "bias"
+    ]
+   ],
+   "controls": {},
+   "notes": "ZQ pad (nf_io_top/XI13): primary clamps only, no series R (calibration accuracy)."
+  },
+  "esd_rc_clamp": {
+   "role": "RC-triggered active rail clamp: 500k/1p trigger, 3-inverter driver, large thick-ox NMOS clamp (MMclamp)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.vtop",
+     "RR0",
+     "vtop",
+     "power"
+    ],
+    [
+     "RR0",
+     "MM0.g",
+     "net05",
+     "power"
+    ],
+    [
+     "MM0.d",
+     "MM2.g",
+     "net06",
+     "power"
+    ],
+    [
+     "MM2.d",
+     "MM4.g",
+     "net07",
+     "power"
+    ],
+    [
+     "MM4.d",
+     "MMclamp.g",
+     "net08",
+     "power"
+    ],
+    [
+     "MMclamp.d",
+     "PORT.vtop",
+     "vtop",
+     "power"
+    ]
+   ],
+   "controls": {},
+   "notes": "Normal operation: net05 = vtop -> clamp gate low (off). Fast ESD ramp holds net05 low for ~0.5 us -> clamp on. Two instances in esd_rail: VCCQ-VSSQ and VDD-VSS."
+  },
+  "esd_b2b": {
+   "role": "Back-to-back diode-connected thick-ox NMOS pair coupling VSS and VSSQ",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.va",
+     "MM0.d",
+     "va",
+     "power"
+    ],
+    [
+     "PORT.vb",
+     "MM1.d",
+     "vb",
+     "power"
+    ]
+   ],
+   "controls": {},
+   "notes": "Conducts only when the grounds separate by more than a Vt."
+  },
+  "odt_leg_pin": {
+   "role": "Per-pin termination: 3 binary PU legs (pch_hv + 480/240/120 ohm) to VCCQ and 3 PD legs (nch_hv + R) to VSSQ, center-tapped at the pad",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.pu_gb<2>",
+     "MM2.g",
+     "pu_gb<2>",
+     "important_control"
+    ],
+    [
+     "MM2.d",
+     "RR2",
+     "np<2>",
+     "bias"
+    ],
+    [
+     "RR2",
+     "PORT.pad",
+     "pad",
+     "hs_data"
+    ],
+    [
+     "PORT.pd_g<2>",
+     "MM5.g",
+     "pd_g<2>",
+     "important_control"
+    ],
+    [
+     "MM5.d",
+     "RR5",
+     "nn<2>",
+     "bias"
+    ],
+    [
+     "RR5",
+     "PORT.pad",
+     "pad",
+     "hs_data"
+    ]
+   ],
+   "controls": {
+    "pu_gb<2:0>": "PU leg on when low",
+    "pd_g<2:0>": "PD leg on when high"
+   },
+   "notes": "Unit leg ~600 ohm each side; Thevenin at VCCQ/2. One per pad cell (io_pad_bidir/XI2); gates come from odt_ctrl, which forces the legs off while that pin group drives."
+  },
+  "zq_cal": {
+   "role": "ZQ calibration: VCCQ/2 reference, PU replica legs on the ZQ pin vs external RZQ with comparator + 5-bit SAR, PD replica legs against an internal PU copy with comparator + up/down tracking counter, code-to-gate level shifting; codes go to the DQ/DQS driver strength",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "ls_up",
+     "role": "zq_en -> en_q/enb_q (VCCQ)"
+    },
+    {
+     "inst": "XI1",
+     "cell": "zq_vref",
+     "role": "VCCQ/2 reference divider"
+    },
+    {
+     "inst": "XI2",
+     "cell": "zq_cmp",
+     "role": "PU comparator: VREF vs ZQ pin"
+    },
+    {
+     "inst": "XI3",
+     "cell": "zq_sar5",
+     "role": "5-bit SAR for pull-up code"
+    },
+    {
+     "inst": "XI4",
+     "cell": "zq_gate_drv",
+     "role": "pu_code -> PU replica gates (active-low)"
+    },
+    {
+     "inst": "XI5",
+     "cell": "zq_pu_rep",
+     "role": "PU replica legs driving the ZQ pin"
+    },
+    {
+     "inst": "XI6",
+     "cell": "zq_pd_rep",
+     "role": "internal PU copy + PD replica legs (node npd)"
+    },
+    {
+     "inst": "XI7",
+     "cell": "zq_gate_drv",
+     "role": "pd_code -> PD replica gates (active-high)"
+    },
+    {
+     "inst": "XI8",
+     "cell": "zq_cmp",
+     "role": "PD comparator: VREF vs npd"
+    },
+    {
+     "inst": "XI9",
+     "cell": "updn_cnt5",
+     "role": "PD up/down tracking counter"
+    },
+    {
+     "inst": "XI10",
+     "cell": "nand2_x1",
+     "role": "zq_en NAND zq_done"
+    },
+    {
+     "inst": "XI11",
+     "cell": "inv_x1",
+     "role": "pd_en = zq_en & zq_done"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.zq_en",
+     "XI0.in",
+     "zq_en",
+     "important_control"
+    ],
+    [
+     "XI0.outb",
+     "XI1.enb",
+     "enb_q",
+     "important_control"
+    ],
+    [
+     "XI0.out",
+     "XI4.en_q",
+     "en_q",
+     "important_control"
+    ],
+    [
+     "XI1.vref",
+     "XI2.inp",
+     "vref_zq",
+     "reference"
+    ],
+    [
+     "PORT.zq",
+     "XI2.inn",
+     "zq",
+     "reference"
+    ],
+    [
+     "PORT.ib_zq",
+     "MM0.d",
+     "ib_zq",
+     "bias"
+    ],
+    [
+     "PORT.ib_zq",
+     "XI2.vbp",
+     "ib_zq",
+     "bias"
+    ],
+    [
+     "XI2.out",
+     "XI3.cmp",
+     "cmp_pu",
+     "slow_signal"
+    ],
+    [
+     "PORT.zq_clk",
+     "XI3.clk",
+     "zq_clk",
+     "clock"
+    ],
+    [
+     "PORT.zq_start",
+     "XI3.start",
+     "zq_start",
+     "command"
+    ],
+    [
+     "XI3.code<4:0>",
+     "PORT.pu_code<4:0>",
+     "pu_code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI3.code<4:0>",
+     "XI4.code<4:0>",
+     "pu_code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI4.gb_q<4:0>",
+     "XI5.gb<4:0>",
+     "pu_gb<4:0>",
+     "important_control"
+    ],
+    [
+     "XI5.pad",
+     "PORT.zq",
+     "zq",
+     "reference"
+    ],
+    [
+     "XI4.gb_q<4:0>",
+     "XI6.pu_gb<4:0>",
+     "pu_gb<4:0>",
+     "important_control"
+    ],
+    [
+     "XI6.npd",
+     "XI8.inn",
+     "npd",
+     "reference"
+    ],
+    [
+     "XI1.vref",
+     "XI8.inp",
+     "vref_zq",
+     "reference"
+    ],
+    [
+     "XI8.out",
+     "XI9.up",
+     "cmp_pd",
+     "slow_signal"
+    ],
+    [
+     "PORT.zq_clk",
+     "XI9.clk",
+     "zq_clk",
+     "clock"
+    ],
+    [
+     "XI9.code<4:0>",
+     "PORT.pd_code<4:0>",
+     "pd_code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI9.code<4:0>",
+     "XI7.code<4:0>",
+     "pd_code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI7.g_q<4:0>",
+     "XI6.pd_g<4:0>",
+     "pd_g<4:0>",
+     "important_control"
+    ],
+    [
+     "XI3.done",
+     "PORT.zq_done",
+     "zq_done",
+     "status"
+    ],
+    [
+     "XI3.done",
+     "XI10.b",
+     "zq_done",
+     "status"
+    ],
+    [
+     "XI10.out",
+     "XI11.in",
+     "net010",
+     "general_control"
+    ],
+    [
+     "XI11.out",
+     "XI9.en",
+     "pd_en",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "zq_en": "powers VREF divider, comparators (via enb_q) and enables replica gates",
+    "zq_start": "starts PU successive approximation",
+    "zq_rst_n": "resets SAR (code 0) and PD counter (10000)"
+   },
+   "notes": "Two feedback loops. PU: SAR code -> gate driver -> replica PMOS legs into the ZQ pin against external RZQ -> comparator (out=1 when ZQ > VREF, i.e. PU too strong) -> SAR clears the trial bit; 5 decisions after start, then zq_done. PD: counter code -> gate driver -> PD replica legs against an internal copy of the calibrated PU at npd -> comparator (out=1 when npd > VREF, PD too weak) -> count up; runs continuously once zq_done (dithers +/-1 LSB). pu_g<4:0> and pd_gb<4:0> gate-driver outputs are unused; the counter hold input is tied to vss. MM0 is the PMOS diode receiving ib_zq, giving the comparator tail bias. In nf_io_top zq_clk is the shared slow calibration clock cal_clk; pu_code/pd_code feed io_ctrl (drv_code_mux -> tx_ctrl -> leg enables of all DQ/DQS drivers) and are also read back as zq_pu_code/zq_pd_code. Replica unit is 1/8 of the driver unit, so the calibrated code gives Rpu = RZQ/8 at the pad (37.5 ohm for RZQ = 300 ohm)."
+  },
+  "zq_vref": {
+   "role": "Switched resistive VCCQ/2 divider with decap",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.enb",
+     "MM0.g",
+     "enb",
+     "important_control"
+    ],
+    [
+     "MM0.d",
+     "RR0",
+     "net05",
+     "reference"
+    ],
+    [
+     "RR0",
+     "PORT.vref",
+     "vref",
+     "reference"
+    ]
+   ],
+   "controls": {
+    "enb": "divider on when low"
+   },
+   "notes": ""
+  },
+  "zq_cmp": {
+   "role": "Static two-stage comparator (PMOS input pair, NMOS mirror, NMOS CS second stage) on VCCQ with enable, plus VCCQ->VDD level shift",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "ls_dn",
+     "role": "output level shift to VDD"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.inp",
+     "MM2.g",
+     "inp",
+     "reference"
+    ],
+    [
+     "PORT.inn",
+     "MM3.g",
+     "inn",
+     "reference"
+    ],
+    [
+     "MM3.d",
+     "MM6.g",
+     "net07",
+     "slow_signal"
+    ],
+    [
+     "MM6.d",
+     "XI0.in",
+     "net08",
+     "slow_signal"
+    ],
+    [
+     "XI0.out",
+     "PORT.out",
+     "out",
+     "slow_signal"
+    ],
+    [
+     "PORT.vbp",
+     "MM0.g",
+     "vbp",
+     "bias"
+    ],
+    [
+     "PORT.enb_q",
+     "MM1.g",
+     "enb_q",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "enb_q": "power-down when high"
+   },
+   "notes": "out = 1 when inn > inp (inverting with respect to inp). Used with inp = VREF."
+  },
+  "zq_sar5": {
+   "role": "5-bit SAR register: one-hot pointer shift register ph<5:0>, per-bit set/decide/hold logic, code flops, done flag",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI12",
+     "cell": "inv_x1",
+     "role": "cmpb = ~cmp (keep-bit decision)"
+    },
+    {
+     "inst": "XI0<5:0>",
+     "cell": "dffr_tg",
+     "role": "pointer shift register (ph<5> = start captured)"
+    },
+    {
+     "inst": "XI1<4:0>",
+     "cell": "nor3_x1",
+     "role": "hold enable hd<i> = ~(ph<5> | ph<i+1> | ph<i>)"
+    },
+    {
+     "inst": "XI2<4:0>",
+     "cell": "nand2_x1",
+     "role": "decision term ph<i> & cmpb"
+    },
+    {
+     "inst": "XI3<4:0>",
+     "cell": "nand2_x1",
+     "role": "hold term code<i> & hd<i>"
+    },
+    {
+     "inst": "XI4<4:0>",
+     "cell": "inv_x1",
+     "role": "trial-set term ~ph<i+1>"
+    },
+    {
+     "inst": "XI5<4:0>",
+     "cell": "nand3_x1",
+     "role": "next-code OR of the three terms"
+    },
+    {
+     "inst": "XI6<4:0>",
+     "cell": "dffr_tg",
+     "role": "code register"
+    },
+    {
+     "inst": "XI7",
+     "cell": "nand2_x1",
+     "role": "done & ~ph<5>"
+    },
+    {
+     "inst": "XI8",
+     "cell": "inv_x1",
+     "role": "~ph<0>"
+    },
+    {
+     "inst": "XI9",
+     "cell": "nand2_x1",
+     "role": "done next-state OR"
+    },
+    {
+     "inst": "XI10",
+     "cell": "dffr_tg",
+     "role": "done flag"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.cmp",
+     "XI12.in",
+     "cmp",
+     "slow_signal"
+    ],
+    [
+     "XI12.out",
+     "XI2<4:0>.b",
+     "cmpb",
+     "slow_signal"
+    ],
+    [
+     "PORT.start",
+     "XI0<5>.d",
+     "start",
+     "command"
+    ],
+    [
+     "XI0<5:1>.q",
+     "XI0<4:0>.d",
+     "ph<5:1>",
+     "slow_signal"
+    ],
+    [
+     "PORT.clk",
+     "XI0<5:0>.ck",
+     "clk",
+     "clock"
+    ],
+    [
+     "XI0<4:0>.q",
+     "XI2<4:0>.a",
+     "ph<4:0>",
+     "slow_signal"
+    ],
+    [
+     "XI0<5:1>.q",
+     "XI4<4:0>.in",
+     "ph<5:1>",
+     "slow_signal"
+    ],
+    [
+     "XI1<4:0>.out",
+     "XI3<4:0>.b",
+     "hd<4:0>",
+     "slow_signal"
+    ],
+    [
+     "XI2<4:0>.out",
+     "XI5<4:0>.a",
+     "x1<4:0>",
+     "slow_signal"
+    ],
+    [
+     "XI3<4:0>.out",
+     "XI5<4:0>.b",
+     "x2<4:0>",
+     "slow_signal"
+    ],
+    [
+     "XI4<4:0>.out",
+     "XI5<4:0>.c",
+     "x3<4:0>",
+     "slow_signal"
+    ],
+    [
+     "XI5<4:0>.out",
+     "XI6<4:0>.d",
+     "dc<4:0>",
+     "slow_signal"
+    ],
+    [
+     "XI6<4:0>.q",
+     "PORT.code<4:0>",
+     "code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI6<4:0>.q",
+     "XI3<4:0>.a",
+     "code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI0<0>.q",
+     "XI8.in",
+     "ph<0>",
+     "slow_signal"
+    ],
+    [
+     "XI7.out",
+     "XI9.a",
+     "y1",
+     "slow_signal"
+    ],
+    [
+     "XI8.out",
+     "XI9.b",
+     "y2",
+     "slow_signal"
+    ],
+    [
+     "XI9.out",
+     "XI10.d",
+     "dd",
+     "slow_signal"
+    ],
+    [
+     "XI10.q",
+     "PORT.done",
+     "done",
+     "status"
+    ],
+    [
+     "XI10.q",
+     "XI7.a",
+     "done",
+     "status"
+    ],
+    [
+     "PORT.rst_n",
+     "XI6<4:0>.rn",
+     "rst_n",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "start": "one-cycle start pulse",
+    "rst_n": "clears pointer, code and done"
+   },
+   "notes": "Sequence: ph<5> (start) sets code=10000; during ph<i> bit i is on trial and at the end of ph<i> it is kept if cmp=0 (cmpb=1) while bit i-1 is set; after ph<0> done=1 and the code holds. Feedback: code<i> -> hold term -> next code. phb<5:0>, codeb<4:0>, doneb unused."
+  },
+  "zq_gate_drv": {
+   "role": "Code-to-replica-gate driver: VDD->VCCQ level shift, NAND with enable (active-low gate gb_q), inverter (active-high g_q)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0<4:0>",
+     "cell": "ls_up",
+     "role": "code level shift"
+    },
+    {
+     "inst": "XI1<4:0>",
+     "cell": "nand2_q",
+     "role": "gb_q = ~(code & en_q) for PMOS legs"
+    },
+    {
+     "inst": "XI2<4:0>",
+     "cell": "inv_q",
+     "role": "g_q = code & en_q for NMOS legs"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.code<4:0>",
+     "XI0<4:0>.in",
+     "code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI0<4:0>.out",
+     "XI1<4:0>.a",
+     "cq<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.en_q",
+     "XI1<4:0>.b",
+     "en_q",
+     "important_control"
+    ],
+    [
+     "XI1<4:0>.out",
+     "PORT.gb_q<4:0>",
+     "gb_q<4:0>",
+     "important_control"
+    ],
+    [
+     "XI1<4:0>.out",
+     "XI2<4:0>.in",
+     "gb_q<4:0>",
+     "important_control"
+    ],
+    [
+     "XI2<4:0>.out",
+     "PORT.g_q<4:0>",
+     "g_q<4:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "en_q": "enables all replica legs"
+   },
+   "notes": "cqb<4:0> unused. Each instance uses only one of g_q / gb_q."
+  },
+  "updn_cnt5": {
+   "role": "5-bit synchronous saturating up/down counter (XNOR propagate, AND carry chain, XOR next state), reset to 10000, enable and hold",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "inv_x1",
+     "role": "ckn: counter updates on clk falling"
+    },
+    {
+     "inst": "XI1<4:0>",
+     "cell": "xnor2_x1",
+     "role": "p<i> = code<i> XNOR up"
+    },
+    {
+     "inst": "XI2",
+     "cell": "nand3_x1",
+     "role": "saturation detect (p0..p2)"
+    },
+    {
+     "inst": "XI3",
+     "cell": "nand2_x1",
+     "role": "saturation detect (p3,p4)"
+    },
+    {
+     "inst": "XI4",
+     "cell": "nor2_x1",
+     "role": "sat = all p"
+    },
+    {
+     "inst": "XI5",
+     "cell": "inv_x1",
+     "role": "enb"
+    },
+    {
+     "inst": "XI6",
+     "cell": "nor3_x1",
+     "role": "t<0> = en & ~hold & ~sat"
+    },
+    {
+     "inst": "XI7<3:0>",
+     "cell": "nand2_x1",
+     "role": "carry chain"
+    },
+    {
+     "inst": "XI8<3:0>",
+     "cell": "inv_x1",
+     "role": "carry chain, t<i+1> = t<i> & p<i>"
+    },
+    {
+     "inst": "XI9<4:0>",
+     "cell": "xor2_x1",
+     "role": "next state code<i> XOR t<i>"
+    },
+    {
+     "inst": "XI10",
+     "cell": "dffs_tg",
+     "role": "bit 4 register (set on reset)"
+    },
+    {
+     "inst": "XI11<3:0>",
+     "cell": "dffr_tg",
+     "role": "bits 3:0 registers (reset to 0)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.up",
+     "XI1<4:0>.b",
+     "up",
+     "slow_signal"
+    ],
+    [
+     "PORT.code<4:0>",
+     "XI1<4:0>.a",
+     "code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI1<0>.out",
+     "XI2.a",
+     "p<0>",
+     "slow_signal"
+    ],
+    [
+     "XI2.out",
+     "XI4.a",
+     "net010",
+     "slow_signal"
+    ],
+    [
+     "XI3.out",
+     "XI4.b",
+     "net011",
+     "slow_signal"
+    ],
+    [
+     "XI4.out",
+     "XI6.c",
+     "sat",
+     "slow_signal"
+    ],
+    [
+     "PORT.en",
+     "XI5.in",
+     "en",
+     "general_control"
+    ],
+    [
+     "XI5.out",
+     "XI6.a",
+     "enb",
+     "general_control"
+    ],
+    [
+     "PORT.hold",
+     "XI6.b",
+     "hold",
+     "general_control"
+    ],
+    [
+     "XI6.out",
+     "XI7<0>.a",
+     "t<0>",
+     "slow_signal"
+    ],
+    [
+     "XI7<3:0>.out",
+     "XI8<3:0>.in",
+     "tn<4:1>",
+     "slow_signal"
+    ],
+    [
+     "XI8<3:0>.out",
+     "XI9<4:1>.b",
+     "t<4:1>",
+     "slow_signal"
+    ],
+    [
+     "XI9<4>.out",
+     "XI10.d",
+     "dn<4>",
+     "slow_signal"
+    ],
+    [
+     "XI9<3:0>.out",
+     "XI11<3:0>.d",
+     "dn<3:0>",
+     "slow_signal"
+    ],
+    [
+     "PORT.clk",
+     "XI0.in",
+     "clk",
+     "clock"
+    ],
+    [
+     "XI0.out",
+     "XI10.ck",
+     "ckn",
+     "clock"
+    ],
+    [
+     "XI0.out",
+     "XI11<3:0>.ck",
+     "ckn",
+     "clock"
+    ],
+    [
+     "XI10.q",
+     "PORT.code<4>",
+     "code<4>",
+     "important_control"
+    ],
+    [
+     "XI11<3:0>.q",
+     "PORT.code<3:0>",
+     "code<3:0>",
+     "important_control"
+    ],
+    [
+     "PORT.rst_n",
+     "XI10.sn",
+     "rst_n",
+     "general_control"
+    ],
+    [
+     "PORT.rst_n",
+     "XI11<3:0>.rn",
+     "rst_n",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "up": "count direction",
+    "en": "count enable",
+    "hold": "freeze",
+    "rst_n": "reset to 10000 (mid-scale)"
+   },
+   "notes": "Feedback through code<4:0> -> XNOR/XOR. Saturates at 11111 (up) and 00000 (down). net012 (bit-4 qb) and cqb<3:0> unused. Shared by DCC and ZQ-PD. Two instances: zq_cal/XI9 (PD tracking, hold tied to vss) and dcc_ctrl/XI2 (DCC code, hold = dcc_lock)."
+  },
+  "sa_cmp": {
+   "role": "StrongARM latched comparator with NAND SR latch",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "nand2_x1",
+     "role": "SR latch, q side"
+    },
+    {
+     "inst": "XI1",
+     "cell": "nand2_x1",
+     "role": "SR latch, qb side"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.inp",
+     "MM1.g",
+     "inp",
+     "slow_signal"
+    ],
+    [
+     "PORT.inn",
+     "MM2.g",
+     "inn",
+     "slow_signal"
+    ],
+    [
+     "PORT.clk",
+     "MMtail.g",
+     "clk",
+     "clock"
+    ],
+    [
+     "MM3.d",
+     "XI0.a",
+     "son",
+     "slow_signal"
+    ],
+    [
+     "MM4.d",
+     "XI1.a",
+     "sop",
+     "slow_signal"
+    ],
+    [
+     "XI0.out",
+     "PORT.q",
+     "q",
+     "slow_signal"
+    ],
+    [
+     "XI1.out",
+     "PORT.qb",
+     "qb",
+     "slow_signal"
+    ]
+   ],
+   "controls": {},
+   "notes": "q = 1 when inp > inn at the clk rising edge. Used as the DCC comparator (dcc_ctrl/XI1), strobed by the gated calibration clock upd_clk."
+  },
+  "dffs_tg": {
+   "role": "Static TG master-slave DFF with active-low set and qb",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "inv_x1",
+     "role": "ckb"
+    },
+    {
+     "inst": "XI1",
+     "cell": "inv_x1",
+     "role": "cki"
+    },
+    {
+     "inst": "XI6",
+     "cell": "inv_x1",
+     "role": "set"
+    },
+    {
+     "inst": "XI2",
+     "cell": "nor2_x1",
+     "role": "master forward with set"
+    },
+    {
+     "inst": "XI3",
+     "cell": "inv_x1",
+     "role": "master keeper"
+    },
+    {
+     "inst": "XI4",
+     "cell": "nand2_x1",
+     "role": "slave forward with set"
+    },
+    {
+     "inst": "XI5",
+     "cell": "inv_x1",
+     "role": "slave keeper"
+    },
+    {
+     "inst": "XI7",
+     "cell": "inv_x1",
+     "role": "qb"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.d",
+     "MM0.d",
+     "d",
+     "slow_signal"
+    ],
+    [
+     "MM0.s",
+     "XI2.a",
+     "m1",
+     "slow_signal"
+    ],
+    [
+     "XI2.out",
+     "MM4.d",
+     "m2",
+     "slow_signal"
+    ],
+    [
+     "MM4.s",
+     "XI4.a",
+     "s1",
+     "slow_signal"
+    ],
+    [
+     "XI4.out",
+     "PORT.q",
+     "q",
+     "slow_signal"
+    ],
+    [
+     "PORT.sn",
+     "XI4.b",
+     "sn",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "sn": "active-low set (q=1)"
+   },
+   "notes": "Bit-4 flop of updn_cnt5, so the counter resets to 10000."
+  },
+  "nand3_x1": {
+   "role": "Standard 3-input NAND",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MM0.g",
+     "a",
+     "general_control"
+    ],
+    [
+     "MM0.d",
+     "PORT.out",
+     "out",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "nor3_x1": {
+   "role": "Standard 3-input NOR",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MM0.g",
+     "a",
+     "general_control"
+    ],
+    [
+     "MM0.d",
+     "PORT.out",
+     "out",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "xor2_x1": {
+   "role": "Static CMOS XOR2 (12T, internal input inverters)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MM0.g",
+     "a",
+     "general_control"
+    ],
+    [
+     "PORT.b",
+     "MM2.g",
+     "b",
+     "general_control"
+    ],
+    [
+     "MM4.d",
+     "PORT.out",
+     "out",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "xnor2_x1": {
+   "role": "Static CMOS XNOR2 (12T, internal input inverters)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MM0.g",
+     "a",
+     "general_control"
+    ],
+    [
+     "PORT.b",
+     "MM2.g",
+     "b",
+     "general_control"
+    ],
+    [
+     "MM4.d",
+     "PORT.out",
+     "out",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "ls_dn": {
+   "role": "VCCQ->VDD down level converter (2 inverters)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "MM0.g",
+     "in",
+     "slow_signal"
+    ],
+    [
+     "MM0.d",
+     "MM2.g",
+     "net07",
+     "slow_signal"
+    ],
+    [
+     "MM2.d",
+     "PORT.out",
+     "out",
+     "slow_signal"
+    ]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "inv_x1": {
+   "role": "Standard inverter",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "MM0.g",
+     "in",
+     "hs_data"
+    ],
+    [
+     "MM0.d",
+     "PORT.out",
+     "out",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Used inside dff_tg/dffr_tg (Rx deser, DQS/2 divider, Tx serializer) and in control/calibration logic."
+  },
+  "inv_x2": {
+   "role": "Standard inverter, 2x",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "MM0.g",
+     "in",
+     "general_control"
+    ],
+    [
+     "MM0.d",
+     "PORT.out",
+     "out",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": "Static control buffers (rx_ctrl, tx_ctrl, drv_code_mux, rx_obs_buf)."
+  },
+  "inv_lvt_x2": {
+   "role": "Low-Vt inverter, 2x",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "MM0.g",
+     "in",
+     "hs_data"
+    ],
+    [
+     "MM0.d",
+     "PORT.out",
+     "out",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "HS inverter: ckgate, dly_trim3, rx_saff, tx_ser2 output, latch_tg, tx_dca output."
+  },
+  "nand2_x1": {
+   "role": "Standard 2-input NAND",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MM0.g",
+     "a",
+     "general_control"
+    ],
+    [
+     "PORT.b",
+     "MM1.g",
+     "b",
+     "general_control"
+    ],
+    [
+     "MM0.d",
+     "PORT.out",
+     "out",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": "On the HS path inside dffr_tg of the DQS/2 divider; elsewhere static/calibration logic."
+  },
+  "nor2_x1": {
+   "role": "Standard 2-input NOR",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MM0.g",
+     "a",
+     "clock"
+    ],
+    [
+     "PORT.b",
+     "MM1.g",
+     "b",
+     "general_control"
+    ],
+    [
+     "MM0.d",
+     "PORT.out",
+     "out",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "On the HS path inside dffr_tg of the DQS/2 divider; elsewhere DCA decode, ODT gating, counters."
+  },
+  "nand2_lvt": {
+   "role": "Low-Vt 2-input NAND",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "MM0.g",
+     "a",
+     "hs_data"
+    ],
+    [
+     "PORT.b",
+     "MM1.g",
+     "b",
+     "hs_data"
+    ],
+    [
+     "MM0.d",
+     "PORT.out",
+     "out",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "ckgate, mux2_hs and rx_saff SR latch."
+  },
+  "ckbuf": {
+   "role": "Two-stage lvt clock buffer (1x -> 4x)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "MM0.g",
+     "in",
+     "clock"
+    ],
+    [
+     "MM0.d",
+     "MM2.g",
+     "net03",
+     "clock"
+    ],
+    [
+     "MM2.d",
+     "PORT.out",
+     "out",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Rx H-tree, DQ replica delay, divider buffers, Tx tree branches/leaves, DCA input buffer."
+  },
+  "ckgate": {
+   "role": "AND clock/data gate (nand2_lvt + inv_lvt_x2)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "nand2_lvt",
+     "role": "gate"
+    },
+    {
+     "inst": "XI1",
+     "cell": "inv_lvt_x2",
+     "role": "restore polarity"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ck",
+     "XI0.a",
+     "ck",
+     "clock"
+    ],
+    [
+     "PORT.en",
+     "XI0.b",
+     "en",
+     "important_control"
+    ],
+    [
+     "XI0.out",
+     "XI1.in",
+     "net04",
+     "clock"
+    ],
+    [
+     "XI1.out",
+     "PORT.out",
+     "out",
+     "clock"
+    ]
+   ],
+   "controls": {
+    "en": "1 passes ck, 0 forces out low"
+   },
+   "notes": "Rx strobe gating (matched/unmatched) and the DQ replica gate in dq_match_dly."
+  },
+  "dff_tg": {
+   "role": "Static transmission-gate master-slave positive-edge DFF with local clock inverters and keeper loops",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "inv_x1",
+     "role": "ckb"
+    },
+    {
+     "inst": "XI1",
+     "cell": "inv_x1",
+     "role": "cki"
+    },
+    {
+     "inst": "XI2",
+     "cell": "inv_x1",
+     "role": "master forward"
+    },
+    {
+     "inst": "XI3",
+     "cell": "inv_x1",
+     "role": "master keeper"
+    },
+    {
+     "inst": "XI4",
+     "cell": "inv_x1",
+     "role": "slave forward / q"
+    },
+    {
+     "inst": "XI5",
+     "cell": "inv_x1",
+     "role": "slave keeper"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.d",
+     "MM0.d",
+     "d",
+     "hs_data"
+    ],
+    [
+     "MM0.s",
+     "XI2.in",
+     "m1",
+     "hs_data"
+    ],
+    [
+     "XI2.out",
+     "MM4.d",
+     "m2",
+     "hs_data"
+    ],
+    [
+     "MM4.s",
+     "XI4.in",
+     "s1",
+     "hs_data"
+    ],
+    [
+     "XI4.out",
+     "PORT.q",
+     "q",
+     "hs_data"
+    ],
+    [
+     "PORT.ck",
+     "XI0.in",
+     "ck",
+     "clock"
+    ],
+    [
+     "XI0.out",
+     "XI1.in",
+     "ckb",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Rx deserializer flops and Tx serializer even/odd flops."
+  },
+  "dffr_tg": {
+   "role": "Static TG master-slave DFF with active-low asynchronous reset (NAND in master, NOR in slave) and qb output",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "inv_x1",
+     "role": "ckb"
+    },
+    {
+     "inst": "XI1",
+     "cell": "inv_x1",
+     "role": "cki"
+    },
+    {
+     "inst": "XI6",
+     "cell": "inv_x1",
+     "role": "rst = ~rn"
+    },
+    {
+     "inst": "XI2",
+     "cell": "nand2_x1",
+     "role": "master forward with reset"
+    },
+    {
+     "inst": "XI3",
+     "cell": "inv_x1",
+     "role": "master keeper"
+    },
+    {
+     "inst": "XI4",
+     "cell": "nor2_x1",
+     "role": "slave forward with reset"
+    },
+    {
+     "inst": "XI5",
+     "cell": "inv_x1",
+     "role": "slave keeper"
+    },
+    {
+     "inst": "XI7",
+     "cell": "inv_x1",
+     "role": "qb output"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.d",
+     "MM0.d",
+     "d",
+     "clock"
+    ],
+    [
+     "MM0.s",
+     "XI2.a",
+     "m1",
+     "clock"
+    ],
+    [
+     "XI2.out",
+     "MM4.d",
+     "m2",
+     "clock"
+    ],
+    [
+     "MM4.s",
+     "XI4.a",
+     "s1",
+     "clock"
+    ],
+    [
+     "XI4.out",
+     "PORT.q",
+     "q",
+     "clock"
+    ],
+    [
+     "XI4.out",
+     "XI7.in",
+     "q",
+     "clock"
+    ],
+    [
+     "XI7.out",
+     "PORT.qb",
+     "qb",
+     "clock"
+    ],
+    [
+     "PORT.ck",
+     "XI0.in",
+     "ck",
+     "clock"
+    ],
+    [
+     "PORT.rn",
+     "XI2.b",
+     "rn",
+     "general_control"
+    ],
+    [
+     "XI6.out",
+     "XI4.b",
+     "rst",
+     "general_control"
+    ]
+   ],
+   "controls": {
+    "rn": "active-low reset, forces q=0"
+   },
+   "notes": "DQS/2 divider (HS); ZQ SAR, counters and DCC lock detector (not HS)."
+  },
+  "ls_up": {
+   "role": "Static VDD->VCCQ cross-coupled level shifter with true/complement outputs",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "MM2.g",
+     "in",
+     "general_control"
+    ],
+    [
+     "MM2.d",
+     "MM6.g",
+     "net09",
+     "general_control"
+    ],
+    [
+     "MM6.d",
+     "PORT.out",
+     "out",
+     "general_control"
+    ],
+    [
+     "MM8.d",
+     "PORT.outb",
+     "outb",
+     "general_control"
+    ]
+   ],
+   "controls": {},
+   "notes": "Static VDD->VCCQ shifting of enables and codes (rx_ctrl, tx_ctrl, odt_ctrl, zq, vref, sr bias)."
+  },
+  "rx_deser4": {
+   "role": "1:4 deserializer per bit: retime the rise sample onto the fall strobe, capture (UI0,UI1) on div_p, re-register them and capture (UI2,UI3) on div_n so all four outputs update together",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "dff_tg",
+     "role": "retime dr onto ckf -> e0"
+    },
+    {
+     "inst": "XI1",
+     "cell": "dff_tg",
+     "role": "UI0 (e0) on div_p -> p0"
+    },
+    {
+     "inst": "XI2",
+     "cell": "dff_tg",
+     "role": "UI1 (df) on div_p -> p1"
+    },
+    {
+     "inst": "XI5",
+     "cell": "dff_tg",
+     "role": "rd<0> = p0 re-registered on div_n"
+    },
+    {
+     "inst": "XI6",
+     "cell": "dff_tg",
+     "role": "rd<1> = p1 re-registered on div_n"
+    },
+    {
+     "inst": "XI3",
+     "cell": "dff_tg",
+     "role": "rd<2> (UI2, e0) on div_n"
+    },
+    {
+     "inst": "XI4",
+     "cell": "dff_tg",
+     "role": "rd<3> (UI3, df) on div_n"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.dr",
+     "XI0.d",
+     "dr",
+     "hs_data"
+    ],
+    [
+     "PORT.ckf",
+     "XI0.ck",
+     "ckf",
+     "clock"
+    ],
+    [
+     "XI0.q",
+     "XI1.d",
+     "e0",
+     "hs_data"
+    ],
+    [
+     "XI0.q",
+     "XI3.d",
+     "e0",
+     "hs_data"
+    ],
+    [
+     "PORT.df",
+     "XI2.d",
+     "df",
+     "hs_data"
+    ],
+    [
+     "PORT.df",
+     "XI4.d",
+     "df",
+     "hs_data"
+    ],
+    [
+     "PORT.div_p",
+     "XI1.ck",
+     "div_p",
+     "clock"
+    ],
+    [
+     "PORT.div_p",
+     "XI2.ck",
+     "div_p",
+     "clock"
+    ],
+    [
+     "XI1.q",
+     "XI5.d",
+     "p0",
+     "word_rate_data"
+    ],
+    [
+     "XI2.q",
+     "XI6.d",
+     "p1",
+     "word_rate_data"
+    ],
+    [
+     "PORT.div_n",
+     "XI5.ck",
+     "div_n",
+     "clock"
+    ],
+    [
+     "PORT.div_n",
+     "XI6.ck",
+     "div_n",
+     "clock"
+    ],
+    [
+     "PORT.div_n",
+     "XI3.ck",
+     "div_n",
+     "clock"
+    ],
+    [
+     "PORT.div_n",
+     "XI4.ck",
+     "div_n",
+     "clock"
+    ],
+    [
+     "XI5.q",
+     "PORT.rd<0>",
+     "rd<0>",
+     "word_rate_data"
+    ],
+    [
+     "XI6.q",
+     "PORT.rd<1>",
+     "rd<1>",
+     "word_rate_data"
+    ],
+    [
+     "XI3.q",
+     "PORT.rd<2>",
+     "rd<2>",
+     "word_rate_data"
+    ],
+    [
+     "XI4.q",
+     "PORT.rd<3>",
+     "rd<3>",
+     "word_rate_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "(e0, df) is valid for one DQS period after each ckf edge. div_p rise captures UI0/UI1 into p0/p1; the next div_n rise (one DQS period later) captures UI2/UI3 and re-registers p0/p1, so rd<3:0> changes once per word (every 2 DQS periods) and the core can capture it on din_clk (= div_p) rising, mid-window. rd<0> is the first UI. Burst-to-word alignment depends on the divider reset phase (rx_rst_n release). Switch-level check: 11 random words reproduced in UI order."
+  },
+  "tx_dq_slice": {
+   "role": "Per-pin Tx core slice: local clock phase split, 2:1 DDR serializer, VDD->VCCQ HS level shifter, 5-leg slew-controlled pre-driver; drives the main-driver leg gates pg/ng of the pad cell",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "ck_split",
+     "role": "ck/ckb generation from the tree leaf clock"
+    },
+    {
+     "inst": "XI1",
+     "cell": "tx_ser2",
+     "role": "even/odd 2:1 serializer"
+    },
+    {
+     "inst": "XI2",
+     "cell": "ls_up_hs",
+     "role": "VDD->VCCQ data level shifter"
+    },
+    {
+     "inst": "XI3",
+     "cell": "tx_predrv",
+     "role": "per-leg pre-drivers with enables and slew bias"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ck_lf",
+     "XI0.in",
+     "ck_lf",
+     "clock"
+    ],
+    [
+     "XI0.ck",
+     "XI1.ck",
+     "ck",
+     "clock"
+    ],
+    [
+     "XI0.ckb",
+     "XI1.ckb",
+     "ckb",
+     "clock"
+    ],
+    [
+     "PORT.de",
+     "XI1.de",
+     "de",
+     "word_rate_data"
+    ],
+    [
+     "PORT.do",
+     "XI1.do",
+     "do",
+     "word_rate_data"
+    ],
+    [
+     "XI1.ds",
+     "XI2.in",
+     "ds",
+     "hs_data"
+    ],
+    [
+     "XI2.out",
+     "XI3.ds_q",
+     "ds_q",
+     "hs_data"
+    ],
+    [
+     "XI3.pg<4:0>",
+     "PORT.pg<4:0>",
+     "pg<4:0>",
+     "hs_data"
+    ],
+    [
+     "XI3.ng<4:0>",
+     "PORT.ng<4:0>",
+     "ng<4:0>",
+     "hs_data"
+    ],
+    [
+     "PORT.pu_en<4:0>",
+     "XI3.pu_en<4:0>",
+     "pu_en<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.pd_dis<4:0>",
+     "XI3.pd_dis<4:0>",
+     "pd_dis<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.vbp_sr",
+     "XI3.vbp_sr",
+     "vbp_sr",
+     "bias"
+    ],
+    [
+     "PORT.vbn_sr",
+     "XI3.vbn_sr",
+     "vbn_sr",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "pu_en<4:0>": "PU leg enables (code & oe)",
+    "pd_dis<4:0>": "PD leg disables (~(code & oe))",
+    "vbp_sr": "slew bias",
+    "vbn_sr": "slew bias"
+   },
+   "notes": "The main driver legs moved into the pad cell (io_pad_bidir/XI1 tx_out_drv), so this slice ends at the leg gates: pg<i> low = PU leg on (data 1 & pu_en<i>), ng<i> high = PD leg on (data 0 & ~pd_dis<i>). Output has two buses, so inverting is null; data to pad is non-inverting. ck high sends the even bit, ck low the odd bit (switch-level checked). Same cell for DQS/DQSB with constant patterns."
+  },
+  "tx_out_drv": {
+   "role": "Main output driver: 5 binary-weighted PU/PD unit legs (x16/x8/x4/x2/x1) to the pad",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [
+    {
+     "inst": "XI4",
+     "cell": "tx_drv_unit",
+     "role": "leg 4, m=16"
+    },
+    {
+     "inst": "XI3",
+     "cell": "tx_drv_unit",
+     "role": "leg 3, m=8"
+    },
+    {
+     "inst": "XI2",
+     "cell": "tx_drv_unit",
+     "role": "leg 2, m=4"
+    },
+    {
+     "inst": "XI1",
+     "cell": "tx_drv_unit",
+     "role": "leg 1, m=2"
+    },
+    {
+     "inst": "XI0",
+     "cell": "tx_drv_unit",
+     "role": "leg 0, m=1"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.pg<4>",
+     "XI4.pg",
+     "pg<4>",
+     "hs_data"
+    ],
+    [
+     "PORT.ng<4>",
+     "XI4.ng",
+     "ng<4>",
+     "hs_data"
+    ],
+    [
+     "PORT.pg<0>",
+     "XI0.pg",
+     "pg<0>",
+     "hs_data"
+    ],
+    [
+     "PORT.ng<0>",
+     "XI0.ng",
+     "ng<0>",
+     "hs_data"
+    ],
+    [
+     "XI4.pad",
+     "PORT.pad",
+     "pad",
+     "hs_data"
+    ],
+    [
+     "XI0.pad",
+     "PORT.pad",
+     "pad",
+     "hs_data"
+    ]
+   ],
+   "controls": {},
+   "notes": "Strength is selected by which leg gates are enabled (ZQ/override code applied in tx_ctrl, pre-driver per leg). Unit leg = pch_hv 8u + 300 ohm, nch_hv 4u + 300 ohm (ZQ replica unit is 1/8 of this). Pad cap now in io_pad_bidir (CC0)."
+  },
+  "tx_predrv": {
+   "role": "Pre-driver bank: data buffer plus 5 slew-controlled pre-driver legs sized x8/x4/x2/x1/x1 for driver legs x16/x8/x4/x2/x1",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [
+    {
+     "inst": "XI5",
+     "cell": "inv_q",
+     "role": "data buffer stage 1"
+    },
+    {
+     "inst": "XI6",
+     "cell": "inv_q",
+     "role": "data buffer stage 2 (m=4)"
+    },
+    {
+     "inst": "XI4",
+     "cell": "tx_predrv_leg",
+     "role": "leg 4 pre-driver (m=8)"
+    },
+    {
+     "inst": "XI3",
+     "cell": "tx_predrv_leg",
+     "role": "leg 3 pre-driver (m=4)"
+    },
+    {
+     "inst": "XI2",
+     "cell": "tx_predrv_leg",
+     "role": "leg 2 pre-driver (m=2)"
+    },
+    {
+     "inst": "XI1",
+     "cell": "tx_predrv_leg",
+     "role": "leg 1 pre-driver"
+    },
+    {
+     "inst": "XI0",
+     "cell": "tx_predrv_leg",
+     "role": "leg 0 pre-driver"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ds_q",
+     "XI5.in",
+     "ds_q",
+     "hs_data"
+    ],
+    [
+     "XI5.out",
+     "XI6.in",
+     "net05",
+     "hs_data"
+    ],
+    [
+     "XI6.out",
+     "XI4.ds_q",
+     "ds_buf",
+     "hs_data"
+    ],
+    [
+     "XI6.out",
+     "XI0.ds_q",
+     "ds_buf",
+     "hs_data"
+    ],
+    [
+     "XI4.pg",
+     "PORT.pg<4>",
+     "pg<4>",
+     "hs_data"
+    ],
+    [
+     "XI4.ng",
+     "PORT.ng<4>",
+     "ng<4>",
+     "hs_data"
+    ],
+    [
+     "XI0.pg",
+     "PORT.pg<0>",
+     "pg<0>",
+     "hs_data"
+    ],
+    [
+     "XI0.ng",
+     "PORT.ng<0>",
+     "ng<0>",
+     "hs_data"
+    ],
+    [
+     "PORT.pu_en<4>",
+     "XI4.pu_en",
+     "pu_en<4>",
+     "important_control"
+    ],
+    [
+     "PORT.pd_dis<4>",
+     "XI4.pd_dis",
+     "pd_dis<4>",
+     "important_control"
+    ],
+    [
+     "PORT.vbp_sr",
+     "XI4.vbp_sr",
+     "vbp_sr",
+     "bias"
+    ],
+    [
+     "PORT.vbn_sr",
+     "XI4.vbn_sr",
+     "vbn_sr",
+     "bias"
+    ]
+   ],
+   "controls": {
+    "pu_en<4:0>": "per-leg PU enable",
+    "pd_dis<4:0>": "per-leg PD disable",
+    "vbp_sr": "slew bias",
+    "vbn_sr": "slew bias"
+   },
+   "notes": "pg/ng are both low when data is 1 (PMOS on, NMOS off): inverting w.r.t. ds_q, the pad is not. ds_buf is the twice-buffered (true) ds_q fanning out to all 5 legs."
+  },
+  "tx_ckbuf_dca": {
+   "role": "RE clock buffer with the in-path duty-cycle adjuster: ckbuf -> tx_dca -> ckbuf_x8 into the RPT chain",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "ckbuf",
+     "role": "input buffer"
+    },
+    {
+     "inst": "XI1",
+     "cell": "tx_dca",
+     "role": "duty-cycle adjuster (DCC actuator)"
+    },
+    {
+     "inst": "XI2",
+     "cell": "ckbuf_x8",
+     "role": "output driver into RPT chain"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "XI0.in",
+     "in",
+     "clock"
+    ],
+    [
+     "XI0.out",
+     "XI1.in",
+     "net010",
+     "clock"
+    ],
+    [
+     "XI1.out",
+     "XI2.in",
+     "net011",
+     "clock"
+    ],
+    [
+     "XI2.out",
+     "PORT.out",
+     "out",
+     "clock"
+    ],
+    [
+     "PORT.dcc_code<4:0>",
+     "XI1.code<4:0>",
+     "dcc_code<4:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "dcc_code<4:0>": "duty adjust from dcc_ctrl (offset binary, 10000/01111 neutral)"
+   },
+   "notes": "No local monitor tap any more: the DCC detector senses the distributed clock at the tree leaf ck_dcc."
+  },
+  "tx_cktree": {
+   "role": "Local Tx clock tree: ckbuf_x8 root, 2 branches, 10 slice leaves (lf<7:0> DQ, lf<8> DQS, lf<9> DQSB), core-clock tap and the DCC sense leaf",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "ckbuf_x8",
+     "role": "root"
+    },
+    {
+     "inst": "XI1<1:0>",
+     "cell": "ckbuf",
+     "role": "branches"
+    },
+    {
+     "inst": "XI2<9:0>",
+     "cell": "ckbuf",
+     "role": "slice leaves"
+    },
+    {
+     "inst": "XI3",
+     "cell": "ckbuf",
+     "role": "core clock leaf on branch 0"
+    },
+    {
+     "inst": "XI4",
+     "cell": "ckbuf",
+     "role": "DCC sense leaf on branch 1 (lf_dcc)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.in",
+     "XI0.in",
+     "in",
+     "clock"
+    ],
+    [
+     "XI0.out",
+     "XI1<1:0>.in",
+     "r0",
+     "clock"
+    ],
+    [
+     "XI1<1>.out",
+     "XI2<9:5>.in",
+     "br<1>",
+     "clock"
+    ],
+    [
+     "XI1<0>.out",
+     "XI2<4:0>.in",
+     "br<0>",
+     "clock"
+    ],
+    [
+     "XI1<0>.out",
+     "XI3.in",
+     "br<0>",
+     "clock"
+    ],
+    [
+     "XI1<1>.out",
+     "XI4.in",
+     "br<1>",
+     "clock"
+    ],
+    [
+     "XI2<9:0>.out",
+     "PORT.lf<9:0>",
+     "lf<9:0>",
+     "clock"
+    ],
+    [
+     "XI3.out",
+     "PORT.lf_core",
+     "lf_core",
+     "clock"
+    ],
+    [
+     "XI4.out",
+     "PORT.lf_dcc",
+     "lf_dcc",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Each branch drives 6 identical ckbuf leaves (branch 0: lf<4:0> + core tap; branch 1: lf<9:5> + DCC sense leaf), so lf_dcc has the same latency/duty as the DQS/DQSB leaves it sits next to."
+  },
+  "dcc_det": {
+   "role": "Duty detector: gated clock and complement drive two matched 2-pole RC low-pass filters (50k/0.5p, 50k/0.25p)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "nand2_x1",
+     "role": "enable gate, produces ~ck"
+    },
+    {
+     "inst": "XI1",
+     "cell": "inv_x1",
+     "role": "true clock for vp filter"
+    },
+    {
+     "inst": "XI2",
+     "cell": "inv_x1",
+     "role": "dummy load balancing net010/net011 (output unused)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ck",
+     "XI0.a",
+     "ck",
+     "clock"
+    ],
+    [
+     "PORT.en",
+     "XI0.b",
+     "en",
+     "important_control"
+    ],
+    [
+     "XI0.out",
+     "XI1.in",
+     "net010",
+     "clock"
+    ],
+    [
+     "XI1.out",
+     "RR0",
+     "net011",
+     "clock"
+    ],
+    [
+     "RR1",
+     "PORT.vp",
+     "vp",
+     "slow_signal"
+    ],
+    [
+     "XI0.out",
+     "RR2",
+     "net010",
+     "clock"
+    ],
+    [
+     "RR3",
+     "PORT.vn",
+     "vn",
+     "slow_signal"
+    ],
+    [
+     "XI1.out",
+     "XI2.in",
+     "net011",
+     "clock"
+    ]
+   ],
+   "controls": {
+    "en": "gates the clock into the detector"
+   },
+   "notes": "Loads the DCC sense leaf but is not in series with any clock. vp ~ D*VDD, vn ~ (1-D)*VDD; tau = 25 ns / 12.5 ns, settles within a few cal_clk periods. net012 is a dummy load (unused) balancing net010/net011."
+  },
+  "zq_pu_rep": {
+   "role": "Pull-up replica: 5 binary-weighted pch_hv + series-R legs, unit = 1/8 of the Tx driver PU unit (1u + 2.4k vs 8u + 300 ohm)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.gb<4>",
+     "MM4.g",
+     "gb<4>",
+     "important_control"
+    ],
+    [
+     "MM4.d",
+     "RR4",
+     "np<4>",
+     "reference"
+    ],
+    [
+     "RR4",
+     "PORT.pad",
+     "pad",
+     "reference"
+    ],
+    [
+     "PORT.gb<0>",
+     "MM0.g",
+     "gb<0>",
+     "important_control"
+    ],
+    [
+     "MM0.d",
+     "RR0",
+     "np<0>",
+     "reference"
+    ],
+    [
+     "RR0",
+     "PORT.pad",
+     "pad",
+     "reference"
+    ]
+   ],
+   "controls": {
+    "gb<4:0>": "active-low leg enables (x16..x1)"
+   },
+   "notes": "Device m and R scale together (m=16 with 150 ohm ... m=1 with 2.4k). Rpu_rep = 8 x Rpu_driver for the same code, so calibrating against RZQ = 300 ohm sets the driver to ~37.5 ohm."
+  },
+  "zq_pd_rep": {
+   "role": "Pull-down calibration network: internal PU replica copy (calibrated code) on top of 5 binary nch_hv + R PD legs (1/8 driver unit), node npd",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "zq_pu_rep",
+     "role": "internal copy of the calibrated pull-up"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.pu_gb<4:0>",
+     "XI0.gb<4:0>",
+     "pu_gb<4:0>",
+     "important_control"
+    ],
+    [
+     "XI0.pad",
+     "PORT.npd",
+     "npd",
+     "reference"
+    ],
+    [
+     "PORT.pd_g<4>",
+     "MM4.g",
+     "pd_g<4>",
+     "important_control"
+    ],
+    [
+     "MM4.d",
+     "RR4",
+     "nd<4>",
+     "reference"
+    ],
+    [
+     "RR4",
+     "PORT.npd",
+     "npd",
+     "reference"
+    ]
+   ],
+   "controls": {
+    "pd_g<4:0>": "active-high PD leg enables",
+    "pu_gb<4:0>": "calibrated PU code"
+   },
+   "notes": "npd = VCCQ * Rpd / (Rpu + Rpd); the VCCQ/2 target makes Rpd equal the calibrated Rpu."
+  },
+  "ib_dist": {
+   "role": "Reference current distribution: NMOS diode on ibias, NMOS sink mirror for ZQ, NMOS->PMOS mirror sourcing the VREF buffer bias",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.ibias",
+     "MM0.d",
+     "ibias",
+     "bias"
+    ],
+    [
+     "MM1.d",
+     "PORT.ib_zq",
+     "ib_zq",
+     "bias"
+    ],
+    [
+     "MM2.d",
+     "MM3.d",
+     "net05",
+     "bias"
+    ],
+    [
+     "MM4.d",
+     "PORT.ib_vref",
+     "ib_vref",
+     "bias"
+    ]
+   ],
+   "controls": {},
+   "notes": "ib_zq sinks current from the PMOS diode in zq_cal; ib_vref sources current into the NMOS diode of vref_buf_ota. All 1:1 (W=2u/L=1u m=2 N side, 4u/1u m=2 P side)."
+  },
+  "odt_ctrl": {
+   "role": "ODT control: termination enable gated off per pin group while that group drives (odt_en & ~dq_oe, odt_en & ~dqs_oe), VCCQ level shift, code gating, PU (active-low) and PD (active-high) gate drivers for the DQ group and the DQS/DQSB group",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI6",
+     "cell": "inv_x1",
+     "role": "~odt_en"
+    },
+    {
+     "inst": "XI7",
+     "cell": "nor2_x1",
+     "role": "DQ group enable = odt_en & ~dq_oe"
+    },
+    {
+     "inst": "XI8",
+     "cell": "nor2_x1",
+     "role": "DQS group enable = odt_en & ~dqs_oe"
+    },
+    {
+     "inst": "XI0",
+     "cell": "ls_up",
+     "role": "DQ group enable level shift -> oen_d"
+    },
+    {
+     "inst": "XI9",
+     "cell": "ls_up",
+     "role": "DQS group enable level shift -> oen_s"
+    },
+    {
+     "inst": "XI1<2:0>",
+     "cell": "ls_up",
+     "role": "odt_code level shift"
+    },
+    {
+     "inst": "XI2<2:0>",
+     "cell": "nand2_q",
+     "role": "DQ: code & enable (active-low nb_d)"
+    },
+    {
+     "inst": "XI3<2:0>",
+     "cell": "inv_q",
+     "role": "DQ: re-invert"
+    },
+    {
+     "inst": "XI4<2:0>",
+     "cell": "inv_q",
+     "role": "DQ PU gate drivers (m=4), pu_gb_d low = on"
+    },
+    {
+     "inst": "XI5<2:0>",
+     "cell": "inv_q",
+     "role": "DQ PD gate drivers (m=4), pd_g_d high = on"
+    },
+    {
+     "inst": "XI10<2:0>",
+     "cell": "nand2_q",
+     "role": "DQS: code & enable (active-low nb_s)"
+    },
+    {
+     "inst": "XI11<2:0>",
+     "cell": "inv_q",
+     "role": "DQS: re-invert"
+    },
+    {
+     "inst": "XI12<2:0>",
+     "cell": "inv_q",
+     "role": "DQS PU gate drivers (m=4)"
+    },
+    {
+     "inst": "XI13<2:0>",
+     "cell": "inv_q",
+     "role": "DQS PD gate drivers (m=4)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.odt_en",
+     "XI6.in",
+     "odt_en",
+     "important_control"
+    ],
+    [
+     "XI6.out",
+     "XI7.a",
+     "net013",
+     "important_control"
+    ],
+    [
+     "PORT.dq_oe",
+     "XI7.b",
+     "dq_oe",
+     "important_control"
+    ],
+    [
+     "XI6.out",
+     "XI8.a",
+     "net013",
+     "important_control"
+    ],
+    [
+     "PORT.dqs_oe",
+     "XI8.b",
+     "dqs_oe",
+     "important_control"
+    ],
+    [
+     "XI7.out",
+     "XI0.in",
+     "net014",
+     "important_control"
+    ],
+    [
+     "XI8.out",
+     "XI9.in",
+     "net015",
+     "important_control"
+    ],
+    [
+     "XI0.out",
+     "XI2<2:0>.b",
+     "oen_d",
+     "important_control"
+    ],
+    [
+     "XI9.out",
+     "XI10<2:0>.b",
+     "oen_s",
+     "important_control"
+    ],
+    [
+     "PORT.odt_code<2:0>",
+     "XI1<2:0>.in",
+     "odt_code<2:0>",
+     "important_control"
+    ],
+    [
+     "XI1<2:0>.out",
+     "XI2<2:0>.a",
+     "oc_q<2:0>",
+     "important_control"
+    ],
+    [
+     "XI1<2:0>.out",
+     "XI10<2:0>.a",
+     "oc_q<2:0>",
+     "important_control"
+    ],
+    [
+     "XI2<2:0>.out",
+     "XI3<2:0>.in",
+     "nb_d<2:0>",
+     "important_control"
+    ],
+    [
+     "XI3<2:0>.out",
+     "XI4<2:0>.in",
+     "nc_d<2:0>",
+     "important_control"
+    ],
+    [
+     "XI4<2:0>.out",
+     "PORT.pu_gb_d<2:0>",
+     "pu_gb_d<2:0>",
+     "important_control"
+    ],
+    [
+     "XI2<2:0>.out",
+     "XI5<2:0>.in",
+     "nb_d<2:0>",
+     "important_control"
+    ],
+    [
+     "XI5<2:0>.out",
+     "PORT.pd_g_d<2:0>",
+     "pd_g_d<2:0>",
+     "important_control"
+    ],
+    [
+     "XI10<2:0>.out",
+     "XI11<2:0>.in",
+     "nb_s<2:0>",
+     "important_control"
+    ],
+    [
+     "XI11<2:0>.out",
+     "XI12<2:0>.in",
+     "nc_s<2:0>",
+     "important_control"
+    ],
+    [
+     "XI12<2:0>.out",
+     "PORT.pu_gb_s<2:0>",
+     "pu_gb_s<2:0>",
+     "important_control"
+    ],
+    [
+     "XI10<2:0>.out",
+     "XI13<2:0>.in",
+     "nb_s<2:0>",
+     "important_control"
+    ],
+    [
+     "XI13<2:0>.out",
+     "PORT.pd_g_s<2:0>",
+     "pd_g_s<2:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "odt_en": "global ODT enable (writes)",
+    "dq_oe": "forces DQ-group ODT off while DQ drives",
+    "dqs_oe": "forces DQS-group ODT off while DQS/DQSB drive",
+    "odt_code<2:0>": "leg selection: ~300/150/100/75/60/50/43 ohm Thevenin for codes 1..7"
+   },
+   "notes": "LS complements net010, net016 and ocb_q<2:0> are unused. Termination auto-off avoids fighting the own driver during reads (switch-level checked against random enable/code vectors)."
+  },
+  "wire_rc_rx": {
+   "role": "Pi RC wire segment model of the Rx strobe RPT chain (8f-120ohm-8f)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "RR0",
+     "a",
+     "clock"
+    ],
+    [
+     "RR0",
+     "PORT.b",
+     "b",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Passive; renamed from wire_rc (Rx) to keep cell names unique."
+  },
+  "wire_rc_tx": {
+   "role": "Pi RC wire segment model of the Tx RE RPT chain (15f-200ohm-15f)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    [
+     "PORT.a",
+     "RR0",
+     "a",
+     "clock"
+    ],
+    [
+     "RR0",
+     "PORT.b",
+     "b",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "Passive; renamed from wire_rc (Tx) to keep cell names unique."
+  },
+  "mux2_x1": {
+   "role": "Static NAND-NAND 2:1 mux, z = s ? d1 : d0 (standard-Vt control version of mux2_hs)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "nand2_x1",
+     "role": "d0 AND sb"
+    },
+    {
+     "inst": "XI1",
+     "cell": "nand2_x1",
+     "role": "d1 AND s"
+    },
+    {
+     "inst": "XI2",
+     "cell": "nand2_x1",
+     "role": "OR"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.d0",
+     "XI0.a",
+     "d0",
+     "important_control"
+    ],
+    [
+     "PORT.sb",
+     "XI0.b",
+     "sb",
+     "general_control"
+    ],
+    [
+     "PORT.d1",
+     "XI1.a",
+     "d1",
+     "important_control"
+    ],
+    [
+     "PORT.s",
+     "XI1.b",
+     "s",
+     "general_control"
+    ],
+    [
+     "XI0.out",
+     "XI2.a",
+     "net05",
+     "important_control"
+    ],
+    [
+     "XI1.out",
+     "XI2.b",
+     "net06",
+     "important_control"
+    ],
+    [
+     "XI2.out",
+     "PORT.z",
+     "z",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "s": "select (sb must be its complement)"
+   },
+   "notes": "Used only in drv_code_mux."
+  },
+  "drv_code_mux": {
+   "role": "Driver strength code source select: ZQ calibration result (default) or register override, per bit",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "inv_x2",
+     "role": "~ovr_en (mux sb)"
+    },
+    {
+     "inst": "XI1",
+     "cell": "inv_x2",
+     "role": "buffered ovr_en (mux s)"
+    },
+    {
+     "inst": "XI2<4:0>",
+     "cell": "mux2_x1",
+     "role": "pull-up code select"
+    },
+    {
+     "inst": "XI3<4:0>",
+     "cell": "mux2_x1",
+     "role": "pull-down code select"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ovr_en",
+     "XI0.in",
+     "ovr_en",
+     "general_control"
+    ],
+    [
+     "XI0.out",
+     "XI1.in",
+     "net010",
+     "general_control"
+    ],
+    [
+     "XI1.out",
+     "XI2<4:0>.s",
+     "sel",
+     "general_control"
+    ],
+    [
+     "XI0.out",
+     "XI2<4:0>.sb",
+     "net010",
+     "general_control"
+    ],
+    [
+     "PORT.zq_pu<4:0>",
+     "XI2<4:0>.d0",
+     "zq_pu<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.pu_ovr<4:0>",
+     "XI2<4:0>.d1",
+     "pu_ovr<4:0>",
+     "general_control"
+    ],
+    [
+     "XI2<4:0>.z",
+     "PORT.pu_code<4:0>",
+     "pu_code<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.zq_pd<4:0>",
+     "XI3<4:0>.d0",
+     "zq_pd<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.pd_ovr<4:0>",
+     "XI3<4:0>.d1",
+     "pd_ovr<4:0>",
+     "general_control"
+    ],
+    [
+     "XI3<4:0>.z",
+     "PORT.pd_code<4:0>",
+     "pd_code<4:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "ovr_en": "0 = use ZQ codes, 1 = use pu_ovr/pd_ovr",
+    "pu_ovr<4:0>": "manual PU strength",
+    "pd_ovr<4:0>": "manual PD strength"
+   },
+   "notes": "VDD-domain; outputs go to tx_ctrl, which level-shifts them and gates with dq_oe/dqs_oe."
+  },
+  "dcc_lock_det": {
+   "role": "Bang-bang DCC lock detector: remembers the previous comparator decision, flags a valid dither (decision change) and sets lock after two dither events",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "inv_x1",
+     "role": "ckn = ~clk (same edge as the code counter)"
+    },
+    {
+     "inst": "XI1",
+     "cell": "dffr_tg",
+     "role": "previous decision up_d"
+    },
+    {
+     "inst": "XI2",
+     "cell": "dffr_tg",
+     "role": "valid flag (d tied to vdd): ignores the first decision after reset"
+    },
+    {
+     "inst": "XI3",
+     "cell": "xor2_x1",
+     "role": "decision change up ^ up_d"
+    },
+    {
+     "inst": "XI4",
+     "cell": "nand2_x1",
+     "role": "dithb = ~(change & vld)"
+    },
+    {
+     "inst": "XI5",
+     "cell": "inv_x1",
+     "role": "dith"
+    },
+    {
+     "inst": "XI6",
+     "cell": "nand2_x1",
+     "role": "d0 = s0 | dith"
+    },
+    {
+     "inst": "XI7",
+     "cell": "dffr_tg",
+     "role": "first dither seen (sticky)"
+    },
+    {
+     "inst": "XI8",
+     "cell": "nand2_x1",
+     "role": "~(s0 & dith)"
+    },
+    {
+     "inst": "XI9",
+     "cell": "nand2_x1",
+     "role": "d1 = lock | (s0 & dith)"
+    },
+    {
+     "inst": "XI10",
+     "cell": "dffr_tg",
+     "role": "lock flag (sticky)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.clk",
+     "XI0.in",
+     "clk",
+     "clock"
+    ],
+    [
+     "XI0.out",
+     "XI1.ck",
+     "ckn",
+     "clock"
+    ],
+    [
+     "PORT.up",
+     "XI1.d",
+     "up",
+     "slow_signal"
+    ],
+    [
+     "PORT.up",
+     "XI3.a",
+     "up",
+     "slow_signal"
+    ],
+    [
+     "XI1.q",
+     "XI3.b",
+     "up_d",
+     "slow_signal"
+    ],
+    [
+     "XI3.out",
+     "XI4.a",
+     "net013",
+     "slow_signal"
+    ],
+    [
+     "XI2.q",
+     "XI4.b",
+     "vld",
+     "slow_signal"
+    ],
+    [
+     "XI4.out",
+     "XI5.in",
+     "dithb",
+     "slow_signal"
+    ],
+    [
+     "XI4.out",
+     "XI6.b",
+     "dithb",
+     "slow_signal"
+    ],
+    [
+     "XI7.qb",
+     "XI6.a",
+     "s0b",
+     "slow_signal"
+    ],
+    [
+     "XI6.out",
+     "XI7.d",
+     "d0",
+     "slow_signal"
+    ],
+    [
+     "XI7.q",
+     "XI8.a",
+     "s0",
+     "slow_signal"
+    ],
+    [
+     "XI5.out",
+     "XI8.b",
+     "dith",
+     "slow_signal"
+    ],
+    [
+     "XI8.out",
+     "XI9.b",
+     "net012",
+     "slow_signal"
+    ],
+    [
+     "XI10.qb",
+     "XI9.a",
+     "lockb",
+     "slow_signal"
+    ],
+    [
+     "XI9.out",
+     "XI10.d",
+     "d1",
+     "slow_signal"
+    ],
+    [
+     "XI10.q",
+     "PORT.lock",
+     "lock",
+     "status"
+    ],
+    [
+     "PORT.rst_n",
+     "XI10.rn",
+     "rst_n",
+     "command"
+    ]
+   ],
+   "controls": {
+    "rst_n": "clears lock state (tied to dcc_train in dcc_ctrl)"
+   },
+   "notes": "All flops on ckn (clk falling), aligned with the updn_cnt5 update. qb of XI1/XI2 (net010, net011) unused. Lock is sticky until rst_n goes low."
+  },
+  "dcc_ctrl": {
+   "role": "DCC loop controller: gated update clock, RC duty detector on the distributed-clock sense leaf, StrongARM comparator, 5-bit up/down code counter, dither lock detector that freezes the code",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI5",
+     "cell": "nand2_x1",
+     "role": "cal_clk & dcc_train gate"
+    },
+    {
+     "inst": "XI6",
+     "cell": "inv_x1",
+     "role": "upd_clk"
+    },
+    {
+     "inst": "XI0",
+     "cell": "dcc_det",
+     "role": "duty detector on ck_dcc"
+    },
+    {
+     "inst": "XI1",
+     "cell": "sa_cmp",
+     "role": "duty comparator vp vs vn"
+    },
+    {
+     "inst": "XI2",
+     "cell": "updn_cnt5",
+     "role": "DCC code counter (reset 10000)"
+    },
+    {
+     "inst": "XI3",
+     "cell": "dcc_lock_det",
+     "role": "lock detector, freezes the counter"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ck_dcc",
+     "XI0.ck",
+     "ck_dcc",
+     "clock"
+    ],
+    [
+     "PORT.dcc_train",
+     "XI0.en",
+     "dcc_train",
+     "command"
+    ],
+    [
+     "XI0.vp",
+     "XI1.inp",
+     "vp",
+     "slow_signal"
+    ],
+    [
+     "XI0.vn",
+     "XI1.inn",
+     "vn",
+     "slow_signal"
+    ],
+    [
+     "PORT.cal_clk",
+     "XI5.a",
+     "cal_clk",
+     "clock"
+    ],
+    [
+     "PORT.dcc_train",
+     "XI5.b",
+     "dcc_train",
+     "command"
+    ],
+    [
+     "XI5.out",
+     "XI6.in",
+     "net012",
+     "clock"
+    ],
+    [
+     "XI6.out",
+     "XI1.clk",
+     "upd_clk",
+     "clock"
+    ],
+    [
+     "XI6.out",
+     "XI2.clk",
+     "upd_clk",
+     "clock"
+    ],
+    [
+     "XI6.out",
+     "XI3.clk",
+     "upd_clk",
+     "clock"
+    ],
+    [
+     "XI1.q",
+     "XI2.up",
+     "up",
+     "slow_signal"
+    ],
+    [
+     "XI1.q",
+     "XI3.up",
+     "up",
+     "slow_signal"
+    ],
+    [
+     "PORT.dcc_train",
+     "XI2.en",
+     "dcc_train",
+     "command"
+    ],
+    [
+     "PORT.dcc_train",
+     "XI3.rst_n",
+     "dcc_train",
+     "command"
+    ],
+    [
+     "XI3.lock",
+     "XI2.hold",
+     "dcc_lock",
+     "status"
+    ],
+    [
+     "XI3.lock",
+     "PORT.dcc_lock",
+     "dcc_lock",
+     "status"
+    ],
+    [
+     "PORT.dcc_rst_n",
+     "XI2.rst_n",
+     "dcc_rst_n",
+     "general_control"
+    ],
+    [
+     "XI2.code<4:0>",
+     "PORT.dcc_code<4:0>",
+     "dcc_code<4:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "dcc_train": "1 = run DCC training (detector, update clock, counter enabled); 0 = code held, lock cleared",
+    "dcc_rst_n": "resets the code to 10000 (neutral)",
+    "dcc_code<4:0>": "DCA setting (loop state)"
+   },
+   "notes": "Closes the DCC loop through re_clk_path: dcc_code -> tx_dca -> RPT chain -> tree -> ck_dcc leaf -> dcc_det -> sa_cmp -> updn_cnt5 -> dcc_code. Duty > 50% -> vp > vn -> up=1 -> code counts up -> DCA PU legs shorten the high phase (negative feedback). Comparator evaluates on upd_clk rising, counter and lock detector update on upd_clk falling. After two valid dithers dcc_lock=1 drives hold. Comparator qb (net011) unused. Switch-level check with a behavioural duty model: locks within +/-1 LSB from both sides and freezes. Not on the HS path (it only loads the sense leaf)."
+  },
+  "esd_rail": {
+   "role": "Rail ESD: RC-triggered clamps VCCQ-VSSQ and VDD-VSS, back-to-back diodes VSS-VSSQ",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "esd_rc_clamp",
+     "role": "VCCQ-VSSQ rail clamp"
+    },
+    {
+     "inst": "XI1",
+     "cell": "esd_rc_clamp",
+     "role": "VDD-VSS rail clamp"
+    },
+    {
+     "inst": "XI2",
+     "cell": "esd_b2b",
+     "role": "VSS-VSSQ coupling"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.vccq",
+     "XI0.vtop",
+     "vccq",
+     "power"
+    ],
+    [
+     "PORT.vssq",
+     "XI0.vbot",
+     "vssq",
+     "power"
+    ],
+    [
+     "PORT.vdd",
+     "XI1.vtop",
+     "vdd",
+     "power"
+    ],
+    [
+     "PORT.vss",
+     "XI1.vbot",
+     "vss",
+     "power"
+    ],
+    [
+     "PORT.vss",
+     "XI2.va",
+     "vss",
+     "power"
+    ],
+    [
+     "PORT.vssq",
+     "XI2.vb",
+     "vssq",
+     "power"
+    ]
+   ],
+   "controls": {},
+   "notes": "Off in normal operation."
+  },
+  "io_pad_bidir": {
+   "role": "Bidirectional pad cell (DQ, DQS, DQSB): primary + secondary ESD, main PU/PD driver legs, ODT legs, pad cap",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "esd_io_pad",
+     "role": "primary clamps + 200 ohm / GGNMOS secondary to pad_rx"
+    },
+    {
+     "inst": "XI1",
+     "cell": "tx_out_drv",
+     "role": "main driver legs x16..x1"
+    },
+    {
+     "inst": "XI2",
+     "cell": "odt_leg_pin",
+     "role": "ODT legs (3 binary center-tapped pairs)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.pad",
+     "XI0.pad",
+     "pad",
+     "hs_data"
+    ],
+    [
+     "XI0.pad_rx",
+     "PORT.pad_rx",
+     "pad_rx",
+     "hs_data"
+    ],
+    [
+     "PORT.pg<4:0>",
+     "XI1.pg<4:0>",
+     "pg<4:0>",
+     "hs_data"
+    ],
+    [
+     "PORT.ng<4:0>",
+     "XI1.ng<4:0>",
+     "ng<4:0>",
+     "hs_data"
+    ],
+    [
+     "XI1.pad",
+     "PORT.pad",
+     "pad",
+     "hs_data"
+    ],
+    [
+     "PORT.odt_pu_gb<2:0>",
+     "XI2.pu_gb<2:0>",
+     "odt_pu_gb<2:0>",
+     "important_control"
+    ],
+    [
+     "PORT.odt_pd_g<2:0>",
+     "XI2.pd_g<2:0>",
+     "odt_pd_g<2:0>",
+     "important_control"
+    ],
+    [
+     "XI2.pad",
+     "PORT.pad",
+     "pad",
+     "hs_data"
+    ]
+   ],
+   "controls": {
+    "odt_pu_gb<2:0>": "ODT PU legs (active low)",
+    "odt_pd_g<2:0>": "ODT PD legs (active high)"
+   },
+   "notes": "Two directions: pad -> pad_rx (receive, passive 200 ohm) and pg/ng -> driver -> pad (transmit). Driver and ODT sit on the pad side of the series R; the receiver taps after it. CC0 0.2p pad/bond cap. The same cell on DQS/DQSB keeps strobe and data pad loading equal."
+  },
+  "io_pad_in": {
+   "role": "Input-only pad cell: esd_io_pad (primary + secondary) and pad cap; used on RE, nRE and VREF_EXT",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "esd_io_pad",
+     "role": "pad ESD with secondary protection"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.pad",
+     "XI0.pad",
+     "pad",
+     "clock"
+    ],
+    [
+     "XI0.pad_rx",
+     "PORT.pad_rx",
+     "pad_rx",
+     "clock"
+    ]
+   ],
+   "controls": {},
+   "notes": "HS for the RE/nRE instances; the VREF_EXT instance (nf_io_top/XI12) carries a static reference. No ODT on these pads."
+  },
+  "re_clk_path": {
+   "role": "Read clock path: RE/nRE receiver -> in-path DCA buffer -> global RPT chain -> local clock tree (10 slice leaves, core tap, DCC sense leaf) -> core clock driver",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "tx_re_rx",
+     "role": "RE/nRE receiver (diff or SE vs VREF) to VDD"
+    },
+    {
+     "inst": "XI1",
+     "cell": "tx_ckbuf_dca",
+     "role": "clock buffer with the DCC duty adjuster"
+    },
+    {
+     "inst": "XI2",
+     "cell": "tx_rpt_chain",
+     "role": "4-stage global repeater chain with wire RC"
+    },
+    {
+     "inst": "XI3",
+     "cell": "tx_cktree",
+     "role": "local tree: 10 slice leaves + core tap + DCC sense leaf"
+    },
+    {
+     "inst": "XI4",
+     "cell": "tx_rpt",
+     "role": "core clock driver (rclk_core)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.re",
+     "XI0.re",
+     "re",
+     "clock"
+    ],
+    [
+     "PORT.reb",
+     "XI0.reb",
+     "reb",
+     "clock"
+    ],
+    [
+     "PORT.vref",
+     "XI0.vref",
+     "vref",
+     "reference"
+    ],
+    [
+     "XI0.ck_re",
+     "XI1.in",
+     "ck_re",
+     "clock"
+    ],
+    [
+     "XI1.out",
+     "XI2.in",
+     "ck_g",
+     "clock"
+    ],
+    [
+     "XI2.out",
+     "XI3.in",
+     "ck_rpt",
+     "clock"
+    ],
+    [
+     "XI3.lf<9:0>",
+     "PORT.ck_lf<9:0>",
+     "ck_lf<9:0>",
+     "clock"
+    ],
+    [
+     "XI3.lf_dcc",
+     "PORT.ck_dcc",
+     "ck_dcc",
+     "clock"
+    ],
+    [
+     "XI3.lf_core",
+     "XI4.in",
+     "lf_core",
+     "clock"
+    ],
+    [
+     "XI4.out",
+     "PORT.rclk_core",
+     "rclk_core",
+     "clock"
+    ],
+    [
+     "PORT.dcc_code<4:0>",
+     "XI1.dcc_code<4:0>",
+     "dcc_code<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.re_se_q",
+     "XI0.re_se_q",
+     "re_se_q",
+     "important_control"
+    ],
+    [
+     "PORT.re_dif_q",
+     "XI0.re_dif_q",
+     "re_dif_q",
+     "important_control"
+    ],
+    [
+     "PORT.en_q",
+     "XI0.en_q",
+     "en_q",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "dcc_code<4:0>": "duty adjust (from dcc_ctrl)",
+    "re_se_q": "single-ended RE (vs VREF)",
+    "re_dif_q": "differential RE/nRE",
+    "en_q": "RE receiver enable (enb_q complement)"
+   },
+   "notes": "Non-inverting RE -> leaves. The DCA is upstream of the repeaters and tree, so the DCC loop corrects the duty error of receiver + DCA + RPT + tree as seen at ck_dcc, a leaf matched to the DQS/DQSB leaves."
+  },
+  "io_dq_slice": {
+   "role": "Per-DQ bidirectional slice: pad cell (ESD, main driver legs, ODT), Rx slice from the protected pad node (receiver, deskew, matched/unmatched select, DDR samplers, 1:4 deser), Tx slice (2:1 serializer, LS, pre-driver)",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "io_pad_bidir",
+     "role": "pad: ESD + driver legs + ODT legs"
+    },
+    {
+     "inst": "XI1",
+     "cell": "rx_dq_slice",
+     "role": "receive slice"
+    },
+    {
+     "inst": "XI2",
+     "cell": "tx_dq_slice",
+     "role": "transmit slice"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.pad",
+     "XI0.pad",
+     "pad",
+     "hs_data"
+    ],
+    [
+     "XI0.pad_rx",
+     "XI1.dq",
+     "pad_rx",
+     "hs_data"
+    ],
+    [
+     "PORT.vref_rx",
+     "XI1.vref_rx",
+     "vref_rx",
+     "reference"
+    ],
+    [
+     "PORT.ckt_m",
+     "XI1.ckt_m",
+     "ckt_m",
+     "clock"
+    ],
+    [
+     "PORT.ckc_m",
+     "XI1.ckc_m",
+     "ckc_m",
+     "clock"
+    ],
+    [
+     "PORT.ckt_u",
+     "XI1.ckt_u",
+     "ckt_u",
+     "clock"
+    ],
+    [
+     "PORT.ckc_u",
+     "XI1.ckc_u",
+     "ckc_u",
+     "clock"
+    ],
+    [
+     "PORT.div_p",
+     "XI1.div_p",
+     "div_p",
+     "clock"
+    ],
+    [
+     "PORT.div_n",
+     "XI1.div_n",
+     "div_n",
+     "clock"
+    ],
+    [
+     "XI1.rd<3:0>",
+     "PORT.rd<3:0>",
+     "rd<3:0>",
+     "word_rate_data"
+    ],
+    [
+     "PORT.de",
+     "XI2.de",
+     "de",
+     "word_rate_data"
+    ],
+    [
+     "PORT.do",
+     "XI2.do",
+     "do",
+     "word_rate_data"
+    ],
+    [
+     "PORT.ck_lf",
+     "XI2.ck_lf",
+     "ck_lf",
+     "clock"
+    ],
+    [
+     "XI2.pg<4:0>",
+     "XI0.pg<4:0>",
+     "pg<4:0>",
+     "hs_data"
+    ],
+    [
+     "XI2.ng<4:0>",
+     "XI0.ng<4:0>",
+     "ng<4:0>",
+     "hs_data"
+    ],
+    [
+     "XI0.pad",
+     "PORT.pad",
+     "pad",
+     "hs_data"
+    ],
+    [
+     "PORT.en_q",
+     "XI1.en_q",
+     "en_q",
+     "important_control"
+    ],
+    [
+     "PORT.selu",
+     "XI1.selu",
+     "selu",
+     "important_control"
+    ],
+    [
+     "PORT.selub",
+     "XI1.selub",
+     "selub",
+     "important_control"
+    ],
+    [
+     "PORT.dskw<2:0>",
+     "XI1.dskw<2:0>",
+     "dskw<2:0>",
+     "general_control"
+    ],
+    [
+     "PORT.pu_en<4:0>",
+     "XI2.pu_en<4:0>",
+     "pu_en<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.pd_dis<4:0>",
+     "XI2.pd_dis<4:0>",
+     "pd_dis<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.vbp_sr",
+     "XI2.vbp_sr",
+     "vbp_sr",
+     "bias"
+    ],
+    [
+     "PORT.vbn_sr",
+     "XI2.vbn_sr",
+     "vbn_sr",
+     "bias"
+    ],
+    [
+     "PORT.odt_pu_gb<2:0>",
+     "XI0.odt_pu_gb<2:0>",
+     "odt_pu_gb<2:0>",
+     "important_control"
+    ],
+    [
+     "PORT.odt_pd_g<2:0>",
+     "XI0.odt_pd_g<2:0>",
+     "odt_pd_g<2:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "en_q": "receiver enable",
+    "selu": "Rx matched (0) / unmatched (1) path select (selub complement)",
+    "dskw<2:0>": "per-bit Rx deskew",
+    "pu_en<4:0>": "Tx PU leg enables (code & dq_oe)",
+    "pd_dis<4:0>": "Tx PD leg disables",
+    "odt_pu_gb<2:0>": "ODT PU legs (active low)",
+    "odt_pd_g<2:0>": "ODT PD legs (active high)",
+    "vbp_sr": "pre-driver slew bias",
+    "vbn_sr": "pre-driver slew bias"
+   },
+   "notes": "The pad is bidirectional: writes come in through XI0 pad_rx -> XI1, reads go out XI2 -> pg/ng -> XI0 driver -> pad. In write mode dq_oe=0 puts all driver legs off and ODT may be on; in read mode ODT is forced off by dq_oe. rd<0> is the first UI of the 4-UI word."
+  },
+  "io_dqs_slice": {
+   "role": "Per-strobe pad slice (DQS or DQSB): the same pad cell and Tx slice as a DQ bit; the protected pad node goes up to the strobe receiver",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "io_pad_bidir",
+     "role": "pad: ESD + driver legs + ODT legs"
+    },
+    {
+     "inst": "XI2",
+     "cell": "tx_dq_slice",
+     "role": "strobe transmit slice (constant even/odd pattern)"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.pad",
+     "XI0.pad",
+     "pad",
+     "clock"
+    ],
+    [
+     "XI0.pad_rx",
+     "PORT.pad_rx",
+     "pad_rx",
+     "clock"
+    ],
+    [
+     "PORT.de",
+     "XI2.de",
+     "de",
+     "important_control"
+    ],
+    [
+     "PORT.do",
+     "XI2.do",
+     "do",
+     "important_control"
+    ],
+    [
+     "PORT.ck_lf",
+     "XI2.ck_lf",
+     "ck_lf",
+     "clock"
+    ],
+    [
+     "XI2.pg<4:0>",
+     "XI0.pg<4:0>",
+     "pg<4:0>",
+     "clock"
+    ],
+    [
+     "XI2.ng<4:0>",
+     "XI0.ng<4:0>",
+     "ng<4:0>",
+     "clock"
+    ],
+    [
+     "XI0.pad",
+     "PORT.pad",
+     "pad",
+     "clock"
+    ],
+    [
+     "PORT.pu_en<4:0>",
+     "XI2.pu_en<4:0>",
+     "pu_en<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.pd_dis<4:0>",
+     "XI2.pd_dis<4:0>",
+     "pd_dis<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.odt_pu_gb<2:0>",
+     "XI0.odt_pu_gb<2:0>",
+     "odt_pu_gb<2:0>",
+     "important_control"
+    ],
+    [
+     "PORT.odt_pd_g<2:0>",
+     "XI0.odt_pd_g<2:0>",
+     "odt_pd_g<2:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "de": "even pattern (dqs_burst for DQS, ~dqs_burst for DQSB)",
+    "do": "odd pattern (0 for DQS, 1 for DQSB)",
+    "pu_en<4:0>": "PU leg enables (code & dqs_oe)",
+    "pd_dis<4:0>": "PD leg disables",
+    "odt_pu_gb<2:0>": "ODT PU legs",
+    "odt_pd_g<2:0>": "ODT PD legs"
+   },
+   "notes": "Instance names XI0/XI2 match io_dq_slice (XI1, the Rx slice, is absent: both strobe pads feed the differential strobe receiver rx_dqs_path at the top). Output DQS is edge-aligned with DQ by construction (same leaf, serializer, LS, pre-driver, driver)."
+  },
+  "io_ctrl": {
+   "role": "Control hub (static/slow): Rx enables and mode decode, driver code source select, Tx enable/code & oe gating to leg enables plus DQS patterns, ODT gating; level shifting to VCCQ where needed",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "rx_ctrl",
+     "role": "Rx enables, matched/unmatched decode, SE DQS, VREF select, observe enable"
+    },
+    {
+     "inst": "XI1",
+     "cell": "drv_code_mux",
+     "role": "ZQ code vs override select"
+    },
+    {
+     "inst": "XI2",
+     "cell": "tx_ctrl",
+     "role": "Tx enables, code & oe gating, DQS/DQSB patterns"
+    },
+    {
+     "inst": "XI3",
+     "cell": "odt_ctrl",
+     "role": "ODT enable/code with auto-off while driving"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.rx_en",
+     "XI0.rx_en",
+     "rx_en",
+     "important_control"
+    ],
+    [
+     "PORT.rx_mode_um",
+     "XI0.rx_mode_um",
+     "rx_mode_um",
+     "important_control"
+    ],
+    [
+     "PORT.dqs_se",
+     "XI0.dqs_se",
+     "dqs_se",
+     "important_control"
+    ],
+    [
+     "PORT.vref_int_en",
+     "XI0.vref_int_en",
+     "vref_int_en",
+     "general_control"
+    ],
+    [
+     "PORT.tm_rxobs",
+     "XI0.tm_rxobs",
+     "tm_rxobs",
+     "test_digital"
+    ],
+    [
+     "XI0.en_q",
+     "PORT.rx_en_q",
+     "rx_en_q",
+     "important_control"
+    ],
+    [
+     "XI0.enb_q",
+     "PORT.rx_enb_q",
+     "rx_enb_q",
+     "important_control"
+    ],
+    [
+     "XI0.selu",
+     "PORT.selu",
+     "selu",
+     "important_control"
+    ],
+    [
+     "XI0.selub",
+     "PORT.selub",
+     "selub",
+     "important_control"
+    ],
+    [
+     "XI0.en_m",
+     "PORT.en_m",
+     "en_m",
+     "important_control"
+    ],
+    [
+     "XI0.en_u",
+     "PORT.en_u",
+     "en_u",
+     "important_control"
+    ],
+    [
+     "XI0.dqs_se_q",
+     "PORT.dqs_se_q",
+     "dqs_se_q",
+     "important_control"
+    ],
+    [
+     "XI0.vint_q",
+     "PORT.vint_q",
+     "vint_q",
+     "general_control"
+    ],
+    [
+     "XI0.obs_en",
+     "PORT.obs_en",
+     "obs_en",
+     "test_digital"
+    ],
+    [
+     "PORT.zq_pu<4:0>",
+     "XI1.zq_pu<4:0>",
+     "zq_pu<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.zq_pd<4:0>",
+     "XI1.zq_pd<4:0>",
+     "zq_pd<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.drv_ovr_en",
+     "XI1.ovr_en",
+     "drv_ovr_en",
+     "general_control"
+    ],
+    [
+     "PORT.pu_ovr<4:0>",
+     "XI1.pu_ovr<4:0>",
+     "pu_ovr<4:0>",
+     "general_control"
+    ],
+    [
+     "PORT.pd_ovr<4:0>",
+     "XI1.pd_ovr<4:0>",
+     "pd_ovr<4:0>",
+     "general_control"
+    ],
+    [
+     "XI1.pu_code<4:0>",
+     "XI2.pu_code<4:0>",
+     "pu_code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI1.pd_code<4:0>",
+     "XI2.pd_code<4:0>",
+     "pd_code<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.tx_en",
+     "XI2.tx_en",
+     "tx_en",
+     "important_control"
+    ],
+    [
+     "PORT.re_se",
+     "XI2.re_se",
+     "re_se",
+     "important_control"
+    ],
+    [
+     "PORT.dq_oe",
+     "XI2.dq_oe",
+     "dq_oe",
+     "important_control"
+    ],
+    [
+     "PORT.dqs_oe",
+     "XI2.dqs_oe",
+     "dqs_oe",
+     "important_control"
+    ],
+    [
+     "PORT.dqs_burst",
+     "XI2.dqs_burst",
+     "dqs_burst",
+     "important_control"
+    ],
+    [
+     "XI2.en_q",
+     "PORT.tx_en_q",
+     "tx_en_q",
+     "important_control"
+    ],
+    [
+     "XI2.re_se_q",
+     "PORT.re_se_q",
+     "re_se_q",
+     "important_control"
+    ],
+    [
+     "XI2.pu_en_d<4:0>",
+     "PORT.pu_en_d<4:0>",
+     "pu_en_d<4:0>",
+     "important_control"
+    ],
+    [
+     "XI2.pd_dis_d<4:0>",
+     "PORT.pd_dis_d<4:0>",
+     "pd_dis_d<4:0>",
+     "important_control"
+    ],
+    [
+     "XI2.pu_en_s<4:0>",
+     "PORT.pu_en_s<4:0>",
+     "pu_en_s<4:0>",
+     "important_control"
+    ],
+    [
+     "XI2.pd_dis_s<4:0>",
+     "PORT.pd_dis_s<4:0>",
+     "pd_dis_s<4:0>",
+     "important_control"
+    ],
+    [
+     "XI2.dqs_e",
+     "PORT.dqs_e",
+     "dqs_e",
+     "important_control"
+    ],
+    [
+     "XI2.dqs_o",
+     "PORT.dqs_o",
+     "dqs_o",
+     "important_control"
+    ],
+    [
+     "XI2.dqsb_e",
+     "PORT.dqsb_e",
+     "dqsb_e",
+     "important_control"
+    ],
+    [
+     "XI2.dqsb_o",
+     "PORT.dqsb_o",
+     "dqsb_o",
+     "important_control"
+    ],
+    [
+     "PORT.odt_en",
+     "XI3.odt_en",
+     "odt_en",
+     "important_control"
+    ],
+    [
+     "PORT.dq_oe",
+     "XI3.dq_oe",
+     "dq_oe",
+     "important_control"
+    ],
+    [
+     "PORT.dqs_oe",
+     "XI3.dqs_oe",
+     "dqs_oe",
+     "important_control"
+    ],
+    [
+     "PORT.odt_code<2:0>",
+     "XI3.odt_code<2:0>",
+     "odt_code<2:0>",
+     "important_control"
+    ],
+    [
+     "XI3.pu_gb_d<2:0>",
+     "PORT.odt_pu_gb_d<2:0>",
+     "odt_pu_gb_d<2:0>",
+     "important_control"
+    ],
+    [
+     "XI3.pd_g_d<2:0>",
+     "PORT.odt_pd_g_d<2:0>",
+     "odt_pd_g_d<2:0>",
+     "important_control"
+    ],
+    [
+     "XI3.pu_gb_s<2:0>",
+     "PORT.odt_pu_gb_s<2:0>",
+     "odt_pu_gb_s<2:0>",
+     "important_control"
+    ],
+    [
+     "XI3.pd_g_s<2:0>",
+     "PORT.odt_pd_g_s<2:0>",
+     "odt_pd_g_s<2:0>",
+     "important_control"
+    ]
+   ],
+   "controls": {
+    "rx_en": "Rx enable",
+    "rx_mode_um": "Rx matched/unmatched",
+    "dqs_se": "SE DQS",
+    "vref_int_en": "internal VREF",
+    "tm_rxobs": "observe enable",
+    "tx_en": "RE receiver enable",
+    "re_se": "SE RE",
+    "dq_oe": "DQ drive enable (also ODT off for DQ)",
+    "dqs_oe": "DQS drive enable (also ODT off for DQS)",
+    "dqs_burst": "DQS toggle vs preamble level",
+    "odt_en": "termination enable",
+    "odt_code<2:0>": "termination strength",
+    "drv_ovr_en": "driver code source (ZQ / override)",
+    "pu_ovr<4:0>": "override PU code",
+    "pd_ovr<4:0>": "override PD code",
+    "zq_pu<4:0>": "ZQ PU code",
+    "zq_pd<4:0>": "ZQ PD code"
+   },
+   "notes": "All inputs are VDD-domain register/command bits; outputs ending in _q and all leg/ODT gate buses are VCCQ-domain. Switch-level checked (40 random vectors): leg enables = code & oe, ODT = odt_en & ~oe, DQS patterns, enable/mode decode."
+  },
+  "io_bias": {
+   "role": "Bias and reference block: current distribution, pre-driver slew bias, VREFQ generator/select",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "ib_dist",
+     "role": "ibias mirrors to ZQ comparators and VREF buffer"
+    },
+    {
+     "inst": "XI1",
+     "cell": "tx_sr_bias",
+     "role": "slew-rate bias vbp_sr/vbn_sr"
+    },
+    {
+     "inst": "XI2",
+     "cell": "rx_vref_gen",
+     "role": "internal VREF DAC + buffer, ext/int select"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.ibias",
+     "XI0.ibias",
+     "ibias",
+     "bias"
+    ],
+    [
+     "XI0.ib_zq",
+     "PORT.ib_zq",
+     "ib_zq",
+     "bias"
+    ],
+    [
+     "XI0.ib_vref",
+     "XI2.ib_vref",
+     "ib_vref",
+     "bias"
+    ],
+    [
+     "PORT.sr_code<1:0>",
+     "XI1.sr_code<1:0>",
+     "sr_code<1:0>",
+     "general_control"
+    ],
+    [
+     "XI1.vbp_sr",
+     "PORT.vbp_sr",
+     "vbp_sr",
+     "bias"
+    ],
+    [
+     "XI1.vbn_sr",
+     "PORT.vbn_sr",
+     "vbn_sr",
+     "bias"
+    ],
+    [
+     "PORT.vref_ext",
+     "XI2.vref_ext",
+     "vref_ext",
+     "reference"
+    ],
+    [
+     "PORT.vref_code<4:0>",
+     "XI2.vref_code<4:0>",
+     "vref_code<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.vint_q",
+     "XI2.vint_q",
+     "vint_q",
+     "general_control"
+    ],
+    [
+     "XI2.vref_rx",
+     "PORT.vref_rx",
+     "vref_rx",
+     "reference"
+    ]
+   ],
+   "controls": {
+    "sr_code<1:0>": "pre-driver slew",
+    "vref_code<4:0>": "internal VREF tap",
+    "vint_q": "internal (1) / external (0) VREF"
+   },
+   "notes": "Static; nothing here is on the high-speed path. vref_rx feeds all DQ receivers, the SE strobe reference and the SE RE reference."
+  },
+  "nf_io_top": {
+   "role": "Full NAND-flash DDR (Toggle/ONFI style) byte IO: 8 bidirectional DQ slices (pad ESD + main driver + ODT, VREF receiver with matched/unmatched strobe paths, DDR samplers, 1:4 deser, 2:1 serializer + pre-driver), bidirectional DQS/DQSB pads, DQS strobe receiver/distribution and DQS/2 word clock, RE/nRE read-clock path with in-path DCA and closed DCC loop, ZQ calibration feeding the driver strength codes, VREF/bias generation, control decode, pad and rail ESD",
+   "on_high_speed_path": true,
+   "inverting": null,
+   "children": [
+    {
+     "inst": "XI0",
+     "cell": "io_ctrl",
+     "role": "control decode / level shift / leg-enable and ODT gating"
+    },
+    {
+     "inst": "XI1",
+     "cell": "io_bias",
+     "role": "bias currents, slew bias, VREFQ"
+    },
+    {
+     "inst": "XI2",
+     "cell": "zq_cal",
+     "role": "ZQ calibration engine (PU SAR + PD tracking)"
+    },
+    {
+     "inst": "XI3",
+     "cell": "re_clk_path",
+     "role": "RE/nRE receiver, DCA, RPT chain, Tx clock tree"
+    },
+    {
+     "inst": "XI4",
+     "cell": "dcc_ctrl",
+     "role": "DCC detector, comparator, counter, lock detect"
+    },
+    {
+     "inst": "XI5",
+     "cell": "rx_dqs_path",
+     "role": "DQS/DQSB strobe receiver, matched trees and unmatched RPT chains"
+    },
+    {
+     "inst": "XI6",
+     "cell": "rx_ckdiv_slice",
+     "role": "DQS/2 divider, deser clocks, din_clk driver"
+    },
+    {
+     "inst": "XI7<7:0>",
+     "cell": "io_dq_slice",
+     "role": "DQ<7:0> bidirectional slices"
+    },
+    {
+     "inst": "XI8",
+     "cell": "io_dqs_slice",
+     "role": "DQS pad slice"
+    },
+    {
+     "inst": "XI9",
+     "cell": "io_dqs_slice",
+     "role": "DQSB pad slice"
+    },
+    {
+     "inst": "XI10",
+     "cell": "io_pad_in",
+     "role": "RE pad"
+    },
+    {
+     "inst": "XI11",
+     "cell": "io_pad_in",
+     "role": "nRE pad"
+    },
+    {
+     "inst": "XI12",
+     "cell": "io_pad_in",
+     "role": "VREF_EXT pad"
+    },
+    {
+     "inst": "XI13",
+     "cell": "esd_prim",
+     "role": "ZQ pad primary ESD"
+    },
+    {
+     "inst": "XI14",
+     "cell": "esd_rail",
+     "role": "rail clamps and VSS-VSSQ coupling"
+    },
+    {
+     "inst": "XI15",
+     "cell": "rx_obs_buf",
+     "role": "test observe of div_p"
+    }
+   ],
+   "signal_flow": [
+    [
+     "PORT.dq<7:0>",
+     "XI7<7:0>.pad",
+     "dq<7:0>",
+     "hs_data"
+    ],
+    [
+     "XI7<7:0>.pad",
+     "PORT.dq<7:0>",
+     "dq<7:0>",
+     "hs_data"
+    ],
+    [
+     "PORT.dqs",
+     "XI8.pad",
+     "dqs",
+     "clock"
+    ],
+    [
+     "PORT.dqsb",
+     "XI9.pad",
+     "dqsb",
+     "clock"
+    ],
+    [
+     "XI8.pad_rx",
+     "XI5.dqs",
+     "dqs_rx",
+     "clock"
+    ],
+    [
+     "XI9.pad_rx",
+     "XI5.dqsb",
+     "dqsb_rx",
+     "clock"
+    ],
+    [
+     "XI5.ckt_m<7:0>",
+     "XI7<7:0>.ckt_m",
+     "ckt_m<7:0>",
+     "clock"
+    ],
+    [
+     "XI5.ckc_m<7:0>",
+     "XI7<7:0>.ckc_m",
+     "ckc_m<7:0>",
+     "clock"
+    ],
+    [
+     "XI5.ckt_u<7:0>",
+     "XI7<7:0>.ckt_u",
+     "ckt_u<7:0>",
+     "clock"
+    ],
+    [
+     "XI5.ckc_u<7:0>",
+     "XI7<7:0>.ckc_u",
+     "ckc_u<7:0>",
+     "clock"
+    ],
+    [
+     "XI5.ckt_m<8>",
+     "XI6.ckt_m",
+     "ckt_m<8>",
+     "clock"
+    ],
+    [
+     "XI5.ckt_u<8>",
+     "XI6.ckt_u",
+     "ckt_u<8>",
+     "clock"
+    ],
+    [
+     "XI6.div_p",
+     "XI7<7:0>.div_p",
+     "div_p",
+     "clock"
+    ],
+    [
+     "XI6.div_n",
+     "XI7<7:0>.div_n",
+     "div_n",
+     "clock"
+    ],
+    [
+     "XI6.rclk_div",
+     "PORT.din_clk",
+     "din_clk",
+     "clock"
+    ],
+    [
+     "XI7<7:0>.rd<3:0>",
+     "PORT.din<31:0>",
+     "din<31:0>",
+     "word_rate_data"
+    ],
+    [
+     "PORT.vref_ext",
+     "XI12.pad",
+     "vref_ext",
+     "reference"
+    ],
+    [
+     "XI12.pad_rx",
+     "XI1.vref_ext",
+     "vref_ext_rx",
+     "reference"
+    ],
+    [
+     "XI1.vref_rx",
+     "XI7<7:0>.vref_rx",
+     "vref_rx",
+     "reference"
+    ],
+    [
+     "XI1.vref_rx",
+     "XI5.vref_rx",
+     "vref_rx",
+     "reference"
+    ],
+    [
+     "XI1.vref_rx",
+     "XI3.vref",
+     "vref_rx",
+     "reference"
+    ],
+    [
+     "PORT.re",
+     "XI10.pad",
+     "re",
+     "clock"
+    ],
+    [
+     "PORT.reb",
+     "XI11.pad",
+     "reb",
+     "clock"
+    ],
+    [
+     "XI10.pad_rx",
+     "XI3.re",
+     "re_rx",
+     "clock"
+    ],
+    [
+     "XI11.pad_rx",
+     "XI3.reb",
+     "reb_rx",
+     "clock"
+    ],
+    [
+     "XI3.ck_lf<7:0>",
+     "XI7<7:0>.ck_lf",
+     "ck_lf<7:0>",
+     "clock"
+    ],
+    [
+     "XI3.ck_lf<8>",
+     "XI8.ck_lf",
+     "ck_lf<8>",
+     "clock"
+    ],
+    [
+     "XI3.ck_lf<9>",
+     "XI9.ck_lf",
+     "ck_lf<9>",
+     "clock"
+    ],
+    [
+     "XI3.rclk_core",
+     "PORT.rclk_core",
+     "rclk_core",
+     "clock"
+    ],
+    [
+     "PORT.dout_e<7:0>",
+     "XI7<7:0>.de",
+     "dout_e<7:0>",
+     "word_rate_data"
+    ],
+    [
+     "PORT.dout_o<7:0>",
+     "XI7<7:0>.do",
+     "dout_o<7:0>",
+     "word_rate_data"
+    ],
+    [
+     "XI0.dqs_e",
+     "XI8.de",
+     "dqs_e",
+     "important_control"
+    ],
+    [
+     "XI0.dqs_o",
+     "XI8.do",
+     "dqs_o",
+     "important_control"
+    ],
+    [
+     "XI0.dqsb_e",
+     "XI9.de",
+     "dqsb_e",
+     "important_control"
+    ],
+    [
+     "XI0.dqsb_o",
+     "XI9.do",
+     "dqsb_o",
+     "important_control"
+    ],
+    [
+     "XI8.pad",
+     "PORT.dqs",
+     "dqs",
+     "clock"
+    ],
+    [
+     "XI9.pad",
+     "PORT.dqsb",
+     "dqsb",
+     "clock"
+    ],
+    [
+     "XI3.ck_dcc",
+     "XI4.ck_dcc",
+     "ck_dcc",
+     "clock"
+    ],
+    [
+     "XI4.dcc_code<4:0>",
+     "XI3.dcc_code<4:0>",
+     "dcc_code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI4.dcc_code<4:0>",
+     "PORT.dcc_code<4:0>",
+     "dcc_code<4:0>",
+     "status"
+    ],
+    [
+     "XI4.dcc_lock",
+     "PORT.dcc_lock",
+     "dcc_lock",
+     "status"
+    ],
+    [
+     "PORT.dcc_train",
+     "XI4.dcc_train",
+     "dcc_train",
+     "command"
+    ],
+    [
+     "PORT.dcc_rst_n",
+     "XI4.dcc_rst_n",
+     "dcc_rst_n",
+     "general_control"
+    ],
+    [
+     "PORT.cal_clk",
+     "XI4.cal_clk",
+     "cal_clk",
+     "clock"
+    ],
+    [
+     "PORT.cal_clk",
+     "XI2.zq_clk",
+     "cal_clk",
+     "clock"
+    ],
+    [
+     "PORT.zq",
+     "XI2.zq",
+     "zq",
+     "reference"
+    ],
+    [
+     "PORT.zq",
+     "XI13.pad",
+     "zq",
+     "reference"
+    ],
+    [
+     "PORT.zq_en",
+     "XI2.zq_en",
+     "zq_en",
+     "important_control"
+    ],
+    [
+     "PORT.zq_start",
+     "XI2.zq_start",
+     "zq_start",
+     "command"
+    ],
+    [
+     "PORT.zq_rst_n",
+     "XI2.zq_rst_n",
+     "zq_rst_n",
+     "general_control"
+    ],
+    [
+     "XI2.zq_done",
+     "PORT.zq_done",
+     "zq_done",
+     "status"
+    ],
+    [
+     "XI2.pu_code<4:0>",
+     "XI0.zq_pu<4:0>",
+     "zq_pu_code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI2.pd_code<4:0>",
+     "XI0.zq_pd<4:0>",
+     "zq_pd_code<4:0>",
+     "important_control"
+    ],
+    [
+     "XI2.pu_code<4:0>",
+     "PORT.zq_pu_code<4:0>",
+     "zq_pu_code<4:0>",
+     "status"
+    ],
+    [
+     "XI2.pd_code<4:0>",
+     "PORT.zq_pd_code<4:0>",
+     "zq_pd_code<4:0>",
+     "status"
+    ],
+    [
+     "PORT.drv_ovr_en",
+     "XI0.drv_ovr_en",
+     "drv_ovr_en",
+     "general_control"
+    ],
+    [
+     "PORT.pu_ovr<4:0>",
+     "XI0.pu_ovr<4:0>",
+     "pu_ovr<4:0>",
+     "general_control"
+    ],
+    [
+     "PORT.pd_ovr<4:0>",
+     "XI0.pd_ovr<4:0>",
+     "pd_ovr<4:0>",
+     "general_control"
+    ],
+    [
+     "XI0.pu_en_d<4:0>",
+     "XI7<7:0>.pu_en<4:0>",
+     "pu_en_d<4:0>",
+     "important_control"
+    ],
+    [
+     "XI0.pd_dis_d<4:0>",
+     "XI7<7:0>.pd_dis<4:0>",
+     "pd_dis_d<4:0>",
+     "important_control"
+    ],
+    [
+     "XI0.pu_en_s<4:0>",
+     "XI8.pu_en<4:0>",
+     "pu_en_s<4:0>",
+     "important_control"
+    ],
+    [
+     "XI0.pu_en_s<4:0>",
+     "XI9.pu_en<4:0>",
+     "pu_en_s<4:0>",
+     "important_control"
+    ],
+    [
+     "XI0.pd_dis_s<4:0>",
+     "XI8.pd_dis<4:0>",
+     "pd_dis_s<4:0>",
+     "important_control"
+    ],
+    [
+     "XI0.pd_dis_s<4:0>",
+     "XI9.pd_dis<4:0>",
+     "pd_dis_s<4:0>",
+     "important_control"
+    ],
+    [
+     "XI0.odt_pu_gb_d<2:0>",
+     "XI7<7:0>.odt_pu_gb<2:0>",
+     "odt_pu_gb_d<2:0>",
+     "important_control"
+    ],
+    [
+     "XI0.odt_pd_g_d<2:0>",
+     "XI7<7:0>.odt_pd_g<2:0>",
+     "odt_pd_g_d<2:0>",
+     "important_control"
+    ],
+    [
+     "XI0.odt_pu_gb_s<2:0>",
+     "XI8.odt_pu_gb<2:0>",
+     "odt_pu_gb_s<2:0>",
+     "important_control"
+    ],
+    [
+     "XI0.odt_pd_g_s<2:0>",
+     "XI9.odt_pd_g<2:0>",
+     "odt_pd_g_s<2:0>",
+     "important_control"
+    ],
+    [
+     "XI1.vbp_sr",
+     "XI7<7:0>.vbp_sr",
+     "vbp_sr",
+     "bias"
+    ],
+    [
+     "XI1.vbn_sr",
+     "XI7<7:0>.vbn_sr",
+     "vbn_sr",
+     "bias"
+    ],
+    [
+     "XI1.vbp_sr",
+     "XI8.vbp_sr",
+     "vbp_sr",
+     "bias"
+    ],
+    [
+     "XI1.ib_zq",
+     "XI2.ib_zq",
+     "ib_zq",
+     "bias"
+    ],
+    [
+     "PORT.ibias",
+     "XI1.ibias",
+     "ibias",
+     "bias"
+    ],
+    [
+     "PORT.rx_en",
+     "XI0.rx_en",
+     "rx_en",
+     "important_control"
+    ],
+    [
+     "XI0.rx_en_q",
+     "XI5.en_q",
+     "rx_en_q",
+     "important_control"
+    ],
+    [
+     "XI0.rx_en_q",
+     "XI7<7:0>.en_q",
+     "rx_en_q",
+     "important_control"
+    ],
+    [
+     "PORT.rx_mode_um",
+     "XI0.rx_mode_um",
+     "rx_mode_um",
+     "important_control"
+    ],
+    [
+     "XI0.selu",
+     "XI7<7:0>.selu",
+     "selu",
+     "important_control"
+    ],
+    [
+     "XI0.selu",
+     "XI6.selu",
+     "selu",
+     "important_control"
+    ],
+    [
+     "XI0.en_m",
+     "XI5.en_m",
+     "en_m",
+     "important_control"
+    ],
+    [
+     "XI0.en_u",
+     "XI5.en_u",
+     "en_u",
+     "important_control"
+    ],
+    [
+     "PORT.dqs_se",
+     "XI0.dqs_se",
+     "dqs_se",
+     "important_control"
+    ],
+    [
+     "XI0.dqs_se_q",
+     "XI5.dqs_se_q",
+     "dqs_se_q",
+     "important_control"
+    ],
+    [
+     "XI0.dqs_dif_q",
+     "XI5.dqs_dif_q",
+     "dqs_dif_q",
+     "important_control"
+    ],
+    [
+     "PORT.vref_int_en",
+     "XI0.vref_int_en",
+     "vref_int_en",
+     "general_control"
+    ],
+    [
+     "XI0.vint_q",
+     "XI1.vint_q",
+     "vint_q",
+     "general_control"
+    ],
+    [
+     "PORT.vref_code<4:0>",
+     "XI1.vref_code<4:0>",
+     "vref_code<4:0>",
+     "important_control"
+    ],
+    [
+     "PORT.dqs_dly<2:0>",
+     "XI5.dqs_dly<2:0>",
+     "dqs_dly<2:0>",
+     "general_control"
+    ],
+    [
+     "PORT.dq_dskw<23:0>",
+     "XI7<7:0>.dskw<2:0>",
+     "dq_dskw<23:0>",
+     "general_control"
+    ],
+    [
+     "PORT.rx_rst_n",
+     "XI6.rst_n",
+     "rx_rst_n",
+     "general_control"
+    ],
+    [
+     "PORT.tm_rxobs",
+     "XI0.tm_rxobs",
+     "tm_rxobs",
+     "test_digital"
+    ],
+    [
+     "XI0.obs_en",
+     "XI15.obs_en",
+     "obs_en",
+     "test_digital"
+    ],
+    [
+     "XI6.div_p",
+     "XI15.div_p",
+     "div_p",
+     "clock"
+    ],
+    [
+     "XI15.rx_obs",
+     "PORT.rx_obs",
+     "rx_obs",
+     "test_digital"
+    ],
+    [
+     "PORT.tx_en",
+     "XI0.tx_en",
+     "tx_en",
+     "important_control"
+    ],
+    [
+     "XI0.tx_en_q",
+     "XI3.en_q",
+     "tx_en_q",
+     "important_control"
+    ],
+    [
+     "PORT.re_se",
+     "XI0.re_se",
+     "re_se",
+     "important_control"
+    ],
+    [
+     "XI0.re_se_q",
+     "XI3.re_se_q",
+     "re_se_q",
+     "important_control"
+    ],
+    [
+     "XI0.re_dif_q",
+     "XI3.re_dif_q",
+     "re_dif_q",
+     "important_control"
+    ],
+    [
+     "PORT.dq_oe",
+     "XI0.dq_oe",
+     "dq_oe",
+     "important_control"
+    ],
+    [
+     "PORT.dqs_oe",
+     "XI0.dqs_oe",
+     "dqs_oe",
+     "important_control"
+    ],
+    [
+     "PORT.dqs_burst",
+     "XI0.dqs_burst",
+     "dqs_burst",
+     "important_control"
+    ],
+    [
+     "PORT.sr_code<1:0>",
+     "XI1.sr_code<1:0>",
+     "sr_code<1:0>",
+     "general_control"
+    ],
+    [
+     "PORT.odt_en",
+     "XI0.odt_en",
+     "odt_en",
+     "important_control"
+    ],
+    [
+     "PORT.odt_code<2:0>",
+     "XI0.odt_code<2:0>",
+     "odt_code<2:0>",
+     "important_control"
+    ],
+    [
+     "PORT.vccq",
+     "XI14.vccq",
+     "vccq",
+     "power"
+    ],
+    [
+     "PORT.vdd",
+     "XI14.vdd",
+     "vdd",
+     "power"
+    ]
+   ],
+   "controls": {
+    "rx_en": "Rx enable: DQ/DQS receivers, strobe distribution",
+    "rx_mode_um": "0 = matched Rx path, 1 = unmatched",
+    "dqs_se": "single-ended DQS",
+    "vref_int_en": "internal VREF DAC (vs vref_ext)",
+    "vref_code<4:0>": "internal VREF level",
+    "dqs_dly<2:0>": "Rx strobe delay trim",
+    "dq_dskw<23:0>": "per-bit Rx deskew (3 bits per DQ)",
+    "rx_rst_n": "DQS/2 divider reset (word alignment)",
+    "tx_en": "RE receiver enable",
+    "re_se": "single-ended RE",
+    "dq_oe": "DQ driver enable (and DQ ODT off)",
+    "dqs_oe": "DQS/DQSB driver enable (and DQS ODT off)",
+    "dqs_burst": "DQS toggling vs preamble/postamble level",
+    "sr_code<1:0>": "pre-driver slew",
+    "odt_en": "termination enable",
+    "odt_code<2:0>": "termination strength",
+    "zq_en": "ZQ engine enable",
+    "zq_start": "start ZQ PU SAR (command)",
+    "zq_rst_n": "ZQ reset",
+    "drv_ovr_en": "driver strength from override instead of ZQ",
+    "pu_ovr<4:0>": "override PU code",
+    "pd_ovr<4:0>": "override PD code",
+    "dcc_train": "run DCC training (command)",
+    "dcc_rst_n": "DCC code reset",
+    "tm_rxobs": "test observe enable"
+   },
+   "notes": "Bidirectional pads: dq<7:0>/dqs/dqsb appear as inputs (write data/strobe) and outputs (read data/strobe). Two Rx paths coexist, chosen by rx_mode_um: matched (DQ through dq_match_dly, DQS through H-trees) and unmatched (DQ direct, DQS through the 9-tap repeater chain, tap n -> DQ<n>). Feedback loops: DCC (re_clk_path XI3 -> ck_dcc -> dcc_ctrl XI4 -> dcc_code -> XI3), ZQ PU SAR and PD tracking inside XI2, and the ZQ code path XI2 -> XI0 -> leg enables of XI7/XI8/XI9 (open loop at run time). Unused by design: ckc_m<8>, ckc_u<8> (dummy leaf/tap of the complement strobe). MM0/MM1 are MOS decaps. Not on the HS path: io_ctrl, io_bias, zq_cal, dcc_ctrl, esd_rail, esd_prim, rx_obs_buf."
+  }
+ }
+}

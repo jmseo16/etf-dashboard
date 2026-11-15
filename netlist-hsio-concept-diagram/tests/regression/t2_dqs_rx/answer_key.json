@@ -1,0 +1,651 @@
+{
+ "top": "dqs_dq_rx_top",
+ "supplies": [
+  "vdd",
+  "vddq"
+ ],
+ "grounds": [
+  "vss"
+ ],
+ "ports": {
+  "dqs_t": {"class": "clock_in", "function": "DQS strobe, true (differential with dqs_c)"},
+  "dqs_c": {"class": "clock_in", "function": "DQS strobe, complement (DQSB)"},
+  "dq<7:0>": {"class": "hs_data_in", "function": "single-ended DQ data pads, compared against VREFDQ"},
+  "ibias": {"class": "bias", "function": "50 uA reference current -> vbn_c / vbn_q tail biases"},
+  "rx_en": {"class": "general_control", "function": "enables bias, DQ preamp/VGA tails and per-bit DQS local clock buffers"},
+  "dqs_en": {"class": "general_control", "function": "enables DQS amp and C2C tails"},
+  "vref_en": {"class": "general_control", "function": "enables VREFDQ ladder (header) and VREF buffer"},
+  "vref_code<3:0>": {"class": "important_control", "function": "VREFDQ level: (40+code)/64 * VDDQ (0.625..0.859 VDDQ)"},
+  "vga_gain<2:0>": {"class": "important_control", "function": "VGA gain code shared by all 8 bits (switches parallel degeneration R 4k/2k/1k)"},
+  "wdca<3:0>": {"class": "important_control", "function": "WDCA duty adjust: <3> sign (1 = widen DQS_t high), <2:0> magnitude (1/2/4 weighted skew legs)"},
+  "wdca_en": {"class": "general_control", "function": "WDCA enable (0 = no skew legs active)"},
+  "dq_r<7:0>": {"class": "hs_data_out", "function": "per-bit data sampled on DQS_t rising edge (even)"},
+  "dq_f<7:0>": {"class": "hs_data_out", "function": "per-bit data sampled on DQS_c rising edge = DQS_t falling (odd)"},
+  "vdd": {"class": "power", "function": "0.8 V core supply"},
+  "vddq": {"class": "power", "function": "1.1 V IO supply"},
+  "vss": {"class": "power", "function": "ground"}
+ },
+ "cells": {
+  "dqs_dq_rx_top": {
+   "role": "x8 DQ receive path with DQS strobe buffer (WDCA), unmatched strobe tree and per-bit samplers",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "rx_bias", "role": "bias generator: NMOS diode + PMOS mirror to vddq-domain NMOS diode"},
+    {"inst": "xi1", "cell": "vrefdq_gen", "role": "VREFDQ DAC: 16-tap ladder + 4:16 decoder + PMOS tap switches + unity-gain buffer"},
+    {"inst": "xi2", "cell": "dqs_rx_wdca", "role": "DQS/DQSB input buffer with built-in WDCA duty-cycle adjuster"},
+    {"inst": "xi3", "cell": "dqs_clk_tree", "role": "unmatched DQS/DQSB repeater (RPT) distribution tree with RC wire segments and per-bit local buffers"},
+    {"inst": "xi4", "cell": "dq_rx_nibble", "role": "4-bit DQ receiver group (nibble)"},
+    {"inst": "xi5", "cell": "dq_rx_nibble", "role": "4-bit DQ receiver group (nibble)"}
+   ],
+   "signal_flow": [
+    ["PORT.dqs_t", "xi2.dqs_t", "dqs_t", "strobe"],
+    ["PORT.dqs_c", "xi2.dqs_c", "dqs_c", "strobe"],
+    ["xi2.dqs_t_i", "xi3.dqs_t_i", "dqs_t_i", "strobe"],
+    ["xi2.dqs_c_i", "xi3.dqs_c_i", "dqs_c_i", "strobe"],
+    ["xi3.dqs_t_b<0>", "xi4.dqs_t_b<0>", "dqs_t_b<0>", "strobe"],
+    ["xi3.dqs_c_b<0>", "xi4.dqs_c_b<0>", "dqs_c_b<0>", "strobe"],
+    ["xi3.dqs_t_b<3>", "xi4.dqs_t_b<3>", "dqs_t_b<3>", "strobe"],
+    ["xi3.dqs_t_b<4>", "xi5.dqs_t_b<0>", "dqs_t_b<4>", "strobe"],
+    ["xi3.dqs_c_b<4>", "xi5.dqs_c_b<0>", "dqs_c_b<4>", "strobe"],
+    ["xi3.dqs_t_b<7>", "xi5.dqs_t_b<3>", "dqs_t_b<7>", "strobe"],
+    ["PORT.dq<0>", "xi4.dq<0>", "dq<0>", "hs_data"],
+    ["PORT.dq<3>", "xi4.dq<3>", "dq<3>", "hs_data"],
+    ["PORT.dq<4>", "xi5.dq<0>", "dq<4>", "hs_data"],
+    ["PORT.dq<7>", "xi5.dq<3>", "dq<7>", "hs_data"],
+    ["xi4.dq_r<0>", "PORT.dq_r<0>", "dq_r<0>", "hs_data"],
+    ["xi4.dq_f<0>", "PORT.dq_f<0>", "dq_f<0>", "hs_data"],
+    ["xi5.dq_r<3>", "PORT.dq_r<7>", "dq_r<7>", "hs_data"],
+    ["xi5.dq_f<3>", "PORT.dq_f<7>", "dq_f<7>", "hs_data"],
+    ["xi1.vref_buf", "xi4.vref_buf", "vref_buf", "reference"],
+    ["xi1.vref_buf", "xi5.vref_buf", "vref_buf", "reference"],
+    ["PORT.ibias", "xi0.ibias", "ibias", "bias"],
+    ["xi0.vbn_q", "xi1.vbn_q", "vbn_q", "bias"],
+    ["xi0.vbn_q", "xi2.vbn_q", "vbn_q", "bias"],
+    ["xi0.vbn_c", "xi2.vbn_c", "vbn_c", "bias"],
+    ["xi0.vbn_q", "xi4.vbn_q", "vbn_q", "bias"],
+    ["xi0.vbn_c", "xi4.vbn_c", "vbn_c", "bias"],
+    ["xi0.vbn_q", "xi5.vbn_q", "vbn_q", "bias"],
+    ["xi0.vbn_c", "xi5.vbn_c", "vbn_c", "bias"],
+    ["PORT.vref_code<3>", "xi1.vref_code<3>", "vref_code<3>", "control"],
+    ["PORT.vref_en", "xi1.vref_en", "vref_en", "control"],
+    ["PORT.vga_gain<2>", "xi4.vga_gain<2>", "vga_gain<2>", "control"],
+    ["PORT.vga_gain<2>", "xi5.vga_gain<2>", "vga_gain<2>", "control"],
+    ["PORT.wdca<3>", "xi2.wdca<3>", "wdca<3>", "control"],
+    ["PORT.wdca_en", "xi2.wdca_en", "wdca_en", "control"],
+    ["PORT.dqs_en", "xi2.dqs_en", "dqs_en", "control"],
+    ["PORT.rx_en", "xi0.en", "rx_en", "control"],
+    ["PORT.rx_en", "xi3.rx_en", "rx_en", "control"],
+    ["PORT.rx_en", "xi4.rx_en", "rx_en", "control"],
+    ["PORT.rx_en", "xi5.rx_en", "rx_en", "control"]
+   ],
+   "controls": {
+    "wdca<3:0>": "DQS duty-cycle adjust (sign-magnitude)",
+    "wdca_en": "WDCA enable",
+    "vga_gain<2:0>": "DQ VGA gain (all bits)",
+    "vref_code<3:0>": "VREFDQ level",
+    "vref_en": "VREF enable",
+    "rx_en": "receiver + local strobe enable",
+    "dqs_en": "DQS buffer enable"
+   },
+   "notes": "xi4 = lower nibble DQ<3:0>, xi5 = upper nibble DQ<7:4> (its local pins <3:0> map to top bits <7:4>). Strobe path xi2 -> xi3 is not delay-matched to the DQ path. xi0 (bias) and xi1 (VREFDQ) are not on the HS path. [direct primitives in this cell: 2 C]"
+  },
+  "dqs_rx_wdca": {
+   "role": "DQS/DQSB input buffer with built-in WDCA duty-cycle adjuster",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "rx_esd", "role": "pad ESD clamps + CDM series resistor"},
+    {"inst": "xi1", "cell": "rx_esd", "role": "pad ESD clamps + CDM series resistor"},
+    {"inst": "xi2", "cell": "dqs_amp", "role": "DQS differential input amplifier (resistive-load NMOS pair)"},
+    {"inst": "xi3", "cell": "dqs_c2c", "role": "differential-to-CMOS converter (dual 5T OTA + inverters)"},
+    {"inst": "xi4", "cell": "wdca_dec", "role": "WDCA code decoder (sign/magnitude -> PU/PD leg enables)"},
+    {"inst": "xi5", "cell": "wdca_stage", "role": "WDCA duty-adjust inverter (binary-weighted switchable PU/PD skew legs)"},
+    {"inst": "xi6", "cell": "wdca_stage", "role": "WDCA duty-adjust inverter (binary-weighted switchable PU/PD skew legs)"}
+   ],
+   "signal_flow": [
+    ["PORT.dqs_t", "xi0.pad", "dqs_t", "strobe"],
+    ["xi0.core", "xi2.inp", "dqs_t_p", "strobe"],
+    ["PORT.dqs_c", "xi1.pad", "dqs_c", "strobe"],
+    ["xi1.core", "xi2.inn", "dqs_c_p", "strobe"],
+    ["xi2.outp", "xi3.inp", "da_p", "strobe"],
+    ["xi2.outn", "xi3.inn", "da_n", "strobe"],
+    ["xi3.outtb", "xi5.in", "dtb", "strobe"],
+    ["xi3.outcb", "xi6.in", "dcb", "strobe"],
+    ["xi5.out", "PORT.dqs_t_i", "dqs_t_i", "strobe"],
+    ["xi6.out", "PORT.dqs_c_i", "dqs_c_i", "strobe"],
+    ["PORT.wdca<3>", "xi4.wdca<3>", "wdca<3>", "control"],
+    ["PORT.wdca_en", "xi4.wdca_en", "wdca_en", "control"],
+    ["xi4.up_b<2>", "xi5.pdb<2>", "up_b<2>", "control"],
+    ["xi4.dn<2>", "xi5.nen<2>", "dn<2>", "control"],
+    ["xi4.dn_b<2>", "xi6.pdb<2>", "dn_b<2>", "control"],
+    ["xi4.up<2>", "xi6.nen<2>", "up<2>", "control"],
+    ["PORT.vbn_q", "xi2.vbn", "vbn_q", "bias"],
+    ["PORT.vbn_c", "xi3.vbn", "vbn_c", "bias"],
+    ["PORT.dqs_en", "xi2.en", "dqs_en", "control"],
+    ["PORT.dqs_en", "xi3.en", "dqs_en", "control"],
+    ["PORT.dqs_t_i", "mp0.g", "dqs_t_i", "strobe"]
+   ],
+   "controls": {
+    "wdca<3:0>": "sign/magnitude duty adjust",
+    "wdca_en": "WDCA enable",
+    "dqs_en": "amp/C2C enable"
+   },
+   "notes": "dqs_amp (vddq) -> dqs_c2c (inverting, CMOS vdd) -> wdca_stage (inverting) => dqs_t_i has DQS_t polarity. WDCA is asymmetric by design: t rail gets PU legs on sign=1 / PD legs on sign=0; c rail gets the opposite, so both rails shift the crossing the same way. mp0/mn0/mp1/mn1 are weak cross-coupled keepers on dqs_t_i/dqs_c_i. [direct primitives in this cell: 4 MOS]"
+  },
+  "rx_esd": {
+   "role": "pad ESD clamps + CDM series resistor",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.pad", "mn0.d", "pad", "hs_data"],
+    ["PORT.pad", "r0.p", "pad", "hs_data"],
+    ["r0.n", "PORT.core", "core", "hs_data"]
+   ],
+   "controls": {},
+   "notes": "used on DQS_t, DQS_c and each DQ [direct primitives in this cell: 3 MOS, 1 R]"
+  },
+  "dqs_amp": {
+   "role": "DQS differential input amplifier (resistive-load NMOS pair)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.inp", "mn2.g", "inp", "strobe"],
+    ["mn2.d", "PORT.outn", "outn", "strobe"],
+    ["PORT.inn", "mn3.g", "inn", "strobe"],
+    ["mn3.d", "PORT.outp", "outp", "strobe"],
+    ["PORT.vbn", "mn0.g", "vbn", "bias"],
+    ["PORT.en", "mn1.g", "en", "control"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 4 MOS, 2 R]"
+  },
+  "dqs_c2c": {
+   "role": "differential-to-CMOS converter (dual 5T OTA + inverters)",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    ["PORT.inp", "mn3.g", "inp", "strobe"],
+    ["PORT.inn", "mn4.g", "inn", "strobe"],
+    ["mn4.d", "mp4.g", "o_t", "strobe"],
+    ["mp4.d", "PORT.outtb", "outtb", "strobe"],
+    ["PORT.inn", "mn5.g", "inn", "strobe"],
+    ["PORT.inp", "mn6.g", "inp", "strobe"],
+    ["mn6.d", "mp5.g", "o_c", "strobe"],
+    ["mp5.d", "PORT.outcb", "outcb", "strobe"],
+    ["PORT.vbn", "mn0.g", "vbn", "bias"],
+    ["PORT.en", "mn2.g", "en", "control"]
+   ],
+   "controls": {},
+   "notes": "o_t follows inp, o_c follows inn; outputs are inverted (outtb = ~DQS_t); weak cross-coupled inverters mp6/mn9, mp7/mn10. [direct primitives in this cell: 19 MOS]"
+  },
+  "wdca_dec": {
+   "role": "WDCA code decoder (sign/magnitude -> PU/PD leg enables)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "inv_x1", "role": "inverter"},
+    {"inst": "xi1<2:0>", "cell": "and3_x1", "role": "AND3 (nand3 + inv)"},
+    {"inst": "xi2<2:0>", "cell": "inv_x1", "role": "inverter"},
+    {"inst": "xi3<2:0>", "cell": "and3_x1", "role": "AND3 (nand3 + inv)"},
+    {"inst": "xi4<2:0>", "cell": "inv_x1", "role": "inverter"}
+   ],
+   "signal_flow": [
+    ["PORT.wdca<3>", "xi1<2>.b", "wdca<3>", "control"],
+    ["PORT.wdca<3>", "xi0.a", "wdca<3>", "control"],
+    ["xi0.y", "xi3<2>.b", "sgn_b", "control"],
+    ["PORT.wdca<2>", "xi1<2>.c", "wdca<2>", "control"],
+    ["PORT.wdca_en", "xi1<2>.a", "wdca_en", "control"],
+    ["xi1<2>.y", "PORT.up<2>", "up<2>", "control"],
+    ["xi1<2>.y", "xi2<2>.a", "up<2>", "control"],
+    ["xi2<2>.y", "PORT.up_b<2>", "up_b<2>", "control"],
+    ["xi3<2>.y", "PORT.dn<2>", "dn<2>", "control"],
+    ["xi4<2>.y", "PORT.dn_b<2>", "dn_b<2>", "control"]
+   ],
+   "controls": {
+    "wdca<3>": "sign",
+    "wdca<2:0>": "magnitude",
+    "wdca_en": "enable"
+   },
+   "notes": "static decoder; up<k> = en & sign & mag<k>; dn<k> = en & ~sign & mag<k>; *_b are complements."
+  },
+  "wdca_stage": {
+   "role": "WDCA duty-adjust inverter (binary-weighted switchable PU/PD skew legs)",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    ["PORT.in", "mp0.g", "in", "strobe"],
+    ["mp0.d", "PORT.out", "out", "strobe"],
+    ["PORT.in", "mp1.g", "in", "strobe"],
+    ["PORT.pdb<0>", "mp2.g", "pdb<0>", "control"],
+    ["PORT.nen<0>", "mn2.g", "nen<0>", "control"]
+   ],
+   "controls": {
+    "pdb<2:0>": "active-low enables of extra pull-up legs (m=1,2,4): faster rise -> wider output high",
+    "nen<2:0>": "active-high enables of extra pull-down legs (m=1,2,4): faster fall -> narrower output high"
+   },
+   "notes": "[direct primitives in this cell: 14 MOS]"
+  },
+  "dqs_clk_tree": {
+   "role": "unmatched DQS/DQSB repeater (RPT) distribution tree with RC wire segments and per-bit local buffers",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "rpt_stage", "role": "differential CMOS repeater (2 inverters per rail, cross-coupled midpoints)"},
+    {"inst": "xi1", "cell": "rpt_stage", "role": "differential CMOS repeater (2 inverters per rail, cross-coupled midpoints)"},
+    {"inst": "xi2", "cell": "rpt_stage", "role": "differential CMOS repeater (2 inverters per rail, cross-coupled midpoints)"},
+    {"inst": "xi3", "cell": "rpt_stage", "role": "differential CMOS repeater (2 inverters per rail, cross-coupled midpoints)"},
+    {"inst": "xi4", "cell": "rpt_stage", "role": "differential CMOS repeater (2 inverters per rail, cross-coupled midpoints)"},
+    {"inst": "xi5<7:0>", "cell": "dqs_lcb", "role": "per-bit local strobe buffer with enable gating"}
+   ],
+   "signal_flow": [
+    ["PORT.dqs_t_i", "xi0.in_t", "dqs_t_i", "strobe"],
+    ["PORT.dqs_c_i", "xi0.in_c", "dqs_c_i", "strobe"],
+    ["xi0.out_t", "r0.p", "trk_t", "strobe"],
+    ["r0.n", "xi1.in_t", "lw_t", "strobe"],
+    ["xi1.out_t", "r2.p", "l1_t", "strobe"],
+    ["r2.n", "xi2.in_t", "lw2_t", "strobe"],
+    ["xi2.out_t", "r4<3>.p", "l2_t", "strobe"],
+    ["r4<3>.n", "xi5<3>.in_t", "tp_t<3>", "strobe"],
+    ["r4<0>.n", "xi5<0>.in_t", "tp_t<0>", "strobe"],
+    ["xi0.out_c", "r1.p", "trk_c", "strobe"],
+    ["xi2.out_c", "r5<3>.p", "l2_c", "strobe"],
+    ["xi0.out_t", "r6.p", "trk_t", "strobe"],
+    ["r6.n", "xi3.in_t", "rw_t", "strobe"],
+    ["xi3.out_t", "r8.p", "r1_t", "strobe"],
+    ["r8.n", "xi4.in_t", "rw2_t", "strobe"],
+    ["xi4.out_t", "r10<4>.p", "r2_t", "strobe"],
+    ["r10<4>.n", "xi5<4>.in_t", "tp_t<4>", "strobe"],
+    ["r10<7>.n", "xi5<7>.in_t", "tp_t<7>", "strobe"],
+    ["xi5<0>.out_t", "PORT.dqs_t_b<0>", "dqs_t_b<0>", "strobe"],
+    ["xi5<0>.out_c", "PORT.dqs_c_b<0>", "dqs_c_b<0>", "strobe"],
+    ["xi5<7>.out_t", "PORT.dqs_t_b<7>", "dqs_t_b<7>", "strobe"],
+    ["xi5<7>.out_c", "PORT.dqs_c_b<7>", "dqs_c_b<7>", "strobe"],
+    ["PORT.rx_en", "xi5<0>.en", "rx_en", "control"]
+   ],
+   "controls": {
+    "rx_en": "gates all 8 local clock buffers (outputs low when 0)"
+   },
+   "notes": "xi0 trunk RPT; left branch xi1, xi2 -> spine taps tp_*<3>,<2>,<1>,<0> (bit 3 nearest); right branch xi3, xi4 -> taps tp_*<4>..<7> (bit 4 nearest). Each spine segment is 25 Ohm + 12 fF; inter-RPT wires 60 Ohm + 25 fF. Intentionally unmatched: no delay compensation, bit-to-bit strobe skew from the RC spine. All stages non-inverting. [direct primitives in this cell: 24 C, 24 R]"
+  },
+  "rpt_stage": {
+   "role": "differential CMOS repeater (2 inverters per rail, cross-coupled midpoints)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.in_t", "mp0.g", "in_t", "strobe"],
+    ["mp0.d", "mp1.g", "n1", "strobe"],
+    ["mp1.d", "PORT.out_t", "out_t", "strobe"],
+    ["PORT.in_c", "mp2.g", "in_c", "strobe"],
+    ["mp2.d", "mp3.g", "n2", "strobe"],
+    ["mp3.d", "PORT.out_c", "out_c", "strobe"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 12 MOS]"
+  },
+  "dqs_lcb": {
+   "role": "per-bit local strobe buffer with enable gating",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "nand2_x1", "role": "NAND2"},
+    {"inst": "xi1", "cell": "nand2_x1", "role": "NAND2"}
+   ],
+   "signal_flow": [
+    ["PORT.in_t", "xi0.a", "in_t", "strobe"],
+    ["PORT.en", "xi0.b", "en", "control"],
+    ["xi0.y", "mp0.g", "n1", "strobe"],
+    ["mp0.d", "PORT.out_t", "out_t", "strobe"],
+    ["PORT.in_c", "xi1.a", "in_c", "strobe"],
+    ["xi1.y", "mp1.g", "n2", "strobe"],
+    ["mp1.d", "PORT.out_c", "out_c", "strobe"]
+   ],
+   "controls": {
+    "en": "rx_en; both outputs forced low (samplers in precharge) when 0"
+   },
+   "notes": "[direct primitives in this cell: 4 MOS]"
+  },
+  "nand2_x1": {
+   "role": "NAND2",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    ["PORT.a", "mp0.g", "a", "strobe"],
+    ["mp0.d", "PORT.y", "y", "strobe"]
+   ],
+   "controls": {},
+   "notes": "on the strobe path inside dqs_lcb; also used in vref_dec4to16 (not HS). [direct primitives in this cell: 4 MOS]"
+  },
+  "dq_rx_nibble": {
+   "role": "4-bit DQ receiver group (nibble)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0<3:0>", "cell": "dq_rx_bit", "role": "per-bit DQ receiver: ESD -> preamp -> VGA -> rise/fall StrongARM samplers"}
+   ],
+   "signal_flow": [
+    ["PORT.dq<0>", "xi0<0>.dq", "dq<0>", "hs_data"],
+    ["PORT.dqs_t_b<0>", "xi0<0>.dqs_t_b", "dqs_t_b<0>", "strobe"],
+    ["PORT.dqs_c_b<0>", "xi0<0>.dqs_c_b", "dqs_c_b<0>", "strobe"],
+    ["xi0<0>.dq_r", "PORT.dq_r<0>", "dq_r<0>", "hs_data"],
+    ["xi0<0>.dq_f", "PORT.dq_f<0>", "dq_f<0>", "hs_data"],
+    ["PORT.dq<3>", "xi0<3>.dq", "dq<3>", "hs_data"],
+    ["PORT.dqs_t_b<3>", "xi0<3>.dqs_t_b", "dqs_t_b<3>", "strobe"],
+    ["xi0<3>.dq_r", "PORT.dq_r<3>", "dq_r<3>", "hs_data"],
+    ["xi0<3>.dq_f", "PORT.dq_f<3>", "dq_f<3>", "hs_data"],
+    ["PORT.vref_buf", "xi0<0>.vref_buf", "vref_buf", "reference"],
+    ["PORT.vga_gain<2>", "xi0<0>.vga_gain<2>", "vga_gain<2>", "control"],
+    ["PORT.rx_en", "xi0<0>.rx_en", "rx_en", "control"]
+   ],
+   "controls": {},
+   "notes": "4 identical dq_rx_bit instances; local decaps c0..c2 on vref_buf and biases. [direct primitives in this cell: 3 C]"
+  },
+  "dq_rx_bit": {
+   "role": "per-bit DQ receiver: ESD -> preamp -> VGA -> rise/fall StrongARM samplers",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "rx_esd", "role": "pad ESD clamps + CDM series resistor"},
+    {"inst": "xi1", "cell": "dq_preamp", "role": "DQ preamp: single-ended DQ vs VREF, NMOS pair, resistive loads (vddq)"},
+    {"inst": "xi2", "cell": "dq_vga", "role": "VGA: source-degenerated diff pair with code-switched degeneration R"},
+    {"inst": "xi3", "cell": "dq_sampler", "role": "sampler: StrongARM SA + SR latch + output driver"},
+    {"inst": "xi4", "cell": "dq_sampler", "role": "sampler: StrongARM SA + SR latch + output driver"}
+   ],
+   "signal_flow": [
+    ["PORT.dq", "xi0.pad", "dq", "hs_data"],
+    ["xi0.core", "xi1.inp", "dq_i", "hs_data"],
+    ["PORT.vref_buf", "r0.p", "vref_buf", "reference"],
+    ["r0.n", "xi1.inn", "vref_f", "reference"],
+    ["xi1.outp", "xi2.inp", "pa_p", "hs_data"],
+    ["xi1.outn", "xi2.inn", "pa_n", "hs_data"],
+    ["xi2.outp", "xi3.inp", "va_p", "hs_data"],
+    ["xi2.outn", "xi3.inn", "va_n", "hs_data"],
+    ["xi2.outp", "xi4.inp", "va_p", "hs_data"],
+    ["xi2.outn", "xi4.inn", "va_n", "hs_data"],
+    ["PORT.dqs_t_b", "xi3.clk", "dqs_t_b", "strobe"],
+    ["PORT.dqs_c_b", "xi4.clk", "dqs_c_b", "strobe"],
+    ["xi3.q", "PORT.dq_r", "dq_r", "hs_data"],
+    ["xi4.q", "PORT.dq_f", "dq_f", "hs_data"],
+    ["PORT.vga_gain<0>", "xi2.g<0>", "vga_gain<0>", "control"],
+    ["PORT.vbn_q", "xi1.vbn", "vbn_q", "bias"],
+    ["PORT.vbn_c", "xi2.vbn", "vbn_c", "bias"],
+    ["PORT.rx_en", "xi1.en", "rx_en", "control"],
+    ["PORT.rx_en", "xi2.en", "rx_en", "control"]
+   ],
+   "controls": {
+    "vga_gain<2:0>": "VGA degeneration switches",
+    "rx_en": "preamp/VGA tail enable"
+   },
+   "notes": "VREF per bit filtered by r0 5k + c0 200f. xi3 = rising-edge sampler (dqs_t_b), xi4 = falling-edge sampler (dqs_c_b). [direct primitives in this cell: 1 C, 1 R]"
+  },
+  "dq_preamp": {
+   "role": "DQ preamp: single-ended DQ vs VREF, NMOS pair, resistive loads (vddq)",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.inp", "mn2.g", "inp", "hs_data"],
+    ["mn2.d", "PORT.outn", "outn", "hs_data"],
+    ["PORT.inn", "mn3.g", "inn", "reference"],
+    ["mn3.d", "PORT.outp", "outp", "hs_data"],
+    ["PORT.vbn", "mn0.g", "vbn", "bias"],
+    ["PORT.en", "mn1.g", "en", "control"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 4 MOS, 2 R]"
+  },
+  "dq_vga": {
+   "role": "VGA: source-degenerated diff pair with code-switched degeneration R",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.inp", "mn0.g", "inp", "hs_data"],
+    ["mn0.d", "PORT.outn", "outn", "hs_data"],
+    ["PORT.inn", "mn1.g", "inn", "hs_data"],
+    ["mn1.d", "PORT.outp", "outp", "hs_data"],
+    ["PORT.g<0>", "mn5.g", "g<0>", "control"],
+    ["PORT.g<2>", "mn7.g", "g<2>", "control"],
+    ["PORT.vbn", "mn2.g", "vbn", "bias"],
+    ["PORT.en", "mn4.g", "en", "control"]
+   ],
+   "controls": {
+    "g<2:0>": "g<0> adds 4k, g<1> 2k, g<2> 1k in parallel with the 4k base degeneration -> higher gain"
+   },
+   "notes": "[direct primitives in this cell: 1 C, 8 MOS, 6 R]"
+  },
+  "dq_sa": {
+   "role": "StrongARM sense amplifier",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.inp", "mn1.g", "inp", "hs_data"],
+    ["PORT.inn", "mn2.g", "inn", "hs_data"],
+    ["PORT.clk", "mn0.g", "clk", "strobe"],
+    ["mn3.d", "PORT.outn", "outn", "hs_data"],
+    ["mn4.d", "PORT.outp", "outp", "hs_data"]
+   ],
+   "controls": {},
+   "notes": "precharge while clk=0, evaluate on clk rising edge. [direct primitives in this cell: 11 MOS]"
+  },
+  "dq_sampler": {
+   "role": "sampler: StrongARM SA + SR latch + output driver",
+   "on_high_speed_path": true,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "dq_sa", "role": "StrongARM sense amplifier"},
+    {"inst": "xi1", "cell": "sr_latch_nand", "role": "NAND SR hold latch"}
+   ],
+   "signal_flow": [
+    ["PORT.inp", "xi0.inp", "inp", "hs_data"],
+    ["PORT.inn", "xi0.inn", "inn", "hs_data"],
+    ["PORT.clk", "xi0.clk", "clk", "strobe"],
+    ["xi0.outn", "xi1.sb", "outn", "hs_data"],
+    ["xi0.outp", "xi1.rb", "outp", "hs_data"],
+    ["xi1.qb", "mp0.g", "qb_i", "hs_data"],
+    ["mp0.d", "PORT.q", "q", "hs_data"]
+   ],
+   "controls": {},
+   "notes": "q = (inp > inn) at clk rise, held until next evaluation; latch q output (q_i) unused, output via inverter from qb_i. [direct primitives in this cell: 2 MOS]"
+  },
+  "sr_latch_nand": {
+   "role": "NAND SR hold latch",
+   "on_high_speed_path": true,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    ["PORT.sb", "mp0.g", "sb", "hs_data"],
+    ["mp0.d", "PORT.q", "q", "hs_data"],
+    ["PORT.rb", "mp2.g", "rb", "hs_data"],
+    ["mp2.d", "PORT.qb", "qb", "hs_data"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 8 MOS]"
+  },
+  "rx_bias": {
+   "role": "bias generator: NMOS diode + PMOS mirror to vddq-domain NMOS diode",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    ["PORT.ibias", "mn0.d", "ibias", "bias"],
+    ["PORT.ibias", "r0.p", "ibias", "bias"],
+    ["r0.n", "PORT.vbn_c", "vbn_c", "bias"],
+    ["PORT.vbn_c", "mn1.g", "vbn_c", "bias"],
+    ["mn1.d", "mp0.g", "nbp", "bias"],
+    ["mp0.d", "mp1.g", "nbp", "bias"],
+    ["mp1.d", "PORT.vbn_q", "vbn_q", "bias"],
+    ["PORT.en", "mp2.g", "en", "control"]
+   ],
+   "controls": {
+    "en": "power-down pulls vbn_c and vbn_q to vss"
+   },
+   "notes": "[direct primitives in this cell: 2 C, 9 MOS, 1 R]"
+  },
+  "vrefdq_gen": {
+   "role": "VREFDQ DAC: 16-tap ladder + 4:16 decoder + PMOS tap switches + unity-gain buffer",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "ls_vdd2vddq", "role": "vdd->vddq level shifter"},
+    {"inst": "xi1", "cell": "vref_ladder16", "role": "16-tap resistor ladder with power-gating header"},
+    {"inst": "xi2", "cell": "vref_dec4to16", "role": "4-to-16 one-hot decoder (active-low outputs)"},
+    {"inst": "xi3", "cell": "vref_sw16", "role": "16:1 PMOS tap select switches"},
+    {"inst": "xi4", "cell": "vref_ota_buf", "role": "5T OTA unity-gain VREF buffer"}
+   ],
+   "signal_flow": [
+    ["PORT.vref_en", "xi0.in", "vref_en", "control"],
+    ["xi0.outb", "xi1.enb", "en_hb", "control"],
+    ["xi1.tap<15>", "xi3.tap<15>", "tap<15>", "reference"],
+    ["xi1.tap<0>", "xi3.tap<0>", "tap<0>", "reference"],
+    ["PORT.vref_code<3>", "xi2.c<3>", "vref_code<3>", "control"],
+    ["PORT.vref_code<0>", "xi2.c<0>", "vref_code<0>", "control"],
+    ["xi2.selb<15>", "xi3.selb<15>", "selb<15>", "control"],
+    ["xi2.selb<0>", "xi3.selb<0>", "selb<0>", "control"],
+    ["xi3.vout", "xi4.vin", "vref_raw", "reference"],
+    ["PORT.vbn_q", "xi4.vbn", "vbn_q", "bias"],
+    ["PORT.vref_en", "xi4.en", "vref_en", "control"],
+    ["xi4.vout", "PORT.vref_buf", "vref_buf", "reference"]
+   ],
+   "controls": {
+    "vref_code<3:0>": "tap select (40+code)/64 VDDQ",
+    "vref_en": "ladder header + buffer enable"
+   },
+   "notes": "xi0 out (net10) unused. [direct primitives in this cell: 2 C]"
+  },
+  "vref_dec4to16": {
+   "role": "4-to-16 one-hot decoder (active-low outputs)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "pdec2to4", "role": "2-to-4 predecoder"},
+    {"inst": "xi1", "cell": "pdec2to4", "role": "2-to-4 predecoder"},
+    {"inst": "xi2<15:0>", "cell": "nand2_x1", "role": "NAND2"}
+   ],
+   "signal_flow": [
+    ["PORT.c<1>", "xi0.s1", "c<1>", "control"],
+    ["PORT.c<0>", "xi0.s0", "c<0>", "control"],
+    ["PORT.c<3>", "xi1.s1", "c<3>", "control"],
+    ["PORT.c<2>", "xi1.s0", "c<2>", "control"],
+    ["xi0.y<0>", "xi2<0>.b", "a<0>", "control"],
+    ["xi1.y<0>", "xi2<0>.a", "b<0>", "control"],
+    ["xi2<0>.y", "PORT.selb<0>", "selb<0>", "control"],
+    ["xi1.y<3>", "xi2<15>.a", "b<3>", "control"],
+    ["xi0.y<3>", "xi2<15>.b", "a<3>", "control"],
+    ["xi2<15>.y", "PORT.selb<15>", "selb<15>", "control"]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "pdec2to4": {
+   "role": "2-to-4 predecoder",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "inv_x1", "role": "inverter"},
+    {"inst": "xi1", "cell": "inv_x1", "role": "inverter"},
+    {"inst": "xi2", "cell": "nor2_x1", "role": "NOR2"},
+    {"inst": "xi3", "cell": "nor2_x1", "role": "NOR2"},
+    {"inst": "xi4", "cell": "nor2_x1", "role": "NOR2"},
+    {"inst": "xi5", "cell": "nor2_x1", "role": "NOR2"}
+   ],
+   "signal_flow": [
+    ["PORT.s1", "xi0.a", "s1", "control"],
+    ["PORT.s0", "xi1.a", "s0", "control"],
+    ["PORT.s1", "xi2.a", "s1", "control"],
+    ["PORT.s0", "xi2.b", "s0", "control"],
+    ["xi2.y", "PORT.y<0>", "y<0>", "control"],
+    ["xi1.y", "xi3.b", "s0b", "control"],
+    ["xi3.y", "PORT.y<1>", "y<1>", "control"],
+    ["xi0.y", "xi4.a", "s1b", "control"],
+    ["xi4.y", "PORT.y<2>", "y<2>", "control"],
+    ["xi5.y", "PORT.y<3>", "y<3>", "control"]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "vref_ladder16": {
+   "role": "16-tap resistor ladder with power-gating header",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    ["PORT.enb", "mp0.g", "enb", "control"],
+    ["mp0.d", "r0.p", "ntop", "reference"],
+    ["r0.n", "PORT.tap<15>", "tap<15>", "reference"],
+    ["r2.p", "PORT.tap<0>", "tap<0>", "reference"]
+   ],
+   "controls": {},
+   "notes": "4.5k top + 15 x 500 + 20k bottom. [direct primitives in this cell: 1 MOS, 17 R]"
+  },
+  "vref_sw16": {
+   "role": "16:1 PMOS tap select switches",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    ["PORT.tap<0>", "mp0.s", "tap<0>", "reference"],
+    ["PORT.selb<0>", "mp0.g", "selb<0>", "control"],
+    ["mp0.d", "PORT.vout", "vout", "reference"],
+    ["PORT.tap<15>", "mp15.s", "tap<15>", "reference"],
+    ["mp15.d", "PORT.vout", "vout", "reference"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 16 MOS]"
+  },
+  "vref_ota_buf": {
+   "role": "5T OTA unity-gain VREF buffer",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.vin", "mn2.g", "vin", "reference"],
+    ["mn2.d", "mp0.g", "nd", "reference"],
+    ["mp1.d", "PORT.vout", "vout", "reference"],
+    ["PORT.vout", "mn3.g", "vout", "reference"],
+    ["PORT.vbn", "mn0.g", "vbn", "bias"],
+    ["PORT.en", "mn1.g", "en", "control"]
+   ],
+   "controls": {},
+   "notes": "output fed back to the output-side input device (mn3 diode-connected) -> follower. [direct primitives in this cell: 1 C, 6 MOS]"
+  },
+  "ls_vdd2vddq": {
+   "role": "vdd->vddq level shifter",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.in", "mn1.g", "in", "control"],
+    ["mn1.d", "mp4.g", "n1", "control"],
+    ["mp4.d", "PORT.out", "out", "control"],
+    ["mn2.d", "mp3.g", "n2", "control"],
+    ["mp3.d", "PORT.outb", "outb", "control"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 10 MOS]"
+  },
+  "and3_x1": {
+   "role": "AND3 (nand3 + inv)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "nand3_x1", "role": "NAND3"},
+    {"inst": "xi1", "cell": "inv_x1", "role": "inverter"}
+   ],
+   "signal_flow": [
+    ["PORT.a", "xi0.a", "a", "logic"],
+    ["xi0.y", "xi1.a", "net6", "logic"],
+    ["xi1.y", "PORT.y", "y", "logic"]
+   ],
+   "controls": {},
+   "notes": ""
+  }
+ }
+}

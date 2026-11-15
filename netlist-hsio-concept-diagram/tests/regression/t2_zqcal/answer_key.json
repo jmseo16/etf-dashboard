@@ -1,0 +1,736 @@
+{
+ "top": "zqcal_top",
+ "supplies": [
+  "vdd",
+  "vddq"
+ ],
+ "grounds": [
+  "vss"
+ ],
+ "ports": {
+  "zq": {"class": "slow_signal", "function": "ZQ pad (analog); external RZQ=240 Ohm to VSS; driven by PU replica array during PU calibration"},
+  "ibias_zq": {"class": "bias", "function": "10 uA reference current -> comparator preamp tail bias"},
+  "zq_clk": {"class": "clock_in", "function": "calibration FSM clock (~200 MHz); /8 prescaler gives step_clk"},
+  "zq_start": {"class": "important_control", "function": "ZQ calibration start command (synchronized, edge-detected, ignored while busy)"},
+  "zq_latch": {"class": "important_control", "function": "ZQ latch command: copies SAR results to pu_code/pd_code (only when zq_done=1)"},
+  "rstb": {"class": "general_control", "function": "active-low async reset; output codes reset to 100000"},
+  "vref_trim<1:0>": {"class": "general_control", "function": "VREF tap select: 00=15/32, 01=16/32 (VDDQ/2), 10=17/32, 11=18/32 VDDQ"},
+  "pu_code<5:0>": {"class": "slow_signal", "function": "calibrated pull-up code to DQ drivers (binary, 1=leg on, weights 32..1 over 32-unit base)"},
+  "pd_code<5:0>": {"class": "slow_signal", "function": "calibrated pull-down code to DQ drivers"},
+  "zq_busy": {"class": "slow_signal", "function": "calibration in progress (also analog enable)"},
+  "zq_done": {"class": "slow_signal", "function": "calibration complete (sticky until next start)"},
+  "zq_cmp_mon": {"class": "test_digital", "function": "comparator decision monitor (same net feeds both SARs)"},
+  "vdd": {"class": "power", "function": "0.8 V core supply"},
+  "vddq": {"class": "power", "function": "1.1 V IO supply"},
+  "vss": {"class": "power", "function": "ground"}
+ },
+ "cells": {
+  "zqcal_top": {
+   "role": "ZQ calibration engine top",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "zq_fsm", "role": "calibration FSM/timer: /8 prescaler, start sync, busy/done, 15-stage one-hot sequencer"},
+    {"inst": "xi1", "cell": "zq_sar6", "role": "6-bit SAR register (successive approximation)"},
+    {"inst": "xi2", "cell": "zq_sar6", "role": "6-bit SAR register (successive approximation)"},
+    {"inst": "xi3", "cell": "zq_code_reg", "role": "DQ driver code output registers"},
+    {"inst": "xi4", "cell": "zq_vref_gen", "role": "VREF generator (VDDQ/2 ladder + 2b trim mux + RC filter)"},
+    {"inst": "xi5", "cell": "zq_pu_cal_path", "role": "pull-up calibration branch: predriver + PU replica array on ZQ pad + pad ESD/sense"},
+    {"inst": "xi6", "cell": "zq_pd_cal_path", "role": "pull-down calibration branch: replica PU (pu code) over replica PD (pd code) -> npd"},
+    {"inst": "xi7", "cell": "zq_cmp_top", "role": "comparator subsystem: bias + input crossbar + comparator"}
+   ],
+   "signal_flow": [
+    ["PORT.zq_clk", "xi0.zq_clk", "zq_clk", "clock"],
+    ["PORT.zq_start", "xi0.zq_start", "zq_start", "control"],
+    ["xi0.step_clk", "xi1.ck", "step_clk", "clock"],
+    ["xi0.step_clk", "xi2.ck", "step_clk", "clock"],
+    ["xi0.w1", "xi1.t<6>", "w1", "control"],
+    ["xi0.tu<5>", "xi1.t<5>", "tu<5>", "control"],
+    ["xi0.tu<0>", "xi1.t<0>", "tu<0>", "control"],
+    ["xi0.tu<0>", "xi2.t<6>", "tu<0>", "control"],
+    ["xi0.td<5>", "xi2.t<5>", "td<5>", "control"],
+    ["xi0.td<0>", "xi2.t<0>", "td<0>", "control"],
+    ["xi0.cmp_clk", "xi7.cmp_clk", "cmp_clk", "clock"],
+    ["xi0.en_pu", "xi5.en_pu", "en_pu", "control"],
+    ["xi0.en_pd", "xi6.en_pd", "en_pd", "control"],
+    ["xi0.en_pd", "xi7.ph_pd", "en_pd", "control"],
+    ["xi0.busy", "xi4.en", "zq_busy", "control"],
+    ["xi0.busy", "xi7.en", "zq_busy", "control"],
+    ["xi0.busy", "PORT.zq_busy", "zq_busy", "status"],
+    ["xi0.zq_done", "xi3.zq_done", "zq_done", "status"],
+    ["xi0.zq_done", "PORT.zq_done", "zq_done", "status"],
+    ["xi1.b<5>", "xi5.pu_b<5>", "pu_b<5>", "code"],
+    ["xi1.b<5>", "xi6.pu_b<5>", "pu_b<5>", "code"],
+    ["xi1.b<5>", "xi3.pu_b<5>", "pu_b<5>", "code"],
+    ["xi2.b<5>", "xi6.pd_b<5>", "pd_b<5>", "code"],
+    ["xi2.b<5>", "xi3.pd_b<5>", "pd_b<5>", "code"],
+    ["PORT.zq", "xi5.zq", "zq", "analog"],
+    ["xi5.zq_s", "xi7.zq_s", "zq_s", "analog"],
+    ["xi6.npd", "xi7.npd", "npd", "analog"],
+    ["xi4.vref", "xi7.vref", "vref", "analog"],
+    ["PORT.vref_trim<1>", "xi4.vref_trim<1>", "vref_trim<1>", "control"],
+    ["PORT.ibias_zq", "xi7.ibias", "ibias_zq", "bias"],
+    ["xi7.cmp_q", "xi1.cmp", "zq_cmp_mon", "decision"],
+    ["xi7.cmp_q", "xi2.cmp", "zq_cmp_mon", "decision"],
+    ["xi7.cmp_q", "PORT.zq_cmp_mon", "zq_cmp_mon", "decision"],
+    ["PORT.zq_latch", "xi3.zq_latch", "zq_latch", "control"],
+    ["xi3.pu_code<5>", "PORT.pu_code<5>", "pu_code<5>", "code"],
+    ["xi3.pd_code<0>", "PORT.pd_code<0>", "pd_code<0>", "code"]
+   ],
+   "controls": {
+    "zq_start": "start calibration",
+    "zq_latch": "transfer codes to DQ driver registers",
+    "vref_trim<1:0>": "comparator reference level",
+    "en_pu": "pad PU replica enable (busy and not PD phase)",
+    "en_pd": "PD phase: replica PU+PD branch enable and comparator input swap",
+    "pu_b<5:0>": "working PU SAR code (drives both PU replica arrays)",
+    "pd_b<5:0>": "working PD SAR code (drives PD replica array)"
+   },
+   "notes": "Closed mixed-signal loop: SAR code -> predriver -> replica array -> zq/npd node -> comparator -> SAR. PU calibrated first (tu<5:0>), then PD (td<5:0>) using the calibrated PU code on the replica PU array. No high-speed path in this block. [direct primitives in this cell: 2 C]"
+  },
+  "zq_fsm": {
+   "role": "calibration FSM/timer: /8 prescaler, start sync, busy/done, 15-stage one-hot sequencer",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi1", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi2", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi3", "cell": "inv_d1", "role": "inverter"},
+    {"inst": "xi4", "cell": "inv_d1", "role": "inverter"},
+    {"inst": "xi5", "cell": "and3_d1", "role": "AND3 (nand3 + inv)"},
+    {"inst": "xi6", "cell": "and2_d1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi7", "cell": "sync2_d1", "role": "2-flop synchronizer"},
+    {"inst": "xi8", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi9", "cell": "and2_d1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi27", "cell": "and2_d1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi10", "cell": "or2_d1", "role": "OR2 (nor2 + inv)"},
+    {"inst": "xi11", "cell": "inv_d1", "role": "inverter"},
+    {"inst": "xi12", "cell": "and2_d1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi13", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi14", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi15", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi16<5:0>", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi17<5:0>", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi18", "cell": "inv_d1", "role": "inverter"},
+    {"inst": "xi19", "cell": "or2_d1", "role": "OR2 (nor2 + inv)"},
+    {"inst": "xi20", "cell": "and2_d1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi21", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi22", "cell": "nor3_d1", "role": "NOR3"},
+    {"inst": "xi23", "cell": "nor3_d1", "role": "NOR3"},
+    {"inst": "xi24", "cell": "nand2_d1", "role": "NAND2"},
+    {"inst": "xi25", "cell": "inv_d1", "role": "inverter"},
+    {"inst": "xi26", "cell": "and2_d1", "role": "AND2 (nand2 + inv)"}
+   ],
+   "signal_flow": [
+    ["PORT.zq_clk", "xi0.ck", "zq_clk", "clock"],
+    ["xi0.qb", "xi0.d", "q0b", "clock"],
+    ["xi0.qb", "xi1.ck", "q0b", "clock"],
+    ["xi1.qb", "xi2.ck", "q1b", "clock"],
+    ["xi2.qb", "xi3.a", "q2b", "clock"],
+    ["xi3.y", "xi4.a", "net70", "clock"],
+    ["xi4.y", "PORT.step_clk", "step_clk", "clock"],
+    ["xi2.q", "xi5.a", "q2", "clock"],
+    ["xi1.q", "xi5.b", "q1", "clock"],
+    ["xi0.q", "xi5.c", "q0", "clock"],
+    ["xi5.y", "xi6.a", "nlast", "clock"],
+    ["xi13.q", "xi6.b", "busy", "control"],
+    ["xi6.y", "PORT.cmp_clk", "cmp_clk", "clock"],
+    ["PORT.zq_start", "xi7.d", "zq_start", "control"],
+    ["xi7.q", "xi8.d", "st_s", "control"],
+    ["xi7.q", "xi9.a", "st_s", "control"],
+    ["xi8.qb", "xi9.b", "st_db", "control"],
+    ["xi9.y", "xi27.a", "start_p", "control"],
+    ["xi13.qb", "xi27.b", "busyb", "control"],
+    ["xi27.y", "xi14.d", "st_go", "control"],
+    ["xi14.q", "xi15.d", "w0", "control"],
+    ["xi15.q", "PORT.w1", "w1", "control"],
+    ["PORT.w1", "xi16<5>.d", "w1", "control"],
+    ["xi16<5>.q", "PORT.tu<5>", "tu<5>", "control"],
+    ["xi16<0>.q", "xi17<5>.d", "tu<0>", "control"],
+    ["xi17<0>.q", "PORT.td<0>", "td<0>", "control"],
+    ["xi27.y", "xi10.b", "st_go", "control"],
+    ["xi10.y", "xi12.a", "net71", "control"],
+    ["xi17<0>.q", "xi11.a", "td<0>", "control"],
+    ["xi11.y", "xi12.b", "td0b", "control"],
+    ["xi12.y", "xi13.d", "busy_d", "control"],
+    ["xi13.q", "PORT.busy", "busy", "status"],
+    ["xi17<0>.q", "xi19.a", "td<0>", "control"],
+    ["xi19.y", "xi20.a", "net77", "control"],
+    ["xi20.y", "xi21.d", "done_d", "control"],
+    ["xi21.qb", "mp0.g", "doneb", "status"],
+    ["mp0.d", "PORT.zq_done", "zq_done", "status"],
+    ["xi22.y", "xi24.a", "net78", "control"],
+    ["xi23.y", "xi24.b", "net79", "control"],
+    ["xi24.y", "PORT.en_pd", "en_pd", "control"],
+    ["xi24.y", "xi25.a", "en_pd", "control"],
+    ["xi25.y", "xi26.b", "en_pdb", "control"],
+    ["xi26.y", "PORT.en_pu", "en_pu", "control"]
+   ],
+   "controls": {
+    "zq_start": "start (st_go = start pulse & ~busy)",
+    "rstb": "async reset of all flops"
+   },
+   "notes": "Prescaler xi0..xi2 is a 3b ripple counter on zq_clk; step_clk = q2b buffered (one step = 8 zq_clk); cmp_clk = q2&q1&q0&busy (last zq_clk of every step). Sequencer w0->w1->tu<5>..tu<0>->td<5>..td<0> is a shift register clocked by step_clk with a single token injected by st_go. busy = (busy|st_go)&~td<0>; done = (done|td<0>)&~st_go. en_pd = OR(td<5:0>); en_pu = busy & ~en_pd. Feedback loops on busy and done flops. [direct primitives in this cell: 2 MOS]"
+  },
+  "zq_sar6": {
+   "role": "6-bit SAR register (successive approximation)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0<5:0>", "cell": "zq_sar_bit", "role": "SAR bit cell (mux + or + DFF)"}
+   ],
+   "signal_flow": [
+    ["PORT.t<6>", "xi0<5>.t_up", "t<6>", "control"],
+    ["PORT.t<5>", "xi0<5>.t", "t<5>", "control"],
+    ["PORT.t<5>", "xi0<4>.t_up", "t<5>", "control"],
+    ["PORT.t<0>", "xi0<0>.t", "t<0>", "control"],
+    ["PORT.cmp", "xi0<5>.cmp", "cmp", "decision"],
+    ["PORT.ck", "mp0.g", "ck", "clock"],
+    ["mp1.d", "xi0<5>.ck", "ckl", "clock"],
+    ["xi0<5>.b", "PORT.b<5>", "b<5>", "code"],
+    ["xi0<0>.b", "PORT.b<0>", "b<0>", "code"]
+   ],
+   "controls": {
+    "t<6:0>": "one-hot tokens: t<k+1> trial-sets bit k, t<k> decides bit k"
+   },
+   "notes": "Local clock buffer is two direct inverters (mp0/mn0, mp1/mn1). Bits are fully rewritten each calibration, no clear needed. [direct primitives in this cell: 4 MOS]"
+  },
+  "zq_sar_bit": {
+   "role": "SAR bit cell (mux + or + DFF)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "mux2_d1", "role": "2:1 transmission-gate mux (y = s ? b : a)"},
+    {"inst": "xi1", "cell": "or2_d1", "role": "OR2 (nor2 + inv)"},
+    {"inst": "xi2", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"}
+   ],
+   "signal_flow": [
+    ["PORT.b", "xi0.a", "b", "code"],
+    ["PORT.cmp", "xi0.b", "cmp", "decision"],
+    ["PORT.t", "xi0.s", "t", "control"],
+    ["xi0.y", "xi1.b", "m", "code"],
+    ["PORT.t_up", "xi1.a", "t_up", "control"],
+    ["xi1.y", "xi2.d", "d", "code"],
+    ["xi2.q", "PORT.b", "b", "code"]
+   ],
+   "controls": {},
+   "notes": "b_next = t_up | (t ? cmp : b); feedback (hold) loop through the mux."
+  },
+  "zq_code_reg": {
+   "role": "DQ driver code output registers",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "and2_d1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi1", "cell": "inv_d1", "role": "inverter"},
+    {"inst": "xi2", "cell": "inv_d1", "role": "inverter"},
+    {"inst": "xi3", "cell": "dffs_d1", "role": "DFF with active-low async set (inverter + dffr)"},
+    {"inst": "xi4<4:0>", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi5", "cell": "dffs_d1", "role": "DFF with active-low async set (inverter + dffr)"},
+    {"inst": "xi6<4:0>", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"}
+   ],
+   "signal_flow": [
+    ["PORT.zq_latch", "xi0.a", "zq_latch", "control"],
+    ["PORT.zq_done", "xi0.b", "zq_done", "status"],
+    ["xi0.y", "xi1.a", "lat_en", "control"],
+    ["xi1.y", "xi2.a", "net80", "control"],
+    ["xi2.y", "xi3.ck", "lat_ck", "control"],
+    ["PORT.pu_b<5>", "xi3.d", "pu_b<5>", "code"],
+    ["xi3.q", "PORT.pu_code<5>", "pu_code<5>", "code"],
+    ["PORT.pu_b<0>", "xi4<0>.d", "pu_b<0>", "code"],
+    ["xi4<0>.q", "PORT.pu_code<0>", "pu_code<0>", "code"],
+    ["PORT.pd_b<5>", "xi5.d", "pd_b<5>", "code"],
+    ["xi5.q", "PORT.pd_code<5>", "pd_code<5>", "code"],
+    ["xi6<0>.q", "PORT.pd_code<0>", "pd_code<0>", "code"]
+   ],
+   "controls": {
+    "zq_latch": "load strobe (rising edge), gated by zq_done",
+    "rstb": "reset to mid-code 100000 (bit5 = dffs, others dffr)"
+   },
+   "notes": ""
+  },
+  "zq_pu_cal_path": {
+   "role": "pull-up calibration branch: predriver + PU replica array on ZQ pad + pad ESD/sense",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "zq_predrv", "role": "code gating + vdd->vddq level shifters for one replica array"},
+    {"inst": "xi1", "cell": "zq_pu_array", "role": "binary-weighted PMOS pull-up replica driver array"},
+    {"inst": "xi2", "cell": "zq_pad_esd", "role": "ZQ pad ESD clamps + comparator sense isolation"}
+   ],
+   "signal_flow": [
+    ["PORT.pu_b<5>", "xi0.code<5>", "pu_b<5>", "code"],
+    ["PORT.en_pu", "xi0.en", "en_pu", "control"],
+    ["xi0.gb<5>", "xi1.gb<5>", "gbu<5>", "code"],
+    ["xi0.gb<6>", "xi1.gb<6>", "gbu<6>", "control"],
+    ["xi1.pad", "PORT.zq", "zq", "analog"],
+    ["PORT.zq", "xi2.pad", "zq", "analog"],
+    ["xi2.sense", "PORT.zq_s", "zq_s", "analog"]
+   ],
+   "controls": {
+    "pu_b<5:0>": "PU leg enables",
+    "en_pu": "enables base leg and all code legs"
+   },
+   "notes": "Predriver active-high outputs g<6:0> unused here (net20<6:0>); PMOS legs use active-low gb."
+  },
+  "zq_pd_cal_path": {
+   "role": "pull-down calibration branch: replica PU (pu code) over replica PD (pd code) -> npd",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "zq_predrv", "role": "code gating + vdd->vddq level shifters for one replica array"},
+    {"inst": "xi1", "cell": "zq_predrv", "role": "code gating + vdd->vddq level shifters for one replica array"},
+    {"inst": "xi2", "cell": "zq_pu_array", "role": "binary-weighted PMOS pull-up replica driver array"},
+    {"inst": "xi3", "cell": "zq_pd_array", "role": "binary-weighted NMOS pull-down replica driver array"}
+   ],
+   "signal_flow": [
+    ["PORT.pu_b<5>", "xi0.code<5>", "pu_b<5>", "code"],
+    ["PORT.en_pd", "xi0.en", "en_pd", "control"],
+    ["xi0.gb<5>", "xi2.gb<5>", "gbr<5>", "code"],
+    ["xi0.gb<6>", "xi2.gb<6>", "gbr<6>", "control"],
+    ["PORT.pd_b<5>", "xi1.code<5>", "pd_b<5>", "code"],
+    ["PORT.en_pd", "xi1.en", "en_pd", "control"],
+    ["xi1.g<5>", "xi3.g<5>", "gd<5>", "code"],
+    ["xi1.g<6>", "xi3.g<6>", "gd<6>", "control"],
+    ["xi2.pad", "PORT.npd", "npd", "analog"],
+    ["xi3.pad", "PORT.npd", "npd", "analog"],
+    ["xi0.gb<6>", "mn0.g", "gbr<6>", "control"]
+   ],
+   "controls": {
+    "pu_b<5:0>": "replica PU legs (calibrated PU code)",
+    "pd_b<5:0>": "PD legs under calibration",
+    "en_pd": "branch enable"
+   },
+   "notes": "V(npd) = VDDQ*Rpd/(Rpu+Rpd); mn0 weakly discharges npd when disabled. Unused predriver outputs net30<6:0> (g of xi0) and net31<6:0> (gb of xi1). [direct primitives in this cell: 1 C, 1 MOS]"
+  },
+  "zq_predrv": {
+   "role": "code gating + vdd->vddq level shifters for one replica array",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0<5:0>", "cell": "and2_d1", "role": "AND2 (nand2 + inv)"},
+    {"inst": "xi1<5:0>", "cell": "zq_ls", "role": "vdd->vddq level shifter (cross-coupled PMOS)"},
+    {"inst": "xi2", "cell": "zq_ls", "role": "vdd->vddq level shifter (cross-coupled PMOS)"}
+   ],
+   "signal_flow": [
+    ["PORT.code<5>", "xi0<5>.a", "code<5>", "code"],
+    ["PORT.en", "xi0<5>.b", "en", "control"],
+    ["xi0<5>.y", "xi1<5>.in", "c<5>", "code"],
+    ["xi1<5>.out", "PORT.g<5>", "g<5>", "code"],
+    ["xi1<5>.outb", "PORT.gb<5>", "gb<5>", "code"],
+    ["PORT.en", "xi2.in", "en", "control"],
+    ["xi2.out", "PORT.g<6>", "g<6>", "control"],
+    ["xi2.outb", "PORT.gb<6>", "gb<6>", "control"]
+   ],
+   "controls": {
+    "code<5:0>": "leg enables",
+    "en": "gates all legs; also drives base leg (bit 6)"
+   },
+   "notes": ""
+  },
+  "zq_pu_array": {
+   "role": "binary-weighted PMOS pull-up replica driver array",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "zq_pu_unit", "role": "unit pull-up leg (PMOS + series poly R)"},
+    {"inst": "xi1<5:0>", "cell": "zq_pu_unit", "role": "unit pull-up leg (PMOS + series poly R)"}
+   ],
+   "signal_flow": [
+    ["PORT.gb<6>", "xi0.gb", "gb<6>", "control"],
+    ["xi0.pad", "PORT.pad", "pad", "analog"],
+    ["PORT.gb<5>", "xi1<5>.gb", "gb<5>", "code"],
+    ["xi1<5>.pad", "PORT.pad", "pad", "analog"],
+    ["PORT.gb<0>", "xi1<0>.gb", "gb<0>", "code"]
+   ],
+   "controls": {
+    "gb<5:0>": "active-low code leg gates (weights m=32,16,8,4,2,1)",
+    "gb<6>": "active-low base leg gate (m=32)"
+   },
+   "notes": "All legs in parallel from vddq to pad; unit = pch_18 1u/150n + 10k poly; 64 units ~ 240 Ohm."
+  },
+  "zq_pd_array": {
+   "role": "binary-weighted NMOS pull-down replica driver array",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "zq_pd_unit", "role": "unit pull-down leg (NMOS + series poly R)"},
+    {"inst": "xi1<5:0>", "cell": "zq_pd_unit", "role": "unit pull-down leg (NMOS + series poly R)"}
+   ],
+   "signal_flow": [
+    ["PORT.g<6>", "xi0.g", "g<6>", "control"],
+    ["xi0.pad", "PORT.pad", "pad", "analog"],
+    ["PORT.g<5>", "xi1<5>.g", "g<5>", "code"],
+    ["xi1<5>.pad", "PORT.pad", "pad", "analog"],
+    ["PORT.g<0>", "xi1<0>.g", "g<0>", "code"]
+   ],
+   "controls": {
+    "g<5:0>": "active-high code leg gates (m=32,16,8,4,2,1)",
+    "g<6>": "base leg (m=32)"
+   },
+   "notes": ""
+  },
+  "zq_pu_unit": {
+   "role": "unit pull-up leg (PMOS + series poly R)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    ["PORT.gb", "mp0.g", "gb", "code"],
+    ["mp0.d", "r0.p", "net1", "analog"],
+    ["r0.n", "PORT.pad", "pad", "analog"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 1 MOS, 1 R]"
+  },
+  "zq_pd_unit": {
+   "role": "unit pull-down leg (NMOS + series poly R)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    ["PORT.g", "mn0.g", "g", "code"],
+    ["mn0.d", "r0.n", "net1", "analog"],
+    ["r0.p", "PORT.pad", "pad", "analog"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 1 MOS, 1 R]"
+  },
+  "zq_pad_esd": {
+   "role": "ZQ pad ESD clamps + comparator sense isolation",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    ["PORT.pad", "mn0.d", "pad", "analog"],
+    ["PORT.pad", "r0.p", "pad", "analog"],
+    ["r0.n", "PORT.sense", "sense", "analog"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 2 C, 2 MOS, 1 R]"
+  },
+  "zq_vref_gen": {
+   "role": "VREF generator (VDDQ/2 ladder + 2b trim mux + RC filter)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "zq_ls", "role": "vdd->vddq level shifter (cross-coupled PMOS)"},
+    {"inst": "xi1", "cell": "zq_ls", "role": "vdd->vddq level shifter (cross-coupled PMOS)"},
+    {"inst": "xi2", "cell": "zq_ls", "role": "vdd->vddq level shifter (cross-coupled PMOS)"},
+    {"inst": "xi3", "cell": "zq_vref_ladder", "role": "resistor ladder with power-gating header"},
+    {"inst": "xi4", "cell": "zq_vref_mux", "role": "2b decoded 4:1 transmission-gate tap mux"}
+   ],
+   "signal_flow": [
+    ["PORT.en", "xi0.in", "en", "control"],
+    ["xi0.outb", "xi3.enb", "en_hb", "control"],
+    ["xi3.tap<1>", "xi4.tap<1>", "tap<1>", "analog"],
+    ["PORT.vref_trim<1>", "xi1.in", "vref_trim<1>", "control"],
+    ["xi1.out", "xi4.s1", "s1", "control"],
+    ["xi1.outb", "xi4.s1b", "s1b", "control"],
+    ["PORT.vref_trim<0>", "xi2.in", "vref_trim<0>", "control"],
+    ["xi2.out", "xi4.s0", "s0", "control"],
+    ["xi4.vout", "r0.p", "vref_raw", "analog"],
+    ["r0.n", "PORT.vref", "vref", "analog"]
+   ],
+   "controls": {
+    "vref_trim<1:0>": "tap select",
+    "en": "ladder header enable (via level shifter)"
+   },
+   "notes": "xi0 out (net50) unused; r0 20k + c0 4p filter. [direct primitives in this cell: 1 C, 1 R]"
+  },
+  "zq_vref_ladder": {
+   "role": "resistor ladder with power-gating header",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    ["PORT.enb", "mp0.g", "enb", "control"],
+    ["mp0.d", "r0.p", "ntop", "analog"],
+    ["r0.n", "PORT.tap<3>", "tap<3>", "analog"],
+    ["r3.n", "PORT.tap<0>", "tap<0>", "analog"]
+   ],
+   "controls": {},
+   "notes": "14k/1k/1k/1k/15k: taps 18/32, 17/32, 16/32, 15/32 of VDDQ. [direct primitives in this cell: 1 C, 1 MOS, 5 R]"
+  },
+  "zq_vref_mux": {
+   "role": "2b decoded 4:1 transmission-gate tap mux",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    ["PORT.s1", "mn0.g", "s1", "control"],
+    ["PORT.s0", "mn1.g", "s0", "control"],
+    ["mn0.d", "mn12.g", "e<0>", "control"],
+    ["PORT.tap<0>", "mn12.s", "tap<0>", "analog"],
+    ["mn12.d", "PORT.vout", "vout", "analog"],
+    ["PORT.tap<3>", "mn15.s", "tap<3>", "analog"],
+    ["mn15.d", "PORT.vout", "vout", "analog"]
+   ],
+   "controls": {
+    "s1": "tap select MSB (s1b complement)",
+    "s0": "tap select LSB (s0b complement); {s1,s0}=k selects tap<k>"
+   },
+   "notes": "[direct primitives in this cell: 32 MOS]"
+  },
+  "zq_bias": {
+   "role": "comparator bias (current-reference diode + RC filter, power-down)",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [],
+   "signal_flow": [
+    ["PORT.ibias", "mn1.d", "ibias", "bias"],
+    ["PORT.ibias", "r0.p", "ibias", "bias"],
+    ["r0.n", "PORT.vbn", "vbn", "bias"],
+    ["PORT.en", "mp0.g", "en", "control"],
+    ["mp0.d", "mn2.g", "enb", "control"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 1 C, 4 MOS, 1 R]"
+  },
+  "zq_cmp_top": {
+   "role": "comparator subsystem: bias + input crossbar + comparator",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "zq_bias", "role": "comparator bias (current-reference diode + RC filter, power-down)"},
+    {"inst": "xi1", "cell": "zq_inmux", "role": "comparator input crossbar (transmission gates) with level shifter"},
+    {"inst": "xi2", "cell": "zq_cmp", "role": "clocked comparator: preamp + StrongARM latch + SR latch"}
+   ],
+   "signal_flow": [
+    ["PORT.ibias", "xi0.ibias", "ibias", "bias"],
+    ["PORT.en", "xi0.en", "en", "control"],
+    ["xi0.vbn", "xi2.vbn", "vbn_c", "bias"],
+    ["PORT.zq_s", "xi1.zq_s", "zq_s", "analog"],
+    ["PORT.npd", "xi1.npd", "npd", "analog"],
+    ["PORT.vref", "xi1.vref", "vref", "analog"],
+    ["PORT.ph_pd", "xi1.ph", "ph_pd", "control"],
+    ["xi1.vinp", "xi2.inp", "vinp", "analog"],
+    ["xi1.vinn", "xi2.inn", "vinn", "analog"],
+    ["PORT.cmp_clk", "xi2.clk", "cmp_clk", "clock"],
+    ["xi2.q", "PORT.cmp_q", "cmp_q", "decision"]
+   ],
+   "controls": {
+    "ph_pd": "input swap (PU vs PD phase)",
+    "en": "preamp tail + bias enable"
+   },
+   "notes": "[direct primitives in this cell: 2 C]"
+  },
+  "zq_inmux": {
+   "role": "comparator input crossbar (transmission gates) with level shifter",
+   "on_high_speed_path": false,
+   "inverting": null,
+   "children": [
+    {"inst": "xi0", "cell": "zq_ls", "role": "vdd->vddq level shifter (cross-coupled PMOS)"}
+   ],
+   "signal_flow": [
+    ["PORT.ph", "xi0.in", "ph", "control"],
+    ["xi0.outb", "mn0.g", "ph_hb", "control"],
+    ["PORT.vref", "mn0.s", "vref", "analog"],
+    ["mn0.d", "PORT.vinp", "vinp", "analog"],
+    ["PORT.npd", "mn1.s", "npd", "analog"],
+    ["mn1.d", "PORT.vinp", "vinp", "analog"],
+    ["PORT.zq_s", "mn2.s", "zq_s", "analog"],
+    ["mn2.d", "PORT.vinn", "vinn", "analog"],
+    ["PORT.vref", "mn3.s", "vref", "analog"],
+    ["mn3.d", "PORT.vinn", "vinn", "analog"]
+   ],
+   "controls": {
+    "ph": "0: vinp=vref, vinn=zq_s; 1: vinp=npd, vinn=vref"
+   },
+   "notes": "Swap makes cmp=1 mean \"legs too weak, keep trial bit\" in both phases. [direct primitives in this cell: 8 MOS]"
+  },
+  "zq_cmp": {
+   "role": "clocked comparator: preamp + StrongARM latch + SR latch",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "zq_preamp", "role": "comparator preamp (NMOS pair, diode + cross-coupled PMOS loads)"},
+    {"inst": "xi1", "cell": "zq_sa_latch", "role": "StrongARM regenerative latch"},
+    {"inst": "xi2", "cell": "sr_latch_nand", "role": "NAND SR latch"}
+   ],
+   "signal_flow": [
+    ["PORT.inp", "xi0.inp", "inp", "analog"],
+    ["PORT.inn", "xi0.inn", "inn", "analog"],
+    ["PORT.vbn", "xi0.vbn", "vbn", "bias"],
+    ["xi0.outp", "xi1.inp", "ap", "analog"],
+    ["xi0.outn", "xi1.inn", "an", "analog"],
+    ["PORT.clk", "xi1.clk", "clk", "clock"],
+    ["xi1.outn", "xi2.sb", "on", "decision"],
+    ["xi1.outp", "xi2.rb", "op", "decision"],
+    ["xi2.qb", "mp0.g", "qb_i", "decision"],
+    ["mp0.d", "PORT.q", "q", "decision"]
+   ],
+   "controls": {},
+   "notes": "q = 1 when inp > inn at clk rising edge. Preamp on vddq, latch on vdd. xi2.q (q_i) unused; output taken via inverter from qb_i. [direct primitives in this cell: 2 MOS]"
+  },
+  "zq_preamp": {
+   "role": "comparator preamp (NMOS pair, diode + cross-coupled PMOS loads)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.inp", "mn2.g", "inp", "analog"],
+    ["mn2.d", "PORT.outn", "outn", "analog"],
+    ["PORT.inn", "mn3.g", "inn", "analog"],
+    ["mn3.d", "PORT.outp", "outp", "analog"],
+    ["PORT.vbn", "mn0.g", "vbn", "bias"],
+    ["PORT.en", "mn1.g", "en", "control"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 8 MOS]"
+  },
+  "zq_sa_latch": {
+   "role": "StrongARM regenerative latch",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.inp", "mn1.g", "inp", "analog"],
+    ["PORT.inn", "mn2.g", "inn", "analog"],
+    ["PORT.clk", "mn0.g", "clk", "clock"],
+    ["mn3.d", "PORT.outn", "outn", "decision"],
+    ["mn4.d", "PORT.outp", "outp", "decision"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 11 MOS]"
+  },
+  "sr_latch_nand": {
+   "role": "NAND SR latch",
+   "on_high_speed_path": false,
+   "inverting": true,
+   "children": [],
+   "signal_flow": [
+    ["PORT.sb", "mp0.g", "sb", "decision"],
+    ["mp0.d", "PORT.q", "q", "decision"],
+    ["PORT.rb", "mp2.g", "rb", "decision"],
+    ["mp2.d", "PORT.qb", "qb", "decision"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 8 MOS]"
+  },
+  "zq_ls": {
+   "role": "vdd->vddq level shifter (cross-coupled PMOS)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.in", "mn1.g", "in", "control"],
+    ["PORT.in", "mp0.g", "in", "control"],
+    ["mp0.d", "mn2.g", "inb", "control"],
+    ["mn1.d", "mp4.g", "n1", "control"],
+    ["mp4.d", "PORT.out", "out", "control"],
+    ["mn2.d", "mp3.g", "n2", "control"],
+    ["mp3.d", "PORT.outb", "outb", "control"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 10 MOS]"
+  },
+  "dffr_d1": {
+   "role": "positive-edge DFF with active-low async reset",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.d", "mn0.s", "d", "data"],
+    ["mp6.d", "PORT.q", "q", "data"]
+   ],
+   "controls": {},
+   "notes": "also the prescaler toggle flops (D=QB) on the zq_clk path in zq_fsm [direct primitives in this cell: 22 MOS]"
+  },
+  "mux2_d1": {
+   "role": "2:1 transmission-gate mux (y = s ? b : a)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [],
+   "signal_flow": [
+    ["PORT.a", "mn1.s", "a", "data"],
+    ["PORT.b", "mn2.s", "b", "data"],
+    ["mn1.d", "PORT.y", "y", "data"]
+   ],
+   "controls": {},
+   "notes": "[direct primitives in this cell: 6 MOS]"
+  },
+  "dffs_d1": {
+   "role": "DFF with active-low async set (inverter + dffr)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "inv_d1", "role": "inverter"},
+    {"inst": "xi1", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"}
+   ],
+   "signal_flow": [
+    ["PORT.d", "xi0.a", "d", "data"],
+    ["xi0.y", "xi1.d", "net6", "data"],
+    ["xi1.qb", "PORT.q", "q", "data"],
+    ["xi1.q", "PORT.qb", "qb", "data"]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "sync2_d1": {
+   "role": "2-flop synchronizer",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"},
+    {"inst": "xi1", "cell": "dffr_d1", "role": "positive-edge DFF with active-low async reset"}
+   ],
+   "signal_flow": [
+    ["PORT.d", "xi0.d", "d", "control"],
+    ["xi0.q", "xi1.d", "net4", "control"],
+    ["xi1.q", "PORT.q", "q", "control"]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "and2_d1": {
+   "role": "AND2 (nand2 + inv)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "nand2_d1", "role": "NAND2"},
+    {"inst": "xi1", "cell": "inv_d1", "role": "inverter"}
+   ],
+   "signal_flow": [
+    ["PORT.a", "xi0.a", "a", "logic"],
+    ["xi0.y", "xi1.a", "net5", "logic"],
+    ["xi1.y", "PORT.y", "y", "logic"]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "or2_d1": {
+   "role": "OR2 (nor2 + inv)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "nor2_d1", "role": "NOR2"},
+    {"inst": "xi1", "cell": "inv_d1", "role": "inverter"}
+   ],
+   "signal_flow": [
+    ["PORT.a", "xi0.a", "a", "logic"],
+    ["xi0.y", "xi1.a", "net5", "logic"],
+    ["xi1.y", "PORT.y", "y", "logic"]
+   ],
+   "controls": {},
+   "notes": ""
+  },
+  "and3_d1": {
+   "role": "AND3 (nand3 + inv)",
+   "on_high_speed_path": false,
+   "inverting": false,
+   "children": [
+    {"inst": "xi0", "cell": "nand3_d1", "role": "NAND3"},
+    {"inst": "xi1", "cell": "inv_d1", "role": "inverter"}
+   ],
+   "signal_flow": [
+    ["PORT.a", "xi0.a", "a", "logic"],
+    ["xi0.y", "xi1.a", "net6", "logic"],
+    ["xi1.y", "PORT.y", "y", "logic"]
+   ],
+   "controls": {},
+   "notes": ""
+  }
+ }
+}
