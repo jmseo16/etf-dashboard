@@ -9,4 +9,4 @@
 | 배포 | 날짜 | 명세서 | 소스 커밋 | 보낸 파일 | 들어 있는 것 | 회사 발송 |
 |---|---|---|---|---|---|---|
 | R0 | 2026-11-15 | v6.1 | 소스 `bfabdf9`, 배포 `0601211` (브랜치 `claude/hspice-netlist-schematic-keantb`) | `HSIO_R0_SOURCE.md`, `HSIO_R0_TESTS.md` | 명세서 v6.1, SKILL, 기준 결과 RX AFE(v6.1로 다시 만듦), 실사용 흐름(GLM + Claude Code), 검사기, 회귀 시험 세트 9개 | (보낸 날짜를 적는다) |
-| R0.1 | 2026-11-16 | v6.1 | (묶음 머리말의 소스 커밋) | `HSIO_R0.1_SOURCE.md`, `HSIO_R0.1_TESTS.md`, `README_R0.1.md` | R0 + 처음 보는 사람용 README, 4회차 최종 결과, 알려진 문제(보수 출력 동그라미), BACKLOG. 규칙·기준 결과·시험 세트는 R0와 같음 | (보낸 날짜를 적는다) |
+| R0.1 | 2026-11-16 | v6.1 | 소스 `bdcf300`, 배포 `4cd092d` | `HSIO_R0.1_SOURCE.md`, `HSIO_R0.1_TESTS.md`, `README_R0.1.md` | R0 + 처음 보는 사람용 README, 4회차 최종 결과, 알려진 문제(보수 출력 동그라미), BACKLOG. 규칙·기준 결과·시험 세트는 R0와 같음 | (보낸 날짜를 적는다) |
