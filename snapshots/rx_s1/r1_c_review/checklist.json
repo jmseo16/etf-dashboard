@@ -1,0 +1,1444 @@
+{
+  "circuit": "dq_rx_unit",
+  "agent": "Claude (검토자 역할, 같은 모델이 검토함)",
+  "spec": "DRAWING_PLAN v6 + v6.1 결정 (V1–V27)",
+  "items": [
+    {
+      "id": "M1",
+      "star": true,
+      "result": "pass",
+      "evidence": "out/ 파일·스크린샷 17장·self_checklist·block_dictionary, 화면 id·제목 형식, 사이드 패널 순서, verify_report 화면마다 scene_sha",
+      "rule": "M1",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "M2",
+      "star": true,
+      "result": "fail",
+      "evidence": "연결 재추출(배선+기호 획) 오류 0, 주입 4건 모두 잡힘",
+      "rule": "§4.1-1",
+      "cause": "drawer",
+      "fix": "M2 규격 위반 사항 개선 필요"
+    },
+    {
+      "id": "M3",
+      "star": true,
+      "result": "pass",
+      "evidence": "생략 목록 == 숨긴 넷·블록, 버스는 <MSB:LSB> 한 줄, 그린 넷 없음",
+      "rule": "§4.1-3",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "M4",
+      "star": true,
+      "result": "fail",
+      "evidence": "블록 화면 교차 0, 유닛 화면 교차는 허용 목록만 (u_vga·u_summer·u_sa_strongarm·u_latch 각 2)",
+      "rule": "§1.4-9",
+      "cause": "drawer",
+      "fix": "M4 규격 위반 사항 개선 필요"
+    },
+    {
+      "id": "M5",
+      "star": false,
+      "result": "fail",
+      "evidence": "글씨 겹침·관통·꼬임·20px 미만 꺾임/접점·4방향 접점·같은 직선 위 선 끝 40px 모두 0",
+      "rule": "§4.1-5",
+      "cause": "drawer",
+      "fix": "M5 규격 위반 사항 개선 필요"
+    },
+    {
+      "id": "M6",
+      "star": true,
+      "result": "pass",
+      "evidence": "모두 실선 1.6px, 붙지 않은 출력 핀 0, 떠 있는 포트 0, 이름표 짝(예외 미사용 출력·화면 밖 연결 기호)",
+      "rule": "§4.1-6·7·10·11",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "M7",
+      "star": true,
+      "result": "pass",
+      "evidence": "그린 이름 모두 netlist에 있음, 버스 이름 <MSB:LSB>, 버스 사선(비트 수 없음)",
+      "rule": "§4.1-14, §1.4-3, §3.5-2",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "M8",
+      "star": true,
+      "result": "fail",
+      "evidence": "출력 동그라미 == netlist 극성(논리 출력만), 차동 입력 +/−",
+      "rule": "§4.1-13",
+      "cause": "drawer",
+      "fix": "M8 규격 위반 사항 개선 필요"
+    },
+    {
+      "id": "M9",
+      "star": false,
+      "result": "pass",
+      "evidence": "출력이 둘 이상인 기호의 출력마다 핀 이름",
+      "rule": "§4.1-15",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "M10",
+      "star": false,
+      "result": "pass",
+      "evidence": "유닛 화면 기호 ≤ 20, 크기·값 SI 표기, nf·모델명 없음",
+      "rule": "M10",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "M11",
+      "star": false,
+      "result": "pass",
+      "evidence": "주석·범례·제목의 수치가 netlist 값",
+      "rule": "§4.1-9",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "M12",
+      "star": false,
+      "result": "na",
+      "evidence": "수정 라운드 아님 (기준 결과 개정) — 바뀐 화면은 REF_CHANGES.md에 scene_sha로",
+      "rule": "§4.1-16·17",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "M13",
+      "star": false,
+      "result": "fail",
+      "evidence": "핀 방향 V18 표 전수 검사",
+      "rule": "V26 M13",
+      "cause": "drawer",
+      "fix": "M13 규격 위반 사항 개선 필요"
+    },
+    {
+      "id": "M14",
+      "star": false,
+      "result": "pass",
+      "evidence": "분류 표·포트 표·제어 표·annotations·사이드 패널·생략 목록 일치",
+      "rule": "V26 M14",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "J1",
+      "star": true,
+      "result": "pass",
+      "evidence": "구조로 판정(이름은 확신도만). 그린 제어 W<4:1>_<3:0>(K1)·G<3:0>(K6), 숨긴 다비트 C<2:0>·R<2:0>(K7)마다 K#·끝점 핀·출처. 질문 Q1–Q5는 확신 낮음·템플릿·규칙 밖 (자기 점검)",
+      "rule": "§2.4, §2.5, §2.7",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "J2",
+      "star": true,
+      "result": "pass",
+      "evidence": "block_dictionary.json: 모든 행 missing_features 없음 → 사전 기호 (자기 점검)",
+      "rule": "§2.6-3·4",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "J3",
+      "star": false,
+      "result": "pass",
+      "evidence": "왼→오, 클럭 아래, 버스 위, 주 경로 한 줄, 슬라이스 2개 같은 열 (자기 점검, 핀 방향은 M13)",
+      "rule": "§3.2",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "J4",
+      "star": true,
+      "result": "pass",
+      "evidence": "차동 유닛 거울 대칭(M11만 바깥+주석), 그림 B (자기 점검)",
+      "rule": "§3.3",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "J5",
+      "star": true,
+      "result": "pass",
+      "evidence": "기하만으로 손 대조: b_top, b_slice, b_clk, b_sa, u_vga, u_summer (스크린샷 직접 확인, 자기 점검)",
+      "rule": "§4.1-1",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "J6",
+      "star": true,
+      "result": "pass",
+      "evidence": "고속 경로 RX_INP→CTLE→CTLE→VGA(G<3:0> 이득 코드)→슬라이스 2개(W 탭 계수), 클럭 트리 — 그림만으로 설명됨 (자기 점검)",
+      "rule": "§0.1",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "J7",
+      "star": false,
+      "result": "pass",
+      "evidence": "HTML 한 파일·PPTX 내장·클릭 이동·W/L 토글·PPTX 18장 (measure.js 클릭 시험, 자기 점검)",
+      "rule": "§1.1",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "J8",
+      "star": false,
+      "result": "na",
+      "evidence": "AGENT 3 결과와의 차이 — AGENT 3가 채움",
+      "rule": "§4.3",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "G1a",
+      "star": true,
+      "result": "na",
+      "evidence": "AGENT 2에는 정답지가 없다 (부록 A와는 대조: 분류 일치, 포트 수 줄만 옛 값)",
+      "rule": "부록 B",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "G1b",
+      "star": true,
+      "result": "na",
+      "evidence": "AGENT 2에는 정답지가 없다 (부록 A와는 대조: 분류 일치, 포트 수 줄만 옛 값)",
+      "rule": "부록 B",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "G1c",
+      "star": true,
+      "result": "na",
+      "evidence": "AGENT 2에는 정답지가 없다 (부록 A와는 대조: 분류 일치, 포트 수 줄만 옛 값)",
+      "rule": "부록 B",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "G1d",
+      "star": false,
+      "result": "na",
+      "evidence": "AGENT 2에는 정답지가 없다 (부록 A와는 대조: 분류 일치, 포트 수 줄만 옛 값)",
+      "rule": "부록 B",
+      "cause": null,
+      "fix": null
+    },
+    {
+      "id": "N1",
+      "star": true,
+      "result": "na",
+      "evidence": "이름 가림 사본 아님",
+      "rule": "§4.4-6",
+      "cause": null,
+      "fix": null
+    }
+  ],
+  "counts": {
+    "pass": 15,
+    "fail": 5,
+    "na": 7,
+    "star_fail": 3,
+    "drawer": 5,
+    "spec": 0
+  },
+  "verdict_drawing": "FAIL",
+  "verdict_spec": "PASS",
+  "auto_checks": {
+    "4.1-1": {
+      "name": "연결 재추출 (기하만, 기호 획 포함)",
+      "rule": "§4.1-1, SKILL §9-1",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": [
+        {
+          "mutation": "SHORT — CTLE1_P와 CTLE1_N 사이에 선",
+          "view": "b_top",
+          "caught": true,
+          "count_before": 0,
+          "count_after": 4,
+          "v25": "SHORT",
+          "scene_sha_changed": true
+        },
+        {
+          "mutation": "포트 뒤바꿈 — DP ↔ DN",
+          "view": "u_odt_dec",
+          "caught": false,
+          "count_before": 0,
+          "count_after": 0,
+          "v25": null,
+          "scene_sha_changed": true
+        },
+        {
+          "mutation": "선 이동 — latch 출력 선 6px",
+          "view": "u_ck_gbuf",
+          "caught": false,
+          "count_before": 0,
+          "count_after": 0,
+          "v25": null,
+          "scene_sha_changed": true
+        },
+        {
+          "mutation": "접점 삭제",
+          "view": "u_term",
+          "caught": true,
+          "count_before": 0,
+          "count_after": 1,
+          "v25": null,
+          "scene_sha_changed": true
+        }
+      ]
+    },
+    "4.1-2": {
+      "name": "보이는 고속 넷 완전성 · 이름표 짝 · 화면 밖 연결 기호",
+      "rule": "§4.1-2, §3.5-1",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": [
+        {
+          "mutation": "OPEN — 선 끊기 (Σ 출력 → SA 입력 선 삭제)",
+          "view": "u_term",
+          "caught": false,
+          "count_before": 0,
+          "count_after": 0,
+          "v25": "OPEN(선 끊기)",
+          "scene_sha_changed": true
+        },
+        {
+          "mutation": "경계 넷을 일반 이름표로 (화면 밖 연결 기호 없음)",
+          "view": "u_sa_dt",
+          "caught": false,
+          "count_before": 0,
+          "count_after": 0,
+          "v25": null,
+          "scene_sha_changed": true
+        }
+      ]
+    },
+    "4.1-3": {
+      "name": "생략 = 분류 (생략 목록 ↔ 그린 넷, 버스 한 줄)",
+      "rule": "§4.1-3, §3.5-5",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": [
+        {
+          "mutation": "그리지도 생략하지도 않은 넷 — 생략 목록에서 R<2:0> 삭제",
+          "view": "b_top",
+          "caught": false,
+          "count_before": 0,
+          "count_after": 0,
+          "v25": "그리지도 생략하지도 않은 넷",
+          "scene_sha_changed": true
+        },
+        {
+          "mutation": "그린 넷(VDD 레일)을 생략 목록에",
+          "view": "u_sa_dt",
+          "caught": false,
+          "count_before": 0,
+          "count_after": 0,
+          "v25": null,
+          "scene_sha_changed": true
+        }
+      ]
+    },
+    "4.1-4": {
+      "name": "기호 = 묶음",
+      "rule": "§4.1-4",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": [
+        {
+          "mutation": "소자 삭제 — M1",
+          "view": "u_pre",
+          "caught": false,
+          "count_before": 0,
+          "count_after": 0,
+          "v25": null,
+          "scene_sha_changed": true
+        }
+      ]
+    },
+    "4.1-5": {
+      "name": "품질 0 (글씨 겹침, 관통, 대칭, 꼬임, 짧은 꺾임, 접점 근접, 교차, 4방향 접점, 같은 직선 위 선 끝 40px)",
+      "rule": "§4.1-5, §1.4",
+      "result": "fail",
+      "count": 178,
+      "details": {
+        "b_top": {
+          "q:text_overlap": null,
+          "q:wire_through_symbol": [
+            "xi21 by wire 4",
+            "gnd_300_250 by wire 5",
+            "gnd_300_250 by wire 10",
+            "xi27 by wire 35",
+            "xi27 by wire 38",
+            "xi29 by wire 43"
+          ],
+          "q:twisted_lines": [
+            {
+              "wire": 9,
+              "ratio": 1.67
+            },
+            {
+              "wire": 57,
+              "ratio": 2.03
+            },
+            {
+              "wire": 58,
+              "ratio": 1.91
+            }
+          ],
+          "q:short_jogs": [
+            {
+              "wire": 25,
+              "len": 10.0
+            },
+            {
+              "wire": 29,
+              "len": 10.0
+            },
+            {
+              "wire": 32,
+              "len": 5.0
+            },
+            {
+              "wire": 39,
+              "len": 8.0
+            },
+            {
+              "wire": 39,
+              "len": 10.0
+            },
+            {
+              "wire": 40,
+              "len": 8.0
+            },
+            {
+              "wire": 40,
+              "len": 10.0
+            },
+            {
+              "wire": 41,
+              "len": 8.0
+            },
+            {
+              "wire": 41,
+              "len": 10.0
+            },
+            {
+              "wire": 42,
+              "len": 8.0
+            },
+            {
+              "wire": 42,
+              "len": 10.0
+            },
+            {
+              "wire": 43,
+              "len": 15.0
+            },
+            {
+              "wire": 44,
+              "len": 15.0
+            }
+          ],
+          "q:close_junctions": [
+            [
+              [
+                570.0,
+                560.0
+              ],
+              [
+                575.0,
+                570.0
+              ]
+            ]
+          ],
+          "q:avoidable_crossings": [
+            [
+              300.0,
+              260.0
+            ],
+            [
+              110.0,
+              550.0
+            ],
+            [
+              110.0,
+              700.0
+            ],
+            [
+              110.0,
+              720.0
+            ],
+            [
+              110.0,
+              600.0
+            ],
+            [
+              110.0,
+              640.0
+            ],
+            [
+              525.0,
+              290.0
+            ],
+            [
+              520.0,
+              290.0
+            ],
+            [
+              525.0,
+              330.0
+            ],
+            [
+              520.0,
+              330.0
+            ],
+            [
+              535.0,
+              330.0
+            ],
+            [
+              530.0,
+              330.0
+            ],
+            [
+              550.0,
+              290.0
+            ],
+            [
+              560.0,
+              270.0
+            ],
+            [
+              560.0,
+              300.0
+            ],
+            [
+              560.0,
+              320.0
+            ],
+            [
+              570.0,
+              470.0
+            ],
+            [
+              575.0,
+              470.0
+            ],
+            [
+              550.0,
+              300.0
+            ],
+            [
+              550.0,
+              320.0
+            ],
+            [
+              570.0,
+              490.0
+            ],
+            [
+              575.0,
+              490.0
+            ],
+            [
+              535.0,
+              595.0
+            ],
+            [
+              530.0,
+              595.0
+            ],
+            [
+              575.0,
+              560.0
+            ],
+            [
+              570.0,
+              520.0
+            ],
+            [
+              570.0,
+              540.0
+            ],
+            [
+              535.0,
+              615.0
+            ],
+            [
+              530.0,
+              615.0
+            ],
+            [
+              575.0,
+              520.0
+            ],
+            [
+              575.0,
+              540.0
+            ],
+            [
+              535.0,
+              640.0
+            ],
+            [
+              530.0,
+              640.0
+            ],
+            [
+              535.0,
+              760.0
+            ],
+            [
+              530.0,
+              760.0
+            ],
+            [
+              670.0,
+              700.0
+            ],
+            [
+              670.0,
+              720.0
+            ],
+            [
+              535.0,
+              700.0
+            ],
+            [
+              530.0,
+              700.0
+            ],
+            [
+              535.0,
+              720.0
+            ],
+            [
+              530.0,
+              720.0
+            ],
+            [
+              1080.0,
+              260.0
+            ],
+            [
+              1070.0,
+              520.0
+            ],
+            [
+              1070.0,
+              190.0
+            ],
+            [
+              525.0,
+              190.0
+            ],
+            [
+              535.0,
+              520.0
+            ],
+            [
+              530.0,
+              520.0
+            ],
+            [
+              535.0,
+              540.0
+            ],
+            [
+              530.0,
+              540.0
+            ],
+            [
+              535.0,
+              320.0
+            ]
+          ]
+        },
+        "u_term": {
+          "q:wire_through_symbol": [
+            "d0 by wire 3",
+            "d0 by wire 4",
+            "d1 by wire 5",
+            "d1 by wire 6",
+            "d2 by wire 8",
+            "d2 by wire 9",
+            "d3 by wire 10",
+            "d3 by wire 11"
+          ],
+          "q:four_way_junctions": [
+            [
+              200.0,
+              280.0
+            ],
+            [
+              480.0,
+              280.0
+            ]
+          ]
+        },
+        "u_pre": {
+          "q:text_overlap": null,
+          "q:wire_through_symbol": [
+            "r0 by wire 28",
+            "mn7 by wire 24"
+          ],
+          "q:avoidable_crossings": [
+            [
+              320.0,
+              220.0
+            ],
+            [
+              640.0,
+              220.0
+            ],
+            [
+              260.0,
+              240.0
+            ],
+            [
+              700.0,
+              240.0
+            ],
+            [
+              480.0,
+              360.0
+            ],
+            [
+              510.0,
+              160.0
+            ]
+          ]
+        },
+        "u_dfe_sum": {
+          "q:text_overlap": null,
+          "q:wire_through_symbol": [
+            "mn3 by wire 27"
+          ],
+          "q:twisted_lines": [
+            {
+              "wire": 22,
+              "ratio": 1.8
+            }
+          ],
+          "q:short_jogs": [
+            {
+              "wire": 17,
+              "len": 10.0
+            },
+            {
+              "wire": 27,
+              "len": 10.0
+            }
+          ],
+          "q:avoidable_crossings": [
+            [
+              680.0,
+              175.0
+            ],
+            [
+              680.0,
+              190.0
+            ],
+            [
+              400.0,
+              360.0
+            ]
+          ]
+        },
+        "u_sa_dt": {
+          "q:text_overlap": null,
+          "q:wire_through_symbol": [
+            "pin_ck_1 by wire 36",
+            "mp4 by wire 13",
+            "mn3 by wire 15",
+            "gnd_380_352 by wire 23",
+            "gnd_680_352 by wire 24"
+          ],
+          "q:twisted_lines": [
+            {
+              "wire": 38,
+              "ratio": 2.19
+            }
+          ],
+          "q:short_jogs": [
+            {
+              "wire": 4,
+              "len": 10.0
+            },
+            {
+              "wire": 20,
+              "len": 10.0
+            },
+            {
+              "wire": 22,
+              "len": 10.0
+            },
+            {
+              "wire": 28,
+              "len": 10.0
+            },
+            {
+              "wire": 30,
+              "len": 10.0
+            }
+          ],
+          "q:close_junctions": [
+            [
+              [
+                450.0,
+                270.0
+              ],
+              [
+                450.0,
+                270.0
+              ]
+            ],
+            [
+              [
+                610.0,
+                270.0
+              ],
+              [
+                610.0,
+                270.0
+              ]
+            ]
+          ],
+          "q:avoidable_crossings": [
+            [
+              650.0,
+              270.0
+            ],
+            [
+              650.0,
+              270.0
+            ],
+            [
+              410.0,
+              270.0
+            ],
+            [
+              410.0,
+              270.0
+            ],
+            [
+              880.0,
+              480.0
+            ]
+          ],
+          "q:four_way_junctions": [
+            [
+              450.0,
+              270.0
+            ],
+            [
+              610.0,
+              270.0
+            ],
+            [
+              450.0,
+              270.0
+            ],
+            [
+              610.0,
+              270.0
+            ],
+            [
+              390.0,
+              270.0
+            ],
+            [
+              670.0,
+              270.0
+            ]
+          ],
+          "q:collinear_end_gap": [
+            {
+              "ends": [
+                [
+                  380.0,
+                  352.0
+                ],
+                [
+                  380.0,
+                  358.0
+                ]
+              ],
+              "gap": 6.0
+            },
+            {
+              "ends": [
+                [
+                  680.0,
+                  352.0
+                ],
+                [
+                  680.0,
+                  358.0
+                ]
+              ],
+              "gap": 6.0
+            }
+          ]
+        },
+        "u_sr_nor": {
+          "q:avoidable_crossings": [
+            [
+              180.0,
+              240.0
+            ]
+          ]
+        },
+        "u_ck_gbuf": {
+          "q:avoidable_crossings": [
+            [
+              160.0,
+              285.0
+            ]
+          ]
+        },
+        "u_odt_dec": {
+          "q:avoidable_crossings": [
+            [
+              160.0,
+              110.0
+            ],
+            [
+              160.0,
+              230.0
+            ],
+            [
+              160.0,
+              350.0
+            ]
+          ]
+        },
+        "u_ls": {
+          "q:avoidable_crossings": [
+            [
+              240.0,
+              350.0
+            ],
+            [
+              360.0,
+              230.0
+            ],
+            [
+              480.0,
+              180.0
+            ]
+          ]
+        },
+        "u_nor": {
+          "q:avoidable_crossings": [
+            [
+              240.0,
+              380.0
+            ],
+            [
+              360.0,
+              380.0
+            ],
+            [
+              180.0,
+              220.0
+            ]
+          ]
+        },
+        "u_nand": {
+          "q:avoidable_crossings": [
+            [
+              400.0,
+              200.0
+            ]
+          ],
+          "q:four_way_junctions": [
+            [
+              340.0,
+              200.0
+            ]
+          ]
+        }
+      },
+      "injected": [
+        {
+          "mutation": "블록 화면 교차 — CLKB 선을 CLK 줄기 위로",
+          "view": "u_term",
+          "caught": false,
+          "count_before": 10,
+          "count_after": 10,
+          "v25": "블록 교차",
+          "scene_sha_changed": true
+        },
+        {
+          "mutation": "짧은 꺾임 (<20px) — 탭 입력 선에 10px 꺾임",
+          "view": "u_term",
+          "caught": false,
+          "count_before": 10,
+          "count_after": 10,
+          "v25": "짧은 꺾임(<20px)",
+          "scene_sha_changed": true
+        },
+        {
+          "mutation": "같은 직선 위 다른 넷 선 끝 20px (B1P 끝 ↔ B1N 이름표 선)",
+          "view": "u_ck_gbuf",
+          "caught": false,
+          "count_before": 1,
+          "count_after": 1,
+          "v25": null,
+          "scene_sha_changed": true
+        }
+      ]
+    },
+    "4.1-6": {
+      "name": "떠 있는 포트",
+      "rule": "§4.1-6",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": [
+        {
+          "mutation": "떠 있는 포트 — CLKB 포트를 선에서 뗌",
+          "view": "u_term",
+          "caught": false,
+          "count_before": 0,
+          "count_after": 0,
+          "v25": null,
+          "scene_sha_changed": true
+        }
+      ]
+    },
+    "4.1-7": {
+      "name": "선 종류 일치 (모두 1.6px 실선, 화면 간 같음)",
+      "rule": "§4.1-7, §1.4-1",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": [
+        {
+          "mutation": "선 종류 — 선 하나를 2.6px",
+          "view": "u_sa_dt",
+          "caught": true,
+          "count_before": 0,
+          "count_after": 2,
+          "v25": null,
+          "scene_sha_changed": true
+        }
+      ]
+    },
+    "4.1-8": {
+      "name": "합친 블록 범례",
+      "rule": "§4.1-8, §3.1-7",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": [
+        {
+          "mutation": "범례 지우기",
+          "view": "u_sa_dt",
+          "caught": false,
+          "count_before": 0,
+          "count_after": 0,
+          "v25": null,
+          "scene_sha_changed": true
+        }
+      ]
+    },
+    "4.1-9": {
+      "name": "설명 수치",
+      "rule": "§4.1-9, §3.5-7",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": [
+        {
+          "mutation": "설명 수치 — 범례 800Ω → 900Ω",
+          "view": "u_pre",
+          "caught": false,
+          "count_before": 0,
+          "count_after": 0,
+          "v25": null,
+          "scene_sha_changed": true
+        }
+      ]
+    },
+    "4.1-10": {
+      "name": "붙지 않은 출력 핀",
+      "rule": "§4.1-10, §3.5-4",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": []
+    },
+    "4.1-11": {
+      "name": "점선",
+      "rule": "§4.1-11",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": [
+        {
+          "mutation": "점선 — 선 하나를 점선으로",
+          "view": "b_top",
+          "caught": true,
+          "count_before": 0,
+          "count_after": 1,
+          "v25": "점선",
+          "scene_sha_changed": true
+        }
+      ]
+    },
+    "4.1-12": {
+      "name": "CCI 배치",
+      "rule": "§4.1-12, §3.3-7",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": "n/a — 이 회로에 해당 구조 없음",
+      "note": "이 회로에는 교차 결합 인버터 쌍(CCI)이 없다 (SR latch는 NAND2 교차 결합, StrongARM은 §3.3-9 템플릿)"
+    },
+    "4.1-13": {
+      "name": "출력별 극성 (논리 출력만, V19) + 차동 입력 +/− (V21)",
+      "rule": "§4.1-13, §3.4-6, V19, V21",
+      "result": "fail",
+      "count": 1,
+      "details": {
+        "b_top": {
+          "chk:polarity": [
+            "xi22.enb<2:0>: netlist polarity inv, logic output, bubble drawn=False"
+          ]
+        }
+      },
+      "injected": [
+        {
+          "mutation": "차동 입력 +/− 뒤바꿈 (V21)",
+          "view": "b_top",
+          "caught": false,
+          "count_before": 1,
+          "count_after": 1,
+          "v25": null,
+          "scene_sha_changed": true
+        }
+      ]
+    },
+    "4.1-14": {
+      "name": "이름 일치",
+      "rule": "§4.1-14",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": []
+    },
+    "3.5-2-bus_marks": {
+      "name": "버스 표시 (사선, <a:b>면 비트 수 없음, <MSB:LSB>)",
+      "rule": "§3.5-2, §1.4-3, §3.5-1",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": [
+        {
+          "mutation": "<a:b> 버스에 비트 수 쓰기 (v3 방식)",
+          "view": "b_top",
+          "caught": true,
+          "count_before": 0,
+          "count_after": 1,
+          "v25": null,
+          "scene_sha_changed": true
+        }
+      ]
+    },
+    "4.1-15": {
+      "name": "핀 이름 (출력 둘 이상·선택 핀)",
+      "rule": "§4.1-15, §3.4-7",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": [
+        {
+          "mutation": "핀 이름 지우기 — CTLE 출력 OUTP",
+          "view": "b_top",
+          "caught": false,
+          "count_before": 0,
+          "count_after": 0,
+          "v25": null,
+          "scene_sha_changed": true
+        }
+      ]
+    },
+    "4.1-16": {
+      "name": "화면 지문 scene_sha",
+      "rule": "§4.1-16, §1.2",
+      "result": "pass",
+      "count": 0,
+      "details": {
+        "b_top": "1c655dd4d9b38169411f71f9d08a4bf714317e9a8102f889c0c1574c6db1814c",
+        "u_term": "e0c3b6b13cdecc56978e58913e714039d0ddda01ce992766c29bb3a1982f9907",
+        "u_pre": "81de501676f61058a4bcb7dd1b6dda42711e108918895f1a3b18df21484380e5",
+        "u_dfe_sum": "c63a7445ca39b5830657a8e6ea00398dd0179fcb4b5e119e6530d00a82bd6fea",
+        "u_sa_dt": "7be7959933fe0be9dc1940bae47b0ec4bf5cb798f4356c394fc095b9a13e809f",
+        "u_sr_nor": "2383c8de5b3cd5737028289d1e8219504af1b7ef1f8a3564adb1e4cdd7732681",
+        "u_ck_gbuf": "7e1d40417d3f991628ad67b5f92868fa0ef0bccdcaa0a2a873fb6d526a3f5306",
+        "u_odt_dec": "b4cf7ec31da5785783d8c6ae00aaea6eb59a44498862f34863223e3c28f34093",
+        "u_ls": "331897840e6e28a9a3ab1ec9d88c17b4377268feb36314d820db28c9036da74c",
+        "u_nor": "5a77effcb8c83ae4ceacb86d5d9f5611ce0a0f56c8f4133b2a40124032189f97",
+        "u_nand": "f1847c3dc56189902be96c0c97a57453a3cfa919e7a8639f770838ee2326278a",
+        "u_inv": "9360556fc68da8ffac380cc55842711613f882ba233a9feae8f4230ae59bb26c"
+      },
+      "injected": [
+        {
+          "mutation": "화면 주입 21건: 그림 데이터가 바뀐 주입에서만 그 화면의 scene_sha가 바뀌는지",
+          "view": "all",
+          "caught": true
+        }
+      ]
+    },
+    "4.1-17": {
+      "name": "생성 코드 변경 범위",
+      "rule": "§4.1-17, §4.3-5",
+      "result": "pass",
+      "count": 0,
+      "details": {
+        "changed_views_vs_expected": "expected/ has no scene_sha (v3 baseline)",
+        "regenerated_and_rechecked_views": [
+          "b_top",
+          "u_term",
+          "u_pre",
+          "u_dfe_sum",
+          "u_sa_dt",
+          "u_sr_nor",
+          "u_ck_gbuf",
+          "u_odt_dec",
+          "u_ls",
+          "u_nor",
+          "u_nand",
+          "u_inv"
+        ]
+      },
+      "injected": "n/a (지문·보고 항목)"
+    },
+    "V24-pin_sides": {
+      "name": "핀 방향 (V18 표)",
+      "rule": "V24, V18, §3.2",
+      "result": "fail",
+      "count": 21,
+      "details": {
+        "b_top": {
+          "chk:pin_sides": [
+            "xi20.pad: on left, expected right",
+            "xi21.pad: on bottom, expected left",
+            "xi22.odt_en: on left, expected top",
+            "xi22.rtt<2:0>: on left, expected top",
+            "xi24.sel_m: on left, expected top",
+            "xi24.sel_l: on left, expected top",
+            "xi24.outp: on right, expected bottom",
+            "xi24.outn: on right, expected bottom",
+            "xi25.en: on left, expected top",
+            "xi26.sgn: on left, expected top",
+            "xi26.sgnb: on left, expected top",
+            "xi26.tap<3:0>: on bottom, expected top",
+            "xi26.en: on bottom, expected top",
+            "xi27.sgn: on left, expected top",
+            "xi27.sgnb: on left, expected top",
+            "xi27.tap<3:0>: on bottom, expected top",
+            "xi27.en: on bottom, expected top",
+            "xi28.inp: on left, expected bottom",
+            "xi28.inn: on left, expected bottom",
+            "xi29.inp: on left, expected bottom",
+            "xi29.inn: on left, expected bottom"
+          ]
+        }
+      },
+      "injected": []
+    },
+    "V24-gray_scope": {
+      "name": "회색 이름표 허용 범위",
+      "rule": "V24, §3.5-3",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": []
+    },
+    "V24-questions": {
+      "name": "질문 검사 (확신 낮음 · 템플릿 · 규칙이 정한 것 아님)",
+      "rule": "V24, §2.7",
+      "result": "pass",
+      "count": 0,
+      "details": [],
+      "injected": [
+        {
+          "mutation": "질문 검사 — 미사용 출력을 묻기 (규칙이 정함)",
+          "view": "global",
+          "caught": true,
+          "count_before": 0,
+          "count_after": 1
+        },
+        {
+          "mutation": "질문 검사 — 확신 높음을 묻기",
+          "view": "global",
+          "caught": true,
+          "count_before": 0,
+          "count_after": 1
+        },
+        {
+          "mutation": "질문 검사 — 템플릿이 아닌 문장",
+          "view": "global",
+          "caught": true,
+          "count_before": 0,
+          "count_after": 1
+        },
+        {
+          "mutation": "질문 검사 — 사전에 있는 NAND2를 사전에 없다고 묻기",
+          "view": "global",
+          "caught": false,
+          "count_before": 0,
+          "count_after": 0
+        }
+      ]
+    },
+    "V24-landing_pins": {
+      "name": "끝점 핀 검사 (instance.pin 형식 · 존재 · 넷에서 도달 · 구동원 아님)",
+      "rule": "V24, §2.5-9",
+      "result": "pass",
+      "count": 0,
+      "details": [],
+      "injected": [
+        {
+          "mutation": "끝점 핀 — 구동원(드레인) 핀",
+          "view": "global",
+          "caught": true,
+          "count_before": 0,
+          "count_after": 1
+        }
+      ]
+    },
+    "V24-cross_table": {
+      "name": "표 간 분류 일치 (분류 표 · 포트 표 · annotations · 사이드 패널 · 생략 목록)",
+      "rule": "V24, V26 M14",
+      "result": "pass",
+      "count": 0,
+      "details": [],
+      "injected": [
+        {
+          "mutation": "표 간 분류 — annotations 일반 제어에 G0",
+          "view": "global",
+          "caught": true,
+          "count_before": 0,
+          "count_after": 1
+        },
+        {
+          "mutation": "표 간 분류 — classification.md 포트 표 R1을 중요 제어로",
+          "view": "global",
+          "caught": false,
+          "count_before": 0,
+          "count_after": 0
+        }
+      ]
+    },
+    "V24-block_pins": {
+      "name": "블록 핀 이름 = 셀 포트",
+      "rule": "V24",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": []
+    },
+    "V24-rc_values": {
+      "name": "R/C 값 = 인스턴스 값 (W/L 포함, SI 표기)",
+      "rule": "V24, §3.5-6",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": []
+    },
+    "V24-text_inside": {
+      "name": "글자가 박스·화면 밖으로 나감",
+      "rule": "V24",
+      "result": "fail",
+      "count": 2,
+      "details": {
+        "b_top": {
+          "chk:text_inside": [
+            "\"odt_en\" outside the view",
+            "\"rtt<2:0>\" outside the view"
+          ]
+        }
+      },
+      "injected": []
+    },
+    "2.6-4-block_dictionary": {
+      "name": "사전 대응 기록 block_dictionary.json",
+      "rule": "§2.6-3·4",
+      "result": "pass",
+      "count": 0,
+      "details": [],
+      "injected": []
+    },
+    "M1-files": {
+      "name": "파일 · 화면 id · 제목 · 사이드 패널 순서",
+      "rule": "M1, §1.2, §1.3",
+      "result": "pass",
+      "count": 0,
+      "details": [],
+      "injected": [
+        {
+          "mutation": "파일 — block_dictionary.json 없음",
+          "view": "global",
+          "caught": true,
+          "count_before": 0,
+          "count_after": 1
+        }
+      ]
+    },
+    "M10-unit_size": {
+      "name": "유닛 화면 기호 20개 이하",
+      "rule": "M10, §3.1-8",
+      "result": "pass",
+      "count": 0,
+      "details": {},
+      "injected": [
+        {
+          "mutation": "유닛 화면 기호 22개",
+          "view": "u_sa_dt",
+          "caught": true,
+          "count_before": 0,
+          "count_after": 1,
+          "v25": null,
+          "scene_sha_changed": true
+        }
+      ]
+    }
+  },
+  "v25_required_injections_covered": [
+    "OPEN(선 끊기)",
+    "SHORT",
+    "그리지도 생략하지도 않은 넷",
+    "블록 교차",
+    "점선",
+    "짧은 꺾임(<20px)"
+  ],
+  "self_test": {
+    "injected": 30,
+    "caught": 13,
+    "all_caught": false
+  }
+}
