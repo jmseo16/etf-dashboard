@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="500" viewBox="0 0 720 500" font-family="Helvetica,Arial,sans-serif">
+<rect width="100%" height="100%" fill="#fff"/>
+<line x1="210" y1="70" x2="150" y2="70" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="210" y1="180" x2="90" y2="180" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="90" y1="180" x2="90" y2="290" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="90" y1="290" x2="210" y2="290" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="210" y1="400" x2="90" y2="400" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="90" y1="400" x2="90" y2="290" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="90" y1="180" x2="70" y2="180" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="210" y1="90" x2="150" y2="90" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="210" y1="200" x2="150" y2="200" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="210" y1="310" x2="150" y2="310" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="210" y1="420" x2="150" y2="420" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="560" y1="90" x2="620" y2="90" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="560" y1="200" x2="620" y2="200" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="560" y1="310" x2="620" y2="310" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="560" y1="420" x2="620" y2="420" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="320" y1="80" x2="460" y2="80" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="320" y1="190" x2="460" y2="190" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="320" y1="300" x2="460" y2="300" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="320" y1="410" x2="460" y2="410" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="560" y1="70" x2="580" y2="70" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="560" y1="180" x2="580" y2="180" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="560" y1="290" x2="580" y2="290" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="560" y1="400" x2="580" y2="400" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<g class="hot" data-target="u_nand2x1" style="cursor:pointer"><rect x="210" y="50" width="100" height="60" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><circle cx="315" cy="80" r="5" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><rect x="210" y="50" width="100" height="60" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_nand2x1" style="cursor:pointer"><rect x="210" y="160" width="100" height="60" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><circle cx="315" cy="190" r="5" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><rect x="210" y="160" width="100" height="60" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_nand2x1" style="cursor:pointer"><rect x="210" y="270" width="100" height="60" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><circle cx="315" cy="300" r="5" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><rect x="210" y="270" width="100" height="60" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_nand2x1" style="cursor:pointer"><rect x="210" y="380" width="100" height="60" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><circle cx="315" cy="410" r="5" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><rect x="210" y="380" width="100" height="60" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_lvlup" style="cursor:pointer"><rect x="460" y="50" width="100" height="60" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><rect x="460" y="50" width="100" height="60" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_lvlup" style="cursor:pointer"><rect x="460" y="160" width="100" height="60" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><rect x="460" y="160" width="100" height="60" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_lvlup" style="cursor:pointer"><rect x="460" y="270" width="100" height="60" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><rect x="460" y="270" width="100" height="60" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_lvlup" style="cursor:pointer"><rect x="460" y="380" width="100" height="60" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><rect x="460" y="380" width="100" height="60" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<circle cx="90" cy="290" r="3" fill="#111"/>
+<circle cx="90" cy="180" r="3" fill="#111"/>
+<polygon points="134,65 145,65 150,70 145,75 134,75" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="134,85 145,85 150,90 145,95 134,95" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="134,195 145,195 150,200 145,205 134,205" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="134,305 145,305 150,310 145,315 134,315" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="134,415 145,415 150,420 145,425 134,425" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="620,85 631,85 636,90 631,95 620,95" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="620,195 631,195 636,200 631,205 620,205" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="620,305 631,305 636,310 631,315 620,315" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="620,415 631,415 636,420 631,425 620,425" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<text x="214" y="73" font-size="9" text-anchor="start" fill="#444" pointer-events="none">a</text>
+<text x="214" y="93" font-size="9" text-anchor="start" fill="#444" pointer-events="none">b</text>
+<text x="306" y="83" font-size="9" text-anchor="end" fill="#444" pointer-events="none">y</text>
+<text x="260.0" y="84.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">nand2x1</text>
+<text x="210" y="45" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi3</text>
+<text x="214" y="183" font-size="9" text-anchor="start" fill="#444" pointer-events="none">a</text>
+<text x="214" y="203" font-size="9" text-anchor="start" fill="#444" pointer-events="none">b</text>
+<text x="306" y="193" font-size="9" text-anchor="end" fill="#444" pointer-events="none">y</text>
+<text x="260.0" y="194.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">nand2x1</text>
+<text x="210" y="155" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi2</text>
+<text x="214" y="293" font-size="9" text-anchor="start" fill="#444" pointer-events="none">a</text>
+<text x="214" y="313" font-size="9" text-anchor="start" fill="#444" pointer-events="none">b</text>
+<text x="306" y="303" font-size="9" text-anchor="end" fill="#444" pointer-events="none">y</text>
+<text x="260.0" y="304.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">nand2x1</text>
+<text x="210" y="265" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi1</text>
+<text x="214" y="403" font-size="9" text-anchor="start" fill="#444" pointer-events="none">a</text>
+<text x="214" y="423" font-size="9" text-anchor="start" fill="#444" pointer-events="none">b</text>
+<text x="306" y="413" font-size="9" text-anchor="end" fill="#444" pointer-events="none">y</text>
+<text x="260.0" y="414.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">nand2x1</text>
+<text x="210" y="375" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi0</text>
+<text x="464" y="83" font-size="9" text-anchor="start" fill="#444" pointer-events="none">in</text>
+<text x="556" y="73" font-size="9" text-anchor="end" fill="#444" pointer-events="none">out</text>
+<text x="556" y="93" font-size="9" text-anchor="end" fill="#444" pointer-events="none">outb</text>
+<text x="510.0" y="84.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">lvlup</text>
+<text x="460" y="45" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi7</text>
+<text x="464" y="193" font-size="9" text-anchor="start" fill="#444" pointer-events="none">in</text>
+<text x="556" y="183" font-size="9" text-anchor="end" fill="#444" pointer-events="none">out</text>
+<text x="556" y="203" font-size="9" text-anchor="end" fill="#444" pointer-events="none">outb</text>
+<text x="510.0" y="194.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">lvlup</text>
+<text x="460" y="155" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi6</text>
+<text x="464" y="303" font-size="9" text-anchor="start" fill="#444" pointer-events="none">in</text>
+<text x="556" y="293" font-size="9" text-anchor="end" fill="#444" pointer-events="none">out</text>
+<text x="556" y="313" font-size="9" text-anchor="end" fill="#444" pointer-events="none">outb</text>
+<text x="510.0" y="304.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">lvlup</text>
+<text x="460" y="265" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi5</text>
+<text x="464" y="413" font-size="9" text-anchor="start" fill="#444" pointer-events="none">in</text>
+<text x="556" y="403" font-size="9" text-anchor="end" fill="#444" pointer-events="none">out</text>
+<text x="556" y="423" font-size="9" text-anchor="end" fill="#444" pointer-events="none">outb</text>
+<text x="510.0" y="414.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">lvlup</text>
+<text x="460" y="375" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi4</text>
+<text x="130" y="74" font-size="11" text-anchor="end" fill="#111" font-weight="bold" pointer-events="none">odt_en</text>
+<text x="130" y="94" font-size="11" text-anchor="end" fill="#111" font-weight="bold" pointer-events="none">rtt3</text>
+<text x="130" y="204" font-size="11" text-anchor="end" fill="#111" font-weight="bold" pointer-events="none">rtt2</text>
+<text x="130" y="314" font-size="11" text-anchor="end" fill="#111" font-weight="bold" pointer-events="none">rtt1</text>
+<text x="130" y="424" font-size="11" text-anchor="end" fill="#111" font-weight="bold" pointer-events="none">rtt0</text>
+<text x="640" y="94" font-size="11" text-anchor="start" fill="#111" font-weight="bold" pointer-events="none">en3</text>
+<text x="640" y="204" font-size="11" text-anchor="start" fill="#111" font-weight="bold" pointer-events="none">en2</text>
+<text x="640" y="314" font-size="11" text-anchor="start" fill="#111" font-weight="bold" pointer-events="none">en1</text>
+<text x="640" y="424" font-size="11" text-anchor="start" fill="#111" font-weight="bold" pointer-events="none">en0</text>
+<text x="67" y="183" font-size="9" text-anchor="end" fill="#0a6d3a" pointer-events="none">odt_en</text>
+<text x="583" y="73" font-size="9" text-anchor="start" fill="#0a6d3a" pointer-events="none">net29</text>
+<text x="583" y="183" font-size="9" text-anchor="start" fill="#0a6d3a" pointer-events="none">net30</text>
+<text x="583" y="293" font-size="9" text-anchor="start" fill="#0a6d3a" pointer-events="none">net31</text>
+<text x="583" y="403" font-size="9" text-anchor="start" fill="#0a6d3a" pointer-events="none">net32</text>
+</svg>
