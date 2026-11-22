@@ -500,8 +500,8 @@ def _build_scene(V, allow_pairs=()):
                     continue
                 t, p = best
                 man = abs(p[0][0] - p[-1][0]) + abs(p[0][1] - p[-1][1])
-                if len(p) - 1 > 1.5 * man + 8 and len(segments(p)) >= 4:
-                    continue                      # a detour: labels are clearer
+                if len(p) - 1 > 1.5 * man and len(p) - 1 - man >= 8:
+                    continue                      # a detour (more than 1.5 x the direct distance): labels are clearer
                 R.add_path(key, p)
                 t.wired = True
                 end = p[-1]
