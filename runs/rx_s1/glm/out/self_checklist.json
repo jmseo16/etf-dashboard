@@ -1,0 +1,81 @@
+{
+ "round": 1,
+ "view_list": [
+  "b_top"
+ ],
+ "auto_checks": [
+  {
+   "id": "1",
+   "check": "연결 재추출 — 넷 건전성 (그린 선이 실제 netlist 넷에 붙는가)",
+   "count": 0,
+   "injection": null
+  },
+  {
+   "id": "2",
+   "check": "연결 재추출 — 넷 완전성 (넷의 노드가 그린 선으로 이어지는가)",
+   "count": 0,
+   "injection": null
+  },
+  {
+   "id": "3",
+   "check": "그린 노드가 netlist·사전에 있는가",
+   "count": 0,
+   "injection": null
+  },
+  {
+   "id": "4",
+   "check": "netlist 그룹 빠짐 없이 그렸는가",
+   "count": 0,
+   "injection": null
+  },
+  {
+   "id": "5",
+   "check": "박스 겹침",
+   "count": 0,
+   "injection": null
+  },
+  {
+   "id": "6",
+   "check": "화면 밖 요소",
+   "count": 0,
+   "injection": null
+  },
+  {
+   "id": "7",
+   "check": "글자 넘침 (근사)",
+   "count": 0,
+   "injection": null
+  },
+  {
+   "id": "8",
+   "check": "생략 목록에 숨긴 항목 적힘",
+   "count": 0,
+   "injection": null
+  }
+ ],
+ "injection": {
+  "A_remove_edge_SR_E-OUT_E": {
+   "caught": true,
+   "count": 2
+  },
+  "B_add_wrong_edge_PAD-SA_E": {
+   "caught": true,
+   "count": 1
+  },
+  "C_overlap_SA_O": {
+   "caught": true,
+   "count": 1
+  },
+  "D_drop_SR_O": {
+   "caught": true,
+   "count": 5
+  }
+ },
+ "not_checked": [
+  "선 각도(대각선 금지, §1.4-6 근사)",
+  "선 교차 허용 목록(§1.4-9)",
+  "선 위 이름표 (넷 이름 없음)",
+  "유닛 레벨 화면"
+ ],
+ "note": "자체 점검 결과는 합격 근거가 아님 (WORKFLOW §1)"
+}

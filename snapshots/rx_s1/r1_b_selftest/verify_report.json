@@ -1,0 +1,35 @@
+{
+ "baseline": {
+  "1_soundness": 0,
+  "2_completeness": 0,
+  "3_unknown_nodes": 0,
+  "4_group_coverage": 0,
+  "5_box_overlap": 0,
+  "6_canvas": 0,
+  "7_text_width": 0,
+  "8_hidden_listed": 0
+ },
+ "baseline_details": [],
+ "injection": {
+  "A_remove_edge_SR_E-OUT_E": {
+   "caught": true,
+   "count": 2
+  },
+  "B_add_wrong_edge_PAD-SA_E": {
+   "caught": true,
+   "count": 1
+  },
+  "C_overlap_SA_O": {
+   "caught": true,
+   "count": 1
+  },
+  "D_drop_SR_O": {
+   "caught": true,
+   "count": 5
+  }
+ },
+ "files": {
+  "concept.html": true,
+  "concept.pptx": true
+ }
+}
