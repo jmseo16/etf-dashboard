@@ -5,8 +5,8 @@ import json
 from collections import defaultdict
 
 CONN_KEYS = ('open', 'short', 'pin_open', 'dangling_end', 'tee_without_dot', 'width_mismatch')
-QUAL_KEYS = ('avoidable_bend', 'detour', 'short_jog', 'crossing', 'wire_through_symbol', 'text_overlap', 'text_on_wire',
-             'text_on_symbol', 'four_way', 'lonely_label', 'placement_problem')
+QUAL_KEYS = ('avoidable_bend', 'jog', 'detour', 'short_jog', 'crossing', 'wire_through_symbol', 'text_overlap', 'text_on_wire',
+             'text_on_symbol', 'four_way', 'lonely_label', 'empty_band', 'placement_problem')
 
 
 def scene_sha(S):
@@ -250,10 +250,11 @@ def check(S, cell, level):
             if _interior(pt, s):
                 return False
         return True
-    pin_side = {}
+    pin_side, pin_sym = {}, {}
     for sym in S['symbols']:
         for p in sym['pins']:
             pin_side[(p['x'], p['y'])] = p['side']
+            pin_sym[(p['x'], p['y'])] = sym['id']
     for start in node:
         for nxt in deg.get(start, ()):
             if (start, nxt) in seen:
@@ -277,6 +278,12 @@ def check(S, cell, level):
             man = abs(a[0] - b[0]) + abs(a[1] - b[1])
             if a != b and length > 1.5 * man and length - man >= 80:
                 R['detour'].append('(%d,%d)-(%d,%d): %d px for a distance of %d' % (a[0], a[1], b[0], b[1], length, man))
+            # two facing pins of different symbols joined by a small step: the symbols should sit level instead
+            if len(corners) == 2 and a in pin_sym and b in pin_sym and pin_sym[a] != pin_sym[b]:
+                sa, sb = pin_side[a], pin_side[b]
+                off = abs(a[1] - b[1]) if set((sa, sb)) == set('lr') else (abs(a[0] - b[0]) if set((sa, sb)) == set('tb') else 0)
+                if 0 < off <= 40:
+                    R['jog'].append('(%d,%d)-(%d,%d): step of %d px' % (a[0], a[1], b[0], b[1], off))
             for u, v in zip(run[1:-1], run[2:-1]):
                 if abs(u[0] - v[0]) + abs(u[1] - v[1]) < 20:
                     R['short_jog'].append('(%d,%d)-(%d,%d)' % (u[0], u[1], v[0], v[1]))
@@ -364,6 +371,18 @@ def check(S, cell, level):
     for a in T:
         if any(seg_hits_box(sg, a['bbox']) for sg in strokes):
             R['text_on_symbol'].append('"%s"' % a['s'])
+    # empty band: a stretch of the drawing with nothing in it but wires passing through (symbols placed far apart)
+    for ax, limit in ((1, 600), (0, 1200)):
+        iv = [(sym['box'][ax], sym['box'][ax + 2]) for sym in S['symbols']]
+        iv += [(a['bbox'][ax], a['bbox'][ax + 2]) for a in T]
+        iv += [(min(q[ax] for q in p_['shape']), max(q[ax] for q in p_['shape'])) for p_ in S['ports']]
+        iv.sort()
+        if iv:
+            top_ = iv[0][1]
+            for lo_, hi_ in iv[1:]:
+                if lo_ - top_ > limit:
+                    R['empty_band'].append('%s %d–%d: %d px with no symbol or text' % ('y' if ax else 'x', top_, lo_, lo_ - top_))
+                top_ = max(top_, hi_)
     for p in S.get('problems', []):
         R['placement_problem'].append(p)
     nb = 0

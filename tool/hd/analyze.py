@@ -104,6 +104,12 @@ def analyze(cells, top, ann=None):
     pwr_sw = [i for i in range(n) if ismos(i) and ch[i][0] in rails and ch[i][1] in rails and ch[i][0] != ch[i][1]]
     # diode-connected MOS -> bias node
     bias_nodes = set(gt[i] for i in range(n) if ismos(i) and gt[i] in ch[i] and gt[i] not in rails)
+    # not a bias node: the fed-back device of a unity buffer (diode-connected, but one half of a matched pair)
+    for i in range(n):
+        if ismos(i) and gt[i] in ch[i] and src[i] not in rails and gt[i] in bias_nodes:
+            if any(j != i and ismos(j) and mtype[j] == mtype[i] and src[j] == src[i] and size[j] == size[i] and gt[j] != gt[i]
+                   for j in chan_of.get(src[i], ())):
+                bias_nodes.discard(gt[i])
     # ---------------------------------------------------------------- regenerative pairs and clocked devices
     regen = set()
     for a in range(n):
@@ -407,18 +413,37 @@ def analyze(cells, top, ann=None):
         for i in range(n):
             if not ismos(i) or gt[i] in T or gt[i] in rails or src[i] in rails:
                 continue
-            for j in chan_of.get(src[i], ()):
-                if j != i and ismos(j) and mtype[j] == mtype[i] and src[j] == src[i] and gt[j] in T_data and gt[j] != gt[i] \
-                        and size[i] == size[j]:
-                    ref.add(gt[i])
+            # the partner shares the source node, or sits across a degeneration R/C between the two sources
+            srcs = [src[i]] + [other(r, src[i]) for r in pas_of.get(src[i], ()) if other(r, src[i]) not in rails]
+            for sn in srcs:
+                for j in chan_of.get(sn, ()):
+                    if j != i and ismos(j) and mtype[j] == mtype[i] and src[j] == sn and gt[j] in T_data and gt[j] != gt[i] \
+                            and size[i] == size[j]:
+                        ref.add(gt[i])
         fr = list(ref)
-        while fr:                        # a reference stays a reference through a series R
+        while fr:                        # a reference stays a reference through a series R or a static pass switch
             x = fr.pop()
             for i in pas_of.get(x, ()):
                 o = other(i, x)
                 if kind[i] == 'r' and o not in rails and o not in T and o not in ref:
                     ref.add(o)
                     fr.append(o)
+            for i in chan_of.get(x, ()):
+                o = other(i, x)
+                if ismos(i) and gt[i] not in T and gt[i] not in ref and gt[i] != o and gt[i] != x \
+                        and o not in rails and o not in T and o not in ref and o not in bias_nodes:
+                    ref.add(o)
+                    fr.append(o)
+            # ... and through a unity buffer: the other gate of a matched pair whose one gate is the reference
+            for i in gate_of.get(x, ()):
+                if not ismos(i) or src[i] in rails:
+                    continue
+                for j in chan_of.get(src[i], ()):
+                    o = gt[j]
+                    if j != i and ismos(j) and mtype[j] == mtype[i] and src[j] == src[i] and size[i] == size[j] \
+                            and o not in rails and o not in T and o not in ref and o not in bias_nodes:
+                        ref.add(o)
+                        fr.append(o)
         return ref - bias_nodes
 
     def full_trace(caps, blocked):
@@ -458,6 +483,14 @@ def analyze(cells, top, ann=None):
     out_ports = set()
     A.endpoints = {}
 
+    def foreign(o, p):
+        """A net a control trace must not walk into: a bias node, or another input port (one nothing inside drives)."""
+        if o == p:
+            return False
+        if o in bias_nodes:
+            return True
+        return o in tports and not any(ismos(j) and other(j, o) in rails for j in chan_of.get(o, ()))
+
     def ctl_trace(p):
         """Follow a static control. Returns (visited {net: polarity set}, endpoints [(dev, pol, via)], reaches_output)."""
         vis = {p: {0}}
@@ -473,8 +506,9 @@ def analyze(cells, top, ann=None):
                     ends.append((i, pol, 'gate'))
                     continue
                 for o in (a, b):
-                    if o in bias_nodes and o != p:
-                        vis.setdefault(o, set())
+                    if foreign(o, p):
+                        if o in bias_nodes:
+                            vis.setdefault(o, set())
                         continue
                     if o not in rails and (pol ^ 1) not in vis.setdefault(o, set()):
                         vis[o].add(pol ^ 1)
@@ -482,7 +516,7 @@ def analyze(cells, top, ann=None):
                         fr.append((o, pol ^ 1))
             for i in chan_of.get(x, ()):
                 o = other(i, x)
-                if o in rails:
+                if o in rails or foreign(o, p):
                     continue
                 if o in target:
                     ends.append((i, pol, 'chan'))
@@ -493,7 +527,7 @@ def analyze(cells, top, ann=None):
                     fr.append((o, pol))
             for i in pas_of.get(x, ()):
                 o = other(i, x)
-                if o in rails:
+                if o in rails or foreign(o, p):
                     continue
                 if o in target:
                     ends.append((i, pol, 'pas'))
@@ -549,6 +583,10 @@ def analyze(cells, top, ann=None):
             if x not in rails and not gate_of.get(x) and len(chan_of.get(x, ())) == 1 and pas_of.get(x) and \
                     all(kind[j] != 'r' for j in pas_of[x]):
                 return 'trim'
+        # offset trim: a static device in parallel with a device whose gate is a high-speed signal
+        if via == 'gate' and a not in rails and b not in rails and gt[i] not in T:
+            if any(j != i and ismos(j) and set(ch[j]) == {a, b} and gt[j] in T for j in chan_of.get(a, ())):
+                return 'trim'
         # summing branch: the switch sits under a pair (common-source node of two devices with HS gates)
         for x in (a, b):
             if x in rails:
@@ -598,7 +636,7 @@ def analyze(cells, top, ann=None):
         elif 'ref' in types:
             k, why = 'K6', '기준 전압으로 가는 스위치(레벨 코드)'
         elif all(t == 'trim' for t in types):
-            k, why = 'K7', '안쪽 노드에 C를 붙이는 스위치(정적 트림)'
+            k, why = 'K7', '정적 트림(C를 붙이는 스위치, 또는 입력 소자와 병렬인 오프셋 가지)'
         elif len(pols) == 2 and 'pwr' not in types:
             if is_delay_select(ends):
                 k, why = 'K7', '같은 신호의 지연 탭 선택(정적 지연 트림)'
