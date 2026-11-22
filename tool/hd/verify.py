@@ -6,7 +6,7 @@ from collections import defaultdict
 
 CONN_KEYS = ('open', 'short', 'pin_open', 'dangling_end', 'tee_without_dot', 'width_mismatch')
 QUAL_KEYS = ('avoidable_bend', 'short_jog', 'crossing', 'wire_through_symbol', 'text_overlap', 'text_on_wire',
-             'four_way', 'lonely_label', 'placement_problem')
+             'text_on_symbol', 'four_way', 'lonely_label', 'placement_problem')
 
 
 def scene_sha(S):
@@ -316,6 +316,50 @@ def check(S, cell, level):
             if hit:
                 R['text_on_wire'].append('"%s"' % a['s'])
                 break
+    # text crossed by a stroke of a symbol (lines, triangles, circles; box outlines are checked through their edges)
+    strokes = []
+    for sym in S['symbols']:
+        for v in sym['shapes']:
+            if v[0] == 'line':
+                strokes.append((v[1], v[2], v[3], v[4]))
+            elif v[0] == 'rect':
+                x, y, w, h = v[1], v[2], v[3], v[4]
+                strokes += [(x, y, x + w, y), (x, y + h, x + w, y + h), (x, y, x, y + h), (x + w, y, x + w, y + h)]
+            elif v[0] == 'circle':
+                strokes += [(v[1] - v[3], v[2], v[1] + v[3], v[2]), (v[1], v[2] - v[3], v[1], v[2] + v[3])]
+            else:
+                pts = v[1] + ([v[1][0]] if v[0] == 'poly' else [])
+                strokes += [(a_[0], a_[1], b_[0], b_[1]) for a_, b_ in zip(pts, pts[1:])]
+    for tg in S['tags']:
+        for v in tg['shapes']:
+            if v[0] == 'line':
+                strokes.append((v[1], v[2], v[3], v[4]))
+    for p_ in S['ports']:
+        pts = p_['shape'] + [p_['shape'][0]]
+        strokes += [(a_[0], a_[1], b_[0], b_[1]) for a_, b_ in zip(pts, pts[1:])]
+
+    def seg_hits_box(sg, bx):
+        x1, y1, x2, y2 = sg
+        bx0, by0, bx1, by1 = bx[0] + 1, bx[1] + 1, bx[2] - 1, bx[3] - 1
+        if bx0 >= bx1 or by0 >= by1:
+            return False
+        # Liang-Barsky clipping
+        dx, dy = x2 - x1, y2 - y1
+        t0, t1 = 0.0, 1.0
+        for p_, q_ in ((-dx, x1 - bx0), (dx, bx1 - x1), (-dy, y1 - by0), (dy, by1 - y1)):
+            if p_ == 0:
+                if q_ < 0:
+                    return False
+            else:
+                t = q_ / float(p_)
+                if p_ < 0:
+                    t0 = max(t0, t)
+                else:
+                    t1 = min(t1, t)
+        return t0 < t1
+    for a in T:
+        if any(seg_hits_box(sg, a['bbox']) for sg in strokes):
+            R['text_on_symbol'].append('"%s"' % a['s'])
     for p in S.get('problems', []):
         R['placement_problem'].append(p)
     nb = 0
