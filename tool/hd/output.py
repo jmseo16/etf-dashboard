@@ -31,7 +31,7 @@ def classification(A, cells, top, views):
             c, k, why = '기준', '', '차동쌍 한쪽 입력(다른 쪽이 고속 데이터)'
         elif p in A.port_k:
             kk = A.port_k[p]
-            k = kk if kk != 'status_in' else 'K8'
+            k = kk if kk != 'status_in' else 'K9'
             vis = kk in VISIBLE or kk == 'status_in'
             c = ('중요 제어' if vis else ('바이어스' if kk == 'K11' else '일반 제어')) + ' — ' + KTEXT.get(k, k)
             why = A.port_why.get(p, '')
@@ -49,7 +49,7 @@ def classification(A, cells, top, views):
           '고속 데이터 입력 : %s' % (', '.join(_compress(A.data_seeds)) or '(없음)'),
           '클럭 입력        : %s' % (', '.join(_compress(A.clk_seeds)) or '(없음)'),
           '고속 출력        : %s' % (', '.join(_compress(sorted(p for p in A.out_ports if A.cls.get(p) != 'status'))) or '(없음)'),
-          '중요 제어        : %s' % (', '.join('%s (%s)' % (n, A.port_k[ps[0]] if A.port_k[ps[0]] != 'status_in' else 'K8')
+          '중요 제어        : %s' % (', '.join('%s (%s)' % (n, A.port_k[ps[0]] if A.port_k[ps[0]] != 'status_in' else 'K9')
                                              for n, ps in _bus_groups([p for p in tp if p in A.port_k and (A.port_k[p] in VISIBLE or A.port_k[p] == 'status_in')])) or '(없음)'),
           '숨김             : %s' % (', '.join('%s (%s)' % (n, A.port_k[ps[0]]) for n, ps in _bus_groups([p for p in tp if p in A.port_k and A.port_k[p] not in VISIBLE and A.port_k[p] != 'status_in'])) or '(없음)'),
           '질문             : %d개' % len(A.questions), '',
