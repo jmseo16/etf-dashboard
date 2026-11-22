@@ -1,0 +1,1 @@
+{"job": "rx_s1", "step": "2_review_classify", "round": 0, "max_rounds": 3, "next": "glm", "history": [["now", "1_classify", "done"], ["now", "2_review_classify", "done (같은 모델)"]]}

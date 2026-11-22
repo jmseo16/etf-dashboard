@@ -1,0 +1,342 @@
+{
+ "_rule": "plan §2.6-3/4: dictionary row only when every feature of the row is present",
+ "rows": [
+  {
+   "cell": "esd_dq",
+   "instances": [
+    "xi20"
+   ],
+   "virtual": false,
+   "role": "termination_esd",
+   "row": "RX 종단 · ESD",
+   "symbol": "박스 \"ESD\" (직렬 R이 있어 입력선 위 표시가 아니라 선 사이 박스, 명세서 틈 → 아래 \"막힌 곳\")",
+   "matched_features": [
+    "패드에서 전원으로 가는 다이오드 클램프 d0..d3",
+    "GGNMOS mn0 (게이트 r1로 접지)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "odt_pu",
+   "instances": [
+    "xi21"
+   ],
+   "virtual": false,
+   "role": "termination",
+   "row": "RX 종단 · ESD (가변 종단)",
+   "symbol": "입력선 위 가변 종단 R (§3.4-5)",
+   "matched_features": [
+    "패드에서 전원(vddq)으로 R + PMOS 스위치 3다리 (이진 가중 60/120/240)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "odt_dec",
+   "instances": [
+    "xi22"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록 (제어 허브·디코더 → DEC 박스)",
+   "symbol": "박스 \"DEC\"",
+   "matched_features": [
+    "하위가 모두 사전: nand2_a ×3, ls_lh ×3"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "rx_bias",
+   "instances": [
+    "xi23"
+   ],
+   "virtual": false,
+   "role": "bias",
+   "row": "공통 바이어스·DAC·디지털 제어",
+   "symbol": "생략",
+   "matched_features": [
+    "미러 + 인에이블"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "rx_pre",
+   "instances": [
+    "xi24"
+   ],
+   "virtual": false,
+   "role": "unknown",
+   "row": "사전에 없음 → 일반 박스(삼각형 \"AMP\")",
+   "symbol": "삼각형 \"AMP\" + 질문 Q1",
+   "matched_features": [
+    "R 부하 차동쌍 2개",
+    "꼬리 스위치+전류원"
+   ],
+   "missing_features": [
+    "VGA: 이득 단 가산/degeneration R 코드 없음",
+    "CTLE: 소스 degeneration C 없음"
+   ],
+   "confidence": "low",
+   "questions": [
+    "Q1"
+   ]
+  },
+  {
+   "cell": "ck_gbuf",
+   "instances": [
+    "xi25"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스 \"CK GATE\" (보이는 핀만)",
+   "matched_features": [
+    "하위가 모두 사전: nand2_c ×2, inv_c ×2"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dfe_sum",
+   "instances": [
+    "xi26",
+    "xi27"
+   ],
+   "virtual": false,
+   "role": "summer",
+   "row": "RX/TX Summer (DFE·FFE)",
+   "symbol": "Σ 박스",
+   "matched_features": [
+    "주 쌍 + 귀환 탭 쌍이 같은 출력에 합산",
+    "탭 전류 = 스위치+꼬리 반복 → 가변 전류원 + 계수 버스 tap<3:0>"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "sa_dt",
+   "instances": [
+    "xi28",
+    "xi29"
+   ],
+   "virtual": false,
+   "role": "comparator",
+   "row": "RX 비교기 · 샘플러 (double-tail)",
+   "symbol": "삼각형 \"SA\" + 클럭 표시",
+   "matched_features": [
+    "1단: 클럭 꼬리 + 입력쌍 + 리셋 PMOS",
+    "2단: 헤더(클럭 반전) + 교차 결합 래치 + 1단 출력 입력 NMOS"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "sr_nor",
+   "instances": [
+    "xi30",
+    "xi31"
+   ],
+   "virtual": false,
+   "role": "sr_latch",
+   "row": "공통 SR latch",
+   "symbol": "박스",
+   "matched_features": [
+    "NOR2 2개 교차 결합"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "inv_a",
+   "instances": [
+    "xi0",
+    "xi2",
+    "xi4",
+    "xi5",
+    "xi6",
+    "xi7",
+    "xi9",
+    "xi10",
+    "xi12"
+   ],
+   "virtual": false,
+   "role": "inverter",
+   "row": "공통 논리 게이트 (INV)",
+   "symbol": "인버터",
+   "matched_features": [
+    "정적 CMOS 인버터"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "inv_c",
+   "instances": [
+    "xi8",
+    "xi11"
+   ],
+   "virtual": false,
+   "role": "inverter",
+   "row": "공통 논리 게이트 (INV)",
+   "symbol": "인버터",
+   "matched_features": [
+    "정적 CMOS 인버터"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "nand2_a",
+   "instances": [
+    "xi1",
+    "xi3"
+   ],
+   "virtual": false,
+   "role": "nand",
+   "row": "공통 논리 게이트 (NAND)",
+   "symbol": "박스 + 출력 동그라미",
+   "matched_features": [
+    "정적 CMOS NAND"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "nand2_c",
+   "instances": [
+    "xi0",
+    "xi1"
+   ],
+   "virtual": false,
+   "role": "nand",
+   "row": "공통 논리 게이트 (NAND)",
+   "symbol": "박스 + 출력 동그라미",
+   "matched_features": [
+    "정적 CMOS NAND"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "nor2_c",
+   "instances": [
+    "xi0",
+    "xi1"
+   ],
+   "virtual": false,
+   "role": "nor",
+   "row": "공통 논리 게이트 (NOR)",
+   "symbol": "박스 + 출력 동그라미",
+   "matched_features": [
+    "정적 CMOS NOR"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "ls_lh",
+   "instances": [
+    "xi3",
+    "xi4",
+    "xi5"
+   ],
+   "virtual": false,
+   "role": "ls",
+   "row": "공통 레벨 시프터 (LS)",
+   "symbol": "박스 \"LS\"",
+   "matched_features": [
+    "인버터 + 교차 결합 PMOS 래치 + 출력 인버터 (vdd → vddq)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dq_rx_unit",
+   "instances": [
+    "(top)"
+   ],
+   "virtual": false,
+   "role": "general",
+   "row": "공통 복합 블록 (예외: 하위 rx_pre 가 사전에 없음)",
+   "symbol": "최상위 화면",
+   "matched_features": [
+    "하위 대부분이 사전"
+   ],
+   "missing_features": [
+    "하위 rx_pre 가 사전 행 아님 → 복합 블록 행 조건 불충족"
+   ],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "(virtual) r0+mn0",
+   "instances": [
+    "(top)"
+   ],
+   "virtual": true,
+   "role": "lpf",
+   "row": "공통 RC 평균기",
+   "symbol": "박스 \"LPF\"",
+   "matched_features": [
+    "직렬 R + MOS 커패시터(게이트–접지)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "(virtual) sa_dt/stage1",
+   "instances": [
+    "xi28",
+    "xi29"
+   ],
+   "virtual": true,
+   "role": "comparator_stage1",
+   "row": "비교기 1단 (가상 블록)",
+   "symbol": "박스 stage1",
+   "matched_features": [
+    "클럭 꼬리, 입력쌍, 리셋"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "(virtual) sa_dt/stage2",
+   "instances": [
+    "xi28",
+    "xi29"
+   ],
+   "virtual": true,
+   "role": "comparator_stage2",
+   "row": "비교기 2단 (가상 블록)",
+   "symbol": "박스 stage2",
+   "matched_features": [
+    "헤더, 교차 결합 래치"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  }
+ ],
+ "not_drawn": [
+  "rx_bias (xi23)"
+ ]
+}

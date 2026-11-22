@@ -1,0 +1,14 @@
+{
+"top": "dq_rx_unit",
+"output_syms": {},
+"unused_ok": {
+"b_top": [
+"net27",
+"net29"
+]
+},
+"extra_names": {},
+"allow_cross": {
+"u_ls_lh": 1
+}
+}

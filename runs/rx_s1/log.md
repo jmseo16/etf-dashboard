@@ -1,0 +1,2 @@
+- 분류(1단계): classification.md, annotations.json, block_dictionary.json 작성 (손으로 구조 분석)
+- 분류 검토(2단계): 같은 모델이 검토, 인스턴스 목록 보완, 명세서 틈 기록
