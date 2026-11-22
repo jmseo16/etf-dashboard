@@ -1,0 +1,81 @@
+{
+ "round": 2,
+ "view_list": [
+  "b_top"
+ ],
+ "auto_checks": [
+  {
+   "id": "1",
+   "check": "넷 건전성",
+   "count": 0
+  },
+  {
+   "id": "2",
+   "check": "넷 완전성",
+   "count": 0
+  },
+  {
+   "id": "3",
+   "check": "미지 노드",
+   "count": 0
+  },
+  {
+   "id": "4",
+   "check": "그룹 누락",
+   "count": 0
+  },
+  {
+   "id": "5",
+   "check": "박스 겹침",
+   "count": 0
+  },
+  {
+   "id": "6",
+   "check": "화면 밖",
+   "count": 0
+  },
+  {
+   "id": "7",
+   "check": "글자 넘침(근사)",
+   "count": 0
+  },
+  {
+   "id": "8",
+   "check": "생략 목록 적힘",
+   "count": 0
+  },
+  {
+   "id": "9",
+   "check": "대각선 선분",
+   "count": 0
+  },
+  {
+   "id": "10",
+   "check": "선 교차 (허용 0)",
+   "count": 14
+  },
+  {
+   "id": "11",
+   "check": "선이 박스 통과",
+   "count": 3
+  }
+ ],
+ "injection": {
+  "A_remove_edge_SR_E-OUT_E": {
+   "caught": true,
+   "count": 2
+  },
+  "B_add_wrong_edge_PAD-SA_E": {
+   "caught": true,
+   "count": 1
+  },
+  "C_overlap_SA_O": {
+   "caught": true,
+   "count": 1
+  },
+  "D_drop_SR_O": {
+   "caught": true,
+   "count": 5
+  }
+ }
+}

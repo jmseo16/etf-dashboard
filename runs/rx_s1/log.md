@@ -3,3 +3,6 @@
 - 2026-11-22 [glm] r1 a_draw: block-level b_top (HTML+PPTX+PNG); unit screens missing (MISSING.md)
 - 2026-11-22 [glm] r1 b_selftest: checks 0 after checker fix (first run 5 false hits on rails/bias); injection 4/4
 - 2026-11-22 [claude] r1 c_review: verdict_drawing FAIL (diagonal lines, crossings, no net labels, no unit screens); fix_request written
+- 2026-11-22 [glm] r2 a_draw: 직교 배선+넷 이름표 (대각선 0). 교차 14, 박스 통과 3 남음
+- 2026-11-22 [glm] r2 b_selftest: 검사 9~11 추가. 교차 14, 통과 3 (검사 조건은 그대로)
+- 2026-11-22 [claude] r2 c_review: verdict_drawing FAIL (교차, 통과, 유닛 화면)

@@ -7,7 +7,10 @@
   "5_box_overlap": 0,
   "6_canvas": 0,
   "7_text_width": 0,
-  "8_hidden_listed": 0
+  "8_hidden_listed": 0,
+  "9_diagonal_segments": 0,
+  "10_crossings": 14,
+  "11_line_through_box": 3
  },
  "baseline_details": [],
  "injection": {

@@ -1,0 +1,12 @@
+{"round":2,"verdict_drawing":"FAIL","verdict_spec":"FAIL",
+ "items":[
+  {"id":"J-1","screen":"b_top","item":"직교 배선 (§1.4-5/6)","result":"PASS","evidence":"대각선 0 (self_checklist 9번)"},
+  {"id":"J-2","screen":"b_top","item":"블록 레벨 교차 0 (§1.4-9)","result":"FAIL","cause":"그린 쪽 (배치)","evidence":"교차 14개 (10번). SR 피드백 선·CK 선·tap 버스가 SUM/PRE 사이에서 겹침"},
+  {"id":"J-3","screen":"b_top","item":"넷 이름표 (§3.5-1)","result":"PASS","cause":"-","evidence":"모든 선에 넷 이름 (이름이 겹치는 곳 몇 개 있음: tap, net105/106, odt)"},
+  {"id":"J-4","screen":"b_top","item":"선이 박스를 통과하지 않음 (§1.4-6, 꼬임)","result":"FAIL","cause":"그린 쪽 (배치)","evidence":"11번 3건: PRE 옆을 지나는 선 등"},
+  {"id":"J-5","screen":"전체","item":"유닛 레벨 화면","result":"FAIL","cause":"그린 쪽 (미구현)","evidence":"u_* 없음 (MISSING.md)"},
+  {"id":"J-6","screen":"b_top","item":"목적: 흐름과 동작 원리가 그림만으로 보이는가","result":"PARTIAL","evidence":"흐름은 보이나 교차가 많아 피드백 방향 파악이 어려움"},
+  {"id":"J-7","screen":"b_top","item":"분류 표·질문·사전 대응","result":"PASS","evidence":"Q1-Q4 가정한 답과 그림 일치"},
+  {"id":"M-1","screen":"b_top","item":"자동 검사 0건 (M 묶음)","result":"FAIL","cause":"그린 쪽","evidence":"10번 교차 14, 11번 통과 3이 0이 아님 (새로 추가한 검사)"},
+  {"id":"G/N","item":"정답지·이름 가림","result":"해당 없음"}
+ ]}

@@ -1,0 +1,12 @@
+[
+  {"cell": "esd_dq", "row": "종단 · ESD", "matched_features": ["패드에서 전원으로 다이오드 클램프"], "missing_features": [], "confidence": "high"},
+  {"cell": "odt_pu", "row": "종단 · ESD", "matched_features": ["입력에서 전원(VDDQ)으로 R", "스위치로 가변"], "missing_features": [], "confidence": "high"},
+  {"cell": "odt_dec", "row": "바이어스·DAC·디지털 제어 (디코더 예외: 중요 제어 생성 → DEC 박스)", "matched_features": ["중요 제어(K4)를 만드는 디코더"], "missing_features": [], "confidence": "high"},
+  {"cell": "ls_lh", "row": "LS (사전 목록)", "matched_features": ["레벨 시프터 2전원"], "missing_features": [], "confidence": "high"},
+  {"cell": "rx_pre", "row": "general", "matched_features": ["차동쌍 + 부하 R"], "missing_features": ["CTLE 영점용 소스 degeneration C 없음", "VGA 이득 코드 없음 (입력쌍 두 개는 소스 선택)"], "confidence": "low"},
+  {"cell": "dfe_sum", "row": "Summer (DFE·FFE)", "matched_features": ["여러 차동쌍이 같은 출력에 합산", "탭 전류 가변 전류원 + 계수 버스(tap<3:0>)", "대칭"], "missing_features": [], "confidence": "high"},
+  {"cell": "sa_dt", "row": "비교기·샘플러 (StrongARM/double-tail)", "matched_features": ["클럭 꼬리 (게이트=CK)", "입력쌍", "교차결합 래치", "프리차지"], "missing_features": [], "confidence": "high"},
+  {"cell": "sr_nor", "row": "SR latch (사전 목록)", "matched_features": ["교차결합 NOR 두 개"], "missing_features": [], "confidence": "high"},
+  {"cell": "ck_gbuf", "row": "복합 블록 (논리 게이트만)", "matched_features": ["NAND2+INV 클럭 게이트"], "missing_features": [], "confidence": "high"},
+  {"cell": "rx_bias", "row": "바이어스 (생략)", "matched_features": ["미러·다이오드·전류원"], "missing_features": [], "confidence": "high"}
+]
