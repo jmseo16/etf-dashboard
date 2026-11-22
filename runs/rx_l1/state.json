@@ -1,9 +1,9 @@
 {
   "circuit": "rx_l1",
-  "step": "r1_a_draw",
+  "step": "done",
   "round": 1,
   "max_rounds": 3,
-  "verdict_drawing": "IN_PROGRESS",
-  "verdict_spec": "IN_PROGRESS",
-  "connectivity": "PENDING"
+  "verdict_drawing": "FAIL",
+  "verdict_spec": "PASS",
+  "connectivity": "18/18 PASS"
 }
