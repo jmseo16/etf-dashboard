@@ -1,0 +1,9 @@
+{
+ "_comment": "사내에서 이 두 명령만 맞춘다. {prompt_text}=지시문 본문, {prompt_file}=지시문 파일 경로, {job}=작업 폴더. 예: GLM이 파일로 지시를 받으면 [\"opencode\", \"run\", \"--file\", \"{prompt_file}\"]",
+ "glm_cmd": ["opencode", "run", "{prompt_text}"],
+ "claude_cmd": ["claude", "-p", "{prompt_text}"],
+ "timeout_s": 7200,
+ "max_rounds": 3,
+ "max_gate_retries": 3,
+ "pack_views": 4
+}

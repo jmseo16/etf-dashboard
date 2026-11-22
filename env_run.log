@@ -1,0 +1,60 @@
+views: ['b_top', 'b_slice', 'b_clk', 'u_top_term', 'u_top_tg', 'u_ctle', 'u_vga', 'u_summer', 'b_sa', 'u_sa_strongarm', 'b_sr', 'u_nand', 'u_inv', 'u_latch', 'b_dff', 'u_clk_term', 'u_clk_buf']
+html bytes 300057
+{"click_from":"#b_top","click_to":"#u_top_term","size_text_display_after_toggle":"none","horizontal_overflow_px":0}
+slides 18
+html bytes 479757
+{"click_from":"#b_top","click_to":"#u_top_term","size_text_display_after_toggle":"none","horizontal_overflow_px":0}
+b_top          conn=PASS err=0  {} 
+b_slice        conn=PASS err=0  {} 
+b_clk          conn=PASS err=0  {} 
+u_top_term     conn=PASS err=0  {} 
+u_top_tg       conn=PASS err=0  {} 
+u_ctle         conn=PASS err=0  {} 
+u_vga          conn=PASS err=0  {'structural_crossings_allowed': 2} 
+u_summer       conn=PASS err=0  {'structural_crossings_allowed': 2} 
+b_sa           conn=PASS err=0  {} 
+u_sa_strongarm conn=PASS err=0  {'structural_crossings_allowed': 2} 
+b_sr           conn=PASS err=0  {} 
+u_nand         conn=PASS err=0  {} 
+u_inv          conn=PASS err=0  {} 
+u_latch        conn=PASS err=0  {'structural_crossings_allowed': 2} 
+b_dff          conn=PASS err=0  {} 
+u_clk_term     conn=PASS err=0  {} 
+u_clk_buf      conn=PASS err=0  {} 
+{'views': 17, 'connectivity_pass': 17, 'quality_pass': 17}
+V24-questions            PASS
+V24-landing_pins         PASS
+V24-cross_table          PASS
+2.6-4-block_dictionary   PASS
+M1-files                 PASS
+4.1-7-line_kind_views    PASS
+auto checks: 29, failing: 0; injected 57, caught 57, all caught: True
+  4.1-1                    pass count=0   injected 6/6
+  4.1-2                    pass count=0   injected 3/3
+  4.1-3                    pass count=0   injected 3/3
+  4.1-4                    pass count=0   injected 1/1
+  4.1-5                    pass count=0   injected 5/5
+  4.1-6                    pass count=0   injected 1/1
+  4.1-7                    pass count=0   injected 1/1
+  4.1-8                    pass count=0   injected 1/1
+  4.1-9                    pass count=0   injected 1/1
+  4.1-10                   pass count=0   injected 1/1
+  4.1-11                   pass count=0   injected 1/1
+  4.1-12                   pass count=0   injected 0/0
+  4.1-13                   pass count=0   injected 3/3
+  4.1-14                   pass count=0   injected 1/1
+  3.5-2-bus_marks          pass count=0   injected 2/2
+  4.1-15                   pass count=0   injected 1/1
+  4.1-16                   pass count=0   injected 1/1
+  4.1-17                   pass count=0   injected 0/0
+  V24-pin_sides            pass count=0   injected 1/1
+  V24-gray_scope           pass count=0   injected 2/2
+  V24-questions            pass count=0   injected 4/4
+  V24-landing_pins         pass count=0   injected 4/4
+  V24-cross_table          pass count=0   injected 4/4
+  V24-block_pins           pass count=0   injected 2/2
+  V24-rc_values            pass count=0   injected 2/2
+  V24-text_inside          pass count=0   injected 2/2
+  2.6-4-block_dictionary   pass count=0   injected 1/1
+  M1-files                 pass count=0   injected 2/2
+  M10-unit_size            pass count=0   injected 1/1

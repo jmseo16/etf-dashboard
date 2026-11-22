@@ -1,0 +1,345 @@
+<!doctype html><html><head><meta charset="utf-8"><style>:root {
+  --ink: #111;
+  --paper: #fff;
+  --ui-bg: #f6f6f4;
+  --ui-fg: #222;
+  --ui-mute: #6b6b6b;
+  --ui-line: #d9d9d4;
+  --accent: #d0451b;
+  --wl: #1d5fa8;
+  --val: #1d5fa8;
+  --net: #6b4f9e;
+  --blk-hover: #fff4e5;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--ui-bg); color: var(--ui-fg);
+  font: 13px/1.4 -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", Roboto, sans-serif;
+  display: flex; flex-direction: column;
+}
+.bar {
+  display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between;
+  padding: 8px 16px; border-bottom: 1px solid var(--ui-line); background: var(--ui-bg);
+}
+.crumbs { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-weight: 600; }
+.crumbs a { color: var(--ui-fg); text-decoration: none; padding: 2px 6px; border-radius: 4px; cursor: pointer; }
+.crumbs a:hover { background: #e9e9e4; }
+.crumbs a.cur { color: var(--accent); cursor: default; }
+.crumbs .sep { color: var(--ui-mute); }
+.tools { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.tools label { display: inline-flex; gap: 4px; align-items: center; cursor: pointer; user-select: none; }
+.bar, .side { touch-action: manipulation; }   /* no double-tap zoom eating quick taps */
+.tools button, .tools select {
+  font: inherit; padding: 3px 9px; border: 1px solid var(--ui-line); border-radius: 5px;
+  background: #fff; color: var(--ui-fg); cursor: pointer;
+}
+.tools button:hover { border-color: #aaa; }
+main { flex: 1; display: flex; min-height: 0; }
+.canvas { flex: 1; position: relative; background: var(--paper); overflow: hidden; min-width: 0;
+  touch-action: none; overscroll-behavior: contain; }
+.view { position: absolute; inset: 0; }
+.view[hidden] { display: none; }
+svg.sch { width: 100%; height: 100%; display: block; cursor: grab; user-select: none; }
+svg.sch.dragging { cursor: grabbing; }
+.side {
+  width: 300px; max-width: 40vw; overflow: auto; padding: 12px 14px;
+  border-left: 1px solid var(--ui-line); background: var(--ui-bg);
+}
+.side h2 { font-size: 15px; margin: 0 0 4px; }
+.side h3 { font-size: 12px; margin: 14px 0 4px; color: var(--ui-mute); text-transform: uppercase; letter-spacing: .04em; }
+.side .why { color: var(--ui-mute); font-size: 12px; }
+.side table { border-collapse: collapse; width: 100%; font-size: 12px; }
+.side td { padding: 2px 4px; border-bottom: 1px solid #ebebe6; vertical-align: top; }
+.side td:first-child { color: var(--ui-mute); white-space: nowrap; }
+.side .netlink { cursor: pointer; color: var(--net); }
+.side .netlink:hover { text-decoration: underline; }
+.side .warn { color: #a04000; font-size: 12px; }
+.tip {
+  position: absolute; pointer-events: none; background: rgba(20, 20, 20, .92); color: #fff;
+  padding: 6px 8px; border-radius: 5px; font-size: 12px; max-width: 280px; z-index: 5; white-space: pre-line;
+}
+@media (max-width: 760px) {
+  main { flex-direction: column; }
+  .side { width: auto; max-width: none; max-height: 34vh; border-left: 0; border-top: 1px solid var(--ui-line); }
+}
+
+/* ---------- schematic ink (paper stays white, like a textbook) ---------- */
+svg.sch text { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; fill: var(--ink); }
+.sym, .blk { stroke: var(--ink); stroke-width: 1.6; fill: none; stroke-linecap: square; stroke-linejoin: miter; }
+.sym.chan { stroke-width: 3.4; stroke-linecap: butt; }
+.sym.gate { stroke-width: 2; stroke-linecap: butt; }
+.sym.plate { stroke-width: 2.2; stroke-linecap: butt; }
+.sym.arrow { fill: var(--ink); stroke-width: 0.8; }
+.blk { stroke-width: 1.6; fill: none; }
+polyline.blk, circle.blk { fill: #fff; }
+.blk-t { font-size: 13px; font-weight: 700; }
+.sum-t { font-size: 22px; }
+.pol-t { font-size: 12px; font-weight: 700; }
+.pin-t { font-size: 9px; fill: #333 !important; }
+.sym-t { font-size: 10px; }
+.rail-t { font-size: 10px; font-weight: 600; }
+.wire { stroke: var(--ink); stroke-width: 1.6; stroke-linecap: square; }
+.wire.diag { stroke-linecap: round; }
+/* v2: clocks and buses are thick; a bus also carries a width mark and its name */
+.wire.clk { stroke-width: 2.8; }
+.wire.bus { stroke-width: 3.4; }
+.bustick line { stroke: var(--ink); stroke-width: 1.3; }
+.bus-w { font-size: 9px; font-weight: 600; }
+.lbl-bus { font-weight: 600; }
+body.hide-ctrl .sig-ctrl { display: none; }
+body.hide-bias .sig-bias { display: none; }
+.arrowhead { fill: var(--ink); stroke: none; }
+.dot { fill: var(--ink); }
+.hl.arrowhead { fill: var(--accent); }
+.pin { fill: transparent; stroke: none; }
+.devlbl { font-size: 9px; }
+.lbl-name { fill: #333; font-style: italic; }
+.lbl-wl, .lbl-val { fill: var(--wl); }
+.lbl-cell { fill: #777; }
+.netlabel { font-size: 10px; }
+.lbl-port { font-weight: 700; }
+.lbl-rail { font-weight: 700; }
+.lbl-net { fill: var(--net); font-style: italic; }
+.term-t { font-size: 10px; font-weight: 600; }
+.term.bylabel .term-t { fill: var(--net); font-style: italic; }
+.termc { fill: #fff; stroke: var(--ink); stroke-width: 1.2; }
+/* Virtuoso schematic pins: red pentagon (in / out) or hexagon (inout) */
+.vpin { fill: #e8261c; stroke: #8c0d07; stroke-width: 0.9; stroke-linejoin: miter; }
+.hl .vpin { fill: var(--accent); }
+.hit { fill: transparent; stroke: none; }
+.symg.clickable { cursor: pointer; }
+.symg.clickable:hover .hit { fill: var(--blk-hover); }
+.symg.clickable:hover .blk { stroke: var(--accent); }
+
+/* toggles */
+body.hide-wl .lbl-wl { display: none; }
+body.hide-val .lbl-val { display: none; }
+body.hide-name .lbl-name { display: none; }
+body:not(.show-net) .lbl-net { display: none; }
+
+/* net highlight */
+.hl.wire { stroke: var(--accent); stroke-width: 2.4; }
+.hl.wire.bus, .hl.wire.clk { stroke-width: 3.6; }
+.hl.dot { fill: var(--accent); }
+.hl.netlabel, .hl .term-t { fill: var(--accent) !important; }
+.hl .termc { stroke: var(--accent); }
+.pin.hl { fill: var(--accent); }
+.symg.dev:hover .sym { stroke: var(--accent); }
+.symg.dev:hover .sym.arrow { fill: var(--accent); }
+
+body{background:#fff;display:block} .axis{stroke:#d0451b;stroke-width:1;stroke-dasharray:5 5}
+.ttl{font-weight:700;fill:#111} svg.sch{width:1220px;height:640px}</style></head>
+<body><svg xmlns="http://www.w3.org/2000/svg" class="sch" viewBox="-300 -95 1220 640" width="1220" height="640"><line class="wire" x1="-200" y1="0" x2="200" y2="0"/>
+<text class="rail-t" x="0" y="-8" text-anchor="middle">VDD</text>
+<line class="sym" x1="-60" y1="30" x2="-60" y2="42"/>
+<polyline class="sym" points="-60,42 -54,45 -66,51 -54,57 -66,63 -54,69 -66,75 -60,78"/>
+<line class="sym" x1="-60" y1="78" x2="-60" y2="90"/>
+<text class="devlbl" x="-49" y="60"><tspan class="lbl-name">RL</tspan></text>
+<line class="wire" x1="-60" y1="0" x2="-60" y2="30"/>
+<circle class="dot" cx="-60" cy="0" r="3"/>
+<line class="wire" x1="-60" y1="90" x2="-60" y2="150"/>
+<line class="wire" x1="-60" y1="120" x2="-160" y2="120"/>
+<line class="wire" x1="-160" y1="120" x2="-160" y2="150"/>
+<circle class="dot" cx="-60" cy="120" r="3"/>
+<line class="wire" x1="-160" y1="120" x2="-210" y2="120"/>
+<text class="term-t" x="-216" y="124" text-anchor="end">OUTP</text>
+<line class="sym" x1="-90" y1="180" x2="-80" y2="180"/>
+<line class="sym gate" x1="-80" y1="167" x2="-80" y2="193"/>
+<line class="sym chan" x1="-71" y1="165" x2="-71" y2="195"/>
+<line class="sym" x1="-71" y1="165" x2="-60" y2="165"/>
+<line class="sym" x1="-60" y1="165" x2="-60" y2="150"/>
+<line class="sym" x1="-71" y1="195" x2="-60" y2="195"/>
+<line class="sym" x1="-60" y1="195" x2="-60" y2="210"/>
+<polygon class="sym arrow" points="-60.6,195 -66.4,191 -66.4,199"/>
+<text class="devlbl" x="-54" y="168" text-anchor="start"><tspan class="lbl-name">M_P</tspan></text>
+<line class="sym" x1="-130" y1="180" x2="-140" y2="180"/>
+<line class="sym gate" x1="-140" y1="167" x2="-140" y2="193"/>
+<line class="sym chan" x1="-149" y1="165" x2="-149" y2="195"/>
+<line class="sym" x1="-149" y1="165" x2="-160" y2="165"/>
+<line class="sym" x1="-160" y1="165" x2="-160" y2="150"/>
+<line class="sym" x1="-149" y1="195" x2="-160" y2="195"/>
+<line class="sym" x1="-160" y1="195" x2="-160" y2="210"/>
+<polygon class="sym arrow" points="-159.4,195 -153.6,191 -153.6,199"/>
+<text class="devlbl" x="-166" y="168" text-anchor="end"><tspan class="lbl-name">M_GP</tspan></text>
+<line class="wire" x1="-130" y1="180" x2="-90" y2="180"/>
+<text class="term-t" x="-105" y="172" text-anchor="middle">INP</text>
+<line class="wire" x1="-60" y1="210" x2="-60" y2="240"/>
+<line class="wire" x1="-160" y1="210" x2="-160" y2="380"/>
+<line class="sym" x1="60" y1="30" x2="60" y2="42"/>
+<polyline class="sym" points="60,42 66,45 54,51 66,57 54,63 66,69 54,75 60,78"/>
+<line class="sym" x1="60" y1="78" x2="60" y2="90"/>
+<text class="devlbl" x="71" y="60"><tspan class="lbl-name">RL</tspan></text>
+<line class="wire" x1="60" y1="0" x2="60" y2="30"/>
+<circle class="dot" cx="60" cy="0" r="3"/>
+<line class="wire" x1="60" y1="90" x2="60" y2="150"/>
+<line class="wire" x1="60" y1="120" x2="160" y2="120"/>
+<line class="wire" x1="160" y1="120" x2="160" y2="150"/>
+<circle class="dot" cx="60" cy="120" r="3"/>
+<line class="wire" x1="160" y1="120" x2="210" y2="120"/>
+<text class="term-t" x="216" y="124" text-anchor="start">OUTN</text>
+<line class="sym" x1="90" y1="180" x2="80" y2="180"/>
+<line class="sym gate" x1="80" y1="167" x2="80" y2="193"/>
+<line class="sym chan" x1="71" y1="165" x2="71" y2="195"/>
+<line class="sym" x1="71" y1="165" x2="60" y2="165"/>
+<line class="sym" x1="60" y1="165" x2="60" y2="150"/>
+<line class="sym" x1="71" y1="195" x2="60" y2="195"/>
+<line class="sym" x1="60" y1="195" x2="60" y2="210"/>
+<polygon class="sym arrow" points="60.6,195 66.4,191 66.4,199"/>
+<text class="devlbl" x="54" y="168" text-anchor="end"><tspan class="lbl-name">M_N</tspan></text>
+<line class="sym" x1="130" y1="180" x2="140" y2="180"/>
+<line class="sym gate" x1="140" y1="167" x2="140" y2="193"/>
+<line class="sym chan" x1="149" y1="165" x2="149" y2="195"/>
+<line class="sym" x1="149" y1="165" x2="160" y2="165"/>
+<line class="sym" x1="160" y1="165" x2="160" y2="150"/>
+<line class="sym" x1="149" y1="195" x2="160" y2="195"/>
+<line class="sym" x1="160" y1="195" x2="160" y2="210"/>
+<polygon class="sym arrow" points="159.4,195 153.6,191 153.6,199"/>
+<text class="devlbl" x="166" y="168" text-anchor="start"><tspan class="lbl-name">M_GN</tspan></text>
+<line class="wire" x1="130" y1="180" x2="90" y2="180"/>
+<text class="term-t" x="105" y="172" text-anchor="middle">INN</text>
+<line class="wire" x1="60" y1="210" x2="60" y2="240"/>
+<line class="wire" x1="160" y1="210" x2="160" y2="380"/>
+<line class="wire" x1="-60" y1="240" x2="60" y2="240"/>
+<line class="wire" x1="0" y1="240" x2="0" y2="270"/>
+<circle class="dot" cx="0" cy="240" r="3"/>
+<line class="sym" x1="-30" y1="300" x2="-20" y2="300"/>
+<line class="sym gate" x1="-20" y1="287" x2="-20" y2="313"/>
+<line class="sym chan" x1="-11" y1="285" x2="-11" y2="315"/>
+<line class="sym" x1="-11" y1="285" x2="0" y2="285"/>
+<line class="sym" x1="0" y1="285" x2="0" y2="270"/>
+<line class="sym" x1="-11" y1="315" x2="0" y2="315"/>
+<line class="sym" x1="0" y1="315" x2="0" y2="330"/>
+<polygon class="sym arrow" points="-0.6,315 -6.4,311 -6.4,319"/>
+<text class="devlbl" x="6" y="288" text-anchor="start"><tspan class="lbl-name">tail1</tspan></text>
+<line class="wire" x1="0" y1="330" x2="0" y2="340"/>
+<line class="sym" x1="0" y1="340" x2="0" y2="348"/>
+<line class="sym" x1="-9" y1="348" x2="9" y2="348"/>
+<line class="sym" x1="-6" y1="352" x2="6" y2="352"/>
+<line class="sym" x1="-3" y1="356" x2="3" y2="356"/>
+<line class="wire" x1="-160" y1="380" x2="160" y2="380"/>
+<line class="wire" x1="0" y1="380" x2="0" y2="410"/>
+<circle class="dot" cx="0" cy="380" r="3"/>
+<line class="sym" x1="-30" y1="440" x2="-20" y2="440"/>
+<line class="sym gate" x1="-20" y1="427" x2="-20" y2="453"/>
+<line class="sym chan" x1="-11" y1="425" x2="-11" y2="455"/>
+<line class="sym" x1="-11" y1="425" x2="0" y2="425"/>
+<line class="sym" x1="0" y1="425" x2="0" y2="410"/>
+<line class="sym" x1="-11" y1="455" x2="0" y2="455"/>
+<line class="sym" x1="0" y1="455" x2="0" y2="470"/>
+<polygon class="sym arrow" points="-0.6,455 -6.4,451 -6.4,459"/>
+<text class="devlbl" x="6" y="428" text-anchor="start"><tspan class="lbl-name">tail2</tspan></text>
+<line class="wire" x1="0" y1="470" x2="0" y2="480"/>
+<line class="sym" x1="0" y1="480" x2="0" y2="488"/>
+<line class="sym" x1="-9" y1="488" x2="9" y2="488"/>
+<line class="sym" x1="-6" y1="492" x2="6" y2="492"/>
+<line class="sym" x1="-3" y1="496" x2="3" y2="496"/>
+<line class="axis" x1="0" y1="-40" x2="0" y2="520"/>
+<text class="ttl" x="0" y="-60" text-anchor="middle" style="font-size:15px">A. 한 축 대칭 (중첩)</text>
+<line class="wire" x1="390" y1="0" x2="850" y2="0"/>
+<text class="rail-t" x="500" y="-8" text-anchor="middle">VDD</text>
+<line class="sym" x1="430" y1="30" x2="430" y2="42"/>
+<polyline class="sym" points="430,42 436,45 424,51 436,57 424,63 436,69 424,75 430,78"/>
+<line class="sym" x1="430" y1="78" x2="430" y2="90"/>
+<text class="devlbl" x="441" y="60"><tspan class="lbl-name">RL</tspan></text>
+<line class="wire" x1="430" y1="0" x2="430" y2="30"/>
+<circle class="dot" cx="430" cy="0" r="3"/>
+<line class="sym" x1="550" y1="30" x2="550" y2="42"/>
+<polyline class="sym" points="550,42 556,45 544,51 556,57 544,63 556,69 544,75 550,78"/>
+<line class="sym" x1="550" y1="78" x2="550" y2="90"/>
+<text class="devlbl" x="561" y="60"><tspan class="lbl-name">RL</tspan></text>
+<line class="wire" x1="550" y1="0" x2="550" y2="30"/>
+<circle class="dot" cx="550" cy="0" r="3"/>
+<line class="wire" x1="430" y1="90" x2="430" y2="150"/>
+<line class="wire" x1="430" y1="120" x2="690" y2="120"/>
+<line class="wire" x1="690" y1="120" x2="690" y2="150"/>
+<circle class="dot" cx="430" cy="120" r="3"/>
+<line class="wire" x1="550" y1="90" x2="550" y2="150"/>
+<line class="wire" x1="550" y1="100" x2="810" y2="100"/>
+<line class="wire" x1="810" y1="100" x2="810" y2="150"/>
+<circle class="dot" cx="550" cy="100" r="3"/>
+<line class="wire" x1="810" y1="100" x2="860" y2="100"/>
+<text class="term-t" x="866" y="104" text-anchor="start">OUTN</text>
+<line class="wire" x1="690" y1="120" x2="860" y2="120"/>
+<text class="term-t" x="866" y="124" text-anchor="start">OUTP</text>
+<line class="sym" x1="400" y1="180" x2="410" y2="180"/>
+<line class="sym gate" x1="410" y1="167" x2="410" y2="193"/>
+<line class="sym chan" x1="419" y1="165" x2="419" y2="195"/>
+<line class="sym" x1="419" y1="165" x2="430" y2="165"/>
+<line class="sym" x1="430" y1="165" x2="430" y2="150"/>
+<line class="sym" x1="419" y1="195" x2="430" y2="195"/>
+<line class="sym" x1="430" y1="195" x2="430" y2="210"/>
+<polygon class="sym arrow" points="429.4,195 423.6,191 423.6,199"/>
+<text class="devlbl" x="436" y="168" text-anchor="start"><tspan class="lbl-name">M_P</tspan></text>
+<line class="sym" x1="580" y1="180" x2="570" y2="180"/>
+<line class="sym gate" x1="570" y1="167" x2="570" y2="193"/>
+<line class="sym chan" x1="561" y1="165" x2="561" y2="195"/>
+<line class="sym" x1="561" y1="165" x2="550" y2="165"/>
+<line class="sym" x1="550" y1="165" x2="550" y2="150"/>
+<line class="sym" x1="561" y1="195" x2="550" y2="195"/>
+<line class="sym" x1="550" y1="195" x2="550" y2="210"/>
+<polygon class="sym arrow" points="550.6,195 556.4,191 556.4,199"/>
+<text class="devlbl" x="544" y="168" text-anchor="end"><tspan class="lbl-name">M_N</tspan></text>
+<line class="sym" x1="660" y1="180" x2="670" y2="180"/>
+<line class="sym gate" x1="670" y1="167" x2="670" y2="193"/>
+<line class="sym chan" x1="679" y1="165" x2="679" y2="195"/>
+<line class="sym" x1="679" y1="165" x2="690" y2="165"/>
+<line class="sym" x1="690" y1="165" x2="690" y2="150"/>
+<line class="sym" x1="679" y1="195" x2="690" y2="195"/>
+<line class="sym" x1="690" y1="195" x2="690" y2="210"/>
+<polygon class="sym arrow" points="689.4,195 683.6,191 683.6,199"/>
+<text class="devlbl" x="696" y="168" text-anchor="start"><tspan class="lbl-name">M_GP</tspan></text>
+<line class="sym" x1="840" y1="180" x2="830" y2="180"/>
+<line class="sym gate" x1="830" y1="167" x2="830" y2="193"/>
+<line class="sym chan" x1="821" y1="165" x2="821" y2="195"/>
+<line class="sym" x1="821" y1="165" x2="810" y2="165"/>
+<line class="sym" x1="810" y1="165" x2="810" y2="150"/>
+<line class="sym" x1="821" y1="195" x2="810" y2="195"/>
+<line class="sym" x1="810" y1="195" x2="810" y2="210"/>
+<polygon class="sym arrow" points="810.6,195 816.4,191 816.4,199"/>
+<text class="devlbl" x="804" y="168" text-anchor="end"><tspan class="lbl-name">M_GN</tspan></text>
+<text class="term-t" x="394" y="184" text-anchor="end">INP</text>
+<text class="term-t" x="586" y="184" text-anchor="start">INN</text>
+<text class="term-t" x="654" y="184" text-anchor="end">INP</text>
+<text class="term-t" x="846" y="184" text-anchor="start">INN</text>
+<line class="wire" x1="430" y1="210" x2="430" y2="240"/>
+<line class="wire" x1="430" y1="240" x2="550" y2="240"/>
+<line class="wire" x1="550" y1="240" x2="550" y2="210"/>
+<line class="wire" x1="490" y1="240" x2="490" y2="270"/>
+<circle class="dot" cx="490" cy="240" r="3"/>
+<line class="sym" x1="460" y1="300" x2="470" y2="300"/>
+<line class="sym gate" x1="470" y1="287" x2="470" y2="313"/>
+<line class="sym chan" x1="479" y1="285" x2="479" y2="315"/>
+<line class="sym" x1="479" y1="285" x2="490" y2="285"/>
+<line class="sym" x1="490" y1="285" x2="490" y2="270"/>
+<line class="sym" x1="479" y1="315" x2="490" y2="315"/>
+<line class="sym" x1="490" y1="315" x2="490" y2="330"/>
+<polygon class="sym arrow" points="489.4,315 483.6,311 483.6,319"/>
+<text class="devlbl" x="496" y="288" text-anchor="start"><tspan class="lbl-name">tail1</tspan></text>
+<line class="wire" x1="490" y1="330" x2="490" y2="340"/>
+<line class="sym" x1="490" y1="340" x2="490" y2="348"/>
+<line class="sym" x1="481" y1="348" x2="499" y2="348"/>
+<line class="sym" x1="484" y1="352" x2="496" y2="352"/>
+<line class="sym" x1="487" y1="356" x2="493" y2="356"/>
+<line class="wire" x1="690" y1="210" x2="690" y2="240"/>
+<line class="wire" x1="690" y1="240" x2="810" y2="240"/>
+<line class="wire" x1="810" y1="240" x2="810" y2="210"/>
+<line class="wire" x1="750" y1="240" x2="750" y2="270"/>
+<circle class="dot" cx="750" cy="240" r="3"/>
+<line class="sym" x1="720" y1="300" x2="730" y2="300"/>
+<line class="sym gate" x1="730" y1="287" x2="730" y2="313"/>
+<line class="sym chan" x1="739" y1="285" x2="739" y2="315"/>
+<line class="sym" x1="739" y1="285" x2="750" y2="285"/>
+<line class="sym" x1="750" y1="285" x2="750" y2="270"/>
+<line class="sym" x1="739" y1="315" x2="750" y2="315"/>
+<line class="sym" x1="750" y1="315" x2="750" y2="330"/>
+<polygon class="sym arrow" points="749.4,315 743.6,311 743.6,319"/>
+<text class="devlbl" x="756" y="288" text-anchor="start"><tspan class="lbl-name">tail2</tspan></text>
+<line class="wire" x1="750" y1="330" x2="750" y2="340"/>
+<line class="sym" x1="750" y1="340" x2="750" y2="348"/>
+<line class="sym" x1="741" y1="348" x2="759" y2="348"/>
+<line class="sym" x1="744" y1="352" x2="756" y2="352"/>
+<line class="sym" x1="747" y1="356" x2="753" y2="356"/>
+<line class="axis" x1="490" y1="-30" x2="490" y2="360"/>
+<line class="axis" x1="750" y1="-30" x2="750" y2="360"/>
+<text class="ttl" x="620" y="-60" text-anchor="middle" style="font-size:15px">B. 쌍별 대칭 (나란히, 논문 Fig.4(a) 방식)</text></svg></body></html>
