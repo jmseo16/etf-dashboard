@@ -76,7 +76,7 @@ def geom_inst(K):
     if T:
         h += 10
     if B:
-        h += 10
+        h += 10 + (10 if getattr(K, 'role', '') == 'samp' else 0)
     h = snap_up(h, 20)
     for lst, x in ((L, 0), (R, w)):
         y0 = snap((h - 20 * (len(lst) - 1)) / 2.0)
@@ -87,7 +87,7 @@ def geom_inst(K):
         x0 = snap((w - pitch * (len(lst) - 1)) / 2.0)
         for i, P in enumerate(lst):
             P.rx, P.ry = x0 + pitch * i, y
-            K.texts.append(Text(P.name, P.rx, 11 if y == 0 else h - 5, 9, 'middle', '#444', kind='pin'))
+            K.texts.append(Text(P.name, P.rx, 11 if y == 0 else h - (12 if getattr(K, 'role', '') == 'samp' else 5), 9, 'middle', '#444', kind='pin'))
     K.w, K.h = w, h
     K.box = (0, 0, w, h)
     K.shapes.append(('rect', 0, 0, w, h))
@@ -102,6 +102,8 @@ def geom_inst(K):
     if getattr(K, 'role', '') == 'samp':
         for P in B:
             K.shapes.append(('poly', [(P.rx - 5, h), (P.rx, h - 7), (P.rx + 5, h)]))
+        if B and h < 80:
+            pass
     if K.bubble:
         for P in R:
             K.shapes.append(('circle', w + 5, P.ry, 5))
