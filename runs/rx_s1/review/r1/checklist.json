@@ -1,0 +1,237 @@
+{
+ "circuit": "rx_s1",
+ "round": 1,
+ "reviewer_note": "같은 모델이 검토함",
+ "verdict_drawing": "FAIL",
+ "verdict_spec": "FAIL",
+ "counts": {
+  "pass": 18,
+  "fail": 3,
+  "na": 6,
+  "star_fail": 2,
+  "drawer": 3,
+  "spec": 1
+ },
+ "items": [
+  {
+   "id": "M1",
+   "star": true,
+   "result": "pass",
+   "evidence": "out/ 의 concept.html, concept.pptx, classification.md, annotations.json, block_dictionary.json, verify_report.json(scene_sha 있음), self_checklist.json, screenshots 18장 모두 있음. 화면 id·제목 형식 확인(b_top 등). 단 verify_report.json 은 기준 도구와 형식이 다름(summary + totals)",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M2",
+   "star": true,
+   "result": "pass",
+   "evidence": "verify_report.json: 연결 재추출 오류 0 (18화면), 주입 오류 SHORT 2/OPEN 2 전부 잡힘. 단 이것은 이번에 새로 만든 검사기의 결과이고 독립 검사기와 비교하지 못함(독립 검사기 없음)",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M3",
+   "star": true,
+   "result": "fail",
+   "evidence": "b_top·sa·odt 화면의 생략 목록은 검사기로 일치(0건). 그러나 기준 전압 vref/net3 는 그리는 분류인데 회색이 아님(§2.5-4 기준 행), 화면 설명/사이드 패널 요약에 \"기준\" 표시 없음",
+   "cause": "그린 쪽",
+   "fix": "F2"
+  },
+  {
+   "id": "M4",
+   "star": true,
+   "result": "pass",
+   "evidence": "블록 화면 교차 0 (검사기 5-cross 0). 유닛 화면: u_ls_lh 1개 허용(교차 결합 X), 그 외 0. 허용 목록은 conf.json allow_cross 에 고정",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M5",
+   "star": false,
+   "result": "pass",
+   "evidence": "검사기 5-overlap/5-pierce/5-kink/5-short/5-dots/5-endline 모두 0. 눈으로 본 b_top·sa_dt stage2: mp4 쪽 outp 선 모서리와 outn 이름표 끝이 10px 간격(규칙 위반은 아니나 읽기 어려움) — 미관",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M6",
+   "star": true,
+   "result": "pass",
+   "evidence": "선 모두 실선 1.6 (검사기 11-dash 0), 떠 있는 포트/붙지 않은 핀 0, 이름표 짝 0건 (예외: 미사용 출력 net27/net29)",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M7",
+   "star": true,
+   "result": "pass",
+   "evidence": "이름 검사 0건 (인스턴스·소자·넷·포트 이름이 netlist 에 있음). 버스는 <MSB:LSB> (rtt<2:0>, tap<3:0>, net2<2:0>)",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M8",
+   "star": true,
+   "result": "pass",
+   "evidence": "극성 검사 0건: 반전 NAND/NOR/INV 출력에 동그라미, SR(NOR) q/qb 동그라미 없음, SA 동그라미 없음, 클럭 게이트 동그라미 없음. 가상 블록 stage2 의 outp/outn 동그라미는 검사기가 안 봄 → 손으로 확인: mn5 게이트(net62)가 outp 드레인을 당겨 내리므로 반전 맞음",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M9",
+   "star": false,
+   "result": "pass",
+   "evidence": "핀 이름 검사 0건 (SA 의 outp/outn 핀 이름)",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M10",
+   "star": false,
+   "result": "pass",
+   "evidence": "유닛 화면 기호 수 최대 13 (u_dfe_sum) ≤ 20, 크기 SI 표기. 자동 검사기에는 구현하지 않아 c 단계에서 스크립트로 셈",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M11",
+   "star": false,
+   "result": "fail",
+   "evidence": "주석의 수치·참조 확인: u_dfe_sum/u_sa_dt_stage1 주석 수치는 netlist 와 일치. 그러나 u_rx_pre 주석이 \"질문 Q7\", u_top_lpf 주석이 \"질문 Q6\"로 되어 있어 존재하지 않는 질문 번호(실제는 Q4) — 설명 문구가 틀림(§3.5-7)",
+   "cause": "그린 쪽",
+   "fix": "F1"
+  },
+  {
+   "id": "M12",
+   "star": false,
+   "result": "na",
+   "evidence": "1회차라 해당 없음",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M13",
+   "star": false,
+   "result": "pass",
+   "evidence": "핀 방향 검사 0건 (b_top AMP/Σ/SA/ESD, b_sa_dt S1/S2). 예외: 논리 게이트 입력 왼쪽, DEC 허브 입력",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M14",
+   "star": false,
+   "result": "pass",
+   "evidence": "분류 표·포트 표·annotations·사이드 패널 같은 데이터에서 생성돼 일치. 검사기는 구현하지 않음(손으로 확인)",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "J1",
+   "star": true,
+   "result": "pass",
+   "evidence": "분류 표: 고속 입력 pad/lb_p/lb_n, 클럭 ck/ckb, 제어 K1–K4 와 끝점 핀·출처, 숨긴 다비트 제어 4개 K7, 질문 5개 모두 확신 낮음·템플릿 문장. 이름이 아니라 구조로 판정한 근거가 있음. 단 기준(vref) 표시가 사이드 패널 요약에 빠짐(F2)",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "J2",
+   "star": true,
+   "result": "pass",
+   "evidence": "block_dictionary.json: 사전 기호로 그린 블록은 missing_features 비어 있음. rx_pre 는 일반 박스 + Q1. 개념 기호 X_DAC<3:0>, C_OF_N/P 는 묶음을 대신함(netlist 로 확인). 단 묶음의 범례가 화면에 그려져 있지 않음(주석에만 있음, F3)",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "J3",
+   "star": false,
+   "result": "pass",
+   "evidence": "블록 화면 배치: 왼→오 흐름, 클럭 아래, 제어 위, 반복 블록(Σ·SA·SR 2줄) 위아래. CK GATE 가 왼쪽 아래에 멀리 떨어짐(이름표 연결) — 허용",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "J4",
+   "star": true,
+   "result": "fail",
+   "evidence": "u_dfe_sum 은 축 대칭이 아님(귀환 쌍·부호 스위치 4개를 한쪽에 몰아 그림, 출력 노드는 이름표). u_sa_dt_stage2 의 교차 결합 인버터 쌍이 §3.3-7(90° 돌린 CCI)로 그려지지 않음(회전 MOS 기호가 도구에 없음). u_ls_lh 의 PMOS 교차 결합은 X 1개로 그림(템플릿에 맞음). u_rx_pre·stage1 은 축 대칭.",
+   "cause": "그린 쪽 + 명세서(합산 쌍 + 극성 선택 스위치용 템플릿 없음)",
+   "fix": "F4"
+  },
+  {
+   "id": "J5",
+   "star": true,
+   "result": "pass",
+   "evidence": "손 대조(기하 읽기): b_top 짝수 경로 pad→xi20→xi24.inp, xi24.outp→xi26.inp / outn→inn, xi26.outp→xi28.inp, xi28.outp→xi30.s, xi30.q→xi7→xi8→dout_e, xi30.qb→xi9→net27(미사용), xi30.q(net14)→xi27.hp 이름표, xi31.q(net16)→xi26.hp 이름표: netlist 줄과 일치. u_sa_dt_stage2: mp3/mn3 게이트=outn, mp4/mn4 게이트=outp, mn5 게이트 net62, mn6 net63: 일치. b_odt_dec, b_ck_gbuf, u_ls_lh(mn1 게이트=inb, mp1 게이트=nb)·u_esd_dq 도 일치",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "J6",
+   "star": true,
+   "result": "pass",
+   "evidence": "b_top 만으로 고속 흐름(패드→ESD/ODT→AMP→Σ→SA→SR→출력), 귀환 교차(홀/짝), 클럭 게이트, 제어(ODT/DFE 탭·부호/입력 선택/켜기)가 읽힘",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "J7",
+   "star": false,
+   "result": "pass",
+   "evidence": "HTML: 외부 리소스 없음(grep), 블록 클릭 시 하위(measure.js: b_top → u_esd_dq), ▲ 위로, W/L 토글(숨김 확인), PPT 내려받기 버튼. PPTX: 19장(요약 1 + 18), 링크 shape 존재, 메모에 생략 목록, LibreOffice 로 PDF 변환 후 b_top 슬라이드를 눈으로 확인",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "J8",
+   "star": false,
+   "result": "pass",
+   "evidence": "self_checklist 와 다른 항목: (1) M11 — 자체 점검은 주석 수치를 안 봤고 c 에서 질문 번호 오류를 찾음 (2) M3 — 검사기는 0건이나 기준 회색 표시 누락 (3) 검사기가 구현하지 않은 검사: 4, 8, 9, 12, 19, 20, 21, 22",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "G1a",
+   "star": true,
+   "result": "na",
+   "evidence": "정답지·이름 가림 사본 없음",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "G1b",
+   "star": true,
+   "result": "na",
+   "evidence": "정답지·이름 가림 사본 없음",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "G1c",
+   "star": true,
+   "result": "na",
+   "evidence": "정답지·이름 가림 사본 없음",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "G1d",
+   "star": false,
+   "result": "na",
+   "evidence": "정답지·이름 가림 사본 없음",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "N1",
+   "star": true,
+   "result": "na",
+   "evidence": "정답지·이름 가림 사본 없음",
+   "cause": "",
+   "fix": ""
+  }
+ ],
+ "verdict_basis": {
+  "drawing": "그린 쪽 원인 불통과: M3(기준 회색 누락), M11(질문 번호 오류), J4★(dfe_sum 대칭, CCI)",
+  "spec": "명세서 원인: esd_dq 직렬 R 규칙 없음, MOS 커패시터 규칙 없음, 합산 쌍+극성 선택 스위치 템플릿 없음(J4), CCI 기호가 MOS 회전을 요구하는데 기호 규격 없음"
+ }
+}

@@ -1,2 +1,5 @@
 - 분류(1단계): classification.md, annotations.json, block_dictionary.json 작성 (손으로 구조 분석)
 - 분류 검토(2단계): 같은 모델이 검토, 인스턴스 목록 보완, 명세서 틈 기록
+- 회차 1 a 그리기: 18 화면 (b_top + 블록 4 + 유닛 13), 생성기 gen_s1.py / hs.py
+- 회차 1 b 자체 시험: 22종 0건, 주입 32/32 (1 실행)
+- 회차 1 c 검증: verdict_drawing FAIL, verdict_spec FAIL, 수정 요청 F1–F4
