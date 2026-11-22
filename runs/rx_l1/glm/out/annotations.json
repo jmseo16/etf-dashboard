@@ -93,5 +93,306 @@
     "wldet": "phase_detector",
     "rxbyte_top": "composite"
   },
-  "questions": []
+  "questions": [],
+  "_important_control_buses": {
+    "rx_en": {
+      "bus": "rx_en",
+      "bits": [
+        "rx_en"
+      ],
+      "class": "important_control",
+      "K": "K3",
+      "endpoint_pin": "xi0/mn0.g",
+      "source": "port",
+      "function": "수신기 활성화",
+      "drawing": "선 (단일 비트)"
+    },
+    "gate_open": {
+      "bus": "gate_open",
+      "bits": [
+        "gate_open"
+      ],
+      "class": "important_control",
+      "K": "K2",
+      "endpoint_pin": "xi9/xi0/mn0.g",
+      "source": "port",
+      "function": "DQS 게이팅 윈도우",
+      "drawing": "선 (단일 비트)"
+    },
+    "wl_en": {
+      "bus": "wl_en",
+      "bits": [
+        "wl_en"
+      ],
+      "class": "important_control",
+      "K": "K2",
+      "endpoint_pin": "xi39/xi0/mn1.g",
+      "source": "port",
+      "function": "Write Leveling 인에이블",
+      "drawing": "선 (단일 비트)"
+    },
+    "wl_ck": {
+      "bus": "wl_ck",
+      "bits": [
+        "wl_ck"
+      ],
+      "class": "important_control",
+      "K": "K2",
+      "endpoint_pin": "xi39/xi2/mn0.g",
+      "source": "port",
+      "function": "Write Leveling 클럭",
+      "drawing": "선 (단일 비트)"
+    },
+    "slp": {
+      "bus": "slp",
+      "bits": [
+        "slp"
+      ],
+      "class": "important_control",
+      "K": "K3",
+      "endpoint_pin": "mp0.g",
+      "source": "port",
+      "function": "수신기 슬립 제어",
+      "drawing": "선 (단일 비트)"
+    },
+    "odt_en": {
+      "bus": "odt_en",
+      "bits": [
+        "odt_en"
+      ],
+      "class": "important_control",
+      "K": "K4",
+      "endpoint_pin": "xi3/xi0/mn0.g",
+      "source": "port",
+      "function": "종단 인에이블",
+      "drawing": "선 (단일 비트)"
+    },
+    "rtt<2:0>": {
+      "bus": "rtt<2:0>",
+      "bits": [
+        "rtt2",
+        "rtt1",
+        "rtt0"
+      ],
+      "class": "important_control",
+      "K": "K4",
+      "endpoint_pin": "xi3/xi2/mn1.g",
+      "source": "port",
+      "function": "ODT 임피던스 코드",
+      "drawing": "버스 (사선 + 이름)"
+    },
+    "vrc<5:0>": {
+      "bus": "vrc<5:0>",
+      "bits": [
+        "vrc5",
+        "vrc4",
+        "vrc3",
+        "vrc2",
+        "vrc1",
+        "vrc0"
+      ],
+      "class": "important_control",
+      "K": "K5",
+      "endpoint_pin": "xi2/xi5/mn0.g",
+      "source": "port",
+      "function": "VREF DAC 설정 코드",
+      "drawing": "버스 (사선 + 이름)"
+    },
+    "t1w<2:0>": {
+      "bus": "t1w<2:0>",
+      "bits": [
+        "t1w2",
+        "t1w1",
+        "t1w0"
+      ],
+      "class": "important_control",
+      "K": "K1",
+      "endpoint_pin": "xi30/xi4/mn12.g",
+      "source": "port",
+      "function": "DFE 탭 1 가중치",
+      "drawing": "버스 (사선 + 이름)"
+    },
+    "t2w<1:0>": {
+      "bus": "t2w<1:0>",
+      "bits": [
+        "t2w1",
+        "t2w0"
+      ],
+      "class": "important_control",
+      "K": "K1",
+      "endpoint_pin": "xi30/xi4/mn22.g",
+      "source": "port",
+      "function": "DFE 탭 2 가중치",
+      "drawing": "버스 (사선 + 이름)"
+    },
+    "ddl<2:0>": {
+      "bus": "ddl<2:0>",
+      "bits": [
+        "ddl2",
+        "ddl1",
+        "ddl0"
+      ],
+      "class": "important_control",
+      "K": "K6",
+      "endpoint_pin": "xi10/xi11/mn1.g",
+      "source": "port",
+      "function": "DQS 딜레이 제어",
+      "drawing": "버스 (사선 + 이름)"
+    }
+  },
+  "_controls": [
+    {
+      "bus": "rx_en",
+      "bits": [
+        "rx_en"
+      ],
+      "class": "important_control",
+      "K": "K3",
+      "endpoint_pin": "xi0/mn0.g",
+      "source": "port",
+      "function": "수신기 활성화",
+      "drawing": "선 (단일 비트)"
+    },
+    {
+      "bus": "gate_open",
+      "bits": [
+        "gate_open"
+      ],
+      "class": "important_control",
+      "K": "K2",
+      "endpoint_pin": "xi9/xi0/mn0.g",
+      "source": "port",
+      "function": "DQS 게이팅 윈도우",
+      "drawing": "선 (단일 비트)"
+    },
+    {
+      "bus": "wl_en",
+      "bits": [
+        "wl_en"
+      ],
+      "class": "important_control",
+      "K": "K2",
+      "endpoint_pin": "xi39/xi0/mn1.g",
+      "source": "port",
+      "function": "Write Leveling 인에이블",
+      "drawing": "선 (단일 비트)"
+    },
+    {
+      "bus": "wl_ck",
+      "bits": [
+        "wl_ck"
+      ],
+      "class": "important_control",
+      "K": "K2",
+      "endpoint_pin": "xi39/xi2/mn0.g",
+      "source": "port",
+      "function": "Write Leveling 클럭",
+      "drawing": "선 (단일 비트)"
+    },
+    {
+      "bus": "slp",
+      "bits": [
+        "slp"
+      ],
+      "class": "important_control",
+      "K": "K3",
+      "endpoint_pin": "mp0.g",
+      "source": "port",
+      "function": "수신기 슬립 제어",
+      "drawing": "선 (단일 비트)"
+    },
+    {
+      "bus": "odt_en",
+      "bits": [
+        "odt_en"
+      ],
+      "class": "important_control",
+      "K": "K4",
+      "endpoint_pin": "xi3/xi0/mn0.g",
+      "source": "port",
+      "function": "종단 인에이블",
+      "drawing": "선 (단일 비트)"
+    },
+    {
+      "bus": "rtt<2:0>",
+      "bits": [
+        "rtt2",
+        "rtt1",
+        "rtt0"
+      ],
+      "class": "important_control",
+      "K": "K4",
+      "endpoint_pin": "xi3/xi2/mn1.g",
+      "source": "port",
+      "function": "ODT 임피던스 코드",
+      "drawing": "버스 (사선 + 이름)"
+    },
+    {
+      "bus": "vrc<5:0>",
+      "bits": [
+        "vrc5",
+        "vrc4",
+        "vrc3",
+        "vrc2",
+        "vrc1",
+        "vrc0"
+      ],
+      "class": "important_control",
+      "K": "K5",
+      "endpoint_pin": "xi2/xi5/mn0.g",
+      "source": "port",
+      "function": "VREF DAC 설정 코드",
+      "drawing": "버스 (사선 + 이름)"
+    },
+    {
+      "bus": "t1w<2:0>",
+      "bits": [
+        "t1w2",
+        "t1w1",
+        "t1w0"
+      ],
+      "class": "important_control",
+      "K": "K1",
+      "endpoint_pin": "xi30/xi4/mn12.g",
+      "source": "port",
+      "function": "DFE 탭 1 가중치",
+      "drawing": "버스 (사선 + 이름)"
+    },
+    {
+      "bus": "t2w<1:0>",
+      "bits": [
+        "t2w1",
+        "t2w0"
+      ],
+      "class": "important_control",
+      "K": "K1",
+      "endpoint_pin": "xi30/xi4/mn22.g",
+      "source": "port",
+      "function": "DFE 탭 2 가중치",
+      "drawing": "버스 (사선 + 이름)"
+    },
+    {
+      "bus": "ddl<2:0>",
+      "bits": [
+        "ddl2",
+        "ddl1",
+        "ddl0"
+      ],
+      "class": "important_control",
+      "K": "K6",
+      "endpoint_pin": "xi10/xi11/mn1.g",
+      "source": "port",
+      "function": "DQS 딜레이 제어",
+      "drawing": "버스 (사선 + 이름)"
+    }
+  ],
+  "_general_controls": [],
+  "_general_control_buses": {},
+  "_bias": [
+    "ibias"
+  ],
+  "_questions_and_assumed_answers": [],
+  "_sources": {
+    "hs_inputs": "automatic structural analysis"
+  }
 }
