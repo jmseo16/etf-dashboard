@@ -1,0 +1,3994 @@
+{
+ "undriven_hs": [],
+ "unused_outputs": {},
+ "top": "dq_rx_unit",
+ "rails": {
+  "supply": "vdd",
+  "ground": "vss"
+ },
+ "hs_inputs": [
+  "pad"
+ ],
+ "clock_inputs": [
+  "ck",
+  "ckb",
+  "rx_en",
+  "odt_en",
+  "rtt<2>",
+  "rtt<1>",
+  "rtt<0>",
+  "tap_sgn",
+  "vddq"
+ ],
+ "clock_evidence": {
+  "ck": [
+   [
+    "xi28/mn0",
+    "clocked tail"
+   ],
+   [
+    "xi28/mp2",
+    "clocked tail"
+   ]
+  ],
+  "ckb": [
+   [
+    "xi29/mn0",
+    "clocked tail"
+   ],
+   [
+    "xi29/mp2",
+    "clocked tail"
+   ]
+  ],
+  "rx_en": [
+   [
+    "xi28/mn0",
+    "clocked tail"
+   ],
+   [
+    "xi28/mp2",
+    "clocked tail"
+   ],
+   [
+    "xi29/mn0",
+    "clocked tail"
+   ],
+   [
+    "xi29/mp2",
+    "clocked tail"
+   ]
+  ],
+  "odt_en": [
+   [
+    "xi22/xi5/mn0",
+    "reset/precharge"
+   ],
+   [
+    "xi22/xi5/mn1",
+    "reset/precharge"
+   ],
+   [
+    "xi22/xi4/mn0",
+    "reset/precharge"
+   ],
+   [
+    "xi22/xi4/mn1",
+    "reset/precharge"
+   ],
+   [
+    "xi22/xi3/mn0",
+    "reset/precharge"
+   ],
+   [
+    "xi22/xi3/mn1",
+    "reset/precharge"
+   ]
+  ],
+  "rtt<2>": [
+   [
+    "xi22/xi5/mn0",
+    "reset/precharge"
+   ],
+   [
+    "xi22/xi5/mn1",
+    "reset/precharge"
+   ]
+  ],
+  "rtt<1>": [
+   [
+    "xi22/xi4/mn0",
+    "reset/precharge"
+   ],
+   [
+    "xi22/xi4/mn1",
+    "reset/precharge"
+   ]
+  ],
+  "rtt<0>": [
+   [
+    "xi22/xi3/mn0",
+    "reset/precharge"
+   ],
+   [
+    "xi22/xi3/mn1",
+    "reset/precharge"
+   ]
+  ],
+  "tap_sgn": [
+   [
+    "xi28/mn5",
+    "reset/precharge"
+   ],
+   [
+    "xi28/mn6",
+    "reset/precharge"
+   ],
+   [
+    "xi29/mn5",
+    "reset/precharge"
+   ],
+   [
+    "xi29/mn6",
+    "reset/precharge"
+   ]
+  ],
+  "vddq": [
+   [
+    "xi28/mn5",
+    "reset/precharge"
+   ],
+   [
+    "xi28/mn6",
+    "reset/precharge"
+   ],
+   [
+    "xi29/mn5",
+    "reset/precharge"
+   ],
+   [
+    "xi29/mn6",
+    "reset/precharge"
+   ]
+  ]
+ },
+ "netclass": {
+  "ck": [
+   "clock"
+  ],
+  "ckb": [
+   "clock"
+  ],
+  "dout_e": [
+   "internal"
+  ],
+  "dout_o": [
+   "internal"
+  ],
+  "ibias": [
+   "bias"
+  ],
+  "lb_en": [
+   "bias"
+  ],
+  "lb_n": [
+   "general_control"
+  ],
+  "lb_p": [
+   "general_control"
+  ],
+  "net1": [
+   "data"
+  ],
+  "net10": [
+   "clock"
+  ],
+  "net100": [
+   "bias"
+  ],
+  "net101": [
+   "clock"
+  ],
+  "net102": [
+   "clock"
+  ],
+  "net103": [
+   "clock"
+  ],
+  "net104": [
+   "clock"
+  ],
+  "net105": [
+   "clock"
+  ],
+  "net106": [
+   "clock"
+  ],
+  "net11": [
+   "clock"
+  ],
+  "net12": [
+   "clock"
+  ],
+  "net13": [
+   "clock"
+  ],
+  "net14": [
+   "bias"
+  ],
+  "net15": [
+   "bias"
+  ],
+  "net16": [
+   "bias"
+  ],
+  "net17": [
+   "bias"
+  ],
+  "net18": [
+   "bias"
+  ],
+  "net19": [
+   "bias"
+  ],
+  "net24": [
+   "bias"
+  ],
+  "net25": [
+   "bias"
+  ],
+  "net26": [
+   "bias"
+  ],
+  "net27": [
+   "internal"
+  ],
+  "net28": [
+   "bias"
+  ],
+  "net29": [
+   "internal"
+  ],
+  "net2<0>": [
+   "clock"
+  ],
+  "net2<1>": [
+   "clock"
+  ],
+  "net2<2>": [
+   "clock"
+  ],
+  "net3": [
+   "general_control"
+  ],
+  "net4": [
+   "clock"
+  ],
+  "net6": [
+   "clock"
+  ],
+  "net7": [
+   "clock"
+  ],
+  "net8": [
+   "clock"
+  ],
+  "net9": [
+   "clock"
+  ],
+  "odt_en": [
+   "clock"
+  ],
+  "ofe_n<0>": [
+   "general_control"
+  ],
+  "ofe_n<1>": [
+   "general_control"
+  ],
+  "ofe_p<0>": [
+   "general_control"
+  ],
+  "ofe_p<1>": [
+   "general_control"
+  ],
+  "ofo_n<0>": [
+   "general_control"
+  ],
+  "ofo_n<1>": [
+   "general_control"
+  ],
+  "ofo_p<0>": [
+   "general_control"
+  ],
+  "ofo_p<1>": [
+   "general_control"
+  ],
+  "pad": [
+   "data"
+  ],
+  "rtt<0>": [
+   "clock"
+  ],
+  "rtt<1>": [
+   "clock"
+  ],
+  "rtt<2>": [
+   "clock"
+  ],
+  "rx_en": [
+   "clock"
+  ],
+  "tap<0>": [
+   "general_control"
+  ],
+  "tap<1>": [
+   "general_control"
+  ],
+  "tap<2>": [
+   "general_control"
+  ],
+  "tap<3>": [
+   "general_control"
+  ],
+  "tap_sgn": [
+   "clock"
+  ],
+  "vdd": [
+   "power"
+  ],
+  "vddq": [
+   "clock"
+  ],
+  "vref": [
+   "internal"
+  ],
+  "vss": [
+   "power"
+  ],
+  "vssq": [
+   "internal"
+  ],
+  "xi1/net5": [
+   "internal"
+  ],
+  "xi20/net9": [
+   "general_control"
+  ],
+  "xi21/net10": [
+   "data"
+  ],
+  "xi21/net11": [
+   "data"
+  ],
+  "xi21/net12": [
+   "data"
+  ],
+  "xi22/net20": [
+   "clock"
+  ],
+  "xi22/net21": [
+   "clock"
+  ],
+  "xi22/net22": [
+   "clock"
+  ],
+  "xi22/xi0/net5": [
+   "internal"
+  ],
+  "xi22/xi1/net5": [
+   "internal"
+  ],
+  "xi22/xi2/net5": [
+   "internal"
+  ],
+  "xi22/xi3/inb": [
+   "clock"
+  ],
+  "xi22/xi3/nb": [
+   "clock"
+  ],
+  "xi22/xi3/nq": [
+   "clock"
+  ],
+  "xi22/xi4/inb": [
+   "clock"
+  ],
+  "xi22/xi4/nb": [
+   "clock"
+  ],
+  "xi22/xi4/nq": [
+   "clock"
+  ],
+  "xi22/xi5/inb": [
+   "clock"
+  ],
+  "xi22/xi5/nb": [
+   "clock"
+  ],
+  "xi22/xi5/nq": [
+   "clock"
+  ],
+  "xi23/enb": [
+   "clock"
+  ],
+  "xi23/net30": [
+   "clock"
+  ],
+  "xi24/net40": [
+   "internal"
+  ],
+  "xi24/net41": [
+   "internal"
+  ],
+  "xi24/net42": [
+   "internal"
+  ],
+  "xi24/net43": [
+   "internal"
+  ],
+  "xi25/net70": [
+   "clock"
+  ],
+  "xi25/net71": [
+   "clock"
+  ],
+  "xi25/xi0/net5": [
+   "internal"
+  ],
+  "xi25/xi1/net5": [
+   "internal"
+  ],
+  "xi26/net50": [
+   "internal"
+  ],
+  "xi26/net51": [
+   "internal"
+  ],
+  "xi26/net52": [
+   "internal"
+  ],
+  "xi26/net53": [
+   "internal"
+  ],
+  "xi26/net54": [
+   "internal"
+  ],
+  "xi26/net55": [
+   "internal"
+  ],
+  "xi26/net56": [
+   "internal"
+  ],
+  "xi26/net57": [
+   "internal"
+  ],
+  "xi26/net58": [
+   "internal"
+  ],
+  "xi27/net50": [
+   "internal"
+  ],
+  "xi27/net51": [
+   "internal"
+  ],
+  "xi27/net52": [
+   "internal"
+  ],
+  "xi27/net53": [
+   "internal"
+  ],
+  "xi27/net54": [
+   "internal"
+  ],
+  "xi27/net55": [
+   "internal"
+  ],
+  "xi27/net56": [
+   "internal"
+  ],
+  "xi27/net57": [
+   "internal"
+  ],
+  "xi27/net58": [
+   "internal"
+  ],
+  "xi28/net60": [
+   "clock"
+  ],
+  "xi28/net61": [
+   "internal"
+  ],
+  "xi28/net62": [
+   "clock"
+  ],
+  "xi28/net63": [
+   "clock"
+  ],
+  "xi28/net64": [
+   "internal"
+  ],
+  "xi28/net65": [
+   "bias"
+  ],
+  "xi28/net66": [
+   "bias"
+  ],
+  "xi28/net67": [
+   "bias"
+  ],
+  "xi28/net68": [
+   "bias"
+  ],
+  "xi29/net60": [
+   "clock"
+  ],
+  "xi29/net61": [
+   "internal"
+  ],
+  "xi29/net62": [
+   "clock"
+  ],
+  "xi29/net63": [
+   "clock"
+  ],
+  "xi29/net64": [
+   "internal"
+  ],
+  "xi29/net65": [
+   "bias"
+  ],
+  "xi29/net66": [
+   "bias"
+  ],
+  "xi29/net67": [
+   "bias"
+  ],
+  "xi29/net68": [
+   "bias"
+  ],
+  "xi3/net5": [
+   "internal"
+  ],
+  "xi30/xi0/net7": [
+   "internal"
+  ],
+  "xi30/xi1/net7": [
+   "internal"
+  ],
+  "xi31/xi0/net7": [
+   "internal"
+  ],
+  "xi31/xi1/net7": [
+   "internal"
+  ]
+ },
+ "bias_why": {
+  "xi28/net68": "drives only gates of active-inductor gate",
+  "net16": "drives only gates of load, tail/current source",
+  "xi29/net66": "drives only gates of active-inductor gate",
+  "xi29/net67": "drives only gates of active-inductor gate",
+  "net26": "drives only gates of load",
+  "net100": "drives only gates of load, tail/current source",
+  "net17": "drives only gates of load, tail/current source",
+  "net18": "drives only gates of load, tail/current source",
+  "net28": "drives only gates of load",
+  "net19": "drives only gates of load, tail/current source",
+  "xi29/net65": "drives only gates of active-inductor gate",
+  "net25": "drives only gates of load, tail/current source",
+  "lb_en": "drives only gates of load, tail/current source",
+  "xi28/net67": "drives only gates of active-inductor gate",
+  "ibias": "diode-connected (mirror) node",
+  "xi28/net66": "drives only gates of active-inductor gate",
+  "net24": "drives only gates of load, tail/current source",
+  "net15": "drives only gates of load, tail/current source",
+  "net14": "drives only gates of load, tail/current source",
+  "xi29/net68": "drives only gates of active-inductor gate",
+  "xi28/net65": "drives only gates of active-inductor gate"
+ },
+ "data_trace": {
+  "pad": {
+   "depth": 0,
+   "via": "start"
+  },
+  "net1": {
+   "depth": 1,
+   "via": "xi20/r0 (series passive)"
+  },
+  "xi21/net12": {
+   "depth": 1,
+   "via": "xi21/r2 (series passive)"
+  },
+  "xi21/net11": {
+   "depth": 1,
+   "via": "xi21/r1 (series passive)"
+  },
+  "xi21/net10": {
+   "depth": 1,
+   "via": "xi21/r0 (series passive)"
+  }
+ },
+ "clock_trace": {
+  "ck": {
+   "depth": 0,
+   "via": "start"
+  },
+  "ckb": {
+   "depth": 0,
+   "via": "start"
+  },
+  "rx_en": {
+   "depth": 0,
+   "via": "start"
+  },
+  "odt_en": {
+   "depth": 0,
+   "via": "start"
+  },
+  "rtt<2>": {
+   "depth": 0,
+   "via": "start"
+  },
+  "rtt<1>": {
+   "depth": 0,
+   "via": "start"
+  },
+  "rtt<0>": {
+   "depth": 0,
+   "via": "start"
+  },
+  "tap_sgn": {
+   "depth": 0,
+   "via": "start"
+  },
+  "vddq": {
+   "depth": 0,
+   "via": "start"
+  },
+  "xi25/net70": {
+   "depth": 1,
+   "via": "xi25/xi0/mp0 (g->d)"
+  },
+  "xi25/net71": {
+   "depth": 1,
+   "via": "xi25/xi1/mp0 (g->d)"
+  },
+  "xi23/enb": {
+   "depth": 1,
+   "via": "xi23/xi0/mp0 (g->d)"
+  },
+  "net101": {
+   "depth": 1,
+   "via": "xi1/mp0 (g->d)"
+  },
+  "net103": {
+   "depth": 1,
+   "via": "xi3/mp0 (g->d)"
+  },
+  "xi22/net20": {
+   "depth": 1,
+   "via": "xi22/xi2/mp0 (g->d)"
+  },
+  "xi22/net21": {
+   "depth": 1,
+   "via": "xi22/xi1/mp0 (g->d)"
+  },
+  "xi22/net22": {
+   "depth": 1,
+   "via": "xi22/xi0/mp0 (g->d)"
+  },
+  "net105": {
+   "depth": 1,
+   "via": "xi5/mp0 (g->d)"
+  },
+  "xi22/xi5/nb": {
+   "depth": 1,
+   "via": "xi22/xi5/mp0 (stacked s->d)"
+  },
+  "xi22/xi5/nq": {
+   "depth": 1,
+   "via": "xi22/xi5/mp1 (stacked s->d)"
+  },
+  "net2<2>": {
+   "depth": 1,
+   "via": "xi22/xi5/mp3 (stacked s->d)"
+  },
+  "xi22/xi4/nb": {
+   "depth": 1,
+   "via": "xi22/xi4/mp0 (stacked s->d)"
+  },
+  "xi22/xi4/nq": {
+   "depth": 1,
+   "via": "xi22/xi4/mp1 (stacked s->d)"
+  },
+  "net2<1>": {
+   "depth": 1,
+   "via": "xi22/xi4/mp3 (stacked s->d)"
+  },
+  "xi22/xi3/nb": {
+   "depth": 1,
+   "via": "xi22/xi3/mp0 (stacked s->d)"
+  },
+  "xi22/xi3/nq": {
+   "depth": 1,
+   "via": "xi22/xi3/mp1 (stacked s->d)"
+  },
+  "net2<0>": {
+   "depth": 1,
+   "via": "xi22/xi3/mp3 (stacked s->d)"
+  },
+  "xi23/net30": {
+   "depth": 1,
+   "via": "xi23/mp0 (stacked s->d)"
+  },
+  "net4": {
+   "depth": 1,
+   "via": "xi23/mp1 (stacked s->d)"
+  },
+  "net7": {
+   "depth": 1,
+   "via": "xi24/r0 (series passive)"
+  },
+  "net6": {
+   "depth": 1,
+   "via": "xi24/r1 (series passive)"
+  },
+  "net8": {
+   "depth": 2,
+   "via": "xi25/xi2/mp0 (g->d)"
+  },
+  "net9": {
+   "depth": 2,
+   "via": "xi25/xi3/mp0 (g->d)"
+  },
+  "net102": {
+   "depth": 2,
+   "via": "xi2/mp0 (g->d)"
+  },
+  "net104": {
+   "depth": 2,
+   "via": "xi4/mp0 (g->d)"
+  },
+  "xi22/xi5/inb": {
+   "depth": 2,
+   "via": "xi22/xi5/mp2 (g->d)"
+  },
+  "xi22/xi4/inb": {
+   "depth": 2,
+   "via": "xi22/xi4/mp2 (g->d)"
+  },
+  "xi22/xi3/inb": {
+   "depth": 2,
+   "via": "xi22/xi3/mp2 (g->d)"
+  },
+  "net106": {
+   "depth": 2,
+   "via": "xi6/mp0 (g->d)"
+  },
+  "net10": {
+   "depth": 2,
+   "via": "xi26/mn6 (g->d)"
+  },
+  "net11": {
+   "depth": 2,
+   "via": "xi26/mn7 (g->d)"
+  },
+  "net12": {
+   "depth": 2,
+   "via": "xi27/mn6 (g->d)"
+  },
+  "net13": {
+   "depth": 2,
+   "via": "xi27/mn7 (g->d)"
+  },
+  "xi28/net60": {
+   "depth": 3,
+   "via": "xi28/xi0/mp0 (g->d)"
+  },
+  "xi29/net60": {
+   "depth": 3,
+   "via": "xi29/xi0/mp0 (g->d)"
+  },
+  "xi28/net62": {
+   "depth": 3,
+   "via": "xi28/mn1 (g->d)"
+  },
+  "xi28/net63": {
+   "depth": 3,
+   "via": "xi28/mn2 (g->d)"
+  },
+  "xi29/net62": {
+   "depth": 3,
+   "via": "xi29/mn1 (g->d)"
+  },
+  "xi29/net63": {
+   "depth": 3,
+   "via": "xi29/mn2 (g->d)"
+  }
+ },
+ "data_events": [
+  [
+   "xi20/r0",
+   "common-mode node pad: stop"
+  ],
+  [
+   "xi24/mn0",
+   "gate net1: drain net7 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi24/mn8",
+   "gate net1: drain net6 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi21/r2",
+   "common-mode node pad: stop"
+  ],
+  [
+   "xi21/r1",
+   "common-mode node pad: stop"
+  ],
+  [
+   "xi21/r0",
+   "common-mode node pad: stop"
+  ]
+ ],
+ "clock_events": [
+  [
+   "xi25/xi0/mn1",
+   "gate rx_en: drain xi25/xi0/net5 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi25/xi1/mn1",
+   "gate rx_en: drain xi25/xi1/net5 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi26/mn2",
+   "gate rx_en: drain xi26/net50 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi27/mn2",
+   "gate rx_en: drain xi27/net50 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi22/xi2/mn1",
+   "gate rtt<2>: drain xi22/xi2/net5 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi22/xi1/mn1",
+   "gate rtt<1>: drain xi22/xi1/net5 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi22/xi0/mn1",
+   "gate rtt<0>: drain xi22/xi0/net5 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi23/mn3",
+   "gate xi23/enb: reset/precharge (rail source, dynamic node ibias): stop"
+  ],
+  [
+   "xi22/xi5/mn0",
+   "gate xi22/net20: reset/precharge (rail source, dynamic node xi22/xi5/nb): stop"
+  ],
+  [
+   "xi22/xi4/mn0",
+   "gate xi22/net21: reset/precharge (rail source, dynamic node xi22/xi4/nb): stop"
+  ],
+  [
+   "xi22/xi3/mn0",
+   "gate xi22/net22: reset/precharge (rail source, dynamic node xi22/xi3/nb): stop"
+  ],
+  [
+   "xi22/xi5/mn3",
+   "gate xi22/xi5/nb: reset/precharge (rail source, dynamic node net2<2>): stop"
+  ],
+  [
+   "xi21/mp2",
+   "gate net2<2>: drain xi21/net12 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi22/xi4/mn3",
+   "gate xi22/xi4/nb: reset/precharge (rail source, dynamic node net2<1>): stop"
+  ],
+  [
+   "xi21/mp1",
+   "gate net2<1>: drain xi21/net11 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi22/xi3/mn3",
+   "gate xi22/xi3/nb: reset/precharge (rail source, dynamic node net2<0>): stop"
+  ],
+  [
+   "xi21/mp0",
+   "gate net2<0>: drain xi21/net10 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi23/mp0",
+   "diode: stop"
+  ],
+  [
+   "xi23/mn2",
+   "diode: stop"
+  ],
+  [
+   "xi24/mn3",
+   "gate net4: drain xi24/net41 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi24/mn7",
+   "gate net4: drain xi24/net43 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi28/mn0",
+   "gate net8: drain xi28/net61 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi28/mp0",
+   "gate net8: reset/precharge (rail source, dynamic node xi28/net62): stop"
+  ],
+  [
+   "xi28/mp1",
+   "gate net8: reset/precharge (rail source, dynamic node xi28/net63): stop"
+  ],
+  [
+   "xi29/mn0",
+   "gate net9: drain xi29/net61 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi29/mp0",
+   "gate net9: reset/precharge (rail source, dynamic node xi29/net62): stop"
+  ],
+  [
+   "xi29/mp1",
+   "gate net9: reset/precharge (rail source, dynamic node xi29/net63): stop"
+  ],
+  [
+   "xi24/mn2",
+   "gate net102: drain xi24/net40 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi24/mn6",
+   "gate net104: drain xi24/net42 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi22/xi5/mn1",
+   "gate xi22/xi5/inb: reset/precharge (rail source, dynamic node xi22/xi5/nq): stop"
+  ],
+  [
+   "xi22/xi4/mn1",
+   "gate xi22/xi4/inb: reset/precharge (rail source, dynamic node xi22/xi4/nq): stop"
+  ],
+  [
+   "xi22/xi3/mn1",
+   "gate xi22/xi3/inb: reset/precharge (rail source, dynamic node xi22/xi3/nq): stop"
+  ],
+  [
+   "xi28/mp2",
+   "gate xi28/net60: drain xi28/net64 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi29/mp2",
+   "gate xi29/net60: drain xi29/net64 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi28/mn5",
+   "gate xi28/net62: reset/precharge (rail source, dynamic node net18): stop"
+  ],
+  [
+   "xi28/mn6",
+   "gate xi28/net63: reset/precharge (rail source, dynamic node net19): stop"
+  ],
+  [
+   "xi29/mn5",
+   "gate xi29/net62: reset/precharge (rail source, dynamic node net24): stop"
+  ],
+  [
+   "xi29/mn6",
+   "gate xi29/net63: reset/precharge (rail source, dynamic node net25): stop"
+  ]
+ ],
+ "control_info": {
+  "ofo_p<0>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi29/net63-xi29/net67 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "R"
+   ],
+   "switches": [
+    "xi29/mn13"
+   ],
+   "endpoint": "xi29/mn13.g",
+   "source": "port"
+  },
+  "ofe_p<1>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi28/net63-xi28/net68 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "R"
+   ],
+   "switches": [
+    "xi28/mn11"
+   ],
+   "endpoint": "xi28/mn11.g",
+   "source": "port"
+  },
+  "ofo_n<1>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi29/net62-xi29/net66 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "R"
+   ],
+   "switches": [
+    "xi29/mn7"
+   ],
+   "endpoint": "xi29/mn7.g",
+   "source": "port"
+  },
+  "ofe_n<1>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi28/net62-xi28/net66 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "R"
+   ],
+   "switches": [
+    "xi28/mn7"
+   ],
+   "endpoint": "xi28/mn7.g",
+   "source": "port"
+  },
+  "tap<1>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi26/net56-xi26/net54 (degeneration bank inside the high-speed path: peaking/gain trim)",
+    "switch across xi27/net56-xi27/net54 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "I"
+   ],
+   "switches": [
+    "xi26/mn14",
+    "xi27/mn14"
+   ],
+   "endpoint": "xi26/mn14.g",
+   "source": "port"
+  },
+  "xi20/net9": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across vssq-net1 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "R"
+   ],
+   "switches": [
+    "xi20/mn0"
+   ],
+   "endpoint": "xi20/mn0.g",
+   "source": "internal"
+  },
+  "tap<3>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi26/net58-xi26/net54 (degeneration bank inside the high-speed path: peaking/gain trim)",
+    "switch across xi27/net58-xi27/net54 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "I"
+   ],
+   "switches": [
+    "xi26/mn10",
+    "xi27/mn10"
+   ],
+   "endpoint": "xi26/mn10.g",
+   "source": "port"
+  },
+  "lb_p": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi24/net42-net7 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "R"
+   ],
+   "switches": [
+    "xi24/mn4"
+   ],
+   "endpoint": "xi24/mn4.g",
+   "source": "port"
+  },
+  "net3": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across net7-net7 (degeneration bank inside the high-speed path: peaking/gain trim)",
+    "switch across vssq-vssq (degeneration bank inside the high-speed path: peaking/gain trim)",
+    "tail of the only pair at net6"
+   ],
+   "bundle_type": [
+    "R"
+   ],
+   "switches": [
+    "mn0",
+    "xi24/mn1",
+    "xi24/mn9"
+   ],
+   "endpoint": "mn0.g",
+   "source": "internal"
+  },
+  "tap<2>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi26/net57-xi26/net54 (degeneration bank inside the high-speed path: peaking/gain trim)",
+    "switch across xi27/net57-xi27/net54 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "I"
+   ],
+   "switches": [
+    "xi26/mn12",
+    "xi27/mn12"
+   ],
+   "endpoint": "xi26/mn12.g",
+   "source": "port"
+  },
+  "ofe_n<0>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi28/net62-xi28/net65 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "R"
+   ],
+   "switches": [
+    "xi28/mn9"
+   ],
+   "endpoint": "xi28/mn9.g",
+   "source": "port"
+  },
+  "ofo_p<1>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi29/net63-xi29/net68 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "R"
+   ],
+   "switches": [
+    "xi29/mn11"
+   ],
+   "endpoint": "xi29/mn11.g",
+   "source": "port"
+  },
+  "ofo_n<0>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi29/net62-xi29/net65 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "R"
+   ],
+   "switches": [
+    "xi29/mn9"
+   ],
+   "endpoint": "xi29/mn9.g",
+   "source": "port"
+  },
+  "tap<0>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi26/net55-xi26/net54 (degeneration bank inside the high-speed path: peaking/gain trim)",
+    "switch across xi27/net55-xi27/net54 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "I"
+   ],
+   "switches": [
+    "xi26/mn16",
+    "xi27/mn16"
+   ],
+   "endpoint": "xi26/mn16.g",
+   "source": "port"
+  },
+  "ofe_p<0>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi28/net63-xi28/net67 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "R"
+   ],
+   "switches": [
+    "xi28/mn13"
+   ],
+   "endpoint": "xi28/mn13.g",
+   "source": "port"
+  },
+  "lb_n": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "tail of the only pair at net6"
+   ],
+   "bundle_type": [
+    "R"
+   ],
+   "switches": [
+    "xi24/mn5"
+   ],
+   "endpoint": "xi24/mn5.g",
+   "source": "port"
+  }
+ },
+ "cellnet": {
+  "dq_rx_unit": {
+   "pad": [
+    "data"
+   ],
+   "vref": [
+    "internal"
+   ],
+   "ck": [
+    "clock"
+   ],
+   "ckb": [
+    "clock"
+   ],
+   "lb_p": [
+    "general_control"
+   ],
+   "lb_n": [
+    "general_control"
+   ],
+   "lb_en": [
+    "bias"
+   ],
+   "rx_en": [
+    "clock"
+   ],
+   "odt_en": [
+    "clock"
+   ],
+   "rtt<2>": [
+    "clock"
+   ],
+   "rtt<1>": [
+    "clock"
+   ],
+   "rtt<0>": [
+    "clock"
+   ],
+   "tap<3>": [
+    "general_control"
+   ],
+   "tap<2>": [
+    "general_control"
+   ],
+   "tap<1>": [
+    "general_control"
+   ],
+   "tap<0>": [
+    "general_control"
+   ],
+   "tap_sgn": [
+    "clock"
+   ],
+   "ofe_p<1>": [
+    "general_control"
+   ],
+   "ofe_p<0>": [
+    "general_control"
+   ],
+   "ofe_n<1>": [
+    "general_control"
+   ],
+   "ofe_n<0>": [
+    "general_control"
+   ],
+   "ofo_p<1>": [
+    "general_control"
+   ],
+   "ofo_p<0>": [
+    "general_control"
+   ],
+   "ofo_n<1>": [
+    "general_control"
+   ],
+   "ofo_n<0>": [
+    "general_control"
+   ],
+   "ibias": [
+    "bias"
+   ],
+   "dout_e": [
+    "internal"
+   ],
+   "dout_o": [
+    "internal"
+   ],
+   "vdd": [
+    "power"
+   ],
+   "vddq": [
+    "clock"
+   ],
+   "vss": [
+    "power"
+   ],
+   "vssq": [
+    "internal"
+   ],
+   "net1": [
+    "data"
+   ],
+   "net2<2>": [
+    "clock"
+   ],
+   "net2<1>": [
+    "clock"
+   ],
+   "net2<0>": [
+    "clock"
+   ],
+   "net3": [
+    "general_control"
+   ],
+   "net4": [
+    "clock"
+   ],
+   "net100": [
+    "bias"
+   ],
+   "net101": [
+    "clock"
+   ],
+   "net102": [
+    "clock"
+   ],
+   "net103": [
+    "clock"
+   ],
+   "net104": [
+    "clock"
+   ],
+   "net105": [
+    "clock"
+   ],
+   "net106": [
+    "clock"
+   ],
+   "net6": [
+    "clock"
+   ],
+   "net7": [
+    "clock"
+   ],
+   "net8": [
+    "clock"
+   ],
+   "net9": [
+    "clock"
+   ],
+   "net16": [
+    "bias"
+   ],
+   "net17": [
+    "bias"
+   ],
+   "net10": [
+    "clock"
+   ],
+   "net11": [
+    "clock"
+   ],
+   "net14": [
+    "bias"
+   ],
+   "net15": [
+    "bias"
+   ],
+   "net12": [
+    "clock"
+   ],
+   "net13": [
+    "clock"
+   ],
+   "net18": [
+    "bias"
+   ],
+   "net19": [
+    "bias"
+   ],
+   "net24": [
+    "bias"
+   ],
+   "net25": [
+    "bias"
+   ],
+   "net26": [
+    "bias"
+   ],
+   "net27": [
+    "internal"
+   ],
+   "net28": [
+    "bias"
+   ],
+   "net29": [
+    "internal"
+   ]
+  },
+  "esd_dq": {
+   "pad": [
+    "data"
+   ],
+   "pad_r": [
+    "data"
+   ],
+   "vddq": [
+    "clock"
+   ],
+   "vssq": [
+    "internal"
+   ],
+   "net9": [
+    "general_control"
+   ]
+  },
+  "odt_pu": {
+   "pad": [
+    "data"
+   ],
+   "enb<2>": [
+    "clock"
+   ],
+   "enb<1>": [
+    "clock"
+   ],
+   "enb<0>": [
+    "clock"
+   ],
+   "vddq": [
+    "clock"
+   ],
+   "net12": [
+    "data"
+   ],
+   "net11": [
+    "data"
+   ],
+   "net10": [
+    "data"
+   ]
+  },
+  "odt_dec": {
+   "odt_en": [
+    "clock"
+   ],
+   "rtt<2>": [
+    "clock"
+   ],
+   "rtt<1>": [
+    "clock"
+   ],
+   "rtt<0>": [
+    "clock"
+   ],
+   "enb<2>": [
+    "clock"
+   ],
+   "enb<1>": [
+    "clock"
+   ],
+   "enb<0>": [
+    "clock"
+   ],
+   "vdd": [
+    "power"
+   ],
+   "vddq": [
+    "clock"
+   ],
+   "vss": [
+    "power"
+   ],
+   "net20": [
+    "clock"
+   ],
+   "net21": [
+    "clock"
+   ],
+   "net22": [
+    "clock"
+   ]
+  },
+  "ls_lh": {
+   "in": [
+    "clock"
+   ],
+   "out": [
+    "clock"
+   ],
+   "vdd": [
+    "power"
+   ],
+   "vddq": [
+    "clock"
+   ],
+   "vss": [
+    "power"
+   ],
+   "inb": [
+    "clock"
+   ],
+   "nb": [
+    "clock"
+   ],
+   "nq": [
+    "clock"
+   ]
+  },
+  "nand2_a": {
+   "a": [
+    "clock"
+   ],
+   "b": [
+    "bias",
+    "clock"
+   ],
+   "y": [
+    "clock"
+   ],
+   "vdd": [
+    "power"
+   ],
+   "vss": [
+    "power"
+   ],
+   "net5": [
+    "internal"
+   ]
+  },
+  "rx_bias": {
+   "ibias": [
+    "bias"
+   ],
+   "en": [
+    "clock"
+   ],
+   "vbn_q": [
+    "clock"
+   ],
+   "vdd": [
+    "power"
+   ],
+   "vddq": [
+    "clock"
+   ],
+   "vss": [
+    "power"
+   ],
+   "vssq": [
+    "internal"
+   ],
+   "enb": [
+    "clock"
+   ],
+   "net30": [
+    "clock"
+   ]
+  },
+  "inv_a": {
+   "a": [
+    "bias",
+    "clock"
+   ],
+   "y": [
+    "bias",
+    "clock",
+    "internal"
+   ],
+   "vdd": [
+    "power"
+   ],
+   "vss": [
+    "power"
+   ]
+  },
+  "rx_pre": {
+   "inp": [
+    "data"
+   ],
+   "vref": [
+    "general_control"
+   ],
+   "lbp": [
+    "general_control"
+   ],
+   "lbn": [
+    "general_control"
+   ],
+   "sel_m": [
+    "clock"
+   ],
+   "sel_l": [
+    "clock"
+   ],
+   "vbn": [
+    "clock"
+   ],
+   "outp": [
+    "clock"
+   ],
+   "outn": [
+    "clock"
+   ],
+   "vddq": [
+    "clock"
+   ],
+   "vssq": [
+    "internal"
+   ],
+   "net40": [
+    "internal"
+   ],
+   "net41": [
+    "internal"
+   ],
+   "net42": [
+    "internal"
+   ],
+   "net43": [
+    "internal"
+   ]
+  },
+  "ck_gbuf": {
+   "ck": [
+    "clock"
+   ],
+   "ckb": [
+    "clock"
+   ],
+   "en": [
+    "clock"
+   ],
+   "cko": [
+    "clock"
+   ],
+   "ckob": [
+    "clock"
+   ],
+   "vdd": [
+    "power"
+   ],
+   "vss": [
+    "power"
+   ],
+   "net70": [
+    "clock"
+   ],
+   "net71": [
+    "clock"
+   ]
+  },
+  "nand2_c": {
+   "a": [
+    "clock"
+   ],
+   "b": [
+    "clock"
+   ],
+   "y": [
+    "clock"
+   ],
+   "vdd": [
+    "power"
+   ],
+   "vss": [
+    "power"
+   ],
+   "net5": [
+    "internal"
+   ]
+  },
+  "inv_c": {
+   "a": [
+    "bias",
+    "clock"
+   ],
+   "y": [
+    "clock",
+    "internal"
+   ],
+   "vdd": [
+    "power"
+   ],
+   "vss": [
+    "power"
+   ]
+  },
+  "dfe_sum": {
+   "inp": [
+    "clock"
+   ],
+   "inn": [
+    "clock"
+   ],
+   "hp": [
+    "bias"
+   ],
+   "hn": [
+    "bias"
+   ],
+   "tap<3>": [
+    "general_control"
+   ],
+   "tap<2>": [
+    "general_control"
+   ],
+   "tap<1>": [
+    "general_control"
+   ],
+   "tap<0>": [
+    "general_control"
+   ],
+   "sgn": [
+    "clock"
+   ],
+   "sgnb": [
+    "clock"
+   ],
+   "en": [
+    "clock"
+   ],
+   "vbn": [
+    "bias"
+   ],
+   "outp": [
+    "clock"
+   ],
+   "outn": [
+    "clock"
+   ],
+   "vdd": [
+    "power"
+   ],
+   "vss": [
+    "power"
+   ],
+   "net50": [
+    "internal"
+   ],
+   "net51": [
+    "internal"
+   ],
+   "net52": [
+    "internal"
+   ],
+   "net54": [
+    "internal"
+   ],
+   "net53": [
+    "internal"
+   ],
+   "net58": [
+    "internal"
+   ],
+   "net57": [
+    "internal"
+   ],
+   "net56": [
+    "internal"
+   ],
+   "net55": [
+    "internal"
+   ]
+  },
+  "sa_dt": {
+   "inp": [
+    "clock"
+   ],
+   "inn": [
+    "clock"
+   ],
+   "ck": [
+    "clock"
+   ],
+   "outp": [
+    "bias"
+   ],
+   "outn": [
+    "bias"
+   ],
+   "ofp<1>": [
+    "general_control"
+   ],
+   "ofp<0>": [
+    "general_control"
+   ],
+   "ofn<1>": [
+    "general_control"
+   ],
+   "ofn<0>": [
+    "general_control"
+   ],
+   "vdd": [
+    "power"
+   ],
+   "vss": [
+    "power"
+   ],
+   "net60": [
+    "clock"
+   ],
+   "net61": [
+    "internal"
+   ],
+   "net62": [
+    "clock"
+   ],
+   "net63": [
+    "clock"
+   ],
+   "net64": [
+    "internal"
+   ],
+   "net66": [
+    "bias"
+   ],
+   "net65": [
+    "bias"
+   ],
+   "net68": [
+    "bias"
+   ],
+   "net67": [
+    "bias"
+   ]
+  },
+  "sr_nor": {
+   "s": [
+    "bias"
+   ],
+   "r": [
+    "bias"
+   ],
+   "q": [
+    "bias"
+   ],
+   "qb": [
+    "bias"
+   ],
+   "vdd": [
+    "power"
+   ],
+   "vss": [
+    "power"
+   ]
+  },
+  "nor2_c": {
+   "a": [
+    "bias"
+   ],
+   "b": [
+    "bias"
+   ],
+   "y": [
+    "bias"
+   ],
+   "vdd": [
+    "power"
+   ],
+   "vss": [
+    "power"
+   ],
+   "net7": [
+    "internal"
+   ]
+  }
+ },
+ "cell_insts": {
+  "dq_rx_unit": [
+   ""
+  ],
+  "esd_dq": [
+   "xi20/"
+  ],
+  "odt_pu": [
+   "xi21/"
+  ],
+  "odt_dec": [
+   "xi22/"
+  ],
+  "ls_lh": [
+   "xi22/xi5/",
+   "xi22/xi4/",
+   "xi22/xi3/"
+  ],
+  "nand2_a": [
+   "xi22/xi2/",
+   "xi22/xi1/",
+   "xi22/xi0/",
+   "xi1/",
+   "xi3/"
+  ],
+  "rx_bias": [
+   "xi23/"
+  ],
+  "inv_a": [
+   "xi23/xi0/",
+   "xi0/",
+   "xi2/",
+   "xi4/",
+   "xi5/",
+   "xi6/",
+   "xi7/",
+   "xi9/",
+   "xi10/",
+   "xi12/"
+  ],
+  "rx_pre": [
+   "xi24/"
+  ],
+  "ck_gbuf": [
+   "xi25/"
+  ],
+  "nand2_c": [
+   "xi25/xi0/",
+   "xi25/xi1/"
+  ],
+  "inv_c": [
+   "xi25/xi2/",
+   "xi25/xi3/",
+   "xi28/xi0/",
+   "xi29/xi0/",
+   "xi8/",
+   "xi11/"
+  ],
+  "dfe_sum": [
+   "xi26/",
+   "xi27/"
+  ],
+  "sa_dt": [
+   "xi28/",
+   "xi29/"
+  ],
+  "sr_nor": [
+   "xi30/",
+   "xi31/"
+  ],
+  "nor2_c": [
+   "xi30/xi0/",
+   "xi30/xi1/",
+   "xi31/xi0/",
+   "xi31/xi1/"
+  ]
+ },
+ "roles": {
+  "inv_a": {
+   "mp0": {
+    "role": "logic",
+    "alt": [
+     "load",
+     "load",
+     "load",
+     "load",
+     "load"
+    ]
+   },
+   "mn0": {
+    "role": "logic",
+    "alt": [
+     "load",
+     "load",
+     "load",
+     "load",
+     "load"
+    ]
+   }
+  },
+  "inv_c": {
+   "mp0": {
+    "role": "logic",
+    "alt": [
+     "load",
+     "load"
+    ]
+   },
+   "mn0": {
+    "role": "logic",
+    "alt": [
+     "load",
+     "load"
+    ]
+   }
+  },
+  "nand2_a": {
+   "mp0": {
+    "role": "logic"
+   },
+   "mp1": {
+    "role": "logic",
+    "alt": [
+     "load",
+     "load"
+    ]
+   },
+   "mn0": {
+    "role": "logic"
+   },
+   "mn1": {
+    "role": "logic",
+    "alt": [
+     "tail",
+     "tail"
+    ]
+   }
+  },
+  "nand2_c": {
+   "mp0": {
+    "role": "logic"
+   },
+   "mp1": {
+    "role": "logic"
+   },
+   "mn0": {
+    "role": "logic"
+   },
+   "mn1": {
+    "role": "logic"
+   }
+  },
+  "nor2_c": {
+   "mp0": {
+    "role": "tail"
+   },
+   "mp1": {
+    "role": "cascode"
+   },
+   "mn0": {
+    "role": "load"
+   },
+   "mn1": {
+    "role": "load"
+   }
+  },
+  "ls_lh": {
+   "mp2": {
+    "role": "logic"
+   },
+   "mn2": {
+    "role": "logic"
+   },
+   "mn0": {
+    "role": "reset"
+   },
+   "mn1": {
+    "role": "reset"
+   },
+   "mp0": {
+    "role": "cross",
+    "partner": "mp1"
+   },
+   "mp1": {
+    "role": "cross",
+    "partner": "mp0"
+   },
+   "mp3": {
+    "role": "input"
+   },
+   "mn3": {
+    "role": "reset"
+   }
+  },
+  "esd_dq": {
+   "r0": {
+    "role": "termination"
+   },
+   "mn0": {
+    "role": "switch"
+   },
+   "r1": {
+    "role": "series_res"
+   }
+  },
+  "odt_pu": {
+   "mp2": {
+    "role": "unknown"
+   },
+   "r2": {
+    "role": "termination"
+   },
+   "mp1": {
+    "role": "unknown"
+   },
+   "r1": {
+    "role": "termination"
+   },
+   "mp0": {
+    "role": "unknown"
+   },
+   "r0": {
+    "role": "termination"
+   }
+  },
+  "odt_dec": {},
+  "rx_bias": {
+   "mn0": {
+    "role": "diode"
+   },
+   "mn1": {
+    "role": "load"
+   },
+   "mp0": {
+    "role": "diode"
+   },
+   "mp1": {
+    "role": "input"
+   },
+   "mn2": {
+    "role": "diode"
+   },
+   "mn3": {
+    "role": "reset"
+   },
+   "mn4": {
+    "role": "input"
+   }
+  },
+  "rx_pre": {
+   "r0": {
+    "role": "series_res"
+   },
+   "r1": {
+    "role": "series_res"
+   },
+   "mn0": {
+    "role": "unknown"
+   },
+   "mn1": {
+    "role": "switch"
+   },
+   "mn8": {
+    "role": "unknown"
+   },
+   "mn9": {
+    "role": "switch"
+   },
+   "mn2": {
+    "role": "unknown"
+   },
+   "mn3": {
+    "role": "unknown"
+   },
+   "mn4": {
+    "role": "switch"
+   },
+   "mn5": {
+    "role": "switch"
+   },
+   "mn6": {
+    "role": "unknown"
+   },
+   "mn7": {
+    "role": "unknown"
+   }
+  },
+  "dfe_sum": {
+   "r0": {
+    "role": "r_to_rail"
+   },
+   "r1": {
+    "role": "r_to_rail"
+   },
+   "mn0": {
+    "role": "input"
+   },
+   "mn1": {
+    "role": "input"
+   },
+   "mn2": {
+    "role": "clock_steering"
+   },
+   "mn3": {
+    "role": "tail"
+   },
+   "mn4": {
+    "role": "cascode"
+   },
+   "mn5": {
+    "role": "cascode"
+   },
+   "mn6": {
+    "role": "input"
+   },
+   "mn7": {
+    "role": "input"
+   },
+   "mn8": {
+    "role": "input"
+   },
+   "mn9": {
+    "role": "input"
+   },
+   "mn10": {
+    "role": "switch"
+   },
+   "mn11": {
+    "role": "switched_current_source"
+   },
+   "mn12": {
+    "role": "switch"
+   },
+   "mn13": {
+    "role": "switched_current_source"
+   },
+   "mn14": {
+    "role": "switch"
+   },
+   "mn15": {
+    "role": "switched_current_source"
+   },
+   "mn16": {
+    "role": "switch"
+   },
+   "mn17": {
+    "role": "switched_current_source"
+   }
+  },
+  "sa_dt": {
+   "mn0": {
+    "role": "clocked_tail"
+   },
+   "mn1": {
+    "role": "input"
+   },
+   "mn2": {
+    "role": "input"
+   },
+   "mp0": {
+    "role": "reset"
+   },
+   "mp1": {
+    "role": "reset"
+   },
+   "mp2": {
+    "role": "clocked_tail"
+   },
+   "mp3": {
+    "role": "cross",
+    "partner": "mp4"
+   },
+   "mp4": {
+    "role": "cross",
+    "partner": "mp3"
+   },
+   "mn3": {
+    "role": "cross",
+    "partner": "mn4"
+   },
+   "mn4": {
+    "role": "cross",
+    "partner": "mn3"
+   },
+   "mn5": {
+    "role": "reset"
+   },
+   "mn6": {
+    "role": "reset"
+   },
+   "mn7": {
+    "role": "switch"
+   },
+   "mn8": {
+    "role": "active_inductor"
+   },
+   "mn9": {
+    "role": "switch"
+   },
+   "mn10": {
+    "role": "active_inductor"
+   },
+   "mn11": {
+    "role": "switch"
+   },
+   "mn12": {
+    "role": "active_inductor"
+   },
+   "mn13": {
+    "role": "switch"
+   },
+   "mn14": {
+    "role": "active_inductor"
+   }
+  },
+  "sr_nor": {},
+  "ck_gbuf": {},
+  "dq_rx_unit": {
+   "r0": {
+    "role": "series_res"
+   },
+   "mn0": {
+    "role": "switch"
+   }
+  }
+ },
+ "block": {
+  "esd_dq": {
+   "role": "termination",
+   "conf": "high",
+   "symbol": "R/ESD mark on input line",
+   "why": "termination: R from HS input to a common-mode node"
+  },
+  "odt_pu": {
+   "role": "termination",
+   "conf": "high",
+   "symbol": "R/ESD mark on input line",
+   "why": "termination: R from HS input to a common-mode node"
+  },
+  "ls_lh": {
+   "role": "composite",
+   "conf": "high",
+   "symbol": "box (cell name)",
+   "why": "hierarchical: 0 sub-blocks + 2 primitive unit(s); every sub-block is a dictionary block"
+  },
+  "nand2_a": {
+   "role": "nand",
+   "conf": "high",
+   "symbol": "box (cell name) + output bubble",
+   "why": "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list \u00a72.6-1)"
+  },
+  "odt_dec": {
+   "role": "composite",
+   "conf": "high",
+   "symbol": "box (cell name)",
+   "why": "hierarchical: 6 sub-blocks + 0 primitive unit(s); every sub-block is a dictionary block"
+  },
+  "inv_a": {
+   "role": "inverter",
+   "conf": "high",
+   "symbol": "inverter",
+   "why": "complementary PMOS/NMOS with common gate and drain"
+  },
+  "rx_bias": {
+   "role": "composite",
+   "conf": "high",
+   "symbol": "box (cell name)",
+   "why": "hierarchical: 1 sub-blocks + 2 primitive unit(s); every sub-block is a dictionary block"
+  },
+  "rx_pre": {
+   "role": "unknown",
+   "conf": "low",
+   "symbol": "box (cell name)",
+   "why": "structure not in dictionary"
+  },
+  "nand2_c": {
+   "role": "nand",
+   "conf": "high",
+   "symbol": "box (cell name) + output bubble",
+   "why": "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list \u00a72.6-1)"
+  },
+  "inv_c": {
+   "role": "inverter",
+   "conf": "high",
+   "symbol": "inverter",
+   "why": "complementary PMOS/NMOS with common gate and drain"
+  },
+  "ck_gbuf": {
+   "role": "composite",
+   "conf": "high",
+   "symbol": "box (cell name)",
+   "why": "hierarchical: 4 sub-blocks + 0 primitive unit(s); every sub-block is a dictionary block"
+  },
+  "dfe_sum": {
+   "role": "summer",
+   "conf": "high",
+   "symbol": "\u03a3",
+   "why": "3 pairs with different inputs summed at shared outputs"
+  },
+  "sa_dt": {
+   "role": "composite",
+   "conf": "high",
+   "symbol": "box (cell name)",
+   "why": "hierarchical: 1 sub-blocks + 6 primitive unit(s); every sub-block is a dictionary block"
+  },
+  "nor2_c": {
+   "role": "no_hs",
+   "conf": "low",
+   "symbol": "omit",
+   "why": "no high-speed net"
+  },
+  "sr_nor": {
+   "role": "no_hs",
+   "conf": "low",
+   "symbol": "omit",
+   "why": "no high-speed net"
+  },
+  "dq_rx_unit": {
+   "role": "composite",
+   "conf": "high",
+   "symbol": "box (cell name)",
+   "why": "hierarchical: 25 sub-blocks + 1 primitive unit(s); every sub-block is a dictionary block"
+  }
+ },
+ "groups": {
+  "esd_dq": [
+   {
+    "role": "termination",
+    "conf": "high",
+    "symbol": "R/ESD mark on input line",
+    "why": "termination: R from HS input to a common-mode node",
+    "members": [
+     "r0",
+     "mn0",
+     "r1"
+    ]
+   }
+  ],
+  "odt_pu": [
+   {
+    "role": "termination",
+    "conf": "high",
+    "symbol": "R/ESD mark on input line",
+    "why": "termination: R from HS input to a common-mode node",
+    "members": [
+     "mp2",
+     "r2",
+     "mp1",
+     "r1",
+     "mp0",
+     "r0"
+    ]
+   }
+  ],
+  "ls_lh": [
+   {
+    "role": "inverter",
+    "conf": "high",
+    "symbol": "inverter",
+    "why": "complementary PMOS/NMOS with common gate and drain",
+    "members": [
+     "mp2",
+     "mn2"
+    ]
+   },
+   {
+    "role": "unknown",
+    "conf": "low",
+    "symbol": "box (cell name)",
+    "why": "structure not in dictionary",
+    "members": [
+     "mn0",
+     "mn1",
+     "mp0",
+     "mp1",
+     "mp3",
+     "mn3"
+    ]
+   }
+  ],
+  "nand2_a": [
+   {
+    "role": "nand",
+    "conf": "high",
+    "symbol": "box (cell name) + output bubble",
+    "why": "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list \u00a72.6-1)",
+    "members": [
+     "mp0",
+     "mp1",
+     "mn0",
+     "mn1"
+    ]
+   }
+  ],
+  "odt_dec": [],
+  "inv_a": [
+   {
+    "role": "inverter",
+    "conf": "high",
+    "symbol": "inverter",
+    "why": "complementary PMOS/NMOS with common gate and drain",
+    "members": [
+     "mp0",
+     "mn0"
+    ]
+   }
+  ],
+  "rx_bias": [
+   {
+    "role": "unknown",
+    "conf": "low",
+    "symbol": "box (cell name)",
+    "why": "structure not in dictionary",
+    "members": [
+     "mn0",
+     "mn3"
+    ]
+   },
+   {
+    "role": "cml_buffer",
+    "conf": "high",
+    "symbol": "triangle \"BUF\"",
+    "why": "single differential pair, common tail, loads",
+    "members": [
+     "mn1",
+     "mp0",
+     "mp1",
+     "mn2",
+     "mn4"
+    ]
+   }
+  ],
+  "rx_pre": [
+   {
+    "role": "unknown",
+    "conf": "low",
+    "symbol": "box (cell name)",
+    "why": "structure not in dictionary",
+    "members": [
+     "r0",
+     "r1",
+     "mn0",
+     "mn1",
+     "mn8",
+     "mn9",
+     "mn2",
+     "mn3",
+     "mn4",
+     "mn5",
+     "mn6",
+     "mn7"
+    ]
+   }
+  ],
+  "nand2_c": [
+   {
+    "role": "nand",
+    "conf": "high",
+    "symbol": "box (cell name) + output bubble",
+    "why": "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list \u00a72.6-1)",
+    "members": [
+     "mp0",
+     "mp1",
+     "mn0",
+     "mn1"
+    ]
+   }
+  ],
+  "inv_c": [
+   {
+    "role": "inverter",
+    "conf": "high",
+    "symbol": "inverter",
+    "why": "complementary PMOS/NMOS with common gate and drain",
+    "members": [
+     "mp0",
+     "mn0"
+    ]
+   }
+  ],
+  "ck_gbuf": [],
+  "dfe_sum": [
+   {
+    "role": "summer",
+    "conf": "high",
+    "symbol": "\u03a3",
+    "why": "3 pairs with different inputs summed at shared outputs",
+    "members": [
+     "r0",
+     "r1",
+     "mn0",
+     "mn1",
+     "mn2",
+     "mn3",
+     "mn4",
+     "mn5",
+     "mn6",
+     "mn7",
+     "mn8",
+     "mn9",
+     "mn10",
+     "mn11",
+     "mn12",
+     "mn13",
+     "mn14",
+     "mn15",
+     "mn16",
+     "mn17"
+    ]
+   }
+  ],
+  "sa_dt": [
+   {
+    "role": "cml_buffer",
+    "conf": "high",
+    "symbol": "triangle \"BUF\"",
+    "why": "single differential pair, common tail, loads",
+    "members": [
+     "mn0",
+     "mn1",
+     "mn2",
+     "mp0",
+     "mp1",
+     "mn7",
+     "mn9",
+     "mn11",
+     "mn13"
+    ]
+   },
+   {
+    "role": "strongarm",
+    "conf": "high",
+    "symbol": "triangle + clock",
+    "why": "clocked tail, input pair, cross-coupled NMOS on input drains + cross-coupled PMOS, reset PMOS",
+    "members": [
+     "mp2",
+     "mp3",
+     "mp4",
+     "mn3",
+     "mn4",
+     "mn5",
+     "mn6"
+    ]
+   },
+   {
+    "role": "unknown",
+    "conf": "low",
+    "symbol": "box (cell name)",
+    "why": "structure not in dictionary",
+    "members": [
+     "mn8"
+    ]
+   },
+   {
+    "role": "unknown",
+    "conf": "low",
+    "symbol": "box (cell name)",
+    "why": "structure not in dictionary",
+    "members": [
+     "mn10"
+    ]
+   },
+   {
+    "role": "unknown",
+    "conf": "low",
+    "symbol": "box (cell name)",
+    "why": "structure not in dictionary",
+    "members": [
+     "mn12"
+    ]
+   },
+   {
+    "role": "unknown",
+    "conf": "low",
+    "symbol": "box (cell name)",
+    "why": "structure not in dictionary",
+    "members": [
+     "mn14"
+    ]
+   }
+  ],
+  "dq_rx_unit": [
+   {
+    "role": "unknown",
+    "conf": "low",
+    "symbol": "box (cell name)",
+    "why": "structure not in dictionary",
+    "members": [
+     "r0",
+     "mn0"
+    ]
+   }
+  ]
+ },
+ "latch_pairs": [],
+ "symmetry": {
+  "dfe_sum": {
+   "seed": [
+    [
+     "inp",
+     "inn"
+    ],
+    [
+     "sgnb",
+     "sgn"
+    ],
+    [
+     "sgnb",
+     "sgn"
+    ]
+   ],
+   "unmatched_devices": []
+  },
+  "sa_dt": {
+   "seed": [
+    [
+     "inp",
+     "inn"
+    ]
+   ],
+   "unmatched_devices": []
+  }
+ },
+ "eff": {
+  "xi20/mn0": [
+   "vssq",
+   "net1"
+  ],
+  "xi21/mp2": [
+   "vddq",
+   "xi21/net12"
+  ],
+  "xi21/mp1": [
+   "vddq",
+   "xi21/net11"
+  ],
+  "xi21/mp0": [
+   "vddq",
+   "xi21/net10"
+  ],
+  "xi22/xi5/mp2": [
+   "vdd",
+   "xi22/xi5/inb"
+  ],
+  "xi22/xi5/mn2": [
+   "vss",
+   "xi22/xi5/inb"
+  ],
+  "xi22/xi5/mn0": [
+   "vss",
+   "xi22/xi5/nb"
+  ],
+  "xi22/xi5/mn1": [
+   "vss",
+   "xi22/xi5/nq"
+  ],
+  "xi22/xi5/mp0": [
+   "vddq",
+   "xi22/xi5/nb"
+  ],
+  "xi22/xi5/mp1": [
+   "vddq",
+   "xi22/xi5/nq"
+  ],
+  "xi22/xi5/mp3": [
+   "vddq",
+   "net2<2>"
+  ],
+  "xi22/xi5/mn3": [
+   "vss",
+   "net2<2>"
+  ],
+  "xi22/xi4/mp2": [
+   "vdd",
+   "xi22/xi4/inb"
+  ],
+  "xi22/xi4/mn2": [
+   "vss",
+   "xi22/xi4/inb"
+  ],
+  "xi22/xi4/mn0": [
+   "vss",
+   "xi22/xi4/nb"
+  ],
+  "xi22/xi4/mn1": [
+   "vss",
+   "xi22/xi4/nq"
+  ],
+  "xi22/xi4/mp0": [
+   "vddq",
+   "xi22/xi4/nb"
+  ],
+  "xi22/xi4/mp1": [
+   "vddq",
+   "xi22/xi4/nq"
+  ],
+  "xi22/xi4/mp3": [
+   "vddq",
+   "net2<1>"
+  ],
+  "xi22/xi4/mn3": [
+   "vss",
+   "net2<1>"
+  ],
+  "xi22/xi3/mp2": [
+   "vdd",
+   "xi22/xi3/inb"
+  ],
+  "xi22/xi3/mn2": [
+   "vss",
+   "xi22/xi3/inb"
+  ],
+  "xi22/xi3/mn0": [
+   "vss",
+   "xi22/xi3/nb"
+  ],
+  "xi22/xi3/mn1": [
+   "vss",
+   "xi22/xi3/nq"
+  ],
+  "xi22/xi3/mp0": [
+   "vddq",
+   "xi22/xi3/nb"
+  ],
+  "xi22/xi3/mp1": [
+   "vddq",
+   "xi22/xi3/nq"
+  ],
+  "xi22/xi3/mp3": [
+   "vddq",
+   "net2<0>"
+  ],
+  "xi22/xi3/mn3": [
+   "vss",
+   "net2<0>"
+  ],
+  "xi22/xi2/mp0": [
+   "vdd",
+   "xi22/net20"
+  ],
+  "xi22/xi2/mp1": [
+   "vdd",
+   "xi22/net20"
+  ],
+  "xi22/xi2/mn0": [
+   "xi22/xi2/net5",
+   "xi22/net20"
+  ],
+  "xi22/xi2/mn1": [
+   "vss",
+   "xi22/xi2/net5"
+  ],
+  "xi22/xi1/mp0": [
+   "vdd",
+   "xi22/net21"
+  ],
+  "xi22/xi1/mp1": [
+   "vdd",
+   "xi22/net21"
+  ],
+  "xi22/xi1/mn0": [
+   "xi22/xi1/net5",
+   "xi22/net21"
+  ],
+  "xi22/xi1/mn1": [
+   "vss",
+   "xi22/xi1/net5"
+  ],
+  "xi22/xi0/mp0": [
+   "vdd",
+   "xi22/net22"
+  ],
+  "xi22/xi0/mp1": [
+   "vdd",
+   "xi22/net22"
+  ],
+  "xi22/xi0/mn0": [
+   "xi22/xi0/net5",
+   "xi22/net22"
+  ],
+  "xi22/xi0/mn1": [
+   "vss",
+   "xi22/xi0/net5"
+  ],
+  "mn0": [
+   "vssq",
+   "vssq"
+  ],
+  "xi23/xi0/mp0": [
+   "vdd",
+   "xi23/enb"
+  ],
+  "xi23/xi0/mn0": [
+   "vss",
+   "xi23/enb"
+  ],
+  "xi23/mn0": [
+   "vss",
+   "ibias"
+  ],
+  "xi23/mn1": [
+   "vss",
+   "xi23/net30"
+  ],
+  "xi23/mp0": [
+   "vddq",
+   "xi23/net30"
+  ],
+  "xi23/mp1": [
+   "vddq",
+   "net4"
+  ],
+  "xi23/mn2": [
+   "vssq",
+   "net4"
+  ],
+  "xi23/mn3": [
+   "vss",
+   "ibias"
+  ],
+  "xi23/mn4": [
+   "vssq",
+   "net4"
+  ],
+  "xi0/mp0": [
+   "vdd",
+   "net100"
+  ],
+  "xi0/mn0": [
+   "vss",
+   "net100"
+  ],
+  "xi1/mp0": [
+   "vdd",
+   "net101"
+  ],
+  "xi1/mp1": [
+   "vdd",
+   "net101"
+  ],
+  "xi1/mn0": [
+   "xi1/net5",
+   "net101"
+  ],
+  "xi1/mn1": [
+   "vss",
+   "xi1/net5"
+  ],
+  "xi2/mp0": [
+   "vdd",
+   "net102"
+  ],
+  "xi2/mn0": [
+   "vss",
+   "net102"
+  ],
+  "xi3/mp0": [
+   "vdd",
+   "net103"
+  ],
+  "xi3/mp1": [
+   "vdd",
+   "net103"
+  ],
+  "xi3/mn0": [
+   "xi3/net5",
+   "net103"
+  ],
+  "xi3/mn1": [
+   "vss",
+   "xi3/net5"
+  ],
+  "xi4/mp0": [
+   "vdd",
+   "net104"
+  ],
+  "xi4/mn0": [
+   "vss",
+   "net104"
+  ],
+  "xi5/mp0": [
+   "vdd",
+   "net105"
+  ],
+  "xi5/mn0": [
+   "vss",
+   "net105"
+  ],
+  "xi6/mp0": [
+   "vdd",
+   "net106"
+  ],
+  "xi6/mn0": [
+   "vss",
+   "net106"
+  ],
+  "xi24/mn0": [
+   "xi24/net40",
+   "net7"
+  ],
+  "xi24/mn1": [
+   "xi24/net40",
+   "net6"
+  ],
+  "xi24/mn8": [
+   "net6",
+   "net6"
+  ],
+  "xi24/mn9": [
+   "net7",
+   "net7"
+  ],
+  "xi24/mn2": [
+   "xi24/net41",
+   "xi24/net40"
+  ],
+  "xi24/mn3": [
+   "vssq",
+   "xi24/net41"
+  ],
+  "xi24/mn4": [
+   "xi24/net42",
+   "net7"
+  ],
+  "xi24/mn5": [
+   "xi24/net42",
+   "net6"
+  ],
+  "xi24/mn6": [
+   "xi24/net43",
+   "xi24/net42"
+  ],
+  "xi24/mn7": [
+   "vssq",
+   "xi24/net43"
+  ],
+  "xi25/xi0/mp0": [
+   "vdd",
+   "xi25/net70"
+  ],
+  "xi25/xi0/mp1": [
+   "vdd",
+   "xi25/net70"
+  ],
+  "xi25/xi0/mn0": [
+   "xi25/xi0/net5",
+   "xi25/net70"
+  ],
+  "xi25/xi0/mn1": [
+   "vss",
+   "xi25/xi0/net5"
+  ],
+  "xi25/xi1/mp0": [
+   "vdd",
+   "xi25/net71"
+  ],
+  "xi25/xi1/mp1": [
+   "vdd",
+   "xi25/net71"
+  ],
+  "xi25/xi1/mn0": [
+   "xi25/xi1/net5",
+   "xi25/net71"
+  ],
+  "xi25/xi1/mn1": [
+   "vss",
+   "xi25/xi1/net5"
+  ],
+  "xi25/xi2/mp0": [
+   "vdd",
+   "net8"
+  ],
+  "xi25/xi2/mn0": [
+   "vss",
+   "net8"
+  ],
+  "xi25/xi3/mp0": [
+   "vdd",
+   "net9"
+  ],
+  "xi25/xi3/mn0": [
+   "vss",
+   "net9"
+  ],
+  "xi26/mn0": [
+   "xi26/net50",
+   "net11"
+  ],
+  "xi26/mn1": [
+   "xi26/net50",
+   "net10"
+  ],
+  "xi26/mn2": [
+   "xi26/net51",
+   "xi26/net50"
+  ],
+  "xi26/mn3": [
+   "vss",
+   "xi26/net51"
+  ],
+  "xi26/mn4": [
+   "xi26/net54",
+   "xi26/net52"
+  ],
+  "xi26/mn5": [
+   "xi26/net54",
+   "xi26/net53"
+  ],
+  "xi26/mn6": [
+   "xi26/net52",
+   "net10"
+  ],
+  "xi26/mn7": [
+   "xi26/net53",
+   "net11"
+  ],
+  "xi26/mn8": [
+   "xi26/net52",
+   "net11"
+  ],
+  "xi26/mn9": [
+   "xi26/net53",
+   "net10"
+  ],
+  "xi26/mn10": [
+   "xi26/net58",
+   "xi26/net54"
+  ],
+  "xi26/mn11": [
+   "vss",
+   "xi26/net58"
+  ],
+  "xi26/mn12": [
+   "xi26/net57",
+   "xi26/net54"
+  ],
+  "xi26/mn13": [
+   "vss",
+   "xi26/net57"
+  ],
+  "xi26/mn14": [
+   "xi26/net56",
+   "xi26/net54"
+  ],
+  "xi26/mn15": [
+   "vss",
+   "xi26/net56"
+  ],
+  "xi26/mn16": [
+   "xi26/net55",
+   "xi26/net54"
+  ],
+  "xi26/mn17": [
+   "vss",
+   "xi26/net55"
+  ],
+  "xi27/mn0": [
+   "xi27/net50",
+   "net13"
+  ],
+  "xi27/mn1": [
+   "xi27/net50",
+   "net12"
+  ],
+  "xi27/mn2": [
+   "xi27/net51",
+   "xi27/net50"
+  ],
+  "xi27/mn3": [
+   "vss",
+   "xi27/net51"
+  ],
+  "xi27/mn4": [
+   "xi27/net54",
+   "xi27/net52"
+  ],
+  "xi27/mn5": [
+   "xi27/net54",
+   "xi27/net53"
+  ],
+  "xi27/mn6": [
+   "xi27/net52",
+   "net12"
+  ],
+  "xi27/mn7": [
+   "xi27/net53",
+   "net13"
+  ],
+  "xi27/mn8": [
+   "xi27/net52",
+   "net13"
+  ],
+  "xi27/mn9": [
+   "xi27/net53",
+   "net12"
+  ],
+  "xi27/mn10": [
+   "xi27/net58",
+   "xi27/net54"
+  ],
+  "xi27/mn11": [
+   "vss",
+   "xi27/net58"
+  ],
+  "xi27/mn12": [
+   "xi27/net57",
+   "xi27/net54"
+  ],
+  "xi27/mn13": [
+   "vss",
+   "xi27/net57"
+  ],
+  "xi27/mn14": [
+   "xi27/net56",
+   "xi27/net54"
+  ],
+  "xi27/mn15": [
+   "vss",
+   "xi27/net56"
+  ],
+  "xi27/mn16": [
+   "xi27/net55",
+   "xi27/net54"
+  ],
+  "xi27/mn17": [
+   "vss",
+   "xi27/net55"
+  ],
+  "xi28/xi0/mp0": [
+   "vdd",
+   "xi28/net60"
+  ],
+  "xi28/xi0/mn0": [
+   "vss",
+   "xi28/net60"
+  ],
+  "xi28/mn0": [
+   "vss",
+   "xi28/net61"
+  ],
+  "xi28/mn1": [
+   "xi28/net61",
+   "xi28/net62"
+  ],
+  "xi28/mn2": [
+   "xi28/net61",
+   "xi28/net63"
+  ],
+  "xi28/mp0": [
+   "vdd",
+   "xi28/net62"
+  ],
+  "xi28/mp1": [
+   "vdd",
+   "xi28/net63"
+  ],
+  "xi28/mp2": [
+   "vdd",
+   "xi28/net64"
+  ],
+  "xi28/mp3": [
+   "xi28/net64",
+   "net18"
+  ],
+  "xi28/mp4": [
+   "xi28/net64",
+   "net19"
+  ],
+  "xi28/mn3": [
+   "vss",
+   "net18"
+  ],
+  "xi28/mn4": [
+   "vss",
+   "net19"
+  ],
+  "xi28/mn5": [
+   "vss",
+   "net18"
+  ],
+  "xi28/mn6": [
+   "vss",
+   "net19"
+  ],
+  "xi28/mn7": [
+   "xi28/net62",
+   "xi28/net66"
+  ],
+  "xi28/mn8": [
+   "vss",
+   "vss"
+  ],
+  "xi28/mn9": [
+   "xi28/net62",
+   "xi28/net65"
+  ],
+  "xi28/mn10": [
+   "vss",
+   "vss"
+  ],
+  "xi28/mn11": [
+   "xi28/net63",
+   "xi28/net68"
+  ],
+  "xi28/mn12": [
+   "vss",
+   "vss"
+  ],
+  "xi28/mn13": [
+   "xi28/net63",
+   "xi28/net67"
+  ],
+  "xi28/mn14": [
+   "vss",
+   "vss"
+  ],
+  "xi29/xi0/mp0": [
+   "vdd",
+   "xi29/net60"
+  ],
+  "xi29/xi0/mn0": [
+   "vss",
+   "xi29/net60"
+  ],
+  "xi29/mn0": [
+   "vss",
+   "xi29/net61"
+  ],
+  "xi29/mn1": [
+   "xi29/net61",
+   "xi29/net62"
+  ],
+  "xi29/mn2": [
+   "xi29/net61",
+   "xi29/net63"
+  ],
+  "xi29/mp0": [
+   "vdd",
+   "xi29/net62"
+  ],
+  "xi29/mp1": [
+   "vdd",
+   "xi29/net63"
+  ],
+  "xi29/mp2": [
+   "vdd",
+   "xi29/net64"
+  ],
+  "xi29/mp3": [
+   "xi29/net64",
+   "net24"
+  ],
+  "xi29/mp4": [
+   "xi29/net64",
+   "net25"
+  ],
+  "xi29/mn3": [
+   "vss",
+   "net24"
+  ],
+  "xi29/mn4": [
+   "vss",
+   "net25"
+  ],
+  "xi29/mn5": [
+   "vss",
+   "net24"
+  ],
+  "xi29/mn6": [
+   "vss",
+   "net25"
+  ],
+  "xi29/mn7": [
+   "xi29/net62",
+   "xi29/net66"
+  ],
+  "xi29/mn8": [
+   "vss",
+   "vss"
+  ],
+  "xi29/mn9": [
+   "xi29/net62",
+   "xi29/net65"
+  ],
+  "xi29/mn10": [
+   "vss",
+   "vss"
+  ],
+  "xi29/mn11": [
+   "xi29/net63",
+   "xi29/net68"
+  ],
+  "xi29/mn12": [
+   "vss",
+   "vss"
+  ],
+  "xi29/mn13": [
+   "xi29/net63",
+   "xi29/net67"
+  ],
+  "xi29/mn14": [
+   "vss",
+   "vss"
+  ],
+  "xi30/xi0/mp0": [
+   "vdd",
+   "xi30/xi0/net7"
+  ],
+  "xi30/xi0/mp1": [
+   "xi30/xi0/net7",
+   "net14"
+  ],
+  "xi30/xi0/mn0": [
+   "vss",
+   "net14"
+  ],
+  "xi30/xi0/mn1": [
+   "vss",
+   "net14"
+  ],
+  "xi30/xi1/mp0": [
+   "vdd",
+   "xi30/xi1/net7"
+  ],
+  "xi30/xi1/mp1": [
+   "xi30/xi1/net7",
+   "net15"
+  ],
+  "xi30/xi1/mn0": [
+   "vss",
+   "net15"
+  ],
+  "xi30/xi1/mn1": [
+   "vss",
+   "net15"
+  ],
+  "xi31/xi0/mp0": [
+   "vdd",
+   "xi31/xi0/net7"
+  ],
+  "xi31/xi0/mp1": [
+   "xi31/xi0/net7",
+   "net16"
+  ],
+  "xi31/xi0/mn0": [
+   "vss",
+   "net16"
+  ],
+  "xi31/xi0/mn1": [
+   "vss",
+   "net16"
+  ],
+  "xi31/xi1/mp0": [
+   "vdd",
+   "xi31/xi1/net7"
+  ],
+  "xi31/xi1/mp1": [
+   "xi31/xi1/net7",
+   "net17"
+  ],
+  "xi31/xi1/mn0": [
+   "vss",
+   "net17"
+  ],
+  "xi31/xi1/mn1": [
+   "vss",
+   "net17"
+  ],
+  "xi7/mp0": [
+   "vdd",
+   "net26"
+  ],
+  "xi7/mn0": [
+   "vss",
+   "net26"
+  ],
+  "xi8/mp0": [
+   "vdd",
+   "dout_e"
+  ],
+  "xi8/mn0": [
+   "vss",
+   "dout_e"
+  ],
+  "xi9/mp0": [
+   "vdd",
+   "net27"
+  ],
+  "xi9/mn0": [
+   "vss",
+   "net27"
+  ],
+  "xi10/mp0": [
+   "vdd",
+   "net28"
+  ],
+  "xi10/mn0": [
+   "vss",
+   "net28"
+  ],
+  "xi11/mp0": [
+   "vdd",
+   "dout_o"
+  ],
+  "xi11/mn0": [
+   "vss",
+   "dout_o"
+  ],
+  "xi12/mp0": [
+   "vdd",
+   "net29"
+  ],
+  "xi12/mn0": [
+   "vss",
+   "net29"
+  ]
+ },
+ "l2g": {
+  "": {
+   "pad": "pad",
+   "vref": "vref",
+   "ck": "ck",
+   "ckb": "ckb",
+   "lb_p": "lb_p",
+   "lb_n": "lb_n",
+   "lb_en": "lb_en",
+   "rx_en": "rx_en",
+   "odt_en": "odt_en",
+   "rtt<2>": "rtt<2>",
+   "rtt<1>": "rtt<1>",
+   "rtt<0>": "rtt<0>",
+   "tap<3>": "tap<3>",
+   "tap<2>": "tap<2>",
+   "tap<1>": "tap<1>",
+   "tap<0>": "tap<0>",
+   "tap_sgn": "tap_sgn",
+   "ofe_p<1>": "ofe_p<1>",
+   "ofe_p<0>": "ofe_p<0>",
+   "ofe_n<1>": "ofe_n<1>",
+   "ofe_n<0>": "ofe_n<0>",
+   "ofo_p<1>": "ofo_p<1>",
+   "ofo_p<0>": "ofo_p<0>",
+   "ofo_n<1>": "ofo_n<1>",
+   "ofo_n<0>": "ofo_n<0>",
+   "ibias": "ibias",
+   "dout_e": "dout_e",
+   "dout_o": "dout_o",
+   "vdd": "vdd",
+   "vddq": "vddq",
+   "vss": "vss",
+   "vssq": "vssq",
+   "net1": "net1",
+   "net2<2>": "net2<2>",
+   "net2<1>": "net2<1>",
+   "net2<0>": "net2<0>",
+   "net3": "net3",
+   "net4": "net4",
+   "net100": "net100",
+   "net101": "net101",
+   "net102": "net102",
+   "net103": "net103",
+   "net104": "net104",
+   "net105": "net105",
+   "net106": "net106",
+   "net6": "net6",
+   "net7": "net7",
+   "net8": "net8",
+   "net9": "net9",
+   "net16": "net16",
+   "net17": "net17",
+   "net10": "net10",
+   "net11": "net11",
+   "net14": "net14",
+   "net15": "net15",
+   "net12": "net12",
+   "net13": "net13",
+   "net18": "net18",
+   "net19": "net19",
+   "net24": "net24",
+   "net25": "net25",
+   "net26": "net26",
+   "net27": "net27",
+   "net28": "net28",
+   "net29": "net29"
+  },
+  "xi20/": {
+   "pad": "pad",
+   "pad_r": "net1",
+   "vddq": "vddq",
+   "vssq": "vssq",
+   "net9": "xi20/net9"
+  },
+  "xi21/": {
+   "pad": "pad",
+   "enb<2>": "net2<2>",
+   "enb<1>": "net2<1>",
+   "enb<0>": "net2<0>",
+   "vddq": "vddq",
+   "net12": "xi21/net12",
+   "net11": "xi21/net11",
+   "net10": "xi21/net10"
+  },
+  "xi22/": {
+   "odt_en": "odt_en",
+   "rtt<2>": "rtt<2>",
+   "rtt<1>": "rtt<1>",
+   "rtt<0>": "rtt<0>",
+   "enb<2>": "net2<2>",
+   "enb<1>": "net2<1>",
+   "enb<0>": "net2<0>",
+   "vdd": "vdd",
+   "vddq": "vddq",
+   "vss": "vss",
+   "net20": "xi22/net20",
+   "net21": "xi22/net21",
+   "net22": "xi22/net22"
+  },
+  "xi22/xi5/": {
+   "in": "xi22/net20",
+   "out": "net2<2>",
+   "vdd": "vdd",
+   "vddq": "vddq",
+   "vss": "vss",
+   "inb": "xi22/xi5/inb",
+   "nb": "xi22/xi5/nb",
+   "nq": "xi22/xi5/nq"
+  },
+  "xi22/xi4/": {
+   "in": "xi22/net21",
+   "out": "net2<1>",
+   "vdd": "vdd",
+   "vddq": "vddq",
+   "vss": "vss",
+   "inb": "xi22/xi4/inb",
+   "nb": "xi22/xi4/nb",
+   "nq": "xi22/xi4/nq"
+  },
+  "xi22/xi3/": {
+   "in": "xi22/net22",
+   "out": "net2<0>",
+   "vdd": "vdd",
+   "vddq": "vddq",
+   "vss": "vss",
+   "inb": "xi22/xi3/inb",
+   "nb": "xi22/xi3/nb",
+   "nq": "xi22/xi3/nq"
+  },
+  "xi22/xi2/": {
+   "a": "odt_en",
+   "b": "rtt<2>",
+   "y": "xi22/net20",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net5": "xi22/xi2/net5"
+  },
+  "xi22/xi1/": {
+   "a": "odt_en",
+   "b": "rtt<1>",
+   "y": "xi22/net21",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net5": "xi22/xi1/net5"
+  },
+  "xi22/xi0/": {
+   "a": "odt_en",
+   "b": "rtt<0>",
+   "y": "xi22/net22",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net5": "xi22/xi0/net5"
+  },
+  "xi23/": {
+   "ibias": "ibias",
+   "en": "rx_en",
+   "vbn_q": "net4",
+   "vdd": "vdd",
+   "vddq": "vddq",
+   "vss": "vss",
+   "vssq": "vssq",
+   "enb": "xi23/enb",
+   "net30": "xi23/net30"
+  },
+  "xi23/xi0/": {
+   "a": "rx_en",
+   "y": "xi23/enb",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi0/": {
+   "a": "lb_en",
+   "y": "net100",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi1/": {
+   "a": "rx_en",
+   "b": "net100",
+   "y": "net101",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net5": "xi1/net5"
+  },
+  "xi2/": {
+   "a": "net101",
+   "y": "net102",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi3/": {
+   "a": "rx_en",
+   "b": "lb_en",
+   "y": "net103",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net5": "xi3/net5"
+  },
+  "xi4/": {
+   "a": "net103",
+   "y": "net104",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi5/": {
+   "a": "tap_sgn",
+   "y": "net105",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi6/": {
+   "a": "net105",
+   "y": "net106",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi24/": {
+   "inp": "net1",
+   "vref": "net3",
+   "lbp": "lb_p",
+   "lbn": "lb_n",
+   "sel_m": "net102",
+   "sel_l": "net104",
+   "vbn": "net4",
+   "outp": "net6",
+   "outn": "net7",
+   "vddq": "vddq",
+   "vssq": "vssq",
+   "net40": "xi24/net40",
+   "net41": "xi24/net41",
+   "net42": "xi24/net42",
+   "net43": "xi24/net43"
+  },
+  "xi25/": {
+   "ck": "ck",
+   "ckb": "ckb",
+   "en": "rx_en",
+   "cko": "net8",
+   "ckob": "net9",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net70": "xi25/net70",
+   "net71": "xi25/net71"
+  },
+  "xi25/xi0/": {
+   "a": "ck",
+   "b": "rx_en",
+   "y": "xi25/net70",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net5": "xi25/xi0/net5"
+  },
+  "xi25/xi1/": {
+   "a": "ckb",
+   "b": "rx_en",
+   "y": "xi25/net71",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net5": "xi25/xi1/net5"
+  },
+  "xi25/xi2/": {
+   "a": "xi25/net70",
+   "y": "net8",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi25/xi3/": {
+   "a": "xi25/net71",
+   "y": "net9",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi26/": {
+   "inp": "net6",
+   "inn": "net7",
+   "hp": "net16",
+   "hn": "net17",
+   "tap<3>": "tap<3>",
+   "tap<2>": "tap<2>",
+   "tap<1>": "tap<1>",
+   "tap<0>": "tap<0>",
+   "sgn": "net106",
+   "sgnb": "net105",
+   "en": "rx_en",
+   "vbn": "ibias",
+   "outp": "net10",
+   "outn": "net11",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net50": "xi26/net50",
+   "net51": "xi26/net51",
+   "net52": "xi26/net52",
+   "net54": "xi26/net54",
+   "net53": "xi26/net53",
+   "net58": "xi26/net58",
+   "net57": "xi26/net57",
+   "net56": "xi26/net56",
+   "net55": "xi26/net55"
+  },
+  "xi27/": {
+   "inp": "net6",
+   "inn": "net7",
+   "hp": "net14",
+   "hn": "net15",
+   "tap<3>": "tap<3>",
+   "tap<2>": "tap<2>",
+   "tap<1>": "tap<1>",
+   "tap<0>": "tap<0>",
+   "sgn": "net106",
+   "sgnb": "net105",
+   "en": "rx_en",
+   "vbn": "ibias",
+   "outp": "net12",
+   "outn": "net13",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net50": "xi27/net50",
+   "net51": "xi27/net51",
+   "net52": "xi27/net52",
+   "net54": "xi27/net54",
+   "net53": "xi27/net53",
+   "net58": "xi27/net58",
+   "net57": "xi27/net57",
+   "net56": "xi27/net56",
+   "net55": "xi27/net55"
+  },
+  "xi28/": {
+   "inp": "net10",
+   "inn": "net11",
+   "ck": "net8",
+   "outp": "net18",
+   "outn": "net19",
+   "ofp<1>": "ofe_p<1>",
+   "ofp<0>": "ofe_p<0>",
+   "ofn<1>": "ofe_n<1>",
+   "ofn<0>": "ofe_n<0>",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net60": "xi28/net60",
+   "net61": "xi28/net61",
+   "net62": "xi28/net62",
+   "net63": "xi28/net63",
+   "net64": "xi28/net64",
+   "net66": "xi28/net66",
+   "net65": "xi28/net65",
+   "net68": "xi28/net68",
+   "net67": "xi28/net67"
+  },
+  "xi28/xi0/": {
+   "a": "net8",
+   "y": "xi28/net60",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi29/": {
+   "inp": "net12",
+   "inn": "net13",
+   "ck": "net9",
+   "outp": "net24",
+   "outn": "net25",
+   "ofp<1>": "ofo_p<1>",
+   "ofp<0>": "ofo_p<0>",
+   "ofn<1>": "ofo_n<1>",
+   "ofn<0>": "ofo_n<0>",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net60": "xi29/net60",
+   "net61": "xi29/net61",
+   "net62": "xi29/net62",
+   "net63": "xi29/net63",
+   "net64": "xi29/net64",
+   "net66": "xi29/net66",
+   "net65": "xi29/net65",
+   "net68": "xi29/net68",
+   "net67": "xi29/net67"
+  },
+  "xi29/xi0/": {
+   "a": "net9",
+   "y": "xi29/net60",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi30/": {
+   "s": "net18",
+   "r": "net19",
+   "q": "net14",
+   "qb": "net15",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi30/xi0/": {
+   "a": "net19",
+   "b": "net15",
+   "y": "net14",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net7": "xi30/xi0/net7"
+  },
+  "xi30/xi1/": {
+   "a": "net18",
+   "b": "net14",
+   "y": "net15",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net7": "xi30/xi1/net7"
+  },
+  "xi31/": {
+   "s": "net24",
+   "r": "net25",
+   "q": "net16",
+   "qb": "net17",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi31/xi0/": {
+   "a": "net25",
+   "b": "net17",
+   "y": "net16",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net7": "xi31/xi0/net7"
+  },
+  "xi31/xi1/": {
+   "a": "net24",
+   "b": "net16",
+   "y": "net17",
+   "vdd": "vdd",
+   "vss": "vss",
+   "net7": "xi31/xi1/net7"
+  },
+  "xi7/": {
+   "a": "net14",
+   "y": "net26",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi8/": {
+   "a": "net26",
+   "y": "dout_e",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi9/": {
+   "a": "net15",
+   "y": "net27",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi10/": {
+   "a": "net16",
+   "y": "net28",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi11/": {
+   "a": "net28",
+   "y": "dout_o",
+   "vdd": "vdd",
+   "vss": "vss"
+  },
+  "xi12/": {
+   "a": "net17",
+   "y": "net29",
+   "vdd": "vdd",
+   "vss": "vss"
+  }
+ }
+}

@@ -1,0 +1,11 @@
+{
+  "job": "rx_s1",
+  "step": "2_review_classify",
+  "round": 0,
+  "max_rounds": 3,
+  "next": "claude",
+  "history": [
+    ["2026-11-22T03:11:00", "1_classify", "start"],
+    ["2026-11-22T03:17:00", "2_review_classify", "glm draft done"]
+  ]
+}

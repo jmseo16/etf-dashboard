@@ -1,0 +1,302 @@
+{
+ "_rule": "plan §2.6-3/4: a dictionary row is drawn only when every structure feature of the row is present; missing_features non-empty + dictionary symbol = fail",
+ "rows": [
+  {
+   "cell": "inv_a",
+   "instances": [
+    "xi0",
+    "xi2",
+    "xi4",
+    "xi5",
+    "xi6",
+    "xi7",
+    "xi9",
+    "xi10",
+    "xi12",
+    "xi23/xi0"
+   ],
+   "virtual": false,
+   "role": "inverter",
+   "row": "공통 논리 게이트 (INV)",
+   "symbol": "인버터",
+   "matched_features": [
+    "PMOS/NMOS 하나씩, 게이트·드레인 공통 (정적 CMOS)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "inv_c",
+   "instances": [
+    "xi8",
+    "xi11",
+    "xi25/xi2",
+    "xi25/xi3",
+    "xi28/xi0",
+    "xi29/xi0"
+   ],
+   "virtual": false,
+   "role": "inverter",
+   "row": "공통 논리 게이트 (INV)",
+   "symbol": "인버터",
+   "matched_features": [
+    "PMOS/NMOS 하나씩, 게이트·드레인 공통 (정적 CMOS)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "nand2_a",
+   "instances": [
+    "xi1",
+    "xi3",
+    "xi22/xi0",
+    "xi22/xi1",
+    "xi22/xi2"
+   ],
+   "virtual": false,
+   "role": "nand",
+   "row": "공통 논리 게이트 (NAND)",
+   "symbol": "박스(셀 이름) + 출력 동그라미",
+   "matched_features": [
+    "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "nand2_c",
+   "instances": [
+    "xi25/xi0",
+    "xi25/xi1"
+   ],
+   "virtual": false,
+   "role": "nand",
+   "row": "공통 논리 게이트 (NAND)",
+   "symbol": "박스(셀 이름) + 출력 동그라미",
+   "matched_features": [
+    "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "nor2_c",
+   "instances": [
+    "xi30/xi0",
+    "xi30/xi1",
+    "xi31/xi0",
+    "xi31/xi1"
+   ],
+   "virtual": false,
+   "role": "nor",
+   "row": "공통 논리 게이트 (NOR)",
+   "symbol": "박스(셀 이름) + 출력 동그라미",
+   "matched_features": [
+    "static CMOS gate: 2 series PMOS pull-ups, 2 parallel NMOS pull-downs (NOR)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "ls_lh",
+   "instances": [
+    "xi22/xi3",
+    "xi22/xi4",
+    "xi22/xi5"
+   ],
+   "virtual": false,
+   "role": "ls",
+   "row": "공통 Level shifter (LS)",
+   "symbol": "박스 LS",
+   "matched_features": [
+    "저전압 차동 입력 NMOS + 고전압 cross-coupled PMOS 부하"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "esd_dq",
+   "instances": [
+    "xi20"
+   ],
+   "virtual": false,
+   "role": "termination_esd",
+   "row": "RX 종단 · ESD",
+   "symbol": "입력선 위 R/ESD 표시",
+   "matched_features": [
+    "패드에서 전원으로 다이오드 클램프 및 직렬 저항, 게이트 접지 클램프 NMOS"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "odt_pu",
+   "instances": [
+    "xi21"
+   ],
+   "virtual": false,
+   "role": "termination",
+   "row": "RX 종단 · ESD",
+   "symbol": "입력선 위 가변 종단 R 표시",
+   "matched_features": [
+    "스위치 PMOS와 직렬 저항 뱅크 (패드 풀업 종단)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q6"
+   ]
+  },
+  {
+   "cell": "odt_dec",
+   "instances": [
+    "xi22"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "제어 디코더",
+   "symbol": "박스 DEC",
+   "matched_features": [
+    "중요 제어 rtt<2:0>, odt_en을 받아 종단 스위치 제어 버스 생성"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q6"
+   ]
+  },
+  {
+   "cell": "rx_bias",
+   "instances": [
+    "xi23"
+   ],
+   "virtual": false,
+   "role": "bias",
+   "row": "공통 바이어스 발생기",
+   "symbol": "omit",
+   "matched_features": [
+    "고속 신호 노드에 직접 닿지 않는 바이어스 전류/전압 발생 블록"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "rx_pre",
+   "instances": [
+    "xi24"
+   ],
+   "virtual": false,
+   "role": "unknown",
+   "row": "일반 박스 (사전 외)",
+   "symbol": "박스 PREAMP",
+   "matched_features": [
+    "입력쌍 mn0/mn1, 루프백쌍 mn4/mn5, 부하 R r0/r1, 중화 커패시터 mn8/mn9"
+   ],
+   "missing_features": [
+    "사전 VGA/CTLE 특성과 불일치"
+   ],
+   "confidence": "low",
+   "questions": [
+    "Q3"
+   ]
+  },
+  {
+   "cell": "dfe_sum",
+   "instances": [
+    "xi26",
+    "xi27"
+   ],
+   "virtual": false,
+   "role": "summer",
+   "row": "RX/TX Summer (DFE·FFE)",
+   "symbol": "Σ",
+   "matched_features": [
+    "주 차동쌍 mn0/mn1과 피드백 탭 쌍 mn4/mn5이 부하 R r0/r1에서 합산",
+    "DFE 탭 가중치 IDAC 스위치 mn10, mn12, mn14, mn16",
+    "DFE 탭 극성 선택 스위치 mn6, mn7, mn8, mn9"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q5"
+   ]
+  },
+  {
+   "cell": "sa_dt",
+   "instances": [
+    "xi28",
+    "xi29"
+   ],
+   "virtual": false,
+   "role": "comparator",
+   "row": "RX 비교기 · 샘플러 (StrongARM)",
+   "symbol": "삼각형 SA + 클럭",
+   "matched_features": [
+    "1단: 클럭 꼬리 mn0, 차동 입력쌍 mn1/mn2, 프리차지 PMOS mp0/mp1",
+    "2단: 클럭 꼬리 PMOS mp2, cross-coupled PMOS mp3/mp4, cross-coupled NMOS mn3/mn4, 입력 NMOS mn5/mn6",
+    "오프셋 트림 DAC 커패시터/스위치 mn7~mn14"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q4"
+   ]
+  },
+  {
+   "cell": "sr_nor",
+   "instances": [
+    "xi30",
+    "xi31"
+   ],
+   "virtual": false,
+   "role": "sr_latch",
+   "row": "공통 SR latch",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "NOR2 2개 교차 결합: xi0.y=q, xi1.y=qb"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "ck_gbuf",
+   "instances": [
+    "xi25"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "Clock 게이팅 버퍼",
+   "symbol": "삼각형 버퍼 + 게이트 입력",
+   "matched_features": [
+    "차동 클럭 ck/ckb와 rx_en NAND2_C 및 인버터 구동"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dq_rx_unit",
+   "instances": [],
+   "virtual": false,
+   "role": "composite",
+   "row": "최상위 블록",
+   "symbol": "박스",
+   "matched_features": [
+    "최상위 수신기 계층 구조"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  }
+ ]
+}
