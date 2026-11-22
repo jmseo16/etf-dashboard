@@ -1,0 +1,67 @@
+[
+ {
+  "cell": "esd_gc",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "odt_ct",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "odt_dec2",
+  "row": "dec",
+  "confidence": "high"
+ },
+ {
+  "cell": "inv_a",
+  "row": "inv",
+  "confidence": "high"
+ },
+ {
+  "cell": "nand2_a",
+  "row": "gate",
+  "confidence": "high"
+ },
+ {
+  "cell": "rx_pre",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "ck_gbuf",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "dfe_sum5",
+  "row": "sum",
+  "confidence": "high"
+ },
+ {
+  "cell": "sa_sarm",
+  "row": "samp",
+  "confidence": "high"
+ },
+ {
+  "cell": "sr_nand",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "inv_c",
+  "row": "inv",
+  "confidence": "high"
+ },
+ {
+  "cell": "ls_lh2",
+  "row": "dec",
+  "confidence": "high"
+ },
+ {
+  "cell": "nand2_c",
+  "row": "gate",
+  "confidence": "high"
+ }
+]
