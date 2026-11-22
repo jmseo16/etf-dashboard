@@ -12,6 +12,8 @@ def main():
     scenes = json.load(open(W + '/scenes.json'))
     texts = json.load(open(W + '/texts.json'))
     conf = json.load(open(W + '/conf.json'))
+    import hs
+    hs.ALIAS.update(conf.get('alias', {}))
     C = Checker(cells, scenes, texts, conf)
     byid = {v['id']: v for v in scenes}
     base = {}

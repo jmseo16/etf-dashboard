@@ -5,8 +5,8 @@ export NODE_PATH=/opt/node22/lib/node_modules:/opt/node-tools/node_modules
 cd "$(dirname "$0")"
 OUT=../out
 mkdir -p $OUT/screenshots
-python3 gen_s1.py ../../input/netlist.sp . > /dev/null
-python3 classify_s1.py $OUT post > /dev/null
+python3 gen_l1.py ../../input/netlist.sp . > /dev/null
+python3 classify_l1.py $OUT post > /dev/null
 echo '{}' > analysis.json
 rm -f $OUT/concept.pptx
 python3 render_html.py . $OUT > /dev/null

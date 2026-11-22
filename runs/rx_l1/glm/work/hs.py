@@ -11,7 +11,12 @@ from netlist import fmt_si
 EPS = 1e-6
 
 
+ALIAS = {}
+
+
 def expand(name):
+    if name in ALIAS:
+        return list(ALIAS[name])
     m = re.search(r'<(\d+):(\d+)>', name)
     if not m:
         return [name]

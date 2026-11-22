@@ -1,0 +1,371 @@
+{
+ "rows": [
+  {
+   "cell": "padesd",
+   "instances": [
+    "dqslice.xi0",
+    "rxbyte_top.xi4",
+    "rxbyte_top.xi5"
+   ],
+   "virtual": false,
+   "role": "termination_esd",
+   "row": "RX 종단 · ESD",
+   "symbol": "박스 \"ESD\"",
+   "matched_features": [
+    "다이오드 클램프 + 직렬 R + GGNMOS"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "odtleg3",
+   "instances": [
+    "dqslice.xi1",
+    "rxbyte_top.xi6",
+    "rxbyte_top.xi7"
+   ],
+   "virtual": false,
+   "role": "termination",
+   "row": "RX 종단 (가변)",
+   "symbol": "입력선 위 가변 종단 R",
+   "matched_features": [
+    "PMOS 스위치 + R 3다리"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "odtctl",
+   "instances": [
+    "rxbyte_top.xi3"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록 (DEC 박스)",
+   "symbol": "DEC",
+   "matched_features": [
+    "nand2x1 ×3 + lvlup ×3"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "biasgen",
+   "instances": [
+    "rxbyte_top.xi1"
+   ],
+   "virtual": false,
+   "role": "bias",
+   "row": "바이어스",
+   "symbol": "생략",
+   "matched_features": [],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "vrefdac",
+   "instances": [
+    "rxbyte_top.xi2"
+   ],
+   "virtual": false,
+   "role": "dac",
+   "row": "기준 전압 DAC \"VREF\" 박스",
+   "symbol": "VREF",
+   "matched_features": [
+    "전류원 + 코드 스위치 + 분압 R"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "lvlup",
+   "instances": [
+    "rxbyte_top.xi0",
+    "odtctl.xi3..xi5"
+   ],
+   "virtual": false,
+   "role": "ls",
+   "row": "공통 레벨 시프터",
+   "symbol": "LS",
+   "matched_features": [],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dqsrx",
+   "instances": [
+    "rxbyte_top.xi8"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록 (하위에 사전에 없는 acamp)",
+   "symbol": "박스",
+   "matched_features": [
+    "dqsamp(R 부하 차동쌍), invx1, invx4"
+   ],
+   "missing_features": [
+    "하위 acamp 가 사전 행 아님"
+   ],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "dqsamp",
+   "instances": [
+    "dqsrx.xi0"
+   ],
+   "virtual": false,
+   "role": "ctle?",
+   "row": "R 부하 차동 증폭기",
+   "symbol": "삼각형 AMP",
+   "matched_features": [
+    "R 부하 차동쌍 + 꼬리 스위치/전류원"
+   ],
+   "missing_features": [
+    "VGA/CTLE 특징 없음 → 일반 박스"
+   ],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "acamp",
+   "instances": [
+    "dqsrx.xi1",
+    "dqsrx.xi2"
+   ],
+   "virtual": false,
+   "role": "unknown",
+   "row": "사전에 없음",
+   "symbol": "삼각형 AMP",
+   "matched_features": [],
+   "missing_features": [
+    "AC 결합 인버터 증폭기"
+   ],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "dqsgate",
+   "instances": [
+    "rxbyte_top.xi9"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록 (ICG 류)",
+   "symbol": "박스",
+   "matched_features": [
+    "lat_tg ×2, nand2x2 ×2, invx4 ×2"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dly3",
+   "instances": [
+    "rxbyte_top.xi10",
+    "xi11"
+   ],
+   "virtual": false,
+   "role": "dly",
+   "row": "공통 지연 셀 (DLY)",
+   "symbol": "박스",
+   "matched_features": [
+    "dlybuf 체인 + mux2tg 3개"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "ckbuf",
+   "instances": [
+    "rxbyte_top.xi12..xi23"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "Clock 버퍼 (CMOS 인버터 2단)",
+   "symbol": "삼각형 BUF",
+   "matched_features": [
+    "invx4 ×2"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dqslice",
+   "instances": [
+    "rxbyte_top.xi30..xi37",
+    "xi38"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록 (하위에 sbamp·sadfe 일반/변형)",
+   "symbol": "박스",
+   "matched_features": [
+    "padesd, odtleg3, sbamp ×2, sadfe ×2, srnand ×2, inv ×4"
+   ],
+   "missing_features": [
+    "하위 sbamp 가 사전 행 아님"
+   ],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "sbamp",
+   "instances": [
+    "dqslice.xi2",
+    "dqslice.xi3"
+   ],
+   "virtual": false,
+   "role": "unknown",
+   "row": "사전에 없음",
+   "symbol": "삼각형 AMP",
+   "matched_features": [],
+   "missing_features": [
+    "인버터형 증폭기 + enable"
+   ],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "sadfe",
+   "instances": [
+    "dqslice.xi4",
+    "dqslice.xi6"
+   ],
+   "virtual": false,
+   "role": "comparator",
+   "row": "RX 비교기·샘플러 (StrongARM) + 탭 쌍",
+   "symbol": "삼각형 SA + 탭 핀",
+   "matched_features": [
+    "클럭 꼬리, 입력쌍, cross-coupled NMOS/PMOS, 리셋 PMOS"
+   ],
+   "missing_features": [
+    "탭 쌍(합산) — 사전 행 확장"
+   ],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "srnand",
+   "instances": [
+    "dqslice.xi5",
+    "dqslice.xi7"
+   ],
+   "virtual": false,
+   "role": "sr_latch",
+   "row": "공통 SR latch",
+   "symbol": "박스",
+   "matched_features": [
+    "nand2x2 ×2 교차 결합"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "wldet",
+   "instances": [
+    "rxbyte_top.xi39"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스",
+   "matched_features": [
+    "nand2x2, invx4, dfftg, invx1, invx4"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dfftg",
+   "instances": [
+    "wldet.xi2"
+   ],
+   "virtual": false,
+   "role": "dff",
+   "row": "공통 Latch·DFF (TG DFF)",
+   "symbol": "박스 DFF",
+   "matched_features": [
+    "상보 클럭 TG 마스터-슬레이브"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "lat_tg",
+   "instances": [
+    "dqsgate.xi0",
+    "dqsgate.xi1"
+   ],
+   "virtual": false,
+   "role": "latch",
+   "row": "공통 Latch (TG)",
+   "symbol": "박스 LATCH",
+   "matched_features": [],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "mux2tg",
+   "instances": [
+    "dly3.xi1,5,11"
+   ],
+   "virtual": false,
+   "role": "mux",
+   "row": "공통 MUX",
+   "symbol": "사다리꼴 MUX",
+   "matched_features": [
+    "상보 선택 TG"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "invx1/invx4/nand2x1/nand2x2/dlybuf",
+   "instances": [
+    "여러 곳"
+   ],
+   "virtual": false,
+   "role": "inverter/nand",
+   "row": "공통 논리 게이트",
+   "symbol": "인버터/박스",
+   "matched_features": [],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "rxbyte_top",
+   "instances": [
+    "(top)"
+   ],
+   "virtual": false,
+   "role": "general",
+   "row": "복합 블록 (예외: 하위에 사전에 없는 블록)",
+   "symbol": "최상위",
+   "matched_features": [],
+   "missing_features": [
+    "dqsrx/dqslice 가 사전 밖 하위를 가짐"
+   ],
+   "confidence": "low",
+   "questions": []
+  }
+ ],
+ "not_drawn": [
+  "biasgen (xi1)"
+ ]
+}
