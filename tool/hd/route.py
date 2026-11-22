@@ -241,6 +241,7 @@ def _build_scene(V, allow_pairs=()):
     comps = [K for U in units for K in U.comps]
     # ------------------------------------------------ symbols, obstacles, rail tags, gray labels
     terms = defaultdict(list)
+    gray_done = set()
     for K in comps:
         bx = K.box
         R.block_rect(K.x + bx[0] - 1, K.y + bx[1] - 1, K.x + bx[2] + 1, K.y + bx[3] + 1)
@@ -266,7 +267,12 @@ def _build_scene(V, allow_pairs=()):
                 _rail_tag(S, R, P.x, P.y, esc, rn, rn in V.sup)
                 R.block.add(cell)
             elif mode == 'gray':
-                _stub_label(S, R, P.x, P.y, esc, K.gray_pins[P.name], gray=True, bits=[K.gray_pins[P.name]])
+                gk = (P.x, P.y, K.gray_pins[P.name])
+                if getattr(K, 'tg', False):  # halves of a transmission gate face each other: label sideways instead
+                    esc = (1, 0) if P.rx > 0 else (-1, 0)
+                if gk not in gray_done:
+                    gray_done.add(gk)
+                    _stub_label(S, R, P.x, P.y, esc, K.gray_pins[P.name], gray=True, bits=[K.gray_pins[P.name]])
                 R.block.add(cell)
             else:
                 t = Term(P.nets, P.x, P.y, esc, K, pin=P)

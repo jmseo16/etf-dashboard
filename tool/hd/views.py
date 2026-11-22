@@ -109,6 +109,22 @@ def build(cells, top, A, ann=None):
                 if out:
                     break
             d[port] = 'out' if out else 'in'
+        # a cell made only of pass switches (a mux): the port most switches meet at is the output, the others are inputs
+        c_ = cells[cname]
+        mos_ = [e for e in c_.devs if e.kind == 'm']
+        if mos_ and len(mos_) == len(c_.devs) and cname != top and \
+                not any(e.pins['d'] in rails_l[cname] or e.pins['s'] in rails_l[cname] for e in mos_):
+            cnt = defaultdict(int)
+            for e in mos_:
+                for t in ('d', 's'):
+                    if e.pins[t] in d:
+                        cnt[e.pins[t]] += 1
+            if cnt:
+                top_n = max(cnt.values())
+                best = [x for x, v in cnt.items() if v == top_n]
+                if len(best) == 1 and len(cnt) > 1:
+                    for x in cnt:
+                        d[x] = 'out' if x == best[0] else 'in'
         pdir[cname] = d
     roles = {}
 
@@ -145,8 +161,10 @@ def build(cells, top, A, ann=None):
             r = 'samp'
         elif not subs and _count_pairs(c, rails_l[cname]) >= 2 and any(d.kind == 'r' for d in c.devs) and 'K1' in kcl:
             r = 'sum'
-        elif any(lcls[cname].get(p) == 'reference' for p in outs) and not (kcl & {'hs_data', 'hs_clock'}):
-            r = 'vref'
+        elif any(lcls[cname].get(p) == 'reference' for p in outs) and not (kcl & {'hs_data', 'hs_clock'}) and \
+                (subs or any(d.kind == 'r' for d in c.devs) or
+                 any(d.pins['d'] in rails_l[cname] or d.pins['s'] in rails_l[cname] for d in mos)):
+            r = 'vref'              # something in the cell makes the level (not a bare pass switch)
         elif nonrail and not (kcl & {'hs_data', 'hs_clock', 'reference'}) and any(lcls[cname].get(p) in VISIBLE for p in outs):
             r = 'dec'
         roles[cname] = forced or r
@@ -272,9 +290,12 @@ def build(cells, top, A, ann=None):
                         K.gray_pins[p] = n
                     K.pins[p] = Pin(p, [n], None, cl.get(n, 'other'), 'in' if p == 'g' else 'io', [[(d.name, p)]])
                 V.comps.append(K)
+        # ------------------------------------------------ regular structures drawn as one symbol
+        _collapse_trees(V)
+        _collapse_ladders(V, cl, rl, c.ports)
         # ------------------------------------------------ bus pins on one symbol (cell ports stem<k>)
         for K in V.comps:
-            if K.kind != 'inst':
+            if K.kind != 'inst' or getattr(K, 'folded', False):
                 continue
             groups = OrderedDict()
             for p in list(K.pins):
@@ -365,7 +386,7 @@ def build(cells, top, A, ann=None):
         V.rails = rl
         views[V.id] = V
         for K in V.comps:
-            if K.kind == 'inst':
+            if K.kind == 'inst' and K.cell:
                 make(K.cell)
                 tid = next(v.id for v in views.values() if v.cell == K.cell)
                 K.target = tid
@@ -436,8 +457,15 @@ def _is_static_gate(c, rails):
 def _merge_instances(V):
     """Instances of one cell whose pins differ only by a bit index become one symbol with bus pins."""
     groups = OrderedDict()
+    intup = {}                     # net -> (bus tuple of a folded symbol, position)
     for K in V.comps:
-        if K.kind != 'inst':
+        if getattr(K, 'folded', False):
+            for P in K.pins.values():
+                if len(P.nets) > 1:
+                    for k, x in enumerate(P.nets):
+                        intup.setdefault(x, (P.nets, k))
+    for K in V.comps:
+        if K.kind != 'inst' or getattr(K, 'folded', False):
             continue
         sig = [K.cell]
         ok = True
@@ -446,7 +474,10 @@ def _merge_instances(V):
                 sig.append((name, P.nets))
                 continue
             s, ix = NL.bus_split(P.nets[0])
-            sig.append((name, ('BUS', s)) if ix is not None and not ANON.match(s) else (name, P.nets[0]))
+            if P.nets[0] in intup:
+                sig.append((name, ('TUP', intup[P.nets[0]][0])))
+            else:
+                sig.append((name, ('BUS', s)) if ix is not None and not ANON.match(s) else (name, P.nets[0]))
         groups.setdefault(tuple(sig), []).append(K)
     for sig, lst in groups.items():
         if len(lst) < 2:
@@ -463,8 +494,12 @@ def _merge_instances(V):
         if not good:
             continue
         if varying:
-            key = varying[0]
-            lst.sort(key=lambda K: -NL.bus_split(K.pins[key].nets[0])[1])
+            tk = [v for v in varying if lst[0].pins[v].nets[0] in intup]
+            if tk:
+                lst.sort(key=lambda K: intup[K.pins[tk[0]].nets[0]][1])
+            else:
+                key = varying[0]
+                lst.sort(key=lambda K: -NL.bus_split(K.pins[key].nets[0])[1])
         import copy
         originals = [copy.deepcopy(K) for K in lst]
         head = lst[0]
@@ -483,3 +518,176 @@ def _merge_instances(V):
         V.legend.append('%s = %s (%s ×%d)' % (head.id, ', '.join(ids), head.cell, len(ids)))
         for K in lst[1:]:
             V.comps.remove(K)
+
+
+def _collapse_trees(V):
+    """A selection tree (instances of one cell, each output feeding a data input of the next) becomes one
+    'MUX N:1' symbol: leaf inputs as one bus, the select nets of every level as buses, one output."""
+    by_cell = OrderedDict()
+    for K in V.comps:
+        if K.kind == 'inst' and all(len(P.nets) == 1 for P in K.pins.values()):
+            by_cell.setdefault(K.cell, []).append(K)
+    for cell, lst in by_cell.items():
+        if len(lst) < 3:
+            continue
+        outs = [[n for n, P in K.pins.items() if P.dir == 'out'] for K in lst]
+        if any(len(o) != 1 for o in outs):
+            continue
+        op = outs[0][0]
+        if any(o[0] != op for o in outs):
+            continue
+        drv = dict((K.pins[op].nets[0], K) for K in lst)
+        if len(drv) != len(lst):
+            continue
+        dpins = [n for n in lst[0].pins if n != op and any(n in K.pins and K.pins[n].nets[0] in drv for K in lst)]
+        if len(dpins) < 2 or any(d not in K.pins for K in lst for d in dpins):
+            continue
+        spins = [n for n in lst[0].pins if n != op and n not in dpins]
+        users = defaultdict(int)       # how many pins in the whole view use a net
+        for K in V.comps:
+            for P in K.pins.values():
+                for x in P.nets:
+                    users[x] += 1
+        child_of = set(K.pins[d].nets[0] for K in lst for d in dpins)
+        roots = [K for K in lst if K.pins[op].nets[0] not in child_of]
+        for root in roots:
+            levels, leaves, ok = [[root]], [], True
+            members = [root]
+
+            def walk(K, depth):
+                for d in dpins:
+                    x = K.pins[d].nets[0]
+                    ch = drv.get(x)
+                    if ch is not None and ch is not K and users[x] == 2:
+                        while len(levels) <= depth + 1:
+                            levels.append([])
+                        levels[depth + 1].append(ch)
+                        members.append(ch)
+                        walk(ch, depth + 1)
+                    else:
+                        leaves.append((x, K, d))
+            walk(root, 0)
+            if len(members) < 3 or len(set(x for x, _, _ in leaves)) != len(leaves):
+                continue
+            sel = {}
+            for sp in spins:
+                per = []
+                for lv in levels:
+                    ns = set(K.pins[sp].nets[0] for K in lv if sp in K.pins)
+                    if len(ns) != 1 or any(sp not in K.pins for K in lv):
+                        ok = False
+                        break
+                    per.append(ns.pop())
+                if not ok or len(set(per)) != len(per):
+                    ok = False
+                    break
+                sel[sp] = per
+            if not ok:
+                continue
+            F = Comp('%s … %s' % (members[0].id, members[-1].id), 'inst')
+            F.folded = True
+            F.cell, F.dev = cell, root.dev
+            F.sym, F.role = 'box', 'box'
+            F.title = 'MUX %d:1' % len(leaves)
+            F.sub = '%s ×%d' % (cell, len(members))
+            F.members = [K.id for K in members]
+            F.orig = list(members)
+            d0 = root.pins[dpins[0]]
+            F.pins['in'] = Pin('in<%d:0>' % (len(leaves) - 1), [x for x, _, _ in reversed(leaves)], d0.side, d0.cls, 'in',
+                               [[(K.id, d)] for x, K, d in reversed(leaves)])
+            for sp in spins:
+                P0 = root.pins[sp]
+                if len(levels) > 1:
+                    F.pins[sp] = Pin('%s<%d:0>' % (sp, len(levels) - 1), sel[sp], P0.side, P0.cls, 'in',
+                                     [[(K.id, sp) for K in lv] for lv in levels])
+                else:
+                    F.pins[sp] = Pin(sp, sel[sp], P0.side, P0.cls, 'in', [[(K.id, sp) for K in levels[0]]])
+            Po = root.pins[op]
+            F.pins[op] = Pin(op, Po.nets, Po.side, Po.cls, 'out', [[(root.id, op)]])
+            i = V.comps.index(members[0])
+            for K in members:
+                V.comps.remove(K)
+            V.comps.insert(min(i, len(V.comps)), F)
+            V.legend.append('%s = %s (%s ×%d, %d:1 선택 트리)' % (F.id, ', '.join(F.members), cell, len(members), len(leaves)))
+
+
+def _collapse_ladders(V, cl, rl, ports):
+    """A series string of resistors (six or more) becomes one 'R ×N' symbol; the nodes used elsewhere are its tap bus."""
+    res = [K for K in V.comps if K.kind == 'res' and len(K.pins) == 2]
+    if len(res) < 6:
+        return
+    at = defaultdict(list)
+    for K in res:
+        for P in K.pins.values():
+            at[P.nets[0]].append(K)
+    users = defaultdict(int)
+    for K in V.comps:
+        for P in K.pins.values():
+            for x in P.nets:
+                users[x] += 1
+    inner = lambda x: x not in rl and len(at[x]) == 2 and at[x][0] is not at[x][1]
+    done = set()
+
+    def extend(K, x):
+        out = []
+        while inner(x):
+            nxt = at[x][0] if at[x][1] is K else at[x][1]
+            if nxt in done:
+                break
+            done.add(nxt)
+            out.append(nxt)
+            o = [P.nets[0] for P in nxt.pins.values()]
+            o.remove(x)
+            K, x = nxt, o[0]
+        return out, x
+    for K0 in res:
+        if K0 in done:
+            continue
+        done.add(K0)
+        n0, n1 = [P.nets[0] for P in K0.pins.values()]
+        left, e0 = extend(K0, n0)
+        right, e1 = extend(K0, n1)
+        chain = left[::-1] + [K0] + right
+        ends = [e0, e1]
+        if len(chain) < 6 or any(K.gray_pins for K in chain):
+            continue
+        # nodes along the chain, in order
+        nodes = []
+        for a, b in zip(chain, chain[1:]):
+            sh = set(P.nets[0] for P in a.pins.values()) & set(P.nets[0] for P in b.pins.values())
+            if len(sh) != 1:
+                nodes = None
+                break
+            nodes.append(sh.pop())
+        if not nodes or len(set(nodes)) != len(nodes):
+            continue
+        taps = [x for x in nodes if users[x] > 2 or x in ports]
+        if len(taps) < 2:
+            continue
+        # same order as a bus that already carries exactly these nets (a folded selection tree)
+        for K in V.comps:
+            for P in K.pins.values():
+                if len(P.nets) == len(taps) and set(P.nets) == set(taps):
+                    taps = list(P.nets)
+        F = Comp('%s … %s' % (chain[0].id, chain[-1].id), 'inst')
+        F.folded = True
+        F.cell, F.dev = None, chain[0].dev
+        F.sym, F.role = 'box', 'box'
+        F.title = 'R ×%d' % len(chain)
+        sizes = set(K.size_text for K in chain)
+        e = [x for x in ends if x in rl]
+        F.sub = ('%s ' % sizes.pop() if len(sizes) == 1 else '') + ('(%s – %s)' % (ends[0], ends[1]) if len(e) == 2 else '저항 사다리')
+        F.members = [K.id for K in chain]
+        F.orig = list(chain)
+        pin_of = lambda K, x: [n for n, P in K.pins.items() if P.nets[0] == x][0]
+        for nm, x, K in (('a', ends[0], chain[0]), ('b', ends[1], chain[-1])):
+            if x not in rl and x not in taps:
+                F.pins[nm] = Pin(nm, [x], 'l', cl.get(x, 'other'), 'in', [[(K.id, pin_of(K, x))]])
+        cls = best_class([cl.get(x, 'other') for x in taps])
+        F.pins['tap'] = Pin('tap<%d:0>' % (len(taps) - 1), taps, 'r', cls, 'out',
+                            [[(K.id, pin_of(K, x)) for K in at[x]] for x in taps])
+        i = V.comps.index(chain[0])
+        for K in chain:
+            V.comps.remove(K)
+        V.comps.insert(min(i, len(V.comps)), F)
+        V.legend.append('%s = %s (직렬 저항 %d개, 탭 %d개)' % (F.id, ', '.join(F.members), len(chain), len(taps)))

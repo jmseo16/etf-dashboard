@@ -38,6 +38,27 @@ def mutations(S):
             M['wires'][wi]['segs'][si:si + 1] = [[s[0], s[1], mid, s[1]], [mid, s[1], mid, s[1] + 10], [mid, s[1] + 10, mid + 10, s[1] + 10],
                                                  [mid + 10, s[1] + 10, mid + 10, s[1]], [mid + 10, s[1], s[2], s[3]]]
         yield 'add a needless jog to a straight wire', ('avoidable_bend', 'short_jog', 'crossing', 'text_on_wire', 'wire_through_symbol', 'short', 'tee_without_dot', 'four_way', 'dangling_end'), M
+    # a straight wire between two facing pins becomes a 20 px step (one symbol pin moved off the line)
+    pin_at = dict(((p['x'], p['y']), (sym['id'], p['side'])) for sym in S['symbols'] for p in sym['pins'])
+    for wi, w in enumerate(S['wires']):
+        if len(w['segs']) != 1:
+            continue
+        x1, y1, x2, y2 = w['segs'][0]
+        if y1 != y2 or abs(x2 - x1) < 60 or (x1, y1) not in pin_at or (x2, y2) not in pin_at:
+            continue
+        if x1 > x2:
+            x1, x2 = x2, x1
+        if pin_at[(x1, y1)][0] == pin_at[(x2, y1)][0] or pin_at[(x1, y1)][1] != 'r' or pin_at[(x2, y1)][1] != 'l':
+            continue
+        M = copy.deepcopy(S)
+        mid = (x1 + x2) // 20 * 10
+        M['wires'][wi]['segs'] = [[x1, y1, mid, y1], [mid, y1, mid, y1 + 20], [mid, y1 + 20, x2, y1 + 20]]
+        for sym in M['symbols']:
+            for p in sym['pins']:
+                if (p['x'], p['y']) == (x2, y1):
+                    p['y'] = y1 + 20
+        yield 'put two facing pins 20 px out of line', ('jog', 'crossing', 'short', 'text_on_wire', 'wire_through_symbol', 'tee_without_dot', 'four_way'), M
+        break
     if S['dots']:
         M = copy.deepcopy(S)
         del M['dots'][0]
