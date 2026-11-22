@@ -1,4 +1,0 @@
-{
- "questions": [],
- "how_to_answer": "annotations.json 의 \"answers\" 에 {질문 id: 선택지} 로 적고 --annotations 로 다시 실행"
-}

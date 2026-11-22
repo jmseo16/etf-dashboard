@@ -5,7 +5,7 @@ import json
 from collections import defaultdict
 
 CONN_KEYS = ('open', 'short', 'pin_open', 'dangling_end', 'tee_without_dot', 'width_mismatch')
-QUAL_KEYS = ('avoidable_bend', 'short_jog', 'crossing', 'wire_through_symbol', 'text_overlap', 'text_on_wire',
+QUAL_KEYS = ('avoidable_bend', 'detour', 'short_jog', 'crossing', 'wire_through_symbol', 'text_overlap', 'text_on_wire',
              'text_on_symbol', 'four_way', 'lonely_label', 'placement_problem')
 
 
@@ -273,6 +273,10 @@ def check(S, cell, level):
                 continue
             a, b = path[0], path[-1]
             run = [a] + corners + [b]
+            length = sum(abs(u[0] - v[0]) + abs(u[1] - v[1]) for u, v in zip(run, run[1:]))
+            man = abs(a[0] - b[0]) + abs(a[1] - b[1])
+            if a != b and length > 1.5 * man and length - man >= 80:
+                R['detour'].append('(%d,%d)-(%d,%d): %d px for a distance of %d' % (a[0], a[1], b[0], b[1], length, man))
             for u, v in zip(run[1:-1], run[2:-1]):
                 if abs(u[0] - v[0]) + abs(u[1] - v[1]) < 20:
                     R['short_jog'].append('(%d,%d)-(%d,%d)' % (u[0], u[1], v[0], v[1]))
