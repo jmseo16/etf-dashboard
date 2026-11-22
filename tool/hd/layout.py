@@ -887,8 +887,8 @@ def place(V):
         used = []                   # (top, bottom, has bottom pins)
         for i in order:
             U, b = col[i], boxes[i]
-            has_t = any(P.side == 't' for K in U.comps if K.kind == 'inst' for P in K.pins.values())
-            has_b = any(P.side == 'b' for K in U.comps if K.kind == 'inst' for P in K.pins.values())
+            has_t = any(P.side == 't' and P.name not in K.rail_pins and P.name not in K.gray_pins for K in U.comps for P in K.pins.values())
+            has_b = any(P.side == 'b' and P.name not in K.rail_pins and P.name not in K.gray_pins for K in U.comps for P in K.pins.values())
             y = want[i]
             if y is None:
                 y = (used[-1][1] + 40 + 30 * RELAX[0] + (60 if has_t else 0) + (60 if used[-1][2] else 0) - b[1]) if used else -b[1]
