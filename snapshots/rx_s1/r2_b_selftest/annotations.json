@@ -1,0 +1,419 @@
+{
+ "hs_inputs": [
+  "pad"
+ ],
+ "clock_inputs": [
+  "ck",
+  "ckb"
+ ],
+ "hs_outputs": [
+  "dout_e",
+  "dout_o"
+ ],
+ "important_controls": [
+  "lb_en",
+  "rx_en",
+  "odt_en",
+  "rtt<2>",
+  "rtt<1>",
+  "rtt<0>",
+  "tap<3>",
+  "tap<2>",
+  "tap<1>",
+  "tap<0>",
+  "tap_sgn"
+ ],
+ "show_bias": [],
+ "hide": [
+  "ofe_p<1>",
+  "ofe_p<0>",
+  "ofe_n<1>",
+  "ofe_n<0>",
+  "ofo_p<1>",
+  "ofo_p<0>",
+  "ofo_n<1>",
+  "ofo_n<0>",
+  "ibias",
+  "vdd",
+  "vddq",
+  "vss",
+  "vssq"
+ ],
+ "block_roles": {
+  "inv_a": "inverter",
+  "inv_c": "inverter",
+  "nand2_a": "nand",
+  "nand2_c": "nand",
+  "nor2_c": "nor",
+  "ls_lh": "ls",
+  "esd_dq": "termination_esd",
+  "odt_pu": "termination",
+  "odt_dec": "composite",
+  "rx_bias": "bias",
+  "rx_pre": "unknown",
+  "dfe_sum": "summer",
+  "sa_dt": "comparator",
+  "sr_nor": "sr_latch",
+  "ck_gbuf": "composite",
+  "dq_rx_unit": "composite"
+ },
+ "_sources": {
+  "hs_inputs": "automatic structural analysis (pad input to ESD/ODT/preamp) + assumed answer",
+  "others": "automatic structural analysis + assumed answers below"
+ },
+ "_controls": [
+  {
+   "bus": "tap<3:0>",
+   "bits": [
+    "tap<3>",
+    "tap<2>",
+    "tap<1>",
+    "tap<0>"
+   ],
+   "class": "important_control",
+   "K": "K1",
+   "endpoint_pin": "xi26/mn10.g",
+   "source": "port",
+   "function": "DFE 탭 계수 가중치 — IDAC 스위치 → 탭 쌍 꼬리 전류, Σ 출력에서 합산",
+   "drawing": "버스 (사선 + 이름, 비트 수 없음; 받는 블록 위에서)"
+  },
+  {
+   "bus": "tap_sgn",
+   "bits": [
+    "tap_sgn"
+   ],
+   "class": "important_control",
+   "K": "K1",
+   "endpoint_pin": "xi5/mn0.g",
+   "source": "port",
+   "function": "DFE 탭 계수 극성 제어 — 극성 반전 스위치 게이트 구동",
+   "drawing": "선 (단일 비트)"
+  },
+  {
+   "bus": "lb_en",
+   "bits": [
+    "lb_en"
+   ],
+   "class": "important_control",
+   "K": "K2",
+   "endpoint_pin": "xi0/mn0.g",
+   "source": "port",
+   "function": "루프백 선택 신호 — pad/vref 경로와 lb_p/lb_n 루프백 경로 간 상보 선택",
+   "drawing": "선 (단일 비트)"
+  },
+  {
+   "bus": "rx_en",
+   "bits": [
+    "rx_en"
+   ],
+   "class": "important_control",
+   "K": "K3",
+   "endpoint_pin": "xi25/xi0/mn1.g",
+   "source": "port",
+   "function": "수신기 켜기/끄기 — 클럭 게이팅 버퍼, 프리앰프, DFE summer 꼬리 인에이블",
+   "drawing": "선 (단일 비트)"
+  },
+  {
+   "bus": "odt_en",
+   "bits": [
+    "odt_en"
+   ],
+   "class": "important_control",
+   "K": "K4",
+   "endpoint_pin": "xi22/xi2/mn0.g",
+   "source": "port",
+   "function": "종단 켜기/끄기 — ODT 디코더 NAND 입력",
+   "drawing": "선 (단일 비트)"
+  },
+  {
+   "bus": "rtt<2:0>",
+   "bits": [
+    "rtt<2>",
+    "rtt<1>",
+    "rtt<0>"
+   ],
+   "class": "important_control",
+   "K": "K4",
+   "endpoint_pin": "xi22/xi2/mn1.g",
+   "source": "port",
+   "function": "가변 종단 저항 코드 — ODT 디코더 거쳐 패드 풀업 저항 스위치 제어",
+   "drawing": "버스 (사선 + 이름, 비트 수 없음)"
+  },
+  {
+   "bus": "ofe_p<1:0>",
+   "bits": [
+    "ofe_p<1>",
+    "ofe_p<0>"
+   ],
+   "class": "general_control",
+   "K": "K7",
+   "endpoint_pin": "xi28/mn11.g",
+   "source": "port",
+   "function": "Even SA P측 오프셋 트림",
+   "drawing": "숨김 (생략 목록에 한 줄)"
+  },
+  {
+   "bus": "ofe_n<1:0>",
+   "bits": [
+    "ofe_n<1>",
+    "ofe_n<0>"
+   ],
+   "class": "general_control",
+   "K": "K7",
+   "endpoint_pin": "xi28/mn7.g",
+   "source": "port",
+   "function": "Even SA N측 오프셋 트림",
+   "drawing": "숨김 (생략 목록에 한 줄)"
+  },
+  {
+   "bus": "ofo_p<1:0>",
+   "bits": [
+    "ofo_p<1>",
+    "ofo_p<0>"
+   ],
+   "class": "general_control",
+   "K": "K7",
+   "endpoint_pin": "xi29/mn11.g",
+   "source": "port",
+   "function": "Odd SA P측 오프셋 트림",
+   "drawing": "숨김 (생략 목록에 한 줄)"
+  },
+  {
+   "bus": "ofo_n<1:0>",
+   "bits": [
+    "ofo_n<1>",
+    "ofo_n<0>"
+   ],
+   "class": "general_control",
+   "K": "K7",
+   "endpoint_pin": "xi29/mn7.g",
+   "source": "port",
+   "function": "Odd SA N측 오프셋 트림",
+   "drawing": "숨김 (생략 목록에 한 줄)"
+  }
+ ],
+ "_important_control_buses": {
+  "tap<3:0>": {
+   "bus": "tap<3:0>",
+   "bits": [
+    "tap<3>",
+    "tap<2>",
+    "tap<1>",
+    "tap<0>"
+   ],
+   "class": "important_control",
+   "K": "K1",
+   "endpoint_pin": "xi26/mn10.g",
+   "source": "port",
+   "function": "DFE 탭 계수 가중치 — IDAC 스위치 → 탭 쌍 꼬리 전류, Σ 출력에서 합산",
+   "drawing": "버스 (사선 + 이름, 비트 수 없음; 받는 블록 위에서)"
+  },
+  "tap_sgn": {
+   "bus": "tap_sgn",
+   "bits": [
+    "tap_sgn"
+   ],
+   "class": "important_control",
+   "K": "K1",
+   "endpoint_pin": "xi5/mn0.g",
+   "source": "port",
+   "function": "DFE 탭 계수 극성 제어 — 극성 반전 스위치 게이트 구동",
+   "drawing": "선 (단일 비트)"
+  },
+  "lb_en": {
+   "bus": "lb_en",
+   "bits": [
+    "lb_en"
+   ],
+   "class": "important_control",
+   "K": "K2",
+   "endpoint_pin": "xi0/mn0.g",
+   "source": "port",
+   "function": "루프백 선택 신호 — pad/vref 경로와 lb_p/lb_n 루프백 경로 간 상보 선택",
+   "drawing": "선 (단일 비트)"
+  },
+  "rx_en": {
+   "bus": "rx_en",
+   "bits": [
+    "rx_en"
+   ],
+   "class": "important_control",
+   "K": "K3",
+   "endpoint_pin": "xi25/xi0/mn1.g",
+   "source": "port",
+   "function": "수신기 켜기/끄기 — 클럭 게이팅 버퍼, 프리앰프, DFE summer 꼬리 인에이블",
+   "drawing": "선 (단일 비트)"
+  },
+  "odt_en": {
+   "bus": "odt_en",
+   "bits": [
+    "odt_en"
+   ],
+   "class": "important_control",
+   "K": "K4",
+   "endpoint_pin": "xi22/xi2/mn0.g",
+   "source": "port",
+   "function": "종단 켜기/끄기 — ODT 디코더 NAND 입력",
+   "drawing": "선 (단일 비트)"
+  },
+  "rtt<2:0>": {
+   "bus": "rtt<2:0>",
+   "bits": [
+    "rtt<2>",
+    "rtt<1>",
+    "rtt<0>"
+   ],
+   "class": "important_control",
+   "K": "K4",
+   "endpoint_pin": "xi22/xi2/mn1.g",
+   "source": "port",
+   "function": "가변 종단 저항 코드 — ODT 디코더 거쳐 패드 풀업 저항 스위치 제어",
+   "drawing": "버스 (사선 + 이름, 비트 수 없음)"
+  }
+ },
+ "_general_controls": [
+  "ofe_p<1>",
+  "ofe_p<0>",
+  "ofe_n<1>",
+  "ofe_n<0>",
+  "ofo_p<1>",
+  "ofo_p<0>",
+  "ofo_n<1>",
+  "ofo_n<0>"
+ ],
+ "_general_control_buses": {
+  "ofe_p<1:0>": {
+   "bus": "ofe_p<1:0>",
+   "bits": [
+    "ofe_p<1>",
+    "ofe_p<0>"
+   ],
+   "class": "general_control",
+   "K": "K7",
+   "endpoint_pin": "xi28/mn11.g",
+   "source": "port",
+   "function": "Even SA P측 오프셋 트림",
+   "drawing": "숨김 (생략 목록에 한 줄)"
+  },
+  "ofe_n<1:0>": {
+   "bus": "ofe_n<1:0>",
+   "bits": [
+    "ofe_n<1>",
+    "ofe_n<0>"
+   ],
+   "class": "general_control",
+   "K": "K7",
+   "endpoint_pin": "xi28/mn7.g",
+   "source": "port",
+   "function": "Even SA N측 오프셋 트림",
+   "drawing": "숨김 (생략 목록에 한 줄)"
+  },
+  "ofo_p<1:0>": {
+   "bus": "ofo_p<1:0>",
+   "bits": [
+    "ofo_p<1>",
+    "ofo_p<0>"
+   ],
+   "class": "general_control",
+   "K": "K7",
+   "endpoint_pin": "xi29/mn11.g",
+   "source": "port",
+   "function": "Odd SA P측 오프셋 트림",
+   "drawing": "숨김 (생략 목록에 한 줄)"
+  },
+  "ofo_n<1:0>": {
+   "bus": "ofo_n<1:0>",
+   "bits": [
+    "ofo_n<1>",
+    "ofo_n<0>"
+   ],
+   "class": "general_control",
+   "K": "K7",
+   "endpoint_pin": "xi29/mn7.g",
+   "source": "port",
+   "function": "Odd SA N측 오프셋 트림",
+   "drawing": "숨김 (생략 목록에 한 줄)"
+  }
+ },
+ "_bias": [
+  "ibias"
+ ],
+ "_questions_and_assumed_answers": [
+  {
+   "id": "Q1",
+   "template": "port_role",
+   "kind": "port_role",
+   "rule": "§2.7-2, §2.7-3",
+   "fields": {
+    "item": "vref",
+    "guess": "기준 전압 입력",
+    "options": "기준 전압 / 바이어스"
+   },
+   "item": "vref",
+   "question": "포트 `vref`는 기준 전압 입력입니까? (기준 전압 / 바이어스)",
+   "assumed": "기준 전압 입력 — pad와 함께 수신 차동 신호의 음의 입력으로 기능",
+   "confidence": "low (단일 종단 수신기의 비교 기준선)"
+  },
+  {
+   "id": "Q2",
+   "template": "control_class",
+   "kind": "control_class",
+   "rule": "§2.7-3",
+   "fields": {
+    "item": "lb_en",
+    "why": "시험 모드 선택 스위치 구동",
+    "options": "중요 / 일반"
+   },
+   "item": "lb_en",
+   "question": "`lb_en`: 중요 제어와 일반 제어 중 어느 쪽인지 구조로 정할 수 없습니다 (시험 모드 선택 스위치 구동). (중요 / 일반)",
+   "assumed": "중요 제어 (K2) — 고속 신호 경로 MUX 선택 신호",
+   "confidence": "low (모드 제어)"
+  },
+  {
+   "id": "Q3",
+   "template": "control_class",
+   "kind": "control_class",
+   "rule": "§2.7-3",
+   "fields": {
+    "item": "odt_en",
+    "why": "종단 저항 인에이블 스위치 구동",
+    "options": "중요 / 일반"
+   },
+   "item": "odt_en",
+   "question": "`odt_en`: 중요 제어와 일반 제어 중 어느 쪽인지 구조로 정할 수 없습니다 (종단 저항 인에이블 스위치 구동). (중요 / 일반)",
+   "assumed": "중요 제어 (K4) — 패드 종단 온/오프 제어",
+   "confidence": "low (모드 제어)"
+  },
+  {
+   "id": "Q4",
+   "template": "name_vs_structure",
+   "kind": "name_vs_structure",
+   "rule": "§2.6-2, §2.7-2",
+   "fields": {
+    "item": "rx_pre",
+    "structure": "차동 증폭기 및 루프백 MUX",
+    "name": "전치 증폭기",
+    "opt_structure": "증폭기+MUX",
+    "opt_name": "전치증폭기"
+   },
+   "item": "rx_pre",
+   "question": "`rx_pre`: 구조는 차동 증폭기 및 루프백 MUX인데 이름/기능은 전치 증폭기입니다. (증폭기+MUX로 / 전치증폭기로)",
+   "assumed": "전치증폭기 — 일반 박스 PREAMP로 그리고 내부 구성 표시",
+   "confidence": "low (사전 VGA/CTLE와 차동 증폭기+MUX 혼합)"
+  },
+  {
+   "id": "Q5",
+   "template": "netlist_error_confirm",
+   "kind": "netlist_error_confirm",
+   "rule": "§2.7-4",
+   "fields": {
+    "item": "xi9, xi12",
+    "fact": "출력 net27, net29가 다른 회로에 연결되지 않고 플로팅됨"
+   },
+   "item": "xi9, xi12",
+   "question": "`xi9, xi12`: 출력 net27, net29가 다른 회로에 연결되지 않고 플로팅됨. netlist 오류일 수 있습니다. 의도된 것입니까? (의도됨 / netlist 오류)",
+   "assumed": "의도됨 — 더미 부하 인버터로 간주하고 짧은 선과 이름표로 표시",
+   "confidence": "low (더미 부하 추정)"
+  }
+ ]
+}
