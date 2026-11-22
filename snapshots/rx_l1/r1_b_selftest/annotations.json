@@ -1,0 +1,179 @@
+{
+  "hs_inputs": [
+    "dq0",
+    "dq1",
+    "dq2",
+    "dq3",
+    "dq4",
+    "dq5",
+    "dq6",
+    "dq7"
+  ],
+  "clock_inputs": [
+    "dqs_t",
+    "dqs_c"
+  ],
+  "hs_outputs": [
+    "qr7",
+    "qr6",
+    "qr5",
+    "qr4",
+    "qr3",
+    "qr2",
+    "qr1",
+    "qr0",
+    "qf7",
+    "qf6",
+    "qf5",
+    "qf4",
+    "qf3",
+    "qf2",
+    "qf1",
+    "qf0"
+  ],
+  "important_controls": [
+    "gate_open",
+    "rx_en",
+    "wl_ck",
+    "wl_en",
+    "wl_out"
+  ],
+  "show_bias": [],
+  "hide": [],
+  "block_roles": {
+    "lvlup": "composite",
+    "invx1": "inverter",
+    "biasgen": "composite",
+    "vrefdac": "composite",
+    "nand2x1": "nand",
+    "odtctl": "composite",
+    "padesd": "termination",
+    "odtleg3": "termination",
+    "dqsamp": "cml_buffer",
+    "invx4": "inverter",
+    "acamp": "composite",
+    "dqsrx": "composite",
+    "lat_tg": "composite",
+    "nand2x2": "nand",
+    "dqsgate": "composite",
+    "dlybuf": "composite",
+    "mux2tg": "composite",
+    "dly3": "composite",
+    "ckbuf": "composite",
+    "sbamp": "vga",
+    "sadfe": "strongarm",
+    "srnand": "sr_latch",
+    "dqslice": "composite",
+    "dfftg": "composite",
+    "wldet": "composite",
+    "rxbyte_top": "composite"
+  },
+  "_sources": {
+    "hs_inputs": "user answer (given)",
+    "others": "automatic structural analysis + assumed answers below"
+  },
+  "_important_control_buses": {
+    "rx_en": {
+      "bits": [
+        "rx_en"
+      ],
+      "K": "K3",
+      "role": "수신기 활성화"
+    },
+    "gate_open": {
+      "bits": [
+        "gate_open"
+      ],
+      "K": "K2",
+      "role": "DQS 게이팅 개방"
+    },
+    "wl_en": {
+      "bits": [
+        "wl_en"
+      ],
+      "K": "K2",
+      "role": "Write Leveling 활성화"
+    },
+    "wl_ck": {
+      "bits": [
+        "wl_ck"
+      ],
+      "K": "K2",
+      "role": "Write Leveling 샘플 클럭"
+    },
+    "wl_out": {
+      "bits": [
+        "wl_out"
+      ],
+      "K": "K2",
+      "role": "Write Leveling 결과 출력"
+    }
+  },
+  "_general_controls": [],
+  "_general_control_buses": {},
+  "_controls": [],
+  "_bias": [
+    "ibias",
+    "net201",
+    "net202",
+    "net203",
+    "net205",
+    "net206",
+    "net207"
+  ],
+  "_power": [
+    "vdd",
+    "vddq",
+    "vss",
+    "vssq"
+  ],
+  "_undriven_hs": [],
+  "_omitted_blocks": [],
+  "_non_hs_categories": [
+    {
+      "category": "기준 전압 (P1·VREF)",
+      "result": "없음 — ESD 붙은 비교기 기준 패드 없음, 비교기·샘플러 한쪽 입력으로 들어가는 추적 안 된 넷 없음"
+    },
+    {
+      "category": "상태 출력 (O1) · 명령 (K8) · 시험 (K9)",
+      "result": "없음 — 상태 소자가 구동하는 출력 포트·상태 소자 동기 입력·모니터 출력 없음"
+    },
+    {
+      "category": "워드 속도 디지털",
+      "result": "없음 — 직렬화기·디시리얼라이저 워드 경계 없음"
+    },
+    {
+      "category": "이득·VREF 코드 (K6)",
+      "result": "없음"
+    }
+  ],
+  "_questions_and_assumed_answers": [],
+  "_not_asked_rule_decided": [
+    {
+      "topic": "dictionary_listed_block",
+      "items": [
+        "invx1",
+        "nand2x1",
+        "invx4",
+        "nand2x2",
+        "srnand"
+      ],
+      "rule": "§2.6-1 (논리 게이트·SR latch·ICG·DLY·LS·C2C·OTA는 사전에 있음)",
+      "decision": "사전 행으로 그림 (논리 게이트: 출력 동그라미, SR latch: 박스)"
+    },
+    {
+      "topic": "unused_output",
+      "items": [
+        "rxbyte_top: net224, net225"
+      ],
+      "rule": "§3.5-4, §2.7-4 (미사용 출력: 짧은 선 + 이름표)",
+      "decision": "지우지 않고 짧은 선 + 넷 이름표"
+    },
+    {
+      "topic": "bus_grouping",
+      "items": [],
+      "rule": "§2.5-7 (같은 기능의 비트는 버스 하나)",
+      "decision": "기능별 버스 하나 (`W<4:1>_<3:0>` 16비트 하나)"
+    }
+  ]
+}

@@ -1,13 +1,13 @@
 {
   "hs_inputs": [
-    "dq7",
-    "dq6",
-    "dq5",
-    "dq4",
-    "dq3",
-    "dq2",
+    "dq0",
     "dq1",
-    "dq0"
+    "dq2",
+    "dq3",
+    "dq4",
+    "dq5",
+    "dq6",
+    "dq7"
   ],
   "clock_inputs": [
     "dqs_t",
@@ -29,370 +29,151 @@
     "qf3",
     "qf2",
     "qf1",
-    "qf0",
-    "wl_out"
+    "qf0"
   ],
   "important_controls": [
-    "rx_en",
     "gate_open",
-    "wl_en",
+    "rx_en",
     "wl_ck",
-    "slp",
-    "odt_en",
-    "rtt<2>",
-    "rtt<1>",
-    "rtt<0>",
-    "vrc<5>",
-    "vrc<4>",
-    "vrc<3>",
-    "vrc<2>",
-    "vrc<1>",
-    "vrc<0>",
-    "t1w<2>",
-    "t1w<1>",
-    "t1w<0>",
-    "t2w<1>",
-    "t2w<0>",
-    "ddl<2>",
-    "ddl<1>",
-    "ddl<0>"
+    "wl_en",
+    "wl_out"
   ],
   "show_bias": [],
-  "hide": [
+  "hide": [],
+  "block_roles": {
+    "lvlup": "composite",
+    "invx1": "inverter",
+    "biasgen": "composite",
+    "vrefdac": "composite",
+    "nand2x1": "nand",
+    "odtctl": "composite",
+    "padesd": "termination",
+    "odtleg3": "termination",
+    "dqsamp": "cml_buffer",
+    "invx4": "inverter",
+    "acamp": "composite",
+    "dqsrx": "composite",
+    "lat_tg": "composite",
+    "nand2x2": "nand",
+    "dqsgate": "composite",
+    "dlybuf": "composite",
+    "mux2tg": "composite",
+    "dly3": "composite",
+    "ckbuf": "composite",
+    "sbamp": "vga",
+    "sadfe": "strongarm",
+    "srnand": "sr_latch",
+    "dqslice": "composite",
+    "dfftg": "composite",
+    "wldet": "composite",
+    "rxbyte_top": "composite"
+  },
+  "_sources": {
+    "hs_inputs": "user answer (given)",
+    "others": "automatic structural analysis + assumed answers below"
+  },
+  "_important_control_buses": {
+    "rx_en": {
+      "bits": [
+        "rx_en"
+      ],
+      "K": "K3",
+      "role": "수신기 활성화"
+    },
+    "gate_open": {
+      "bits": [
+        "gate_open"
+      ],
+      "K": "K2",
+      "role": "DQS 게이팅 개방"
+    },
+    "wl_en": {
+      "bits": [
+        "wl_en"
+      ],
+      "K": "K2",
+      "role": "Write Leveling 활성화"
+    },
+    "wl_ck": {
+      "bits": [
+        "wl_ck"
+      ],
+      "K": "K2",
+      "role": "Write Leveling 샘플 클럭"
+    },
+    "wl_out": {
+      "bits": [
+        "wl_out"
+      ],
+      "K": "K2",
+      "role": "Write Leveling 결과 출력"
+    }
+  },
+  "_general_controls": [],
+  "_general_control_buses": {},
+  "_controls": [],
+  "_bias": [
     "ibias",
+    "net201",
+    "net202",
+    "net203",
+    "net205",
+    "net206",
+    "net207"
+  ],
+  "_power": [
     "vdd",
     "vddq",
     "vss",
     "vssq"
   ],
-  "block_roles": {
-    "invx1": "inverter",
-    "invx4": "inverter",
-    "nand2x1": "nand",
-    "nand2x2": "nand",
-    "lvlup": "level_shifter",
-    "lat_tg": "latch",
-    "dfftg": "flip_flop",
-    "mux2tg": "multiplexer",
-    "dlybuf": "delay_buffer",
-    "ckbuf": "clock_buffer",
-    "padesd": "termination_esd",
-    "odtleg3": "termination",
-    "odtctl": "composite",
-    "biasgen": "bias",
-    "vrefdac": "dac",
-    "dqsamp": "cml_buffer",
-    "acamp": "amplifier",
-    "dqsrx": "composite",
-    "dqsgate": "composite",
-    "dly3": "delay_line",
-    "sbamp": "vga",
-    "sadfe": "strongarm",
-    "srnand": "sr_latch",
-    "dqslice": "composite",
-    "wldet": "phase_detector",
-    "rxbyte_top": "composite"
-  },
-  "questions": [],
-  "_important_control_buses": {
-    "rx_en": {
-      "bus": "rx_en",
-      "bits": [
-        "rx_en"
-      ],
-      "class": "important_control",
-      "K": "K3",
-      "endpoint_pin": "xi0/mn0.g",
-      "source": "port",
-      "function": "수신기 활성화",
-      "drawing": "선 (단일 비트)"
+  "_undriven_hs": [],
+  "_omitted_blocks": [],
+  "_non_hs_categories": [
+    {
+      "category": "기준 전압 (P1·VREF)",
+      "result": "없음 — ESD 붙은 비교기 기준 패드 없음, 비교기·샘플러 한쪽 입력으로 들어가는 추적 안 된 넷 없음"
     },
-    "gate_open": {
-      "bus": "gate_open",
-      "bits": [
-        "gate_open"
-      ],
-      "class": "important_control",
-      "K": "K2",
-      "endpoint_pin": "xi9/xi0/mn0.g",
-      "source": "port",
-      "function": "DQS 게이팅 윈도우",
-      "drawing": "선 (단일 비트)"
+    {
+      "category": "상태 출력 (O1) · 명령 (K8) · 시험 (K9)",
+      "result": "없음 — 상태 소자가 구동하는 출력 포트·상태 소자 동기 입력·모니터 출력 없음"
     },
-    "wl_en": {
-      "bus": "wl_en",
-      "bits": [
-        "wl_en"
-      ],
-      "class": "important_control",
-      "K": "K2",
-      "endpoint_pin": "xi39/xi0/mn1.g",
-      "source": "port",
-      "function": "Write Leveling 인에이블",
-      "drawing": "선 (단일 비트)"
+    {
+      "category": "워드 속도 디지털",
+      "result": "없음 — 직렬화기·디시리얼라이저 워드 경계 없음"
     },
-    "wl_ck": {
-      "bus": "wl_ck",
-      "bits": [
-        "wl_ck"
-      ],
-      "class": "important_control",
-      "K": "K2",
-      "endpoint_pin": "xi39/xi2/mn0.g",
-      "source": "port",
-      "function": "Write Leveling 클럭",
-      "drawing": "선 (단일 비트)"
-    },
-    "slp": {
-      "bus": "slp",
-      "bits": [
-        "slp"
-      ],
-      "class": "important_control",
-      "K": "K3",
-      "endpoint_pin": "mp0.g",
-      "source": "port",
-      "function": "수신기 슬립 제어",
-      "drawing": "선 (단일 비트)"
-    },
-    "odt_en": {
-      "bus": "odt_en",
-      "bits": [
-        "odt_en"
-      ],
-      "class": "important_control",
-      "K": "K4",
-      "endpoint_pin": "xi3/xi0/mn0.g",
-      "source": "port",
-      "function": "종단 인에이블",
-      "drawing": "선 (단일 비트)"
-    },
-    "rtt<2:0>": {
-      "bus": "rtt<2:0>",
-      "bits": [
-        "rtt2",
-        "rtt1",
-        "rtt0"
-      ],
-      "class": "important_control",
-      "K": "K4",
-      "endpoint_pin": "xi3/xi2/mn1.g",
-      "source": "port",
-      "function": "ODT 임피던스 코드",
-      "drawing": "버스 (사선 + 이름)"
-    },
-    "vrc<5:0>": {
-      "bus": "vrc<5:0>",
-      "bits": [
-        "vrc5",
-        "vrc4",
-        "vrc3",
-        "vrc2",
-        "vrc1",
-        "vrc0"
-      ],
-      "class": "important_control",
-      "K": "K5",
-      "endpoint_pin": "xi2/xi5/mn0.g",
-      "source": "port",
-      "function": "VREF DAC 설정 코드",
-      "drawing": "버스 (사선 + 이름)"
-    },
-    "t1w<2:0>": {
-      "bus": "t1w<2:0>",
-      "bits": [
-        "t1w2",
-        "t1w1",
-        "t1w0"
-      ],
-      "class": "important_control",
-      "K": "K1",
-      "endpoint_pin": "xi30/xi4/mn12.g",
-      "source": "port",
-      "function": "DFE 탭 1 가중치",
-      "drawing": "버스 (사선 + 이름)"
-    },
-    "t2w<1:0>": {
-      "bus": "t2w<1:0>",
-      "bits": [
-        "t2w1",
-        "t2w0"
-      ],
-      "class": "important_control",
-      "K": "K1",
-      "endpoint_pin": "xi30/xi4/mn22.g",
-      "source": "port",
-      "function": "DFE 탭 2 가중치",
-      "drawing": "버스 (사선 + 이름)"
-    },
-    "ddl<2:0>": {
-      "bus": "ddl<2:0>",
-      "bits": [
-        "ddl2",
-        "ddl1",
-        "ddl0"
-      ],
-      "class": "important_control",
-      "K": "K6",
-      "endpoint_pin": "xi10/xi11/mn1.g",
-      "source": "port",
-      "function": "DQS 딜레이 제어",
-      "drawing": "버스 (사선 + 이름)"
+    {
+      "category": "이득·VREF 코드 (K6)",
+      "result": "없음"
     }
-  },
-  "_controls": [
-    {
-      "bus": "rx_en",
-      "bits": [
-        "rx_en"
-      ],
-      "class": "important_control",
-      "K": "K3",
-      "endpoint_pin": "xi0/mn0.g",
-      "source": "port",
-      "function": "수신기 활성화",
-      "drawing": "선 (단일 비트)"
-    },
-    {
-      "bus": "gate_open",
-      "bits": [
-        "gate_open"
-      ],
-      "class": "important_control",
-      "K": "K2",
-      "endpoint_pin": "xi9/xi0/mn0.g",
-      "source": "port",
-      "function": "DQS 게이팅 윈도우",
-      "drawing": "선 (단일 비트)"
-    },
-    {
-      "bus": "wl_en",
-      "bits": [
-        "wl_en"
-      ],
-      "class": "important_control",
-      "K": "K2",
-      "endpoint_pin": "xi39/xi0/mn1.g",
-      "source": "port",
-      "function": "Write Leveling 인에이블",
-      "drawing": "선 (단일 비트)"
-    },
-    {
-      "bus": "wl_ck",
-      "bits": [
-        "wl_ck"
-      ],
-      "class": "important_control",
-      "K": "K2",
-      "endpoint_pin": "xi39/xi2/mn0.g",
-      "source": "port",
-      "function": "Write Leveling 클럭",
-      "drawing": "선 (단일 비트)"
-    },
-    {
-      "bus": "slp",
-      "bits": [
-        "slp"
-      ],
-      "class": "important_control",
-      "K": "K3",
-      "endpoint_pin": "mp0.g",
-      "source": "port",
-      "function": "수신기 슬립 제어",
-      "drawing": "선 (단일 비트)"
-    },
-    {
-      "bus": "odt_en",
-      "bits": [
-        "odt_en"
-      ],
-      "class": "important_control",
-      "K": "K4",
-      "endpoint_pin": "xi3/xi0/mn0.g",
-      "source": "port",
-      "function": "종단 인에이블",
-      "drawing": "선 (단일 비트)"
-    },
-    {
-      "bus": "rtt<2:0>",
-      "bits": [
-        "rtt2",
-        "rtt1",
-        "rtt0"
-      ],
-      "class": "important_control",
-      "K": "K4",
-      "endpoint_pin": "xi3/xi2/mn1.g",
-      "source": "port",
-      "function": "ODT 임피던스 코드",
-      "drawing": "버스 (사선 + 이름)"
-    },
-    {
-      "bus": "vrc<5:0>",
-      "bits": [
-        "vrc5",
-        "vrc4",
-        "vrc3",
-        "vrc2",
-        "vrc1",
-        "vrc0"
-      ],
-      "class": "important_control",
-      "K": "K5",
-      "endpoint_pin": "xi2/xi5/mn0.g",
-      "source": "port",
-      "function": "VREF DAC 설정 코드",
-      "drawing": "버스 (사선 + 이름)"
-    },
-    {
-      "bus": "t1w<2:0>",
-      "bits": [
-        "t1w2",
-        "t1w1",
-        "t1w0"
-      ],
-      "class": "important_control",
-      "K": "K1",
-      "endpoint_pin": "xi30/xi4/mn12.g",
-      "source": "port",
-      "function": "DFE 탭 1 가중치",
-      "drawing": "버스 (사선 + 이름)"
-    },
-    {
-      "bus": "t2w<1:0>",
-      "bits": [
-        "t2w1",
-        "t2w0"
-      ],
-      "class": "important_control",
-      "K": "K1",
-      "endpoint_pin": "xi30/xi4/mn22.g",
-      "source": "port",
-      "function": "DFE 탭 2 가중치",
-      "drawing": "버스 (사선 + 이름)"
-    },
-    {
-      "bus": "ddl<2:0>",
-      "bits": [
-        "ddl2",
-        "ddl1",
-        "ddl0"
-      ],
-      "class": "important_control",
-      "K": "K6",
-      "endpoint_pin": "xi10/xi11/mn1.g",
-      "source": "port",
-      "function": "DQS 딜레이 제어",
-      "drawing": "버스 (사선 + 이름)"
-    }
-  ],
-  "_general_controls": [],
-  "_general_control_buses": {},
-  "_bias": [
-    "ibias"
   ],
   "_questions_and_assumed_answers": [],
-  "_sources": {
-    "hs_inputs": "automatic structural analysis"
-  }
+  "_not_asked_rule_decided": [
+    {
+      "topic": "dictionary_listed_block",
+      "items": [
+        "invx1",
+        "nand2x1",
+        "invx4",
+        "nand2x2",
+        "srnand"
+      ],
+      "rule": "§2.6-1 (논리 게이트·SR latch·ICG·DLY·LS·C2C·OTA는 사전에 있음)",
+      "decision": "사전 행으로 그림 (논리 게이트: 출력 동그라미, SR latch: 박스)"
+    },
+    {
+      "topic": "unused_output",
+      "items": [
+        "rxbyte_top: net224, net225"
+      ],
+      "rule": "§3.5-4, §2.7-4 (미사용 출력: 짧은 선 + 이름표)",
+      "decision": "지우지 않고 짧은 선 + 넷 이름표"
+    },
+    {
+      "topic": "bus_grouping",
+      "items": [],
+      "rule": "§2.5-7 (같은 기능의 비트는 버스 하나)",
+      "decision": "기능별 버스 하나 (`W<4:1>_<3:0>` 16비트 하나)"
+    }
+  ]
 }

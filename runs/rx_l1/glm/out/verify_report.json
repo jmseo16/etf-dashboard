@@ -1,0 +1,1800 @@
+{
+ "summary": {
+  "views": 18,
+  "connectivity_pass": 18,
+  "quality_pass": 3
+ },
+ "views": [
+  {
+   "view": "u_invx1",
+   "cell": "invx1",
+   "level": "unit",
+   "title": "invx1 — unit level (인버터)",
+   "scene_sha": "5079cf0ea5aa705496d44fe06de6e748034b1be22cda18831edcae7079a249a8",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 4,
+    "drawn_pins": 6
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {},
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "u_lvlup",
+   "cell": "lvlup",
+   "level": "unit",
+   "title": "lvlup — unit level (레벨 시프터)",
+   "scene_sha": "4a6219f4251cdaed0c131140f61055329a711c4948357dca35062b7df8d46dd9",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 9,
+    "drawn_pins": 30
+   },
+   "quality_counts": {
+    "text_overlap": 1,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 10,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 3,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "four_way_junctions": [
+     [
+      330.0,
+      220.0
+     ],
+     [
+      530.0,
+      220.0
+     ],
+     [
+      490.0,
+      200.0
+     ]
+    ],
+    "text_line_overlap": [
+     "\"1.6u/100n\" x line(wire)"
+    ],
+    "avoidable_crossings": [
+     [
+      150.0,
+      370.0
+     ],
+     [
+      330.0,
+      250.0
+     ],
+     [
+      330.0,
+      200.0
+     ],
+     [
+      490.0,
+      220.0
+     ],
+     [
+      530.0,
+      200.0
+     ],
+     [
+      490.0,
+      220.0
+     ],
+     [
+      590.0,
+      200.0
+     ],
+     [
+      630.0,
+      200.0
+     ],
+     [
+      670.0,
+      240.0
+     ],
+     [
+      710.0,
+      240.0
+     ]
+    ]
+   },
+   "quality_pass": false,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "u_ckbuf",
+   "cell": "ckbuf",
+   "level": "unit",
+   "title": "ckbuf — unit level (클럭 버퍼)",
+   "scene_sha": "72ad13cf19473173924ed734d2bbfb8f2a15fc007634ba36890b84e267048993",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 3,
+    "drawn_pins": 4
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {},
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "u_padesd",
+   "cell": "padesd",
+   "level": "unit",
+   "title": "padesd — unit level (종단 및 ESD)",
+   "scene_sha": "a9a58186a59ec9c10fdadee3f9ccf1b0ac4aa2182cf3812759bfc9398fd26a36",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 4,
+    "drawn_pins": 7
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {},
+   "quality_pass": true,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "u_odtleg3",
+   "cell": "odtleg3",
+   "level": "unit",
+   "title": "odtleg3 — unit level (ODT 레그)",
+   "scene_sha": "91f07668cecc2525ac39607e25ac9d6bfec9cebf18af758bf7bee6c5add4659e",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 8,
+    "drawn_pins": 15
+   },
+   "quality_counts": {
+    "text_overlap": 4,
+    "wire_through_symbol": 1,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 3,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "text_line_overlap": [
+     "\"enb0\" x line(wire)",
+     "\"enb1\" x line(wire)",
+     "\"enb2\" x line(wire)",
+     "\"pad\" x line(wire)"
+    ],
+    "wire_through_symbol": [
+     "pin_pad_9 by wire 13"
+    ],
+    "short_jogs": [
+     {
+      "wire": 2,
+      "len": 10.0
+     },
+     {
+      "wire": 6,
+      "len": 10.0
+     },
+     {
+      "wire": 10,
+      "len": 10.0
+     }
+    ]
+   },
+   "quality_pass": false,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "u_sbamp",
+   "cell": "sbamp",
+   "level": "unit",
+   "title": "sbamp — unit level (샘플링 증폭기)",
+   "scene_sha": "31c8b7f49a4a72abe8c0eb3e3f095808f9d5d4b3e8ec27909a4a7fc55c69fe51",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 12,
+    "drawn_pins": 24
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 2,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 3,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "wire_through_symbol": [
+     "pin_inp_11 by wire 0",
+     "pin_inn_12 by wire 0"
+    ],
+    "avoidable_crossings": [
+     [
+      320.0,
+      110.0
+     ],
+     [
+      320.0,
+      245.0
+     ],
+     [
+      640.0,
+      245.0
+     ]
+    ]
+   },
+   "quality_pass": false,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "u_dqsamp",
+   "cell": "dqsamp",
+   "level": "unit",
+   "title": "dqsamp — unit level (CML 클럭 버퍼)",
+   "scene_sha": "9d4d8118306166c78ceef0a18427259284fb61fc16a1adcabc913623d4f47c79",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 10,
+    "drawn_pins": 16
+   },
+   "quality_counts": {
+    "text_overlap": 0,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 1,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "four_way_junctions": [
+     [
+      320.0,
+      280.0
+     ]
+    ]
+   },
+   "quality_pass": false,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "u_acamp",
+   "cell": "acamp",
+   "level": "unit",
+   "title": "acamp — unit level (AC 증폭기)",
+   "scene_sha": "c4b92ede1a89f864dba2b3e25669905055507b05ecf0e8703e772dc386f3a1d2",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 8,
+    "drawn_pins": 18
+   },
+   "quality_counts": {
+    "text_overlap": 4,
+    "wire_through_symbol": 1,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 1,
+    "close_junctions": 0,
+    "avoidable_crossings": 3,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "text_text_overlap": [
+     "\"1.2u/40n\" x \"300n/30n\""
+    ],
+    "text_line_overlap": [
+     "\"1.2u/40n\" x line(wire)",
+     "\"300n/30n\" x line(wire)",
+     "\"xi0\" x line(wire)"
+    ],
+    "wire_through_symbol": [
+     "xi0 by wire 12"
+    ],
+    "short_jogs": [
+     {
+      "wire": 4,
+      "len": 10.0
+     }
+    ],
+    "avoidable_crossings": [
+     [
+      180.0,
+      360.0
+     ],
+     [
+      450.0,
+      360.0
+     ],
+     [
+      300.0,
+      120.0
+     ]
+    ]
+   },
+   "quality_pass": false,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "u_srnand",
+   "cell": "srnand",
+   "level": "unit",
+   "title": "srnand — unit level (SR 래치)",
+   "scene_sha": "0132c2f498807a889207a11cd4fc4713217c2ed35d39f4b5c17121fba85f0649",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 4,
+    "drawn_pins": 6
+   },
+   "quality_counts": {
+    "text_overlap": 1,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 1,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "text_line_overlap": [
+     "\"xi1\" x line(wire)"
+    ],
+    "avoidable_crossings": [
+     [
+      180.0,
+      210.0
+     ]
+    ]
+   },
+   "quality_pass": false,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "u_sadfe",
+   "cell": "sadfe",
+   "level": "unit",
+   "title": "sadfe — unit level (StrongARM DFE)",
+   "scene_sha": "dd3cf45c1183834c4f9390fa7c0891f53507680947a6b4a23674d581f1557183",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 19,
+    "drawn_pins": 48
+   },
+   "quality_counts": {
+    "text_overlap": 12,
+    "wire_through_symbol": 1,
+    "symmetry_violations": 0,
+    "twisted_lines": 1,
+    "short_jogs": 2,
+    "close_junctions": 1,
+    "avoidable_crossings": 12,
+    "structural_crossings_allowed": 2,
+    "four_way_junctions": 3,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "four_way_junctions": [
+     [
+      420.0,
+      180.0
+     ],
+     [
+      540.0,
+      200.0
+     ],
+     [
+      540.0,
+      290.0
+     ]
+    ],
+    "text_line_overlap": [
+     "\"mp2\" x line(wire)",
+     "\"500n/30n\" x line(mp4)",
+     "\"500n/30n\" x line(mp0)",
+     "\"500n/30n\" x line(mp1)",
+     "\"mp3\" x line(wire)",
+     "\"500n/30n\" x line(mp5)",
+     "\"outp\" x line(wire)",
+     "\"w1_2\" x line(wire)",
+     "\"w1_1\" x line(wire)",
+     "\"w1_0\" x line(wire)",
+     "\"w2_1\" x line(wire)",
+     "\"w2_0\" x line(wire)"
+    ],
+    "wire_through_symbol": [
+     "TAP1 by wire 34"
+    ],
+    "twisted_lines": [
+     {
+      "wire": 36,
+      "ratio": 1.8
+     }
+    ],
+    "short_jogs": [
+     {
+      "wire": 42,
+      "len": 10.0
+     },
+     {
+      "wire": 50,
+      "len": 10.0
+     }
+    ],
+    "close_junctions": [
+     [
+      [
+       420.0,
+       260.0
+      ],
+      [
+       420.0,
+       270.0
+      ]
+     ]
+    ],
+    "avoidable_crossings": [
+     [
+      300.0,
+      100.0
+     ],
+     [
+      660.0,
+      100.0
+     ],
+     [
+      540.0,
+      180.0
+     ],
+     [
+      380.0,
+      180.0
+     ],
+     [
+      360.0,
+      180.0
+     ],
+     [
+      220.0,
+      180.0
+     ],
+     [
+      580.0,
+      200.0
+     ],
+     [
+      600.0,
+      200.0
+     ],
+     [
+      220.0,
+      330.0
+     ],
+     [
+      600.0,
+      260.0
+     ],
+     [
+      480.0,
+      550.0
+     ],
+     [
+      700.0,
+      290.0
+     ]
+    ],
+    "structural_crossings": [
+     {
+      "at": [
+       420.0,
+       200.0
+      ],
+      "reason": "StrongARM cross-coupling"
+     },
+     {
+      "at": [
+       420.0,
+       290.0
+      ],
+      "reason": "TAP1 net86 crossing mn1 drain net85"
+     }
+    ]
+   },
+   "quality_pass": false,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "u_vrefdac",
+   "cell": "vrefdac",
+   "level": "unit",
+   "title": "vrefdac — unit level (기준 전압 DAC)",
+   "scene_sha": "1825dc5eb8844e2e870f1edeea2d5c9c80e3c8625135526a958b80e216d75da4",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 24,
+    "drawn_pins": 61
+   },
+   "quality_counts": {
+    "text_overlap": 6,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 1,
+    "avoidable_crossings": 6,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "text_text_overlap": [
+     "\"INV_BANK\" x \"net38\""
+    ],
+    "text_line_overlap": [
+     "\"1u/100n ×16\" x line(wire)",
+     "\"2u/400n ×32\" x line(mp12)",
+     "\"1u/100n ×32\" x line(mp13)",
+     "\"mn0\" x line(wire)",
+     "\"20u/2u ×4\" x line(wire)"
+    ],
+    "close_junctions": [
+     [
+      [
+       920.0,
+       450.0
+      ],
+      [
+       920.0,
+       460.0
+      ]
+     ]
+    ],
+    "avoidable_crossings": [
+     [
+      220.0,
+      290.0
+     ],
+     [
+      320.0,
+      290.0
+     ],
+     [
+      420.0,
+      290.0
+     ],
+     [
+      520.0,
+      290.0
+     ],
+     [
+      620.0,
+      290.0
+     ],
+     [
+      700.0,
+      290.0
+     ]
+    ]
+   },
+   "quality_pass": false,
+   "checks": {
+    "gray_scope": [
+     "vbp: gray label not at a MOS gate"
+    ]
+   },
+   "checks_pass": false
+  },
+  {
+   "view": "b_odtctl",
+   "cell": "odtctl",
+   "level": "block",
+   "title": "odtctl — 블록 레벨",
+   "scene_sha": "3a04395aaa632db3763a919fcd5714da51b02985f33aec5e852f092b642352f8",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 10,
+    "drawn_pins": 15
+   },
+   "quality_counts": {
+    "text_overlap": 11,
+    "wire_through_symbol": 9,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "text_text_overlap": [
+     "\"rtt2\" x \"rtt1\"",
+     "\"rtt1\" x \"rtt0\""
+    ],
+    "text_line_overlap": [
+     "\"NAND2\" x line(wire)",
+     "\"a\" x line(wire)",
+     "\"net25\" x line(wire)",
+     "\"NAND2\" x line(wire)",
+     "\"a\" x line(wire)",
+     "\"net26\" x line(wire)",
+     "\"NAND2\" x line(wire)",
+     "\"a\" x line(wire)",
+     "\"net27\" x line(wire)"
+    ],
+    "wire_through_symbol": [
+     "xi2 by wire 3",
+     "xi2 by wire 3",
+     "xi2 by wire 8",
+     "xi2 by wire 12",
+     "xi1 by wire 7",
+     "xi1 by wire 7",
+     "xi1 by wire 12",
+     "xi0 by wire 11",
+     "xi0 by wire 11"
+    ]
+   },
+   "quality_pass": false,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "b_wldet",
+   "cell": "wldet",
+   "level": "block",
+   "title": "wldet — 블록 레벨",
+   "scene_sha": "6fb201a32d2b14911c08283e9123e17725b81f28b263c192cd9d9bb31e5258f6",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 8,
+    "drawn_pins": 12
+   },
+   "quality_counts": {
+    "text_overlap": 2,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 0,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "text_text_overlap": [
+     "\"NAND2\" x \"a\"",
+     "\"NAND2\" x \"y\""
+    ]
+   },
+   "quality_pass": false,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "b_dly3",
+   "cell": "dly3",
+   "level": "block",
+   "title": "dly3 — 블록 레벨",
+   "scene_sha": "52d765681adf8f5ca635e483ee958db00c31df0801c4d589c9b8c0f6a6e0cf76",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 13,
+    "drawn_pins": 24
+   },
+   "quality_counts": {
+    "text_overlap": 17,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 7,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "text_text_overlap": [
+     "\"MUX2\" x \"d0\"",
+     "\"MUX2\" x \"d1\"",
+     "\"a\" x \"net68\"",
+     "\"2×BUF\" x \"a\"",
+     "\"2×BUF\" x \"y\"",
+     "\"MUX2\" x \"d0\"",
+     "\"MUX2\" x \"d1\"",
+     "\"a\" x \"net72\"",
+     "\"4×BUF\" x \"a\"",
+     "\"4×BUF\" x \"y\"",
+     "\"MUX2\" x \"d0\"",
+     "\"MUX2\" x \"d1\""
+    ],
+    "text_line_overlap": [
+     "\"net68\" x line(xi2)",
+     "\"net69\" x line(wire)",
+     "\"net72\" x line(xi6)",
+     "\"net73\" x line(wire)",
+     "\"net78\" x line(xi12)"
+    ],
+    "short_jogs": [
+     {
+      "wire": 2,
+      "len": 10.0
+     },
+     {
+      "wire": 5,
+      "len": 10.0
+     },
+     {
+      "wire": 7,
+      "len": 5.0
+     },
+     {
+      "wire": 7,
+      "len": 15.0
+     },
+     {
+      "wire": 10,
+      "len": 10.0
+     },
+     {
+      "wire": 12,
+      "len": 5.0
+     },
+     {
+      "wire": 12,
+      "len": 15.0
+     }
+    ]
+   },
+   "quality_pass": false,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "b_dqsgate",
+   "cell": "dqsgate",
+   "level": "block",
+   "title": "dqsgate — 블록 레벨",
+   "scene_sha": "899b60e8d4f51253085bf515f6c28df824b9bab297b0d4170c7c09d2705a326b",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 9,
+    "drawn_pins": 18
+   },
+   "quality_counts": {
+    "text_overlap": 2,
+    "wire_through_symbol": 0,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 8,
+    "close_junctions": 0,
+    "avoidable_crossings": 3,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "text_line_overlap": [
+     "\"net63\" x line(xi2)",
+     "\"net64\" x line(xi4)"
+    ],
+    "short_jogs": [
+     {
+      "wire": 7,
+      "len": 10.0
+     },
+     {
+      "wire": 7,
+      "len": 5.0
+     },
+     {
+      "wire": 7,
+      "len": 10.0
+     },
+     {
+      "wire": 8,
+      "len": 10.0
+     },
+     {
+      "wire": 12,
+      "len": 10.0
+     },
+     {
+      "wire": 12,
+      "len": 5.0
+     },
+     {
+      "wire": 12,
+      "len": 10.0
+     },
+     {
+      "wire": 13,
+      "len": 10.0
+     }
+    ],
+    "avoidable_crossings": [
+     [
+      130.0,
+      150.0
+     ],
+     [
+      130.0,
+      200.0
+     ],
+     [
+      80.0,
+      200.0
+     ]
+    ]
+   },
+   "quality_pass": false,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "b_dqsrx",
+   "cell": "dqsrx",
+   "level": "block",
+   "title": "dqsrx — 블록 레벨",
+   "scene_sha": "b58932cca7a33e51aff89020f119928bd71d62d3f7cb477489ff395a8c245143",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 12,
+    "drawn_pins": 21
+   },
+   "quality_counts": {
+    "text_overlap": 11,
+    "wire_through_symbol": 1,
+    "symmetry_violations": 0,
+    "twisted_lines": 0,
+    "short_jogs": 1,
+    "close_junctions": 0,
+    "avoidable_crossings": 0,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "text_text_overlap": [
+     "\"DQSAMP\" x \"inp\"",
+     "\"DQSAMP\" x \"inn\"",
+     "\"DQSAMP\" x \"outp\"",
+     "\"DQSAMP\" x \"outn\"",
+     "\"ACAMP\" x \"in\"",
+     "\"ACAMP\" x \"out\"",
+     "\"ACAMP\" x \"in\"",
+     "\"ACAMP\" x \"out\""
+    ],
+    "text_line_overlap": [
+     "\"ACAMP\" x line(wire)",
+     "\"en\" x line(wire)",
+     "\"net57\" x line(xi1)"
+    ],
+    "wire_through_symbol": [
+     "xi1 by wire 6"
+    ],
+    "short_jogs": [
+     {
+      "wire": 3,
+      "len": 5.0
+     }
+    ]
+   },
+   "quality_pass": false,
+   "checks": {
+    "pin_sides": [
+     "xi1.in: on left, expected right",
+     "xi2.in: on left, expected right"
+    ]
+   },
+   "checks_pass": false
+  },
+  {
+   "view": "b_slice",
+   "cell": "dqslice",
+   "level": "block",
+   "title": "dqslice — 블록 레벨 (DQ 슬라이스)",
+   "scene_sha": "a25e4ce7493019d3fa6b9d2187af2864f927885f320a1bead5b700069f9f6f05",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 27,
+    "drawn_pins": 54
+   },
+   "quality_counts": {
+    "text_overlap": 45,
+    "wire_through_symbol": 3,
+    "symmetry_violations": 0,
+    "twisted_lines": 9,
+    "short_jogs": 12,
+    "close_junctions": 4,
+    "avoidable_crossings": 73,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "text_text_overlap": [
+     "\"ESD\" x \"pad\"",
+     "\"ESD\" x \"pad_r\"",
+     "\"ODT\" x \"pad\"",
+     "\"enb2\" x \"enb1\"",
+     "\"enb1\" x \"enb0\"",
+     "\"odtb2\" x \"odtb1\"",
+     "\"odtb2\" x \"odtb0\"",
+     "\"odtb1\" x \"odtb0\"",
+     "\"SBAMP\" x \"out\"",
+     "\"inp\" x \"en\"",
+     "\"SBAMP\" x \"out\"",
+     "\"inp\" x \"en\"",
+     "\"w1_2\" x \"w1_1\"",
+     "\"w1_1\" x \"w1_0\"",
+     "\"w1_0\" x \"w2_1\"",
+     "\"w2_1\" x \"w2_0\"",
+     "\"w1_2\" x \"w1_1\"",
+     "\"w1_1\" x \"w1_0\"",
+     "\"w1_0\" x \"w2_1\"",
+     "\"w2_1\" x \"w2_0\"",
+     "\"w1_2\" x \"w1_1\"",
+     "\"w1_2\" x \"w1_0\"",
+     "\"w1_1\" x \"w1_0\"",
+     "\"w1_1\" x \"w2_1\"",
+     "\"w1_0\" x \"w2_1\"",
+     "\"w1_0\" x \"w2_0\"",
+     "\"w2_1\" x \"w2_0\"",
+     "\"SRLATCH\" x \"rb\"",
+     "\"SRLATCH\" x \"sb\"",
+     "\"SRLATCH\" x \"q\"",
+     "\"SRLATCH\" x \"rb\"",
+     "\"SRLATCH\" x \"sb\"",
+     "\"SRLATCH\" x \"q\""
+    ],
+    "text_line_overlap": [
+     "\"ESD\" x line(wire)",
+     "\"xi0\" x line(wire)",
+     "\"pad\" x line(wire)",
+     "\"pad_r\" x line(wire)",
+     "\"xi1\" x line(xi1)",
+     "\"net93\" x line(wire)",
+     "\"net94\" x line(wire)",
+     "\"net95\" x line(xi5)",
+     "\"net96\" x line(xi5)",
+     "\"net97\" x line(xi7)",
+     "\"net98\" x line(xi7)",
+     "\"net99\" x line(wire)"
+    ],
+    "wire_through_symbol": [
+     "xi0 by wire 2",
+     "xi0 by wire 3",
+     "xi0 by wire 4"
+    ],
+    "twisted_lines": [
+     {
+      "wire": 12,
+      "ratio": 1.93
+     },
+     {
+      "wire": 14,
+      "ratio": 2.2
+     },
+     {
+      "wire": 22,
+      "ratio": 1.8
+     },
+     {
+      "wire": 24,
+      "ratio": 2.0
+     },
+     {
+      "wire": 26,
+      "ratio": 2.21
+     },
+     {
+      "wire": 28,
+      "ratio": 2.43
+     },
+     {
+      "wire": 30,
+      "ratio": 2.66
+     },
+     {
+      "wire": 45,
+      "ratio": 1.61
+     },
+     {
+      "wire": 47,
+      "ratio": 1.69
+     }
+    ],
+    "short_jogs": [
+     {
+      "wire": 1,
+      "len": 10.0
+     },
+     {
+      "wire": 6,
+      "len": 15.0
+     },
+     {
+      "wire": 6,
+      "len": 10.0
+     },
+     {
+      "wire": 7,
+      "len": 10.0
+     },
+     {
+      "wire": 9,
+      "len": 5.0
+     },
+     {
+      "wire": 12,
+      "len": 5.0
+     },
+     {
+      "wire": 14,
+      "len": 10.0
+     },
+     {
+      "wire": 16,
+      "len": 15.0
+     },
+     {
+      "wire": 26,
+      "len": 15.0
+     },
+     {
+      "wire": 28,
+      "len": 10.0
+     },
+     {
+      "wire": 30,
+      "len": 5.0
+     },
+     {
+      "wire": 31,
+      "len": 10.0
+     }
+    ],
+    "close_junctions": [
+     [
+      [
+       450.0,
+       55.0
+      ],
+      [
+       465.0,
+       60.0
+      ]
+     ],
+     [
+      [
+       465.0,
+       60.0
+      ],
+      [
+       480.0,
+       65.0
+      ]
+     ],
+     [
+      [
+       480.0,
+       65.0
+      ],
+      [
+       495.0,
+       70.0
+      ]
+     ],
+     [
+      [
+       495.0,
+       70.0
+      ],
+      [
+       510.0,
+       75.0
+      ]
+     ]
+    ],
+    "avoidable_crossings": [
+     [
+      190.0,
+      215.0
+     ],
+     [
+      190.0,
+      210.0
+     ],
+     [
+      195.0,
+      285.0
+     ],
+     [
+      195.0,
+      215.0
+     ],
+     [
+      195.0,
+      210.0
+     ],
+     [
+      235.0,
+      70.0
+     ],
+     [
+      170.0,
+      210.0
+     ],
+     [
+      360.0,
+      145.0
+     ],
+     [
+      355.0,
+      145.0
+     ],
+     [
+      350.0,
+      145.0
+     ],
+     [
+      345.0,
+      145.0
+     ],
+     [
+      340.0,
+      145.0
+     ],
+     [
+      380.0,
+      145.0
+     ],
+     [
+      320.0,
+      270.0
+     ],
+     [
+      325.0,
+      325.0
+     ],
+     [
+      380.0,
+      325.0
+     ],
+     [
+      370.0,
+      325.0
+     ],
+     [
+      360.0,
+      165.0
+     ],
+     [
+      355.0,
+      165.0
+     ],
+     [
+      350.0,
+      165.0
+     ],
+     [
+      345.0,
+      165.0
+     ],
+     [
+      340.0,
+      165.0
+     ],
+     [
+      380.0,
+      165.0
+     ],
+     [
+      380.0,
+      345.0
+     ],
+     [
+      370.0,
+      345.0
+     ],
+     [
+      450.0,
+      60.0
+     ],
+     [
+      450.0,
+      65.0
+     ],
+     [
+      450.0,
+      70.0
+     ],
+     [
+      450.0,
+      75.0
+     ],
+     [
+      450.0,
+      85.0
+     ],
+     [
+      360.0,
+      60.0
+     ],
+     [
+      360.0,
+      65.0
+     ],
+     [
+      360.0,
+      70.0
+     ],
+     [
+      360.0,
+      75.0
+     ],
+     [
+      380.0,
+      255.0
+     ],
+     [
+      370.0,
+      255.0
+     ],
+     [
+      450.0,
+      260.0
+     ],
+     [
+      450.0,
+      265.0
+     ],
+     [
+      450.0,
+      270.0
+     ],
+     [
+      450.0,
+      275.0
+     ],
+     [
+      465.0,
+      65.0
+     ],
+     [
+      465.0,
+      70.0
+     ],
+     [
+      465.0,
+      75.0
+     ],
+     [
+      465.0,
+      85.0
+     ],
+     [
+      355.0,
+      65.0
+     ],
+     [
+      355.0,
+      70.0
+     ],
+     [
+      355.0,
+      75.0
+     ],
+     [
+      380.0,
+      260.0
+     ],
+     [
+      370.0,
+      260.0
+     ],
+     [
+      465.0,
+      265.0
+     ],
+     [
+      465.0,
+      270.0
+     ],
+     [
+      465.0,
+      275.0
+     ],
+     [
+      480.0,
+      70.0
+     ],
+     [
+      480.0,
+      75.0
+     ],
+     [
+      480.0,
+      85.0
+     ],
+     [
+      350.0,
+      70.0
+     ],
+     [
+      350.0,
+      75.0
+     ],
+     [
+      380.0,
+      265.0
+     ],
+     [
+      370.0,
+      265.0
+     ],
+     [
+      480.0,
+      270.0
+     ],
+     [
+      480.0,
+      275.0
+     ],
+     [
+      495.0,
+      75.0
+     ],
+     [
+      495.0,
+      85.0
+     ],
+     [
+      345.0,
+      75.0
+     ],
+     [
+      380.0,
+      270.0
+     ],
+     [
+      370.0,
+      270.0
+     ],
+     [
+      495.0,
+      275.0
+     ],
+     [
+      510.0,
+      85.0
+     ],
+     [
+      380.0,
+      275.0
+     ],
+     [
+      370.0,
+      275.0
+     ],
+     [
+      560.0,
+      480.0
+     ],
+     [
+      480.0,
+      480.0
+     ],
+     [
+      380.0,
+      195.0
+     ]
+    ]
+   },
+   "quality_pass": false,
+   "checks": {},
+   "checks_pass": true
+  },
+  {
+   "view": "b_top",
+   "cell": "rxbyte_top",
+   "level": "block",
+   "title": "rxbyte_top — 블록 레벨 (최상위 수신기)",
+   "scene_sha": "7222b54656b918d5aeecfd9af813d529c7b33f8f8d0ee0ff1680693df9d5d5b5",
+   "connectivity": {
+    "pass": true,
+    "error_count": 0,
+    "errors": {},
+    "drawn_nets": 37,
+    "drawn_pins": 66
+   },
+   "quality_counts": {
+    "text_overlap": 57,
+    "wire_through_symbol": 4,
+    "symmetry_violations": 0,
+    "twisted_lines": 1,
+    "short_jogs": 14,
+    "close_junctions": 0,
+    "avoidable_crossings": 26,
+    "structural_crossings_allowed": 0,
+    "four_way_junctions": 0,
+    "collinear_end_gap": 0,
+    "dashed_lines": 0,
+    "wire_width": 0
+   },
+   "quality_details": {
+    "text_text_overlap": [
+     "\"12u/40n ×16\" x \"net200\"",
+     "\"ESD\" x \"pad\"",
+     "\"ESD\" x \"pad_r\"",
+     "\"ESD\" x \"pad\"",
+     "\"ESD\" x \"pad_r\"",
+     "\"ODT\" x \"pad\"",
+     "\"ODT\" x \"enb<2:0>\"",
+     "\"ODT\" x \"pad\"",
+     "\"ODT\" x \"enb<2:0>\"",
+     "\"LVLUP\" x \"out\"",
+     "\"LVLUP\" x \"outb\"",
+     "\"LVLUP\" x \"in\"",
+     "\"BIASGEN\" x \"en\"",
+     "\"BIASGEN\" x \"net202\"",
+     "\"ckt\" x \"net210\"",
+     "\"ckc\" x \"net211\"",
+     "\"DLY3\" x \"out\"",
+     "\"DLY3\" x \"ddl<2:0>\"",
+     "\"in\" x \"net212\"",
+     "\"out\" x \"ddl<2:0>\"",
+     "\"DLY3\" x \"out\"",
+     "\"DLY3\" x \"ddl<2:0>\"",
+     "\"in\" x \"net213\"",
+     "\"out\" x \"ddl<2:0>\"",
+     "\"CK_TREE_T\" x \"ckt4_7\"",
+     "\"in\" x \"net214\"",
+     "\"CK_TREE_C\" x \"ckc4_7\"",
+     "\"in\" x \"net215\"",
+     "\"8×DQ_SLICE\" x \"ckc0_3\"",
+     "\"enb\" x \"t1w<2:0>\"",
+     "\"t1w<2:0>\" x \"t2w<1:0>\"",
+     "\"t1w<2:0>\" x \"t2w<1:0>\"",
+     "\"VREFDAC\" x \"vref\"",
+     "\"ODTCTL\" x \"enb<2:0>\"",
+     "\"odt_en\" x \"rtt<2:0>\"",
+     "\"wl_ck\" x \"wl_en\""
+    ],
+    "text_line_overlap": [
+     "\"ODT\" x line(wire)",
+     "\"pad\" x line(wire)",
+     "\"enb<2:0>\" x line(wire)",
+     "\"net209\" x line(xi8)",
+     "\"net201\" x line(xi1)",
+     "\"net202\" x line(xi1)",
+     "\"net202\" x line(wire)",
+     "\"net210\" x line(xi9)",
+     "\"net211\" x line(xi9)",
+     "\"net212\" x line(xi10)",
+     "\"xi11\" x line(wire)",
+     "\"net213\" x line(xi11)",
+     "\"net214\" x line(xi12)",
+     "\"net215\" x line(xi13)",
+     "\"net218\" x line(DQ_SLICES)",
+     "\"net219\" x line(wire)",
+     "\"net220\" x line(DQ_SLICES)",
+     "\"net221\" x line(wire)",
+     "\"net204\" x line(xi3)",
+     "\"net222\" x line(wire)",
+     "\"net223\" x line(wire)"
+    ],
+    "wire_through_symbol": [
+     "xi6 by wire 41",
+     "xi6 by wire 42",
+     "xi6 by wire 43",
+     "xi3 by wire 36"
+    ],
+    "twisted_lines": [
+     {
+      "wire": 23,
+      "ratio": 2.47
+     }
+    ],
+    "short_jogs": [
+     {
+      "wire": 8,
+      "len": 10.0
+     },
+     {
+      "wire": 9,
+      "len": 15.0
+     },
+     {
+      "wire": 10,
+      "len": 15.0
+     },
+     {
+      "wire": 11,
+      "len": 15.0
+     },
+     {
+      "wire": 13,
+      "len": 10.0
+     },
+     {
+      "wire": 16,
+      "len": 10.0
+     },
+     {
+      "wire": 23,
+      "len": 10.0
+     },
+     {
+      "wire": 26,
+      "len": 10.0
+     },
+     {
+      "wire": 27,
+      "len": 5.0
+     },
+     {
+      "wire": 28,
+      "len": 10.0
+     },
+     {
+      "wire": 29,
+      "len": 15.0
+     },
+     {
+      "wire": 36,
+      "len": 5.0
+     },
+     {
+      "wire": 40,
+      "len": 10.0
+     },
+     {
+      "wire": 40,
+      "len": 10.0
+     }
+    ],
+    "avoidable_crossings": [
+     [
+      80.0,
+      240.0
+     ],
+     [
+      90.0,
+      300.0
+     ],
+     [
+      80.0,
+      300.0
+     ],
+     [
+      100.0,
+      395.0
+     ],
+     [
+      170.0,
+      395.0
+     ],
+     [
+      880.0,
+      150.0
+     ],
+     [
+      465.0,
+      150.0
+     ],
+     [
+      590.0,
+      150.0
+     ],
+     [
+      465.0,
+      130.0
+     ],
+     [
+      590.0,
+      130.0
+     ],
+     [
+      530.0,
+      240.0
+     ],
+     [
+      820.0,
+      300.0
+     ],
+     [
+      835.0,
+      280.0
+     ],
+     [
+      820.0,
+      315.0
+     ],
+     [
+      1050.0,
+      230.0
+     ],
+     [
+      1080.0,
+      230.0
+     ],
+     [
+      1050.0,
+      290.0
+     ],
+     [
+      1080.0,
+      290.0
+     ],
+     [
+      600.0,
+      445.0
+     ],
+     [
+      820.0,
+      445.0
+     ],
+     [
+      830.0,
+      445.0
+     ],
+     [
+      845.0,
+      370.0
+     ],
+     [
+      820.0,
+      370.0
+     ],
+     [
+      830.0,
+      370.0
+     ],
+     [
+      820.0,
+      330.0
+     ],
+     [
+      920.0,
+      530.0
+     ]
+    ]
+   },
+   "quality_pass": false,
+   "checks": {},
+   "checks_pass": true
+  }
+ ]
+}

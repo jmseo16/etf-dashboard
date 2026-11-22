@@ -30,20 +30,22 @@ class Flat:
     def find_rails(self):
         pb = collections.Counter(d['terms']['b'] for d in self.devs if d['kind'] == 'mos' and d['type'] == 'p')
         nb = collections.Counter(d['terms']['b'] for d in self.devs if d['kind'] == 'mos' and d['type'] == 'n')
+        self.supplies = set(pb.keys())
+        self.grounds = set(nb.keys())
         self.supply = pb.most_common(1)[0][0]
         self.ground = nb.most_common(1)[0][0]
-        self.rails = {self.supply, self.ground}
+        self.rails = self.supplies | self.grounds
 
     def is_rail(self, n):
         return n in self.rails
 
     def dist_to_rail(self, start, mtype):
-        rail = self.ground if mtype == 'n' else self.supply
+        rails = self.grounds if mtype == 'n' else self.supplies
         seen = {start: 0}
         q = collections.deque([start])
         while q:
             x = q.popleft()
-            if x == rail:
+            if x in rails:
                 return seen[x]
             for d, t in self.by_net[x]:
                 if d['kind'] == 'mos' and d['type'] == mtype and t in 'ds':
@@ -56,12 +58,12 @@ class Flat:
     def eff_sd(self, d):
         """effective (source, drain) by structure: source = terminal nearer own rail."""
         a, b = d['terms']['s'], d['terms']['d']
-        own = self.ground if d['type'] == 'n' else self.supply
-        other = self.supply if d['type'] == 'n' else self.ground
-        if a == own: return a, b
-        if b == own: return b, a
-        if b == other: return a, b
-        if a == other: return b, a
+        own = self.grounds if d['type'] == 'n' else self.supplies
+        other = self.supplies if d['type'] == 'n' else self.grounds
+        if a in own: return a, b
+        if b in own: return b, a
+        if b in other: return a, b
+        if a in other: return b, a
         da, db = self.dist_to_rail(a, d['type']), self.dist_to_rail(b, d['type'])
         if db < da:
             return b, a
@@ -82,23 +84,23 @@ class Flat:
                 if m['type'] == 'n':
                     if e['type'] == 'p':
                         return True
-                    if o == self.supply:
+                    if o in self.supplies:
                         return True  # active inductor / follower load
                 else:
                     if e['type'] == 'n':
                         return True
             elif e['kind'] == 'res':
                 o = e['terms']['n' if t == 'p' else 'p']
-                if (m['type'] == 'n' and o == self.supply) or (m['type'] == 'p' and o == self.ground):
+                if (m['type'] == 'n' and o in self.supplies) or (m['type'] == 'p' and o in self.grounds):
                     return True
         return False
 
     def pull_gates(self, x, mtype):
-        rail = self.supply if mtype == 'p' else self.ground
+        rails = self.supplies if mtype == 'p' else self.grounds
         gates = set(); seen = {x}; q = [x]
         while q:
             y = q.pop()
-            if y == rail:
+            if y in rails:
                 continue
             for d, t in self.by_net[y]:
                 if d['kind'] == 'mos' and d['type'] == mtype and t in 'ds':
@@ -370,7 +372,7 @@ def classify(F, cells, top, hs_inputs):
                             if e['terms']['g'] in data_r or e['terms']['g'] in clk_r:
                                 others.append(e)
                 if not others:
-                    kinds.append(('general', 'tail of the only pair at %s' % ','.join(sorted(drains))))
+                    kinds.append(('general', 'K7', 'tail of the only pair at %s' % ','.join(sorted(drains))))
                     continue
                 allg = {}
                 for e in others + prs:

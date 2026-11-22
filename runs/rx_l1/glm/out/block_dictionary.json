@@ -1,501 +1,725 @@
 {
-  "_rule": "plan §2.6-3/4: a dictionary row is drawn only when every structure feature of the row is present; missing_features non-empty + dictionary symbol = fail",
-  "rows": [
-    {
-      "cell": "invx1",
-      "instances": [
-        "lat_tg/xi0",
-        "lat_tg/xi1",
-        "dfftg/xi0",
-        "dfftg/xi1",
-        "dfftg/xi2",
-        "dfftg/xi3",
-        "dfftg/xi4",
-        "dfftg/xi5",
-        "dfftg/xi6",
-        "mux2tg/xi0",
-        "biasgen/xi0",
-        "vrefdac/xi5",
-        "vrefdac/xi4",
-        "vrefdac/xi3",
-        "vrefdac/xi2",
-        "vrefdac/xi1",
-        "vrefdac/xi0",
-        "dqsrx/xi3",
-        "dqsrx/xi4",
-        "dqsrx/xi5",
-        "dqsrx/xi7",
-        "dqslice/xi8",
-        "dqslice/xi10",
-        "wldet/xi3"
-      ],
-      "virtual": false,
-      "role": "inverter",
-      "row": "공통 논리 게이트 (INV)",
-      "symbol": "인버터",
-      "matched_features": [
-        "PMOS/NMOS 하나씩, 정적 CMOS"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "invx4",
-      "instances": [
-        "ckbuf/xi0",
-        "ckbuf/xi1",
-        "acamp/xi0",
-        "dqsrx/xi6",
-        "dqsrx/xi8",
-        "dqsgate/xi3",
-        "dqsgate/xi5",
-        "dqslice/xi9",
-        "dqslice/xi11",
-        "wldet/xi1",
-        "wldet/xi4"
-      ],
-      "virtual": false,
-      "role": "inverter",
-      "row": "공통 논리 게이트 (INV)",
-      "symbol": "인버터 (4배)",
-      "matched_features": [
-        "PMOS/NMOS 4배 구동 정적 CMOS"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "nand2x1",
-      "instances": [
-        "odtctl/xi2",
-        "odtctl/xi1",
-        "odtctl/xi0"
-      ],
-      "virtual": false,
-      "role": "nand",
-      "row": "공통 논리 게이트 (NAND2)",
-      "symbol": "2입력 NAND",
-      "matched_features": [
-        "PMOS 병렬 2개, NMOS 직렬 2개"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "nand2x2",
-      "instances": [
-        "dqsgate/xi2",
-        "dqsgate/xi4",
-        "srnand/xi0",
-        "srnand/xi1",
-        "wldet/xi0"
-      ],
-      "virtual": false,
-      "role": "nand",
-      "row": "공통 논리 게이트 (NAND2)",
-      "symbol": "2입력 NAND (2배)",
-      "matched_features": [
-        "2배 구동 2입력 NAND"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "lvlup",
-      "instances": [
-        "odtctl/xi5",
-        "odtctl/xi4",
-        "odtctl/xi3",
-        "rxbyte_top/xi0"
-      ],
-      "virtual": false,
-      "role": "level_shifter",
-      "row": "레벨 시프터 (LVLUP)",
-      "symbol": "box (cell name)",
-      "matched_features": [
-        "교차 결합 PMOS 부하 레벨 변환"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "lat_tg",
-      "instances": [
-        "dqsgate/xi0",
-        "dqsgate/xi1"
-      ],
-      "virtual": false,
-      "role": "latch",
-      "row": "래치 (LATCH)",
-      "symbol": "box (cell name)",
-      "matched_features": [
-        "TG 기반 클럭드 래치"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "dfftg",
-      "instances": [
-        "wldet/xi2"
-      ],
-      "virtual": false,
-      "role": "flip_flop",
-      "row": "플립플롭 (DFF)",
-      "symbol": "box (cell name)",
-      "matched_features": [
-        "TG 마스터-슬레이브 DFF"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "mux2tg",
-      "instances": [
-        "dly3/xi1",
-        "dly3/xi5",
-        "dly3/xi11"
-      ],
-      "virtual": false,
-      "role": "multiplexer",
-      "row": "멀티플렉서 (MUX2)",
-      "symbol": "mux symbol",
-      "matched_features": [
-        "2:1 상보 TG 선택기"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "dlybuf",
-      "instances": [
-        "dly3/xi0",
-        "dly3/xi2",
-        "dly3/xi3",
-        "dly3/xi4",
-        "dly3/xi6",
-        "dly3/xi7",
-        "dly3/xi8",
-        "dly3/xi9",
-        "dly3/xi10",
-        "dly3/xi12"
-      ],
-      "virtual": false,
-      "role": "delay_buffer",
-      "row": "딜레이 버퍼 (BUF)",
-      "symbol": "triangle 'BUF'",
-      "matched_features": [
-        "인버터 기반 단위 딜레이 버퍼"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "ckbuf",
-      "instances": [
-        "rxbyte_top/xi12",
-        "rxbyte_top/xi13",
-        "rxbyte_top/xi14",
-        "rxbyte_top/xi15",
-        "rxbyte_top/xi16",
-        "rxbyte_top/xi17",
-        "rxbyte_top/xi18",
-        "rxbyte_top/xi19",
-        "rxbyte_top/xi20",
-        "rxbyte_top/xi21",
-        "rxbyte_top/xi22",
-        "rxbyte_top/xi23"
-      ],
-      "virtual": false,
-      "role": "clock_buffer",
-      "row": "클럭 버퍼 (CKBUF)",
-      "symbol": "triangle 'CLK'",
-      "matched_features": [
-        "인버터 사슬 클럭 버퍼"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "padesd",
-      "instances": [
-        "dqslice/xi0",
-        "rxbyte_top/xi4",
-        "rxbyte_top/xi5"
-      ],
-      "virtual": false,
-      "role": "termination_esd",
-      "row": "종단 및 ESD (ESD)",
-      "symbol": "R/ESD mark on input line",
-      "matched_features": [
-        "직렬 저항 + 다이오드/클램프"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "odtleg3",
-      "instances": [
-        "dqslice/xi1",
-        "rxbyte_top/xi6",
-        "rxbyte_top/xi7"
-      ],
-      "virtual": false,
-      "role": "termination",
-      "row": "종단 레그 (ODT)",
-      "symbol": "R/switch leg to vddq",
-      "matched_features": [
-        "3비트 가변 PMOS 스위치 저항 레그"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "odtctl",
-      "instances": [
-        "rxbyte_top/xi3"
-      ],
-      "virtual": false,
-      "role": "composite",
-      "row": "종단 제어 (ODTCTL)",
-      "symbol": "box (cell name)",
-      "matched_features": [
-        "ODT 인에이블 디코딩 로직"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "biasgen",
-      "instances": [
-        "rxbyte_top/xi1"
-      ],
-      "virtual": false,
-      "role": "bias",
-      "row": "바이어스 발생기 (BIAS)",
-      "symbol": "box (cell name)",
-      "matched_features": [
-        "마스터 전류 미러 바이어스"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "vrefdac",
-      "instances": [
-        "rxbyte_top/xi2"
-      ],
-      "virtual": false,
-      "role": "dac",
-      "row": "기준 전압 DAC (DAC)",
-      "symbol": "box 'VREF DAC'",
-      "matched_features": [
-        "R-스트링 DAC 저항 사다리 및 스위치"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "dqsamp",
-      "instances": [
-        "dqsrx/xi0"
-      ],
-      "virtual": false,
-      "role": "cml_buffer",
-      "row": "DQS 증폭기 (CML)",
-      "symbol": "triangle 'BUF'",
-      "matched_features": [
-        "저항 부하 차동 증폭기"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "acamp",
-      "instances": [
-        "dqsrx/xi1",
-        "dqsrx/xi2"
-      ],
-      "virtual": false,
-      "role": "amplifier",
-      "row": "AC 결합 증폭기 (AMP)",
-      "symbol": "triangle 'AMP'",
-      "matched_features": [
-        "AC 커플링 커패시터 + 자동 바이어스 증폭기"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "dqsrx",
-      "instances": [
-        "rxbyte_top/xi8"
-      ],
-      "virtual": false,
-      "role": "composite",
-      "row": "DQS 수신기 (RX)",
-      "symbol": "box (cell name)",
-      "matched_features": [
-        "차동 수신기 프런트엔드 복합체"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "dqsgate",
-      "instances": [
-        "rxbyte_top/xi9"
-      ],
-      "virtual": false,
-      "role": "composite",
-      "row": "DQS 게이팅 (GATE)",
-      "symbol": "box (cell name)",
-      "matched_features": [
-        "클럭 게이팅 회로"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "dly3",
-      "instances": [
-        "rxbyte_top/xi10",
-        "rxbyte_top/xi11"
-      ],
-      "virtual": false,
-      "role": "delay_line",
-      "row": "3단 지연 라인 (DLY)",
-      "symbol": "box 'DLY'",
-      "matched_features": [
-        "디지털 제어 가변 딜레이"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "sbamp",
-      "instances": [
-        "dqslice/xi2",
-        "dqslice/xi3"
-      ],
-      "virtual": false,
-      "role": "vga",
-      "row": "슬라이스 프리앰프 (VGA)",
-      "symbol": "triangle 'VGA'",
-      "matched_features": [
-        "차동 입력 증폭기"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "sadfe",
-      "instances": [
-        "dqslice/xi4",
-        "dqslice/xi6"
-      ],
-      "virtual": false,
-      "role": "strongarm",
-      "row": "StrongARM DFE 비교기 (SA)",
-      "symbol": "triangle + clock",
-      "matched_features": [
-        "2-tap DFE 차동 동적 비교기"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "srnand",
-      "instances": [
-        "dqslice/xi5",
-        "dqslice/xi7"
-      ],
-      "virtual": false,
-      "role": "sr_latch",
-      "row": "SR 래치 (SR)",
-      "symbol": "box 'SR'",
-      "matched_features": [
-        "교차 결합 NAND SR 래치"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "dqslice",
-      "instances": [
-        "rxbyte_top/xi30",
-        "rxbyte_top/xi31",
-        "rxbyte_top/xi32",
-        "rxbyte_top/xi33",
-        "rxbyte_top/xi34",
-        "rxbyte_top/xi35",
-        "rxbyte_top/xi36",
-        "rxbyte_top/xi37",
-        "rxbyte_top/xi38"
-      ],
-      "virtual": false,
-      "role": "composite",
-      "row": "DQ 수신 슬라이스 (SLICE)",
-      "symbol": "box (cell name)",
-      "matched_features": [
-        "1비트 DQ 수신기 슬라이스"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "wldet",
-      "instances": [
-        "rxbyte_top/xi39"
-      ],
-      "virtual": false,
-      "role": "phase_detector",
-      "row": "Write Leveling 검출기 (WLDET)",
-      "symbol": "box 'WL DET'",
-      "matched_features": [
-        "DFF 위상 비교 판정기"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    },
-    {
-      "cell": "rxbyte_top",
-      "instances": [],
-      "virtual": false,
-      "role": "composite",
-      "row": "바이트 수신기 최상위 (TOP)",
-      "symbol": "box (cell name)",
-      "matched_features": [
-        "8 DQ + 1 DQS 차동 수신기 탑"
-      ],
-      "missing_features": [],
-      "confidence": "high",
-      "questions": []
-    }
-  ]
+ "_rule": "plan §2.6-3/4: a dictionary row is drawn only when every structure feature of the row is present; missing_features non-empty + dictionary symbol = fail",
+ "rows": [
+  {
+   "cell": "invx1",
+   "instances": [
+    "xi0",
+    "xi1",
+    "xi10",
+    "xi2",
+    "xi3",
+    "xi4",
+    "xi5",
+    "xi6",
+    "xi7",
+    "xi8"
+   ],
+   "virtual": false,
+   "role": "inverter",
+   "row": "공통 논리 게이트 (INV)",
+   "symbol": "인버터",
+   "matched_features": [
+    "PMOS/NMOS 하나씩, 게이트·드레인 공통 (정적 CMOS)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "invx4",
+   "instances": [
+    "xi0",
+    "xi1",
+    "xi11",
+    "xi3",
+    "xi4",
+    "xi5",
+    "xi6",
+    "xi8",
+    "xi9"
+   ],
+   "virtual": false,
+   "role": "inverter",
+   "row": "공통 논리 게이트 (INV)",
+   "symbol": "인버터",
+   "matched_features": [
+    "PMOS/NMOS 하나씩, 게이트·드레인 공통 (정적 CMOS)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "nand2x1",
+   "instances": [
+    "xi0",
+    "xi1",
+    "xi2"
+   ],
+   "virtual": false,
+   "role": "nand",
+   "row": "공통 논리 게이트 (NAND)",
+   "symbol": "박스(셀 이름) + 출력 동그라미",
+   "matched_features": [
+    "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list §2.6-1)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "nand2x2",
+   "instances": [
+    "xi0",
+    "xi1",
+    "xi2",
+    "xi4"
+   ],
+   "virtual": false,
+   "role": "nand",
+   "row": "공통 논리 게이트 (NAND)",
+   "symbol": "박스(셀 이름) + 출력 동그라미",
+   "matched_features": [
+    "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list §2.6-1)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "lvlup",
+   "instances": [
+    "xi0",
+    "xi3",
+    "xi4",
+    "xi5"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: ",
+    "기본 소자 묶음(가상 블록)도 사전 행: inverter (mp2, mn2)",
+    "기본 소자 묶음(가상 블록)도 사전 행: unknown (mn0, mp0)",
+    "기본 소자 묶음(가상 블록)도 사전 행: unknown (mn1, mp1)",
+    "기본 소자 묶음(가상 블록)도 사전 행: unknown (mp3, mn3)",
+    "기본 소자 묶음(가상 블록)도 사전 행: unknown (mp4, mn4)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "lat_tg",
+   "instances": [
+    "xi0",
+    "xi1"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: xi0 (inverter), xi1 (inverter)",
+    "기본 소자 묶음(가상 블록)도 사전 행: tg (mn0, mp0, mn1, mp1)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dfftg",
+   "instances": [
+    "xi2"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: xi0 (inverter), xi1 (inverter), xi2 (inverter), xi3 (inverter), xi4 (inverter), xi5 (inverter), xi6 (inverter)",
+    "기본 소자 묶음(가상 블록)도 사전 행: tg (mn0, mp0, mn1, mp1)",
+    "기본 소자 묶음(가상 블록)도 사전 행: tg (mn2, mp2, mn3, mp3)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "mux2tg",
+   "instances": [
+    "xi1",
+    "xi11",
+    "xi5"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: xi0 (inverter)",
+    "기본 소자 묶음(가상 블록)도 사전 행: tg (mn0, mp0, mn1, mp1)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dlybuf",
+   "instances": [
+    "xi0",
+    "xi10",
+    "xi12",
+    "xi2",
+    "xi3",
+    "xi4",
+    "xi6",
+    "xi7",
+    "xi8",
+    "xi9"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: ",
+    "기본 소자 묶음(가상 블록)도 사전 행: inverter (mp0, mn0)",
+    "기본 소자 묶음(가상 블록)도 사전 행: inverter (mp1, mn1)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "ckbuf",
+   "instances": [
+    "xi12",
+    "xi13",
+    "xi14",
+    "xi15",
+    "xi16",
+    "xi17",
+    "xi18",
+    "xi19",
+    "xi20",
+    "xi21",
+    "xi22",
+    "xi23"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: xi0 (inverter), xi1 (inverter)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "padesd",
+   "instances": [
+    "xi0",
+    "xi4",
+    "xi5"
+   ],
+   "virtual": false,
+   "role": "termination",
+   "row": "RX 종단 · ESD",
+   "symbol": "입력선 위 R/ESD 표시",
+   "matched_features": [
+    "고속 입력에서 공통모드 노드로 R: r0"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "odtleg3",
+   "instances": [
+    "xi1",
+    "xi6",
+    "xi7"
+   ],
+   "virtual": false,
+   "role": "termination",
+   "row": "RX 종단 · ESD",
+   "symbol": "입력선 위 R/ESD 표시",
+   "matched_features": [
+    "고속 입력에서 공통모드 노드로 R: r2/r1/r0"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "odtctl",
+   "instances": [
+    "xi3"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: xi2 (nand), xi1 (nand), xi0 (nand), xi5 (composite), xi4 (composite), xi3 (composite)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "biasgen",
+   "instances": [
+    "xi1"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: xi0 (inverter)",
+    "기본 소자 묶음(가상 블록)도 사전 행: unknown (mn0, mn2)",
+    "기본 소자 묶음(가상 블록)도 사전 행: unknown (mn1, mp0, mp1)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "vrefdac",
+   "instances": [
+    "xi2"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: xi5 (inverter), xi4 (inverter), xi3 (inverter), xi2 (inverter), xi1 (inverter), xi0 (inverter)",
+    "기본 소자 묶음(가상 블록)도 사전 행: unknown (mp10, mp11, mp8, mp9, mp6, mp7, mp4, mp5, mp2, mp3, mp0, mp1, mp12, mp13, r0, r1)",
+    "기본 소자 묶음(가상 블록)도 사전 행: unknown (mn0)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dqsamp",
+   "instances": [
+    "xi0"
+   ],
+   "virtual": false,
+   "role": "cml_buffer",
+   "row": "Clock 버퍼 (CML)",
+   "symbol": "삼각형 \"BUF\"",
+   "matched_features": [
+    "차동쌍 하나 mn0/mn1, 공통 꼬리 mn3, 부하 "
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "acamp",
+   "instances": [
+    "xi1",
+    "xi2"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: xi0 (inverter)",
+    "기본 소자 묶음(가상 블록)도 사전 행: unknown (c0, r0, mp0, mn0, mn1, mp1)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dqsrx",
+   "instances": [
+    "xi8"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: xi0 (cml_buffer), xi1 (composite), xi2 (composite), xi3 (inverter), xi4 (inverter), xi5 (inverter), xi6 (inverter), xi7 (inverter), xi8 (inverter)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dqsgate",
+   "instances": [
+    "xi9"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: xi0 (composite), xi1 (composite), xi2 (nand), xi3 (inverter), xi4 (nand), xi5 (inverter)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dly3",
+   "instances": [
+    "xi10",
+    "xi11"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: xi0 (composite), xi1 (composite), xi2 (composite), xi3 (composite), xi4 (composite), xi5 (composite), xi6 (composite), xi7 (composite), xi8 (composite), xi9 (composite), xi10 (composite), xi11 (composite), xi12 (composite)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "sbamp",
+   "instances": [
+    "xi2",
+    "xi3"
+   ],
+   "virtual": false,
+   "role": "vga",
+   "row": "RX VGA",
+   "symbol": "삼각형 \"VGA\"",
+   "matched_features": [
+    "주 차동쌍 + 같은 입력의 추가 이득 쌍 1개 (mp1, mn1, mp2, mn2), 출력 공유",
+    "이득 단을 스위치로 더함: 이득 쌍 꼬리의 스위치 ",
+    "소스 사이 C 없음 (C는 고정·작음 조건 만족)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "sadfe",
+   "instances": [
+    "xi4",
+    "xi6"
+   ],
+   "virtual": false,
+   "role": "strongarm",
+   "row": "RX 비교기 · 샘플러 (StrongARM)",
+   "symbol": "삼각형 + 클럭",
+   "matched_features": [
+    "클럭 꼬리 mn0",
+    "입력쌍 mn1/mn2/mn10/mn11/mn13/mn14/mn16/mn17/mn20/mn21/mn23/mn24",
+    "입력쌍 드레인 위 cross-coupled NMOS mn3/mn4 + cross-coupled PMOS mp0/mp1",
+    "리셋 PMOS mp2/mp3/mp4/mp5"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "srnand",
+   "instances": [
+    "xi5",
+    "xi7"
+   ],
+   "virtual": false,
+   "role": "sr_latch",
+   "row": "공통 SR latch",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "nand2x2 2개 교차 결합: xi0.y=q; xi1.y=qb"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dqslice",
+   "instances": [
+    "xi30",
+    "xi31",
+    "xi32",
+    "xi33",
+    "xi34",
+    "xi35",
+    "xi36",
+    "xi37",
+    "xi38"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: xi0 (termination), xi1 (termination), xi2 (vga), xi3 (vga), xi4 (strongarm), xi5 (sr_latch), xi6 (strongarm), xi7 (sr_latch), xi8 (inverter), xi9 (inverter), xi10 (inverter), xi11 (inverter)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "wldet",
+   "instances": [
+    "xi39"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: xi0 (nand), xi1 (inverter), xi2 (composite), xi3 (inverter), xi4 (inverter)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "rxbyte_top",
+   "instances": [],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: xi0 (composite), xi1 (composite), xi2 (composite), xi3 (composite), xi4 (termination), xi5 (termination), xi6 (termination), xi7 (termination), xi8 (composite), xi9 (composite), xi10 (composite), xi11 (composite), xi12 (composite), xi13 (composite), xi14 (composite), xi15 (composite), xi16 (composite), xi17 (composite), xi18 (composite), xi19 (composite), xi20 (composite), xi21 (composite), xi22 (composite), xi23 (composite), xi30 (composite), xi31 (composite), xi32 (composite), xi33 (composite), xi34 (composite), xi35 (composite), xi36 (composite), xi37 (composite), xi38 (composite), xi39 (composite)",
+    "기본 소자 묶음(가상 블록)도 사전 행: unknown (mp0)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "lvlup",
+   "virtual_block": "lvlup: mp2, mn2",
+   "virtual": true,
+   "role": "inverter",
+   "row": "공통 논리 게이트 (INV)",
+   "symbol": "인버터",
+   "matched_features": [
+    "PMOS/NMOS 하나씩, 게이트·드레인 공통 (정적 CMOS)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "lvlup",
+   "virtual_block": "lvlup: mn0, mp0",
+   "virtual": true,
+   "role": "unknown",
+   "row": "general",
+   "symbol": "box (cell name)",
+   "matched_features": [],
+   "missing_features": [],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "lvlup",
+   "virtual_block": "lvlup: mn1, mp1",
+   "virtual": true,
+   "role": "unknown",
+   "row": "general",
+   "symbol": "box (cell name)",
+   "matched_features": [],
+   "missing_features": [],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "lvlup",
+   "virtual_block": "lvlup: mp3, mn3",
+   "virtual": true,
+   "role": "unknown",
+   "row": "general",
+   "symbol": "box (cell name)",
+   "matched_features": [],
+   "missing_features": [],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "lvlup",
+   "virtual_block": "lvlup: mp4, mn4",
+   "virtual": true,
+   "role": "unknown",
+   "row": "general",
+   "symbol": "box (cell name)",
+   "matched_features": [],
+   "missing_features": [],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "biasgen",
+   "virtual_block": "biasgen: mn0, mn2",
+   "virtual": true,
+   "role": "unknown",
+   "row": "general",
+   "symbol": "box (cell name)",
+   "matched_features": [],
+   "missing_features": [],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "biasgen",
+   "virtual_block": "biasgen: mn1, mp0, mp1",
+   "virtual": true,
+   "role": "unknown",
+   "row": "general",
+   "symbol": "box (cell name)",
+   "matched_features": [],
+   "missing_features": [],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "vrefdac",
+   "virtual_block": "vrefdac: mp10, mp11, mp8, mp9, mp6, mp7, mp4, mp5, mp2, mp3, mp0, mp1, mp12, mp13, r0, r1",
+   "virtual": true,
+   "role": "unknown",
+   "row": "general",
+   "symbol": "box (cell name)",
+   "matched_features": [],
+   "missing_features": [],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "vrefdac",
+   "virtual_block": "vrefdac: mn0",
+   "virtual": true,
+   "role": "unknown",
+   "row": "general",
+   "symbol": "box (cell name)",
+   "matched_features": [],
+   "missing_features": [],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "acamp",
+   "virtual_block": "acamp: c0, r0, mp0, mn0, mn1, mp1",
+   "virtual": true,
+   "role": "unknown",
+   "row": "general",
+   "symbol": "box (cell name)",
+   "matched_features": [],
+   "missing_features": [],
+   "confidence": "low",
+   "questions": []
+  },
+  {
+   "cell": "lat_tg",
+   "virtual_block": "lat_tg: mn0, mp0, mn1, mp1",
+   "virtual": true,
+   "role": "tg",
+   "row": "(기본 소자) 전달 게이트 — 항상 꺼짐 (§2.2)",
+   "symbol": "열린 스위치",
+   "matched_features": [
+    "같은 두 넷 사이 NMOS+PMOS, 게이트가 끄는 레일(NMOS→접지, PMOS→전원)에 묶임 → 항상 꺼짐"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dlybuf",
+   "virtual_block": "dlybuf: mp0, mn0",
+   "virtual": true,
+   "role": "inverter",
+   "row": "공통 논리 게이트 (INV)",
+   "symbol": "인버터",
+   "matched_features": [
+    "PMOS/NMOS 하나씩, 게이트·드레인 공통 (정적 CMOS)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dlybuf",
+   "virtual_block": "dlybuf: mp1, mn1",
+   "virtual": true,
+   "role": "inverter",
+   "row": "공통 논리 게이트 (INV)",
+   "symbol": "인버터",
+   "matched_features": [
+    "PMOS/NMOS 하나씩, 게이트·드레인 공통 (정적 CMOS)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "mux2tg",
+   "virtual_block": "mux2tg: mn0, mp0, mn1, mp1",
+   "virtual": true,
+   "role": "tg",
+   "row": "(기본 소자) 전달 게이트 — 항상 꺼짐 (§2.2)",
+   "symbol": "열린 스위치",
+   "matched_features": [
+    "같은 두 넷 사이 NMOS+PMOS, 게이트가 끄는 레일(NMOS→접지, PMOS→전원)에 묶임 → 항상 꺼짐"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dfftg",
+   "virtual_block": "dfftg: mn0, mp0, mn1, mp1",
+   "virtual": true,
+   "role": "tg",
+   "row": "(기본 소자) 전달 게이트 — 항상 꺼짐 (§2.2)",
+   "symbol": "열린 스위치",
+   "matched_features": [
+    "같은 두 넷 사이 NMOS+PMOS, 게이트가 끄는 레일(NMOS→접지, PMOS→전원)에 묶임 → 항상 꺼짐"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "dfftg",
+   "virtual_block": "dfftg: mn2, mp2, mn3, mp3",
+   "virtual": true,
+   "role": "tg",
+   "row": "(기본 소자) 전달 게이트 — 항상 꺼짐 (§2.2)",
+   "symbol": "열린 스위치",
+   "matched_features": [
+    "같은 두 넷 사이 NMOS+PMOS, 게이트가 끄는 레일(NMOS→접지, PMOS→전원)에 묶임 → 항상 꺼짐"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "rxbyte_top",
+   "virtual_block": "rxbyte_top: mp0",
+   "virtual": true,
+   "role": "unknown",
+   "row": "general",
+   "symbol": "box (cell name)",
+   "matched_features": [],
+   "missing_features": [],
+   "confidence": "low",
+   "questions": []
+  }
+ ],
+ "not_drawn": []
 }

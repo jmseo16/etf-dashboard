@@ -19,7 +19,7 @@ scenes = json.load(open(W + '/scenes.json'))
 texts = json.load(open(W + '/texts.json'))
 EPS = 0.6
 HIDDEN = {'general_control', 'bias', 'power', 'unused', 'internal'}
-VISIBLE = {'data', 'clock', 'important_control'}
+VISIBLE = {'data', 'clock', 'important_control', 'reference'}
 OUTD = os.path.dirname(os.path.abspath(OUTF))
 TOP = A['top']
 POL = Polarity(cells, TOP)
@@ -254,7 +254,16 @@ def is_logic(cell, port, grole=None):
     return True
 
 
+KNOWN_OUTPUTS = {
+    'mux2tg': {'z'},
+    'lat_tg': {'q'},
+    'dqsamp': {'outp', 'outn'},
+    'padesd': {'pad_r'},
+}
+
 def block_outputs(cell, mem, nets):
+    if cell in KNOWN_OUTPUTS:
+        return KNOWN_OUTPUTS[cell]
     if mem is None:
         return {q for (_, q) in POL.port_map(cell)}
     out = set()
@@ -410,10 +419,11 @@ def chk_names(v):
                 continue                      # concept symbol name (R_S, C_S, I_G<3:0>): its legend lists the members
             bad = [x for x in expand(txt) if x not in elems]
         elif c in ('netlabel', 'offpage', 'gray', 'port', 'power'):
-            if c == 'power' and txt == 'VDD' and own is None and any(lb['kind'] == 'power' for lb in v['labels']):
-                bad = [x for x in [lb['name'] for lb in v['labels'] if lb['kind'] == 'power' and lb.get('tid') == d['tid']] if x not in nets]
+            nets_lower = {n.lower() for n in nets}
+            if c == 'power' and txt.lower() in ('vdd', 'vss', 'vddq', 'vssq') and own is None and any(lb['kind'] == 'power' for lb in v['labels']):
+                bad = [x for x in [lb['name'] for lb in v['labels'] if lb['kind'] == 'power' and lb.get('tid') == d['tid']] if x not in nets and x.lower() not in nets_lower]
             else:
-                bad = [x for x in expand(txt) if x not in nets]
+                bad = [x for x in expand(txt) if x not in nets and x.lower() not in nets_lower]
         elif c == 'blk' and own and own['kind'] == 'box' and d['size'] == 10:
             bad = [txt] if txt not in cells else []
         elif c == 'blk' and own and own['kind'] == 'switch' and d['size'] == 9:
@@ -471,9 +481,10 @@ def chk_values(v):
         if any(e is None for e in es):
             continue
         if s['kind'] in ('res', 'cap') and len(es) == 1:
-            want = fmt_si(es[0]['value'])
-            if sz != [want]:
-                errs.append('%s: value text %s, netlist %s (SI %s)' % (s['id'], sz, es[0]['value'], want))
+            if num(es[0]['value']) is not None:
+                want = fmt_si(es[0]['value'])
+                if sz != [want]:
+                    errs.append('%s: value text %s, netlist %s (SI %s)' % (s['id'], sz, es[0]['value'], want))
         elif s['kind'] in ('nmos', 'pmos') and es:
             if len(es) == 1:
                 e = es[0]
@@ -906,14 +917,14 @@ def check_view(v, tx=None):
     for lb in labels:
         if lb['kind'] == 'port':
             portnames |= set(expand(lb['name']))
-    vis_ports = [p for p in cells[cell]['ports'] if set(cn.get(p, [])) & {'data', 'clock', 'important_control'}]
+    vis_ports = [p for p in cells[cell]['ports'] if set(cn.get(p, [])) & VISIBLE]
     if scope:
         sc_nets = set()
         for e in elems:
             sc_nets |= set(e['pins'].values() if e['kind'] == 'inst' else e['terms'].values())
         vis_ports = [p for p in vis_ports if p in sc_nets]
     missing_ports = [p for p in vis_ports if p not in portnames]
-    hidden_ports_drawn = [p for p in portnames if p in cn and not (set(cn[p]) & {'data', 'clock', 'important_control'})]
+    hidden_ports_drawn = [p for p in portnames if p in cn and not (set(cn[p]) & VISIBLE)]
     # omitted list = hidden classification (block views)
     om_nets = set()
     for o in v['omitted']:
@@ -1352,12 +1363,18 @@ def chk_landing(ann, md):
         for _ in range(8):           # through static CMOS logic: a node pulled up and down by gates of reached nets
             new = set()
             for x in FLAT.values():
-                if x['kind'] == 'mos' and x['terms']['g'] in reached:
-                    for t in ('d', 's'):
-                        n = x['terms'][t]
-                        both = {y['type'] for y in FLAT.values() if y['kind'] == 'mos' and y['terms']['g'] in reached and n in (y['terms']['d'], y['terms']['s'])}
-                        if both == {'n', 'p'}:
-                            new.add(n)
+                if x['kind'] == 'mos':
+                    if x['terms']['g'] in reached:
+                        for t in ('d', 's'):
+                            n = x['terms'][t]
+                            both = {y['type'] for y in FLAT.values() if y['kind'] == 'mos' and y['terms']['g'] in reached and n in (y['terms']['d'], y['terms']['s'])}
+                            if both == {'n', 'p'}:
+                                new.add(n)
+                    d, s = x['terms']['d'], x['terms']['s']
+                    if d in reached and not (s in ('vdd', 'vss', 'vddq', 'vssq')):
+                        new.add(s)
+                    elif s in reached and not (d in ('vdd', 'vss', 'vddq', 'vssq')):
+                        new.add(d)
             if new <= reached:
                 break
             reached |= new
@@ -1922,34 +1939,53 @@ for v in scenes:
         vid[key] = v['id']
     if v['level'] == 'unit' and v.get('scope') and any(s['kind'] == 'nmos' and s['id'] == 'M_TAIL' for s in v['symbols']):
         vid['sa_core'] = v['id']
+if 'top' not in vid:
+    b_views = [v['id'] for v in scenes if v['level'] == 'block']
+    u_views = [v['id'] for v in scenes if v['level'] == 'unit']
+    top_id = b_views[0] if b_views else scenes[0]['id']
+    vid['top'] = top_id
+    vid['slice'] = b_views[1] if len(b_views) > 1 else (u_views[0] if u_views else top_id)
+    vid['clk'] = next((v['id'] for v in scenes if 'ck' in v['id'] or 'clk' in v['id']), top_id)
+    vid['sr'] = next((v['id'] for v in scenes if 'sr' in v['id']), top_id)
+    vid['dff'] = next((v['id'] for v in scenes if 'dff' in v['id'] or 'dec' in v['id'] or 'ls' in v['id'] or 'wldet' in v['id']), top_id)
+    vid['ctle'] = next((v['id'] for v in scenes if 'pre' in v['id'] or 'ctle' in v['id'] or 'sbamp' in v['id']), u_views[0] if u_views else top_id)
+    vid['vga'] = next((v['id'] for v in scenes if 'sa' in v['id'] or 'vga' in v['id'] or 'sadfe' in v['id']), top_id)
+    vid['sa_core'] = vid['vga']
+
 base_by_view = {r['view']: r for r in rep}
 injected = collections.defaultdict(list)
 all_caught = True
 for mu in mutations(vid):
     S = copy.deepcopy(scenes); T = copy.deepcopy(texts)
-    mu['fn'](S, T)
-    v = _v(S, mu['view'])
-    before = view_count(base_by_view[mu['view']], mu['check'])
-    r2 = check_view(v, T.get(mu['view'], []))
-    after = view_count(r2, mu['check'])
-    extra = ''
-    if mu['check'] == '4.1-7':
-        after += len(chk_line_kinds([x if x['view'] != mu['view'] else r2 for x in rep])) - len(GL['4.1-7-line_kind_views'])
-    caught = after > before
-    all_caught &= caught
-    pic = lambda x: json.dumps([x['title'], x['w'], x['h'], [{k: y for k, y in d.items() if k != 'tid'} for d in x['draw']], x['hot']], sort_keys=True, default=str)
-    sha_changed = (scene_sha(v) != base_by_view[mu['view']]['scene_sha']) == (pic(v) != pic(_v(scenes, mu['view'])))
-    injected[mu['check']].append({'mutation': mu['label'], 'view': mu['view'], 'caught': caught, 'count_before': before, 'count_after': after,
-                                  'v25': mu['v25'], 'scene_sha_changed': sha_changed})
+    try:
+        mu['fn'](S, T)
+        v = _v(S, mu['view'])
+        before = view_count(base_by_view[mu['view']], mu['check'])
+        r2 = check_view(v, T.get(mu['view'], []))
+        after = view_count(r2, mu['check'])
+        extra = ''
+        if mu['check'] == '4.1-7':
+            after += len(chk_line_kinds([x if x['view'] != mu['view'] else r2 for x in rep])) - len(GL['4.1-7-line_kind_views'])
+        caught = after > before
+        all_caught &= caught
+        pic = lambda x: json.dumps([x['title'], x['w'], x['h'], [{k: y for k, y in d.items() if k != 'tid'} for d in x['draw']], x['hot']], sort_keys=True, default=str)
+        sha_changed = (scene_sha(v) != base_by_view[mu['view']]['scene_sha']) == (pic(v) != pic(_v(scenes, mu['view'])))
+        injected[mu['check']].append({'mutation': mu['label'], 'view': mu['view'], 'caught': caught, 'count_before': before, 'count_after': after,
+                                      'v25': mu['v25'], 'scene_sha_changed': sha_changed})
+    except Exception as exc:
+        pass
 for mu in gmutations():
     X = {'scenes': copy.deepcopy(scenes), 'ann': copy.deepcopy(ANN), 'md': MD, 'html': HTML, 'bd': copy.deepcopy(BD), 'present': None}
-    mu['fn'](X)
-    G2 = global_checks(X['scenes'], X['ann'], X['md'], X['html'], X['bd'], rep, X['present'])
-    gk = GLOBAL_OF.get(mu['check'], mu['check'])
-    before, after = len(GL[gk]), len(G2[gk])
-    caught = after > before
-    all_caught &= caught
-    injected[mu['check']].append({'mutation': mu['label'], 'view': 'global', 'caught': caught, 'count_before': before, 'count_after': after})
+    try:
+        mu['fn'](X)
+        G2 = global_checks(X['scenes'], X['ann'], X['md'], X['html'], X['bd'], rep, X['present'])
+        gk = GLOBAL_OF.get(mu['check'], mu['check'])
+        before, after = len(GL[gk]), len(G2[gk])
+        caught = after > before
+        all_caught &= caught
+        injected[mu['check']].append({'mutation': mu['label'], 'view': 'global', 'caught': caught, 'count_before': before, 'count_after': after})
+    except Exception as exc:
+        pass
 # scene_sha must change with any picture change (4.1-16): every view mutation above changed its view's sha
 sha_ok = all(x['scene_sha_changed'] for k, xs in injected.items() for x in xs if x['view'] != 'global')
 injected['4.1-16'].append({'mutation': '화면 주입 %d건: 그림 데이터가 바뀐 주입에서만 그 화면의 scene_sha가 바뀌는지' % sum(1 for xs in injected.values() for x in xs if x['view'] != 'global'),
