@@ -1,9 +1,6 @@
-# selftest_log — rx_s1 회차 1
+# selftest_log — rx_s1 회차 2
 
-## 그리는 동안 검사기를 쓴 기록 (a 단계 규칙을 지키지 못한 부분의 공개)
-검사기·생성기를 이 회차에 새로 만들었기 때문에, a(그리기) 단계에서 개발용으로 check.py 를 여러 번 돌려 결과를 보며 그림 코드를 고쳤다.
-관찰한 총 건수(기억·터미널 기록 기준, 정확한 검사 항목은 남기지 않음): 유닛 화면 일부 2건 → 블록 화면 추가 86건 → 최상위 11건 → 9건 → 2건 → 0건.
-따라서 `r1_a_draw/` 폴더는 "검증기를 돌리기 전 그림"이 아니라 "개발 중 검사기로 고친 뒤의 그림"이다.
+(형식: 실행 k | 검사별 건수 | 총 n건 | 이번에 고친 것)
 
-## b 단계 실행 기록 (형식: 실행 k | 검사별 건수 | 총 n건 | 이번에 고친 것)
-실행 1 | 1-conn:0, 1-touch:0, 10-outpin:0, 11-dash:0, 13-polarity:0, 14-names:0, 15-pinnames:0, 16-sha:0, 18-pinside:0, 2-label:0, 23-blockpins:0, 24-rcvalue:0, 25-inside:0, 3-omit:0, 5-cross:0, 5-dots:0, 5-endline:0, 5-kink:0, 5-overlap:0, 5-pierce:0, 5-short:0, 6-port:0 | 총 0건 | 고친 것 없음 (검사 22종 모두 0건, 주입 32건 모두 잡힘)
+실행 1 | 1-conn:0, 1-touch:0, 10-outpin:0, 11-dash:0, 13-polarity:0, 14-names:0, 15-pinnames:0, 16-sha:0, 18-pinside:0, 2-label:0, 23-blockpins:0, 24-rcvalue:0, 25-inside:0, 3-omit:0, 5-cross:0, 5-dots:1, 5-endline:0, 5-kink:0, 5-overlap:0, 5-pierce:0, 5-short:0, 6-port:0 | 총 1건 | 수정 F1–F4a 적용 직후 첫 실행: u_dfe_sum 4방향 접점 (230,260) 1건 → r0 를 x=190, r1 를 x=430 으로 옮겨 T 접점 둘로 나눔
+실행 2 | 1-conn:0, 1-touch:0, 10-outpin:0, 11-dash:0, 13-polarity:0, 14-names:0, 15-pinnames:0, 16-sha:0, 18-pinside:0, 2-label:0, 23-blockpins:0, 24-rcvalue:0, 25-inside:0, 3-omit:0, 5-cross:0, 5-dots:0, 5-endline:0, 5-kink:0, 5-overlap:0, 5-pierce:0, 5-short:0, 6-port:0 | 총 0건 | 고친 것 없음 (검사 22종 모두 0건, 주입 32건 모두 잡힘)
