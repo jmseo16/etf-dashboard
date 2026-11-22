@@ -71,7 +71,7 @@ def geom_inst(K):
     mid = max(tw(title, 12), tw(K.sub, 9)) + 16
     pt = snap_up(max([tw(P.name, 9) for P in T] + [20]) + 12, 20)
     pb = snap_up(max([tw(P.name, 9) for P in B] + [20]) + 12, 20)
-    w = snap_up(max(80, lw + rw + mid, len(T) * pt + 20, len(B) * pb + 20), 20)
+    w = snap_up(max(80, lw + rw + mid, 2 * max(lw, rw) + mid - 8, len(T) * pt + 20, len(B) * pb + 20), 20)
     h = max(60, 20 * max(len(L), len(R)) + 20)
     if T:
         h += 10
@@ -203,9 +203,17 @@ def net_levels(V):
     up = defaultdict(list)       # lower net -> [(upper net, comp)]
     dn = defaultdict(list)
     devs = [K for K in V.comps if K.kind != 'inst']
+    # transmission gates (an n and a p device across the same two nets) are pass devices: no up/down direction
+    tg = defaultdict(set)
+    for K in devs:
+        if K.kind == 'mos':
+            tg[frozenset((K.pins['d'].nets[0], K.pins['s'].nets[0]))].add(K.mtype)
     for K in devs:
         if K.kind == 'mos':
             d, s = K.pins['d'].nets[0], K.pins['s'].nets[0]
+            if len(tg[frozenset((d, s))]) == 2 and d not in rl and s not in rl and d != s:
+                K.lo = K.hi = None
+                continue
             lo, hi = (s, d) if K.mtype == 'n' else (d, s)
             # a rail fixes the direction regardless of the source/drain naming
             if lo in sup or hi in gnd:
@@ -817,103 +825,150 @@ def place(V):
             if U.kind == 'pass':
                 geom_dev(K)
     # ------------------------------------------------ coordinates
+    def skip(K, P):
+        return P.name in K.rail_pins or P.name in K.gray_pins
+
+    def is_in(U, K, P):
+        return (K.kind == 'inst' and P.dir == 'in' and P.side == 'l') or (K.kind == 'mos' and P.name == 'g' and U.kind != 'pass') or \
+               (U.kind == 'pass' and P.name == getattr(K, 'left', None))
+
+    def is_out(U, K, P):
+        return (K.kind == 'inst' and P.dir == 'out') or (U.kind == 'cluster' and P.name != 'g') or \
+               (U.kind == 'pass' and P.name not in ('g', getattr(K, 'left', None)))
     layers = defaultdict(list)
     for U in units:
         layers[U.layer].append(U)
-    x = 0
-    placed_pin = {}                # net key -> (x, y) of a pin that drives it (already placed)
-    placed_any = {}
-    for li in sorted(layers):
-        col = layers[li]
-        boxes = [U.rel_bbox() for U in col]
-        wmax = max(b[2] - b[0] for b in boxes)
-        want = []
-        for U, b in zip(col, boxes):
-            y = None
-            for K in U.comps:
-                for P in K.pins.values():
-                    if P.name in K.rail_pins or P.name in K.gray_pins:
-                        continue
-                    isin = (K.kind == 'inst' and P.dir == 'in' and P.side == 'l') or (K.kind == 'mos' and P.name == 'g' and U.kind != 'pass') or \
-                           (U.kind == 'pass' and P.name == getattr(K, 'left', None))
-                    if isin and P.nets in placed_pin and y is None:
-                        y = placed_pin[P.nets][1] - ((getattr(K, 'cy', 0) + P.ry) if not getattr(U, 'tg', False) else 0)
-            if y is None:
+    fan = defaultdict(int)         # unit -> number of pins it drives in other units
+    for key, lst in key_pins.items():
+        ds = set(comp_unit[K] for K, P in lst if is_out(comp_unit[K], K, P))
+        if len(ds) == 1:
+            D = list(ds)[0]
+            fan[D] += sum(1 for K, P in lst if comp_unit[K] is not D)
+
+    def assign(force):
+        """One left-to-right pass. `force` fixes the height of some units (straight wires first: a unit that could
+        not sit level with its driver moves the driver instead). Returns the connections that are still not level."""
+        x = 0
+        placed_pin = {}            # net key -> (x, y, unit) of a pin that drives it (already placed)
+        placed_any = {}
+        primary = {}               # unit -> net key it was aligned on
+        for li in sorted(layers):
+            col = layers[li]
+            boxes = [U.rel_bbox() for U in col]
+            wmax = max(b[2] - b[0] for b in boxes)
+            want = []
+            for U, b in zip(col, boxes):
+                y = None
                 for K in U.comps:
                     for P in K.pins.values():
-                        if P.name in K.rail_pins or P.name in K.gray_pins or y is not None:
+                        if skip(K, P):
                             continue
-                        if P.nets in placed_any and (K.kind == 'inst' and P.dir == 'in' and P.side == 'l'):
-                            y = placed_any[P.nets][1] + 80 - (getattr(K, 'cy', 0) + P.ry)
-            want.append(y)
-        cur = None
-        nets_of = []
-        for U in col:
-            ns = set()
-            for K in U.comps:
-                for P in K.pins.values():
-                    if P.name not in K.rail_pins and P.name not in K.gray_pins:
-                        ns.add(P.nets)
-            nets_of.append(ns)
-        cls_rank = []
-        for U in col:
-            r = 9
-            for K in U.comps:
-                for P in K.pins.values():
-                    r = min(r, {'hs_data': 0, 'reference': 1, 'hs_clock': 2}.get(P.cls, 5))
-            cls_rank.append(r)
-        first = sorted(range(len(col)), key=lambda i: (want[i] is None, want[i] if want[i] is not None else 0, cls_rank[i], i))
-        order = []
-        for i in first:
-            if i in order:
-                continue
-            order.append(i)
-            if want[i] is None:
-                continue
-        # pull a unit without alignment right behind the unit it shares a net with
-        fixed = [i for i in first if want[i] is not None]
-        loose = [i for i in first if want[i] is None]
-        order = list(fixed)
-        for i in loose:
-            pos = None
-            for k, j in enumerate(order):
-                if nets_of[i] & nets_of[j]:
-                    pos = k + 1
-            if pos is None:
-                order.append(i)
-            else:
-                order.insert(pos, i)
-                want[i] = None
-        used = []                   # (top, bottom, has bottom pins)
-        for i in order:
-            U, b = col[i], boxes[i]
-            has_t = any(P.side == 't' and P.name not in K.rail_pins and P.name not in K.gray_pins for K in U.comps for P in K.pins.values())
-            has_b = any(P.side == 'b' and P.name not in K.rail_pins and P.name not in K.gray_pins for K in U.comps for P in K.pins.values())
-            y = want[i]
-            if y is None:
-                y = (used[-1][1] + 40 + 30 * RELAX[0] + (60 if has_t else 0) + (60 if used[-1][2] else 0) - b[1]) if used else -b[1]
-            y = snap(y)
-            # no overlap with units already in this layer: push down
-            moved = True
-            while moved:
-                moved = False
-                for t, bt, hb in used:
-                    gap = 30 + 30 * RELAX[0] + (60 if has_t else 0) + (60 if hb else 0)
-                    gap_up = 30 + 30 * RELAX[0] + (60 if has_b else 0)
-                    if y + b[1] < bt + gap and y + b[3] > t - gap_up:
-                        y = snap_up(bt + gap - b[1])
-                        moved = True
-            used.append((y + b[1], y + b[3], has_b))
-            U.x, U.y = snap_up(x - b[0]), y
-            for K in U.comps:
-                K.x, K.y = U.x + getattr(K, 'cx', 0), U.y + getattr(K, 'cy', 0)
-                for P in K.pins.values():
-                    P.x, P.y = K.x + P.rx, K.y + P.ry
-                    isout = (K.kind == 'inst' and P.dir == 'out') or (U.kind == 'cluster' and P.name != 'g') or \
-                            (U.kind == 'pass' and P.name not in ('g', getattr(K, 'left', None)))
-                    if isout and P.name not in K.rail_pins and P.name not in K.gray_pins:
-                        placed_pin.setdefault(P.nets, (P.x, P.y if not getattr(U, 'tg', False) else U.y))
-                    if P.name not in K.rail_pins and P.name not in K.gray_pins:
+                        if is_in(U, K, P) and P.nets in placed_pin and y is None:
+                            y = placed_pin[P.nets][1] - ((getattr(K, 'cy', 0) + P.ry) if not getattr(U, 'tg', False) else 0)
+                            primary[U] = P.nets
+                if y is None:
+                    for K in U.comps:
+                        for P in K.pins.values():
+                            if skip(K, P) or y is not None:
+                                continue
+                            if P.nets in placed_any and (K.kind == 'inst' and P.dir == 'in' and P.side == 'l'):
+                                y = placed_any[P.nets][1] + 80 - (getattr(K, 'cy', 0) + P.ry)
+                if U in force:
+                    y = force[U]
+                want.append(y)
+            nets_of = []
+            for U in col:
+                ns = set()
+                for K in U.comps:
+                    for P in K.pins.values():
+                        if not skip(K, P):
+                            ns.add(P.nets)
+                nets_of.append(ns)
+            cls_rank = []
+            for U in col:
+                r = 9
+                for K in U.comps:
+                    for P in K.pins.values():
+                        r = min(r, {'hs_data': 0, 'reference': 1, 'hs_clock': 2}.get(P.cls, 5))
+                cls_rank.append(r)
+            first = sorted(range(len(col)), key=lambda i: (want[i] is None, want[i] if want[i] is not None else 0, cls_rank[i], i))
+            # units with a wanted height first; the others go into the free room behind the unit they share a net with
+            order = [i for i in first if want[i] is not None] + [i for i in first if want[i] is None]
+            used = []                   # (top, bottom, has bottom pins, index)
+            for i in order:
+                U, b = col[i], boxes[i]
+                has_t = any(P.side == 't' and not skip(K, P) for K in U.comps for P in K.pins.values())
+                has_b = any(P.side == 'b' and not skip(K, P) for K in U.comps for P in K.pins.values())
+                y = want[i]
+                if y is None:
+                    rel = [u for u in used if nets_of[i] & nets_of[u[3]]]
+                    ref = rel[-1] if rel else (max(used, key=lambda u: u[1]) if used else None)
+                    y = (ref[1] + 40 + 30 * RELAX[0] + (60 if has_t else 0) + (60 if ref[2] else 0) - b[1]) if ref else -b[1]
+                y = snap(y)
+                # no overlap with units already in this layer: push down
+                moved = True
+                while moved:
+                    moved = False
+                    for t, bt, hb, _ in used:
+                        gap = 30 + 30 * RELAX[0] + (60 if has_t else 0) + (60 if hb else 0)
+                        gap_up = 30 + 30 * RELAX[0] + (60 if has_b else 0)
+                        if y + b[1] < bt + gap and y + b[3] > t - gap_up:
+                            y = snap_up(bt + gap - b[1])
+                            moved = True
+                used.append((y + b[1], y + b[3], has_b, i))
+                U.x, U.y = snap_up(x - b[0]), y
+                for K in U.comps:
+                    K.x, K.y = U.x + getattr(K, 'cx', 0), U.y + getattr(K, 'cy', 0)
+                    for P in K.pins.values():
+                        P.x, P.y = K.x + P.rx, K.y + P.ry
+            for U in col:
+                for K in U.comps:
+                    for P in K.pins.values():
+                        if skip(K, P):
+                            continue
+                        if is_out(U, K, P):
+                            placed_pin.setdefault(P.nets, (P.x, P.y if not getattr(U, 'tg', False) else U.y, U, P.side))
                         placed_any.setdefault(P.nets, (P.x, P.y))
-        x = snap_up(x + wmax + 140 + 60 * RELAX[0])
+            x = snap_up(x + wmax + 140 + 60 * RELAX[0])
+        # connections between facing pins that are not level
+        mis = []
+        level_ = defaultdict(int)          # unit -> sinks that already sit level with it
+        for U in units:
+            if getattr(U, 'tg', False):
+                continue
+            for K in U.comps:
+                for P in K.pins.values():
+                    if skip(K, P) or not is_in(U, K, P) or P.nets not in placed_pin:
+                        continue
+                    dx, dy, D, dside = placed_pin[P.nets]
+                    if D is U or D.layer >= U.layer or getattr(D, 'tg', False):
+                        continue
+                    if P.side != 'l' or dside != 'r' or dx >= P.x:
+                        continue
+                    off = P.y - dy
+                    if off:
+                        mis.append((U, D, off, primary.get(U) == P.nets, len(key_pins[P.nets]) == 2))
+                    else:
+                        level_[D] += 1
+        return [m for m in mis if not level_[m[1]]]
+    force, best = {}, None
+    for it in range(24):
+        mis = assign(force)
+        score = sum(1 for m in mis if m[3] or m[4])
+        if best is None or score < best[0]:
+            best = (score, dict(force))
+        if not score:
+            break
+        changed = False
+        for U, D, off, prim, two in mis:
+            if D in force:
+                continue
+            if prim or (two and fan[D] == 1):
+                force[D] = D.y + off
+                changed = True
+                break                      # one move at a time: the next pass sees its effect
+        if not changed:
+            break
+    if best[1] != force:
+        assign(best[1])
     return units, key_pins
