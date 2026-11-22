@@ -218,7 +218,7 @@ class Checker:
             alone = len(c['wires']) == 0 and len(c['labs']) == 0 and len(c['pins']) == 1
             if alone and (round(p['x'], 1), round(p['y'], 1)) not in grayset:
                 key = p['key']
-                if p['sym'] in self.conf.get('output_syms', {}).get(v['id'], []):
+                if p.get('side') == 'right' and p['kind'] in ('tri', 'box', 'inv'):
                     R['10-outpin'].append('%s: 붙지 않은 출력 핀 %s.%s' % (v['id'], p['sym'], p['name']))
                 else:
                     R['6-port'].append('%s: 붙지 않은 핀 %s.%s (%s)' % (v['id'], p['sym'], p['name'], '/'.join(key)))
@@ -435,8 +435,14 @@ class Checker:
                 if txt and not (txt[0] == e['value'] or txt[0] == fmt_si(e['value'])):
                     R['24-rcvalue'].append('%s: %s 값 %s != %s' % (v['id'], s['id'], txt[0], e['value']))
         # block-level: polarity, pin names, pin sides, block pins
+        want_side = {'data_in': 'left', 'data_out': 'right', 'control': 'top', 'reference': 'left', 'clock': 'bottom'}
         for s in v['symbols']:
             info = s.get('info') or {}
+            pc = info.get('pcls') or {}
+            for p in s['pins']:
+                c_ = pc.get(p['name'])
+                if c_ and not info.get('gate') and p.get('side') != want_side[c_] and not (c_ == 'clock' and p.get('side') == 'left' and info.get('clock_left_ok')):
+                    R['18-pinside'].append('%s: %s.%s (%s) 가 %s 쪽에 있음' % (v['id'], s['id'], p['name'], c_, p.get('side')))
             if s['kind'] in ('tri', 'box', 'inv') and s.get('members'):
                 inst = elems.get(s['members'][0])
                 if inst is None or inst['kind'] != 'inst':
@@ -447,7 +453,6 @@ class Checker:
                     for n in pn:
                         if not all(x in sub['ports'] for x in expand(n)):
                             R['23-blockpins'].append('%s: %s 의 핀 이름 %s 이(가) 셀 %s 포트에 없음' % (v['id'], s['id'], n, inst['cell']))
-                # polarity
                 pol = info.get('pol')
                 if pol:
                     res = self.POL.outputs(inst['cell'], pol['ins'], pol['outs'])
@@ -465,12 +470,6 @@ class Checker:
                     for p in outs:
                         if not any(d['t'] == 'text' and d.get('owner') == s['id'] and d.get('cls') == 'pintext' and d['s'] == p['name'] for d in v['draw']):
                             R['15-pinnames'].append('%s: %s 출력 핀 이름 %s 없음' % (v['id'], s['id'], p['name']))
-                pc = info.get('pcls') or {}
-                want_side = {'data_in': 'left', 'data_out': 'right', 'control': 'top', 'reference': 'left', 'clock': 'bottom'}
-                for p in s['pins']:
-                    c = pc.get(p['name'])
-                    if c and not info.get('gate') and p.get('side') != want_side[c] and not (c == 'clock' and p.get('side') == 'left' and info.get('clock_left_ok')):
-                        R['18-pinside'].append('%s: %s.%s (%s) 가 %s 쪽에 있음' % (v['id'], s['id'], p['name'], c, p.get('side')))
         # scene sha
         sha = hashlib.sha256(json.dumps({k: v[k] for k in ('title', 'w', 'h', 'draw', 'hot')}, sort_keys=True, default=list).encode()).hexdigest()
         return R, sha

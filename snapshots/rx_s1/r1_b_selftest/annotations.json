@@ -1,0 +1,300 @@
+{
+ "hs_inputs": [
+  "pad",
+  "lb_p",
+  "lb_n"
+ ],
+ "clock_inputs": [
+  "ck",
+  "ckb"
+ ],
+ "hs_outputs": [
+  "dout_e",
+  "dout_o"
+ ],
+ "important_controls": [
+  "rtt<2>",
+  "rtt<1>",
+  "rtt<0>",
+  "odt_en",
+  "tap<3>",
+  "tap<2>",
+  "tap<1>",
+  "tap<0>",
+  "tap_sgn",
+  "lb_en",
+  "rx_en"
+ ],
+ "show_bias": [],
+ "hide": [
+  "ofe_p<1>",
+  "ofe_p<0>",
+  "ofe_n<1>",
+  "ofe_n<0>",
+  "ofo_p<1>",
+  "ofo_p<0>",
+  "ofo_n<1>",
+  "ofo_n<0>",
+  "ibias"
+ ],
+ "block_roles": {
+  "esd_dq": "termination_esd",
+  "odt_pu": "termination",
+  "odt_dec": "composite",
+  "rx_bias": "bias",
+  "rx_pre": "unknown",
+  "ck_gbuf": "composite",
+  "dfe_sum": "summer",
+  "sa_dt": "comparator",
+  "sr_nor": "sr_latch",
+  "inv_a": "inverter",
+  "inv_c": "inverter",
+  "nand2_a": "nand",
+  "nand2_c": "nand",
+  "nor2_c": "nor",
+  "ls_lh": "ls",
+  "dq_rx_unit": "general"
+ },
+ "_sources": {
+  "hs_inputs": "구조로 판정 (사용자 없음)",
+  "others": "손으로 읽은 구조 분석 + 가정한 답"
+ },
+ "_reference_inputs": [
+  "vref"
+ ],
+ "_important_control_buses": {
+  "rtt<2:0>": {
+   "bits": [
+    "rtt<2>",
+    "rtt<1>",
+    "rtt<0>"
+   ],
+   "K": "K4",
+   "function": "ODT 종단 코드: odt_dec(NAND + 레벨 시프터)를 지나 PMOS 스위치 mp2/mp1/mp0 게이트(enb<2:0>) → 패드에 R을 직렬로 거는 스위치",
+   "endpoint_pin": "xi21/mp2.g",
+   "source": "port"
+  },
+  "odt_en": {
+   "bits": [
+    "odt_en"
+   ],
+   "K": "K4",
+   "function": "ODT 전체 켜기(NAND로 rtt와 AND) → 같은 종단 스위치",
+   "endpoint_pin": "xi21/mp2.g",
+   "source": "port"
+  },
+  "tap<3:0>": {
+   "bits": [
+    "tap<3>",
+    "tap<2>",
+    "tap<1>",
+    "tap<0>"
+   ],
+   "K": "K1",
+   "function": "DFE 탭 가중치: 스위치(전류 DAC) → 귀환 쌍(hp/hn) 꼬리 전류, 귀환 쌍 입력 = 다른 경로 SR latch 출력(고속 데이터), 출력 노드에서 합산",
+   "endpoint_pin": "xi26/mn10.g",
+   "source": "port"
+  },
+  "tap_sgn": {
+   "bits": [
+    "tap_sgn"
+   ],
+   "K": "K1",
+   "function": "DFE 탭 부호: 인버터 2개를 지나 sgn/sgnb로 귀환 쌍 전류가 outp/outn 어느 쪽으로 가는지 고름",
+   "endpoint_pin": "xi26/mn8.g",
+   "source": "port"
+  },
+  "lb_en": {
+   "bits": [
+    "lb_en"
+   ],
+   "K": "K2",
+   "function": "입력 선택: 패드 쌍(sel_m = rx_en & ~lb_en) 대 루프백 쌍(sel_l = rx_en & lb_en) 중 하나를 켬",
+   "endpoint_pin": "xi24/mn6.g",
+   "source": "port"
+  },
+  "rx_en": {
+   "bits": [
+    "rx_en"
+   ],
+   "K": "K3",
+   "function": "수신기 켜기: Σ 꼬리 스위치(mn2), 클럭 게이트(ck_gbuf NAND), 입력쌍 꼬리 스위치 논리(sel_m/sel_l)",
+   "endpoint_pin": "xi26/mn2.g",
+   "source": "port"
+  }
+ },
+ "_general_controls": [
+  "ofe_p<1>",
+  "ofe_p<0>",
+  "ofe_n<1>",
+  "ofe_n<0>",
+  "ofo_p<1>",
+  "ofo_p<0>",
+  "ofo_n<1>",
+  "ofo_n<0>"
+ ],
+ "_general_control_buses": {
+  "ofe_p<1:0>": {
+   "bits": [
+    "ofe_p<1>",
+    "ofe_p<0>"
+   ],
+   "K": "K7",
+   "function": "짝수 경로 SA 입력 노드 C 뱅크 (오프셋 트림)",
+   "endpoint_pin": "xi28/mn11.g",
+   "source": "port"
+  },
+  "ofe_n<1:0>": {
+   "bits": [
+    "ofe_n<1>",
+    "ofe_n<0>"
+   ],
+   "K": "K7",
+   "function": "짝수 경로 SA 입력 노드 C 뱅크 (오프셋 트림)",
+   "endpoint_pin": "xi28/mn7.g",
+   "source": "port"
+  },
+  "ofo_p<1:0>": {
+   "bits": [
+    "ofo_p<1>",
+    "ofo_p<0>"
+   ],
+   "K": "K7",
+   "function": "홀수 경로 SA 입력 노드 C 뱅크 (오프셋 트림)",
+   "endpoint_pin": "xi29/mn11.g",
+   "source": "port"
+  },
+  "ofo_n<1:0>": {
+   "bits": [
+    "ofo_n<1>",
+    "ofo_n<0>"
+   ],
+   "K": "K7",
+   "function": "홀수 경로 SA 입력 노드 C 뱅크 (오프셋 트림)",
+   "endpoint_pin": "xi29/mn7.g",
+   "source": "port"
+  }
+ },
+ "_bias": [
+  "ibias",
+  "net4"
+ ],
+ "_power": [
+  "vdd",
+  "vddq",
+  "vss",
+  "vssq"
+ ],
+ "_omitted_blocks": [
+  {
+   "inst": "xi23",
+   "cell": "rx_bias",
+   "role": "bias"
+  }
+ ],
+ "_unused_outputs": [
+  "net27 (xi9.y)",
+  "net29 (xi12.y)"
+ ],
+ "_non_hs_categories": [
+  {
+   "category": "기준 전압 (P1·VREF)",
+   "result": "vref — 기준 (프리앰프 vref 게이트, RC 필터 r0+mn0 뒤). ESD가 없어 P1(외부 기준 패드)은 아님, \"기준 전압\" 규칙 적용 → 회색 선 + 이름표, AMP 왼쪽 둘째 핀"
+  },
+  {
+   "category": "상태 출력 (O1) · 명령 (K8) · 시험 (K9)",
+   "result": "없음"
+  },
+  {
+   "category": "워드 속도 디지털",
+   "result": "없음"
+  },
+  {
+   "category": "이득·VREF 코드 (K6)",
+   "result": "없음"
+  }
+ ],
+ "_questions_and_assumed_answers": [
+  {
+   "id": "Q1",
+   "template": "not_in_dictionary",
+   "kind": "not_in_dictionary",
+   "rule": "§2.6-3, §2.7-3",
+   "item": "rx_pre (X xi24)",
+   "structure": "R 부하 의사 차동쌍(mn0/mn1) + 같은 부하를 공유하는 루프백 쌍(mn4/mn5), 쌍마다 꼬리 스위치(mn2, mn6) + 꼬리 전류원, D=S 묶인 MOS 커패시터 2개",
+   "question": "`rx_pre`: 블록 역할 사전에 없는 구조입니다 (R 부하 의사 차동쌍 2개가 한 부하 공유). 일반 박스로 그릴까요? (예 / 역할 지정)",
+   "assumed": "예 — 일반 박스 \"AMP\"(삼각형, 소자 구성 이름)로 그리고 확신 낮음으로 기록. VGA·CTLE 행의 특징(이득 단 가산 또는 소스 degeneration C)이 없어 사전 기호를 쓰지 않음",
+   "confidence": "low (사전에 없음)",
+   "fields": {
+    "item": "rx_pre (X xi24)",
+    "structure": "R 부하 의사 차동쌍(mn0/mn1) + 같은 부하를 공유하는 루프백 쌍(mn4/mn5), 쌍마다 꼬리 스위치(mn2, mn6) + 꼬리 전류원, D=S 묶인 MOS 커패시터 2개"
+   }
+  },
+  {
+   "id": "Q2",
+   "template": "control_class",
+   "kind": "control_class",
+   "rule": "§2.7-3",
+   "item": "rx_en",
+   "why": "끝점이 Σ 꼬리 스위치·클럭 게이트(K3)이면서 입력쌍 선택 논리 sel_m/sel_l(K2 후보)에도 닿음",
+   "question": "`rx_en`: 중요 제어와 일반 제어 중 어느 쪽인지 구조로 정할 수 없습니다 (끝점이 K3(꼬리·클럭 게이트)와 K2(선택 스위치)에 모두 닿음). (K3 켜기 / K2 선택)",
+   "assumed": "K3 켜기 — 같은 신호가 두 입력쌍을 모두 켜고 꺼서 \"고르는\" 신호가 아님(lb_en이 K2). 어느 쪽이든 그림은 중요 제어 한 줄",
+   "confidence": "low (K2/K3 경계)",
+   "fields": {
+    "item": "rx_en",
+    "why": "끝점이 Σ 꼬리 스위치·클럭 게이트(K3)이면서 입력쌍 선택 논리 sel_m/sel_l(K2 후보)에도 닿음"
+   }
+  },
+  {
+   "id": "Q3",
+   "template": "control_class",
+   "kind": "control_class",
+   "rule": "§2.7-3",
+   "item": "tap_sgn",
+   "why": "끝점이 귀환 쌍 전류를 outp/outn 으로 돌리는 스위치(부호)",
+   "question": "`tap_sgn`: 중요 제어와 일반 제어 중 어느 쪽인지 구조로 정할 수 없습니다 (부호 스위치: K1 가중치 / K2 선택). (K1 / K2)",
+   "assumed": "K1 — 탭 가중치의 부호이므로 같은 합산 가지의 세기 제어로 봄. 그림은 한 줄",
+   "confidence": "low (K1/K2 경계)",
+   "fields": {
+    "item": "tap_sgn",
+    "why": "끝점이 귀환 쌍 전류를 outp/outn 으로 돌리는 스위치(부호)"
+   }
+  },
+  {
+   "id": "Q4",
+   "template": "netlist_error_confirm",
+   "kind": "netlist_error_confirm",
+   "rule": "§2.7-4",
+   "item": "rx_pre.mn8, rx_pre.mn9, sa_dt.mn8/mn10/mn12/mn14, dq_rx_unit.mn0",
+   "fact": "MOSFET 의 드레인과 소스가 같은 넷에 묶여 있고 게이트만 신호 노드(MOS 커패시터)입니다. rx_pre의 mn8(게이트 inp, D=S=outp)·mn9(게이트 vref, D=S=outn)는 입력과 반대편 출력을 잇는 교차 커패시터",
+   "question": "`rx_pre.mn8, rx_pre.mn9, sa_dt.mn8/mn10/mn12/mn14, dq_rx_unit.mn0`: MOSFET 의 드레인과 소스가 같은 넷에 묶여 있고 게이트만 신호 노드(MOS 커패시터)입니다. netlist 오류일 수 있습니다. 의도된 것입니까? (의도됨 / netlist 오류)",
+   "assumed": "의도됨(MOS 커패시터) — 커패시터 기호로 그리고 \"MOS C\"로 표기. rx_pre의 교차 접속은 netlist 대로 그림",
+   "confidence": "low (D=S 묶인 소자)",
+   "fields": {
+    "item": "rx_pre.mn8, rx_pre.mn9, sa_dt.mn8/mn10/mn12/mn14, dq_rx_unit.mn0",
+    "fact": "MOSFET 의 드레인과 소스가 같은 넷에 묶여 있고 게이트만 신호 노드(MOS 커패시터)입니다. rx_pre의 mn8(게이트 inp, D=S=outp)·mn9(게이트 vref, D=S=outn)는 입력과 반대편 출력을 잇는 교차 커패시터"
+   }
+  },
+  {
+   "id": "Q5",
+   "template": "name_vs_structure",
+   "kind": "name_vs_structure",
+   "rule": "§2.6-2, §2.7-2",
+   "item": "sa_dt.ofp<1:0>, ofn<1:0> (오프셋 코드)",
+   "structure": "스위치(mn7/9/11/13) + D=S MOS 커패시터(mn8/10/12/14) = C 뱅크가 비교기 1단 출력 노드(net62/net63)에 매달림",
+   "name": "\"of\" = 오프셋 트림 DAC",
+   "opt_structure": "가변 C 뱅크(출처 포트 = 일반 제어, 숨김)",
+   "opt_name": "오프셋 전류 DAC",
+   "question": "`sa_dt.ofp<1:0>, ofn<1:0>`: 구조는 스위치로 켜는 C 뱅크인데 이름/기능은 오프셋 트림입니다. (가변 C 뱅크로 / 오프셋 DAC로)",
+   "assumed": "가변 C 뱅크로 — 구조를 따름. 스위치+MOS C 쌍을 개념 기호 가변 C로 묶고 코드는 K7 일반 제어(숨김)",
+   "confidence": "low (이름-구조 불일치 가능)",
+   "fields": {
+    "item": "sa_dt.ofp<1:0>, ofn<1:0> (오프셋 코드)",
+    "structure": "스위치(mn7/9/11/13) + D=S MOS 커패시터(mn8/10/12/14) = C 뱅크가 비교기 1단 출력 노드(net62/net63)에 매달림",
+    "name": "\"of\" = 오프셋 트림 DAC",
+    "opt_structure": "가변 C 뱅크(출처 포트 = 일반 제어, 숨김)",
+    "opt_name": "오프셋 전류 DAC"
+   }
+  }
+ ]
+}
