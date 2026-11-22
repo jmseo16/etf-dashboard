@@ -1,0 +1,235 @@
+{
+ "circuit": "rx_l1",
+ "round": 1,
+ "reviewer_note": "같은 모델이 검토함",
+ "verdict_drawing": "FAIL",
+ "verdict_spec": "FAIL",
+ "counts": {
+  "pass": 15,
+  "fail": 5,
+  "na": 7,
+  "star_fail": 4
+ },
+ "items": [
+  {
+   "id": "M1",
+   "star": true,
+   "result": "fail",
+   "evidence": "out/ 파일 형식은 모두 있으나 화면이 9개뿐 — 명세서 §5(SKILL) 화면 목록(셀마다 화면 하나, 약 30개) 대비 21개 이상 빠짐 (MISSING.md)",
+   "cause": "그린 쪽",
+   "fix": "G1"
+  },
+  {
+   "id": "M2",
+   "star": true,
+   "result": "pass",
+   "evidence": "연결 재추출 0건 (9화면), 주입 SHORT 2/OPEN 2 잡힘 (이번에 새로 만든 검사기, 독립 검사기 없음)",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M3",
+   "star": true,
+   "result": "pass",
+   "evidence": "생략 목록 일치 (검사기 0건). 단 그리지 않은 화면에 속한 넷은 검사 대상 밖",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M4",
+   "star": true,
+   "result": "pass",
+   "evidence": "블록 교차 0, 허용 교차 목록 없음",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M5",
+   "star": false,
+   "result": "pass",
+   "evidence": "겹침·관통·꼬임·짧은 꺾임·접점 0건",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M6",
+   "star": true,
+   "result": "pass",
+   "evidence": "선 모두 실선 1.6, 떠 있는 포트 0, 짝 없는 이름표 0 (미사용 출력 net224/net225 예외)",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M7",
+   "star": true,
+   "result": "pass",
+   "evidence": "이름 검사 0건 (합친 인스턴스는 \"첫 … 끝\" 형식, 버스 별칭 conf alias)",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M8",
+   "star": true,
+   "result": "pass",
+   "evidence": "극성 검사 0건 (인버터·SR NAND). SA·AMP 는 극성 정보를 안 넣어 검사 대상이 아님",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M9",
+   "star": false,
+   "result": "pass",
+   "evidence": "핀 이름 검사 0건",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M10",
+   "star": false,
+   "result": "na",
+   "evidence": "유닛 화면이 4개뿐, 기호 20개 이하 (u_sbamp 8개)",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M11",
+   "star": false,
+   "result": "pass",
+   "evidence": "주석: ckbuf 합침 설명, 질문 번호 Q2 존재. 수치 주장 없음",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M12",
+   "star": false,
+   "result": "na",
+   "evidence": "1회차",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M13",
+   "star": false,
+   "result": "pass",
+   "evidence": "핀 방향 검사 0건",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "M14",
+   "star": false,
+   "result": "pass",
+   "evidence": "같은 데이터에서 생성",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "J1",
+   "star": true,
+   "result": "pass",
+   "evidence": "분류 표·K#·끝점 핀·질문 8개(확신 낮음, 템플릿). wl_ck 는 낮은 확신으로 질문",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "J2",
+   "star": true,
+   "result": "fail",
+   "evidence": "블록 사전 대응: SA 삼각형에 +/− 표시 없음, AMP 도 +/− 없음 (명세서 §3.4-6 차동 입력 +/−), 합친 블록 범례(xi14 … xi15, xi30 … xi33)가 화면 아래에 없고 주석에만 있음",
+   "cause": "그린 쪽",
+   "fix": "G2"
+  },
+  {
+   "id": "J3",
+   "star": false,
+   "result": "fail",
+   "evidence": "b_top 은 박스 위주의 축소판: DQS 경로와 클럭 트리는 읽히나 ODT 마커·포트가 서로 붙고 DQ 두 묶음 사이 선이 이름표 위주. 주 경로가 한 줄이 아님",
+   "cause": "그린 쪽",
+   "fix": "G3"
+  },
+  {
+   "id": "J4",
+   "star": true,
+   "result": "fail",
+   "evidence": "유닛 화면 4개(sbamp, padesd, inv, nand)만 있고 sadfe(StrongARM + 탭), 차동 증폭기들 유닛 화면 없음. u_sbamp 는 대칭 아님(스택 하나 + 쌍)",
+   "cause": "그린 쪽",
+   "fix": "G1"
+  },
+  {
+   "id": "J5",
+   "star": true,
+   "result": "pass",
+   "evidence": "손 대조: b_dqslice net92 → xi2.inp / xi3.inn, vref → xi2.inn / xi3.inp, xi4 outputs → xi5 (rb=net95, sb=net96), xi5.q(net99) → xi4.h2p, xi6.h1p, xi8; b_top net216 → xi14/xi18/xi22, net217 → xi16/xi20/xi23: netlist 와 일치",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "J6",
+   "star": true,
+   "result": "fail",
+   "evidence": "b_top 만으로 DQS 경로와 슬라이스 구조는 읽히나 DFE 탭 루프(h1/h2) 의미와 ODT 코드 → 패드 연결은 이름표/화면 밖이라 목적이 충분히 설명되지 않음",
+   "cause": "그린 쪽",
+   "fix": "G3"
+  },
+  {
+   "id": "J7",
+   "star": false,
+   "result": "pass",
+   "evidence": "HTML 외부 리소스 없음, 클릭(b_top → b_dqslice), 토글, PPT 버튼. PPTX 11장(요약 1 + 9 + ...) 링크 존재 (LibreOffice 변환은 안 함)",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "J8",
+   "star": false,
+   "result": "pass",
+   "evidence": "self_checklist 와 다른 항목: M1 (자체 점검은 화면 수를 안 셈), J2 (+/− 표시는 검사기에 없음)",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "G1a",
+   "star": false,
+   "result": "na",
+   "evidence": "정답지 없음",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "G1b",
+   "star": false,
+   "result": "na",
+   "evidence": "정답지 없음",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "G1c",
+   "star": false,
+   "result": "na",
+   "evidence": "정답지 없음",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "G1d",
+   "star": false,
+   "result": "na",
+   "evidence": "정답지 없음",
+   "cause": "",
+   "fix": ""
+  },
+  {
+   "id": "N1",
+   "star": false,
+   "result": "na",
+   "evidence": "정답지 없음",
+   "cause": "",
+   "fix": ""
+  }
+ ],
+ "verdict_basis": {
+  "drawing": "화면 21개 이상 미작성(M1, J4★), +/− 표시·범례 누락(J2★), 상위 화면 읽기 어려움(J3, J6★)",
+  "spec": "헤더 스위치(가상 전원), 단일 디지털 포트(wl_ck), 클럭 연결이 갈리는 반복 슬라이스 규칙 틈 — 판정 보류"
+ }
+}
