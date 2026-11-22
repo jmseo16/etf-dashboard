@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1230" height="540" viewBox="0 0 1230 540" font-family="Helvetica,Arial,sans-serif">
+<rect width="100%" height="100%" fill="#fff"/>
+<line x1="780" y1="440" x2="720" y2="440" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="140" y1="170" x2="80" y2="170" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="780" y1="250" x2="130" y2="250" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="130" y1="250" x2="130" y2="170" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="190" y1="130" x2="190" y2="70" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="1080" y1="440" x2="1140" y2="440" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="1080" y1="250" x2="1140" y2="250" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="240" y1="170" x2="380" y2="170" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="430" y1="170" x2="570" y2="170" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="890" y1="440" x2="1030" y2="440" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="890" y1="250" x2="1030" y2="250" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="620" y1="170" x2="830" y2="170" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="830" y1="170" x2="830" y2="210" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="630" y1="170" x2="630" y2="190" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="830" y1="400" x2="830" y2="380" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<g class="hot" data-target="b_dfftg" style="cursor:pointer"><rect x="140" y="130" width="100" height="80" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><rect x="140" y="130" width="100" height="80" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_invx1" style="cursor:pointer"><polygon points="380,150 380,190 420,170" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><circle cx="425" cy="170" r="5" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><rect x="380" y="150" width="50" height="40" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_invx4" style="cursor:pointer"><polygon points="570,150 570,190 610,170" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><circle cx="615" cy="170" r="5" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><rect x="570" y="150" width="50" height="40" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_nand2x2" style="cursor:pointer"><rect x="780" y="400" width="100" height="80" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><circle cx="885" cy="440" r="5" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><rect x="780" y="400" width="100" height="80" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_invx4" style="cursor:pointer"><polygon points="1030,420 1030,460 1070,440" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><circle cx="1075" cy="440" r="5" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><rect x="1030" y="420" width="50" height="40" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_nand2x2" style="cursor:pointer"><rect x="780" y="210" width="100" height="80" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><circle cx="885" cy="250" r="5" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><rect x="780" y="210" width="100" height="80" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_invx4" style="cursor:pointer"><polygon points="1030,230 1030,270 1070,250" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><circle cx="1075" cy="250" r="5" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><rect x="1030" y="230" width="50" height="40" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<circle cx="130" cy="170" r="3" fill="#111"/>
+<circle cx="630" cy="170" r="3" fill="#111"/>
+<polygon points="704,435 715,435 720,440 715,445 704,445" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="64,165 75,165 80,170 75,175 64,175" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="185,54 195,54 195,65 190,70 185,65" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="1140,435 1151,435 1156,440 1151,445 1140,445" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="1140,245 1151,245 1156,250 1151,255 1140,255" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<text x="144" y="173" font-size="9" text-anchor="start" fill="#444" pointer-events="none">ck</text>
+<text x="236" y="173" font-size="9" text-anchor="end" fill="#444" pointer-events="none">q</text>
+<text x="190" y="141" font-size="9" text-anchor="middle" fill="#444" pointer-events="none">d</text>
+<text x="190.0" y="174.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">dfftg</text>
+<text x="136" y="126" font-size="9" text-anchor="end" fill="#555" font-style="italic" pointer-events="none">xi0</text>
+<text x="380" y="145" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi1</text>
+<text x="380" y="201" font-size="8" text-anchor="start" fill="#777" pointer-events="none">invx1</text>
+<text x="570" y="145" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi2</text>
+<text x="570" y="201" font-size="8" text-anchor="start" fill="#777" pointer-events="none">invx4</text>
+<text x="784" y="443" font-size="9" text-anchor="start" fill="#444" pointer-events="none">a</text>
+<text x="876" y="443" font-size="9" text-anchor="end" fill="#444" pointer-events="none">y</text>
+<text x="830" y="411" font-size="9" text-anchor="middle" fill="#444" pointer-events="none">b</text>
+<text x="830.0" y="444.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">nand2x2</text>
+<text x="776" y="396" font-size="9" text-anchor="end" fill="#555" font-style="italic" pointer-events="none">xi3</text>
+<text x="1030" y="415" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi4</text>
+<text x="1030" y="471" font-size="8" text-anchor="start" fill="#777" pointer-events="none">invx4</text>
+<text x="784" y="253" font-size="9" text-anchor="start" fill="#444" pointer-events="none">a</text>
+<text x="876" y="253" font-size="9" text-anchor="end" fill="#444" pointer-events="none">y</text>
+<text x="830" y="221" font-size="9" text-anchor="middle" fill="#444" pointer-events="none">b</text>
+<text x="830.0" y="254.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">nand2x2</text>
+<text x="776" y="206" font-size="9" text-anchor="end" fill="#555" font-style="italic" pointer-events="none">xi5</text>
+<text x="1030" y="225" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi6</text>
+<text x="1030" y="281" font-size="8" text-anchor="start" fill="#777" pointer-events="none">invx4</text>
+<text x="700" y="444" font-size="11" text-anchor="end" fill="#111" font-weight="bold" pointer-events="none">ckt</text>
+<text x="60" y="174" font-size="11" text-anchor="end" fill="#111" font-weight="bold" pointer-events="none">ckc</text>
+<text x="190" y="50" font-size="11" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">open</text>
+<text x="1160" y="444" font-size="11" text-anchor="start" fill="#111" font-weight="bold" pointer-events="none">gt</text>
+<text x="1160" y="254" font-size="11" text-anchor="start" fill="#111" font-weight="bold" pointer-events="none">gc</text>
+<text x="630" y="200" font-size="9" text-anchor="middle" fill="#0a6d3a" pointer-events="none">net65</text>
+<text x="830" y="376" font-size="9" text-anchor="middle" fill="#0a6d3a" pointer-events="none">net65</text>
+</svg>
