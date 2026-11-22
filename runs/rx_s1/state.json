@@ -1,13 +1,9 @@
 {
-  "job": "rx_s1",
-  "step": "4_draw",
-  "round": 1,
+  "circuit": "rx_s1",
+  "step": "done",
+  "round": 3,
   "max_rounds": 3,
-  "next": "verify",
-  "history": [
-    ["2026-11-22T03:11:00", "1_classify", "start"],
-    ["2026-11-22T03:17:00", "2_review_classify", "glm draft done"],
-    ["2026-11-22T03:17:30", "3_draw", "classify review done, start draw"],
-    ["2026-11-22T03:25:00", "4_draw", "initial drawing 12 views done"]
-  ]
+  "verdict_drawing": "FAIL",
+  "verdict_spec": "PASS",
+  "connectivity": "12/12 PASS"
 }
