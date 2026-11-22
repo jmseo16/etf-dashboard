@@ -1,0 +1,210 @@
+[
+  {
+    "cell": "invx1",
+    "role": "inverter",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "triangle + bubble",
+    "missing_features": []
+  },
+  {
+    "cell": "invx4",
+    "role": "inverter",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "triangle + bubble",
+    "missing_features": []
+  },
+  {
+    "cell": "nand2x1",
+    "role": "nand",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "nand2 gate",
+    "missing_features": []
+  },
+  {
+    "cell": "nand2x2",
+    "role": "nand",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "nand2 gate",
+    "missing_features": []
+  },
+  {
+    "cell": "lvlup",
+    "role": "level_shifter",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "box (cell name)",
+    "missing_features": []
+  },
+  {
+    "cell": "lat_tg",
+    "role": "latch",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "box (cell name)",
+    "missing_features": []
+  },
+  {
+    "cell": "dfftg",
+    "role": "flip_flop",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "box (cell name)",
+    "missing_features": []
+  },
+  {
+    "cell": "mux2tg",
+    "role": "multiplexer",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "mux symbol",
+    "missing_features": []
+  },
+  {
+    "cell": "dlybuf",
+    "role": "delay_buffer",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "triangle 'BUF'",
+    "missing_features": []
+  },
+  {
+    "cell": "ckbuf",
+    "role": "clock_buffer",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "triangle 'CLK'",
+    "missing_features": []
+  },
+  {
+    "cell": "padesd",
+    "role": "termination_esd",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "R/ESD mark on input line",
+    "missing_features": []
+  },
+  {
+    "cell": "odtleg3",
+    "role": "termination",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "R/switch leg to vddq",
+    "missing_features": []
+  },
+  {
+    "cell": "odtctl",
+    "role": "composite",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "box (cell name)",
+    "missing_features": []
+  },
+  {
+    "cell": "biasgen",
+    "role": "bias",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "box (cell name)",
+    "missing_features": []
+  },
+  {
+    "cell": "vrefdac",
+    "role": "dac",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "box 'VREF DAC'",
+    "missing_features": []
+  },
+  {
+    "cell": "dqsamp",
+    "role": "cml_buffer",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "triangle 'BUF'",
+    "missing_features": []
+  },
+  {
+    "cell": "acamp",
+    "role": "amplifier",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "triangle 'AMP'",
+    "missing_features": []
+  },
+  {
+    "cell": "dqsrx",
+    "role": "composite",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "box (cell name)",
+    "missing_features": []
+  },
+  {
+    "cell": "dqsgate",
+    "role": "composite",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "box (cell name)",
+    "missing_features": []
+  },
+  {
+    "cell": "dly3",
+    "role": "delay_line",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "box 'DLY'",
+    "missing_features": []
+  },
+  {
+    "cell": "sbamp",
+    "role": "vga",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "triangle 'VGA'",
+    "missing_features": []
+  },
+  {
+    "cell": "sadfe",
+    "role": "strongarm",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "triangle + clock",
+    "missing_features": []
+  },
+  {
+    "cell": "srnand",
+    "role": "sr_latch",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "box 'SR'",
+    "missing_features": []
+  },
+  {
+    "cell": "dqslice",
+    "role": "composite",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "box (cell name)",
+    "missing_features": []
+  },
+  {
+    "cell": "wldet",
+    "role": "phase_detector",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "box 'WL DET'",
+    "missing_features": []
+  },
+  {
+    "cell": "rxbyte_top",
+    "role": "composite",
+    "confidence": "high",
+    "rule": "§2.6-3",
+    "symbol": "box (cell name)",
+    "missing_features": []
+  }
+]
