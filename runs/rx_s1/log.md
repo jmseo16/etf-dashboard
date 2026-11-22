@@ -3,3 +3,4 @@
 - 회차 1 a 그리기: 18 화면 (b_top + 블록 4 + 유닛 13), 생성기 gen_s1.py / hs.py
 - 회차 1 b 자체 시험: 22종 0건, 주입 32/32 (1 실행)
 - 회차 1 c 검증: verdict_drawing FAIL, verdict_spec FAIL, 수정 요청 F1–F4
+- 회차 2: a(F1–F4a 수정) b(1 수정, 0건) c(FAIL: F4b CCI 남음)
