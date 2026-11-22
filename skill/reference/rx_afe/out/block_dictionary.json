@@ -1,0 +1,358 @@
+{
+ "_rule": "plan §2.6-3/4: a dictionary row is drawn only when every structure feature of the row is present; missing_features non-empty + dictionary symbol = fail",
+ "rows": [
+  {
+   "cell": "INV",
+   "instances": [
+    "X_BUFN",
+    "X_BUFP",
+    "X_INV_I1",
+    "X_INV_I2",
+    "X_INV_IB1",
+    "X_INV_IB2",
+    "X_INV_Q1",
+    "X_INV_Q2",
+    "X_INV_QB1",
+    "X_INV_QB2"
+   ],
+   "virtual": false,
+   "role": "inverter",
+   "row": "공통 논리 게이트 (INV)",
+   "symbol": "인버터",
+   "matched_features": [
+    "PMOS/NMOS 하나씩, 게이트·드레인 공통 (정적 CMOS)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "NAND2",
+   "instances": [
+    "X1",
+    "X2"
+   ],
+   "virtual": false,
+   "role": "nand",
+   "row": "공통 논리 게이트 (NAND)",
+   "symbol": "박스(셀 이름) + 출력 동그라미",
+   "matched_features": [
+    "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list §2.6-1)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "SR_LATCH",
+   "instances": [
+    "X_SR"
+   ],
+   "virtual": false,
+   "role": "sr_latch",
+   "row": "공통 SR latch",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "NAND2 2개 교차 결합: X1.Y=Q; X2.Y=QB"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "STRONGARM_SLICER",
+   "instances": [
+    "X_SLICER"
+   ],
+   "virtual": false,
+   "role": "comparator",
+   "row": "RX 비교기 · 샘플러 (StrongARM)",
+   "symbol": "삼각형 + 클럭",
+   "matched_features": [
+    "클럭 꼬리 M_TAIL",
+    "입력쌍 M1/M2",
+    "입력쌍 드레인 위 cross-coupled NMOS M3/M4 + cross-coupled PMOS M5/M6",
+    "리셋 PMOS M7/M8/M9/M10",
+    "출력단: X_SR (sr_latch), X_BUFP (inverter), X_BUFN (inverter)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q4"
+   ]
+  },
+  {
+   "cell": "CML_LATCH",
+   "instances": [
+    "X_DIV_M",
+    "X_DIV_S",
+    "X_LATCH1",
+    "X_M",
+    "X_S"
+   ],
+   "virtual": false,
+   "role": "latch",
+   "row": "공통 Latch · DFF (latch)",
+   "symbol": "박스 LATCH",
+   "matched_features": [
+    "입력쌍 M1/M2",
+    "cross-coupled 쌍 M3/M4",
+    "클럭 스티어링 M5/M6 (상보 클럭으로 두 꼬리를 번갈아)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "CML_DFF",
+   "instances": [
+    "X_DFF2",
+    "X_DFF3"
+   ],
+   "virtual": false,
+   "role": "dff",
+   "row": "공통 Latch · DFF (DFF)",
+   "symbol": "박스 DFF",
+   "matched_features": [
+    "latch 2개 직렬 X_M → X_S",
+    "반대 클럭: X_M.CLK=CLKB, X_S.CLK=CLK"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "IDAC_4BIT",
+   "instances": [
+    "X_DAC1",
+    "X_DAC2",
+    "X_DAC3",
+    "X_DAC4"
+   ],
+   "virtual": false,
+   "role": "dac",
+   "row": "공통 바이어스 · DAC · 디지털 제어 (전류 DAC → 개념 기호 가변 전류원, §3.4-3)",
+   "symbol": "가변 전류원(부모 유닛 화면)",
+   "matched_features": [
+    "(스위치 MS0/MS1/MS2/MS3 + 전류원 MB0/MB1/MB2/MB3) 반복, 출력 하나 공유 → 개념 기호 \"가변 전류원\" (§3.4-3)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "CTLE_STAGE",
+   "instances": [
+    "X_CTLE1",
+    "X_CTLE2"
+   ],
+   "virtual": false,
+   "role": "ctle",
+   "row": "RX CTLE",
+   "symbol": "삼각형 \"CTLE\"",
+   "matched_features": [
+    "차동 입력쌍 M1/M2",
+    "소스 분리 (꼬리 MBP/MBN) + 소스 사이 degeneration R: R_DEG_BASE ∥ 스위치 MR0, MR1, MR2, MC0P, MC0N, MC1P, MC1N, MC2P, MC2N",
+    "소스 사이 C가 영점을 만듦 (피킹용 C, 고정): C_DEG_BASE ∥ C0_CAP ∥ C1_CAP ∥ C2_CAP = 50f + 40f + 80f + 160f"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q1"
+   ]
+  },
+  {
+   "cell": "VGA_STAGE",
+   "instances": [
+    "X_VGA"
+   ],
+   "virtual": false,
+   "role": "vga",
+   "row": "RX VGA",
+   "symbol": "삼각형 \"VGA\"",
+   "matched_features": [
+    "주 차동쌍 + 같은 입력의 추가 이득 쌍 4개 (M_MAIN_P, M_MAIN_N, M_G0_P, M_G0_N, M_G1_P, M_G1_N, M_G2_P, M_G2_N, M_G3_P, M_G3_N), 출력 공유",
+    "이득 단을 스위치로 더함: 이득 쌍 꼬리의 스위치 MS_G0, MS_G1, MS_G2, MS_G3",
+    "소스 사이 C 없음 (C는 고정·작음 조건 만족)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "DFE_SUMMER",
+   "instances": [
+    "X_SUM"
+   ],
+   "virtual": false,
+   "role": "summer",
+   "row": "RX/TX Summer (DFE·FFE)",
+   "symbol": "Σ",
+   "matched_features": [
+    "입력이 다른 차동쌍 5개가 같은 출력에 합산 (M_MP, M_MN, M_T1P, M_T1N, M_T2P, M_T2N, M_T3P, M_T3N, M_T4P, M_T4N)",
+    "탭 쌍 꼬리 = 전류 DAC 인스턴스 (X_DAC1, X_DAC2, X_DAC3, X_DAC4)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "HALF_RATE_DFE_SLICE",
+   "instances": [
+    "X_DFE_EVEN",
+    "X_DFE_ODD"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: X_SUM (summer), X_SLICER (comparator), X_LATCH1 (latch), X_DFF2 (dff), X_DFF3 (dff)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "CLK_DIST_TREE",
+   "instances": [
+    "X_CLK"
+   ],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: X_DIV_M (latch), X_DIV_S (latch), X_INV_I1 (inverter), X_INV_I2 (inverter), X_INV_IB1 (inverter), X_INV_IB2 (inverter), X_INV_Q1 (inverter), X_INV_Q2 (inverter), X_INV_QB1 (inverter), X_INV_QB2 (inverter)",
+    "기본 소자 묶음(가상 블록)도 사전 행: termination (R_TERM_P, R_TERM_N, C_VCM)",
+    "기본 소자 묶음(가상 블록)도 사전 행: cml_buffer (MP_B1P, MP_B1N, MN_B1P, MN_B1N, MB_B1)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q2"
+   ]
+  },
+  {
+   "cell": "RX_AFE_TOP",
+   "instances": [],
+   "virtual": false,
+   "role": "composite",
+   "row": "공통 복합 블록",
+   "symbol": "박스(셀 이름)",
+   "matched_features": [
+    "하위 블록이 모두 사전에 있음: X_BIAS (bias), X_CLK (composite), X_CTLE1 (ctle), X_CTLE2 (ctle), X_VGA (vga), X_DFE_EVEN (composite), X_DFE_ODD (composite)",
+    "기본 소자 묶음(가상 블록)도 사전 행: termination_esd (R_RX_P, R_RX_N, C_RX_VCM, M_ESD_P1, M_ESD_N1, M_ESD_P2, M_ESD_N2)",
+    "기본 소자 묶음(가상 블록)도 사전 행: tg (M_TIE_P, M_TIE_P2)",
+    "기본 소자 묶음(가상 블록)도 사전 행: tg (M_TIE_N, M_TIE_N2)"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "CLK_DIST_TREE",
+   "virtual_block": "CLK_DIST_TREE: R_TERM_P, R_TERM_N, C_VCM",
+   "virtual": true,
+   "role": "termination",
+   "row": "RX 종단 · ESD",
+   "symbol": "입력선 위 R/ESD 표시",
+   "matched_features": [
+    "고속 입력에서 공통모드 노드로 R: R_TERM_P/R_TERM_N",
+    "공통모드 노드에서 접지로 C: C_VCM"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "CLK_DIST_TREE",
+   "virtual_block": "CLK_DIST_TREE: MP_B1P, MP_B1N, MN_B1P, MN_B1N, MB_B1",
+   "virtual": true,
+   "role": "cml_buffer",
+   "row": "Clock 버퍼 (CML)",
+   "symbol": "삼각형 \"BUF\"",
+   "matched_features": [
+    "차동쌍 하나 MN_B1P/MN_B1N, 공통 꼬리 MB_B1, 부하 MP_B1P/MP_B1N"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "STRONGARM_SLICER",
+   "virtual_block": "STRONGARM_SLICER: M_TAIL, M1, M2, M3, M4, M5, M6, M7, M8, M9, M10, M11",
+   "virtual": true,
+   "role": "strongarm",
+   "row": "RX 비교기 · 샘플러 (StrongARM)",
+   "symbol": "삼각형 + 클럭",
+   "matched_features": [
+    "클럭 꼬리 M_TAIL",
+    "입력쌍 M1/M2",
+    "입력쌍 드레인 위 cross-coupled NMOS M3/M4 + cross-coupled PMOS M5/M6",
+    "리셋 PMOS M7/M8/M9/M10"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q4"
+   ]
+  },
+  {
+   "cell": "RX_AFE_TOP",
+   "virtual_block": "RX_AFE_TOP: R_RX_P, R_RX_N, C_RX_VCM, M_ESD_P1, M_ESD_N1, M_ESD_P2, M_ESD_N2",
+   "virtual": true,
+   "role": "termination_esd",
+   "row": "RX 종단 · ESD",
+   "symbol": "입력선 위 R/ESD 표시",
+   "matched_features": [
+    "고속 입력에서 공통모드 노드로 R: R_RX_P/R_RX_N",
+    "공통모드 노드에서 접지로 C: C_RX_VCM",
+    "패드에서 전원으로 MOS 클램프(게이트가 자기 레일): M_ESD_P1/M_ESD_N1/M_ESD_P2/M_ESD_N2"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": []
+  },
+  {
+   "cell": "RX_AFE_TOP",
+   "virtual_block": "RX_AFE_TOP: M_TIE_P, M_TIE_P2",
+   "virtual": true,
+   "role": "tg",
+   "row": "(기본 소자) 전달 게이트 — 항상 꺼짐 (§2.2)",
+   "symbol": "열린 스위치",
+   "matched_features": [
+    "같은 두 넷 사이 NMOS+PMOS, 게이트가 끄는 레일(NMOS→접지, PMOS→전원)에 묶임 → 항상 꺼짐"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q3"
+   ]
+  },
+  {
+   "cell": "RX_AFE_TOP",
+   "virtual_block": "RX_AFE_TOP: M_TIE_N, M_TIE_N2",
+   "virtual": true,
+   "role": "tg",
+   "row": "(기본 소자) 전달 게이트 — 항상 꺼짐 (§2.2)",
+   "symbol": "열린 스위치",
+   "matched_features": [
+    "같은 두 넷 사이 NMOS+PMOS, 게이트가 끄는 레일(NMOS→접지, PMOS→전원)에 묶임 → 항상 꺼짐"
+   ],
+   "missing_features": [],
+   "confidence": "high",
+   "questions": [
+    "Q3"
+   ]
+  }
+ ],
+ "not_drawn": [
+  {
+   "cell": "BIAS_GEN",
+   "role": "bias",
+   "row": "공통 바이어스 · DAC · 디지털 제어",
+   "reason": "생략 (고속 신호와 무관)"
+  }
+ ]
+}
