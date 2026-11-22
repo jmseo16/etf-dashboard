@@ -9,4 +9,4 @@
 | `rx_l1/` | 수신 1바이트: DQ 8개 + DQS/DQSB (스트로브 수신·게이트·지연·클럭 트리, 기준 전압 발생기, 종단 제어) | `rxbyte_top` | MOS 1211, 셀 26 |
 
 - 시험은 브랜치 `test_haiku`, `test_gemini`에서 한다. 두 브랜치에는 R0.2 배포 묶음, 이 netlist 두 개, 시험 지시문 `TEST_INSTRUCTIONS.md`가 똑같이 들어 있다.
-- 채점용 설계 메모(`intent.md`)는 시험 보는 쪽이 보지 않도록 여기에 두지 않았다. 스킬 개발 브랜치의 `netlist-hsio-concept-diagram/tests/exam/`에 있다.
+- 채점용 설계 메모는 시험 보는 모델이 볼 수 없도록 저장소에 두지 않는다.
