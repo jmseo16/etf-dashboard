@@ -1,4 +1,4 @@
-# hsio_draw — netlist에서 고속 IO 개념도를 그리는 도구 (v0.1)
+# hsio_draw — netlist에서 고속 IO 개념도를 그리는 도구 (v0.3)
 
 netlist 하나를 넣으면 분류 → 화면 구성 → 배치·배선 → 검증까지 한 번에 하고 결과를 폴더에 씁니다.
 **그림은 도구가 그립니다.** 사람(또는 모델)이 할 일은 도구를 돌리고, 도구가 묻는 질문에 답하고, 결과를 확인하는 것뿐입니다.
@@ -31,7 +31,7 @@ python3 tool/hsio_draw.py <netlist.sp> -o <결과 폴더> --annotations <answers
 
 ```json
 {
-  "answers":        {"ctl:wl_ck": "K8"},
+  "answers":        {"ctl:wl_ck": "K9"},
   "net_class":      {"some_port": "K3"},
   "block_role":     {"some_cell": "box"},
   "hide_instances": ["xi38"],
