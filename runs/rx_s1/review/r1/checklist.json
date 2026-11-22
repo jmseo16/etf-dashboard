@@ -1,0 +1,17 @@
+{
+ "round": 1,
+ "verdict_drawing": "FAIL",
+ "verdict_spec": "FAIL",
+ "items": [
+  {"id": "J-1", "screen": "b_top", "item": "블록 배선 직교 (§1.4-5/6)", "result": "FAIL", "cause": "그린 쪽", "evidence": "screenshots/b_top.png: 대부분의 선이 대각선. 직교 배선 규칙 위반", "fix": "elbow 배선으로 바꾼다"},
+  {"id": "J-2", "screen": "b_top", "item": "블록 레벨 교차 0개 (§1.4-9)", "result": "FAIL", "cause": "그린 쪽 (배치)", "evidence": "SUM_E→SA_O, SR→SUM 피드백, CK→SA 선이 교차. 교차는 이름표로 바꿔야 함", "fix": "피드백은 이름표(q_e/qb_e), 클럭은 이름표로 바꾼다"},
+  {"id": "J-3", "screen": "b_top", "item": "블록 선마다 넷 이름 표시 (§3.5-1)", "result": "FAIL", "cause": "그린 쪽", "evidence": "선에 넷 이름이 없음 (데이터는 netlist 넷 이름으로 검사하지만 화면에는 안 보임)", "fix": "각 선 옆에 넷 이름/버스 이름 표기"},
+  {"id": "J-4", "screen": "b_top", "item": "PRE 박스 위로 선이 지나감 (§1.4-6 꼬임)", "result": "FAIL", "cause": "그린 쪽", "evidence": "CKG→SA_E, SR→SUM 선이 PRE 박스 모서리를 지나감", "fix": "배치 조정"},
+  {"id": "J-5", "screen": "전체", "item": "유닛 레벨 화면 (§3.3, 화면 구성)", "result": "FAIL", "cause": "그린 쪽 (미구현)", "evidence": "u_* 화면 없음 (MISSING.md)", "fix": "회차 2에서 그리거나 MISSING으로 남긴다"},
+  {"id": "J-6", "screen": "b_top", "item": "목적: 고속 흐름과 동작 원리가 그림만으로 보이는가 (§0.1, J 묶음)", "result": "PARTIAL", "cause": "그린 쪽", "evidence": "PAD→PRE→DFE 흐름, 피드백, 클럭 경로는 보이나 선이 얽혀 흐름 파악이 어려움", "fix": "J-1~J-4 해결 후 다시 본다"},
+  {"id": "J-7", "screen": "b_top", "item": "분류 표·질문, 사전 대응 (J 묶음)", "result": "PASS", "cause": "-", "evidence": "classification.md의 Q1-Q4 가정한 답과 그림이 일치 (PRE 일반 박스, LB 데이터 입력, MN8/9 생략, DFE 복합)", "fix": "-"},
+  {"id": "M-1", "screen": "b_top", "item": "자동 검사 0건 (M 묶음)", "result": "PASS", "cause": "-", "evidence": "self_checklist.json: 8개 검사 0건, 주입 4/4 검출", "fix": "-"},
+  {"id": "G/N", "screen": "-", "item": "정답지·이름 가림 항목", "result": "해당 없음", "cause": "-", "evidence": "-", "fix": "-"}
+ ],
+ "note": "같은 모델이 그리기와 검토를 모두 함 (WORKFLOW 방식). 검토는 screenshots/b_top.png와 self_checklist.json 근거."
+}

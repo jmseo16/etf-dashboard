@@ -1,2 +1,5 @@
 - 2026-11-22 [glm] 1_classify: classification.md, annotations.json, block_dictionary.json 작성 (rx_s1, 같은 모델이 GLM 역할 수행)
 - 2026-11-22 [claude] 2_review_classify: review/classify_review.md 작성 — 고칠 것 1, 질문 4 (가정한 답으로 진행)
+- 2026-11-22 [glm] r1 a_draw: block-level b_top (HTML+PPTX+PNG); unit screens missing (MISSING.md)
+- 2026-11-22 [glm] r1 b_selftest: checks 0 after checker fix (first run 5 false hits on rails/bias); injection 4/4
+- 2026-11-22 [claude] r1 c_review: verdict_drawing FAIL (diagonal lines, crossings, no net labels, no unit screens); fix_request written
