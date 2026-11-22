@@ -1,0 +1,252 @@
+{
+ "auto_checks": [
+  {
+   "id": "1-conn",
+   "name": "4.1-1 연결 재추출 (기하만): SHORT / OPEN / 없는 핀·소자",
+   "status": "pass",
+   "count": 0,
+   "injected": "4/4",
+   "injected_cases": [
+    "OPEN: b_top net208 선 끊기",
+    "OPEN: u_sbamp net80 선 끊기",
+    "SHORT: b_dqslice xi4 outp–outn 선",
+    "SHORT: u_sbamp 두 소자 핀 잇기"
+   ]
+  },
+  {
+   "id": "1-touch",
+   "name": "4.1-1 선 끝이 다른 선 위에 닿았는데 접점 점 없음",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "접점 점 삭제: u_nand2x1"
+   ]
+  },
+  {
+   "id": "2-label",
+   "name": "4.1-2 짝 없는 이름표 (예외: 화면 밖 연결 기호, 미사용 출력)",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "짝 없는 이름표: b_dqslice net99 이름표 하나 지우기"
+   ]
+  },
+  {
+   "id": "3-omit",
+   "name": "4.1-3 생략 = 분류: 그리지 않은 넷은 생략 목록에, 그린 넷은 생략 목록에 없음",
+   "status": "pass",
+   "count": 0,
+   "injected": "2/2",
+   "injected_cases": [
+    "그리지도 생략하지도 않은 넷: b_top 생략 목록에서 ibias 빼기",
+    "그렸는데 생략 목록에 넣음: b_top rx_en"
+   ]
+  },
+  {
+   "id": "5-overlap",
+   "name": "4.1-5 글씨 겹침",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "글자 겹침: b_top 두 글자 상자 겹치기"
+   ]
+  },
+  {
+   "id": "5-pierce",
+   "name": "4.1-5 선이 심볼·몸체를 관통",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "선이 몸체 관통: b_top ESD 박스 안쪽 선"
+   ]
+  },
+  {
+   "id": "5-kink",
+   "name": "4.1-5 꼬임 (선 길이 > 1.5 x 가로+세로)",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "꼬임: b_top net208 선을 크게 돌리기"
+   ]
+  },
+  {
+   "id": "5-short",
+   "name": "4.1-5 짧은 꺾임 (< 20px)",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "짧은 꺾임(<20px): b_srnand sb"
+   ]
+  },
+  {
+   "id": "5-dots",
+   "name": "4.1-5 접점 근접 (< 20px) / 4방향 접점",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "4방향 접점: b_top"
+   ]
+  },
+  {
+   "id": "5-cross",
+   "name": "4.1-5/1.4-9 교차 (허용 수 초과)",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "블록 교차: b_top pad 선을 가로지르는 선"
+   ]
+  },
+  {
+   "id": "5-endline",
+   "name": "1.4-7 같은 직선 위 다른 넷의 자유 선 끝 < 40px",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "같은 직선 위 자유 선 끝: b_top 40px 미만"
+   ]
+  },
+  {
+   "id": "6-port",
+   "name": "4.1-6 떠 있는 포트 / 붙지 않은 핀",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "떠 있는 포트: b_top dqs_c 선 지우기"
+   ]
+  },
+  {
+   "id": "10-outpin",
+   "name": "4.1-10 붙지 않은 출력 핀",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "미사용 출력 지우기: b_top net224"
+   ]
+  },
+  {
+   "id": "11-dash",
+   "name": "4.1-11 점선 / 선 굵기 != 1.6",
+   "status": "pass",
+   "count": 0,
+   "injected": "2/2",
+   "injected_cases": [
+    "점선: b_top 선 하나를 점선으로",
+    "선 굵기: b_top 선 하나를 2.4로"
+   ]
+  },
+  {
+   "id": "13-polarity",
+   "name": "4.1-13 출력별 극성 (동그라미 vs netlist 계산)",
+   "status": "pass",
+   "count": 0,
+   "injected": "2/2",
+   "injected_cases": [
+    "동그라미 지우기: b_dqslice xi8 인버터",
+    "동그라미 지우기: b_srnand xi0 NAND"
+   ]
+  },
+  {
+   "id": "14-names",
+   "name": "4.1-14 이름 일치 (인스턴스·소자·넷·포트 이름이 netlist에 있음)",
+   "status": "pass",
+   "count": 0,
+   "injected": "2/2",
+   "injected_cases": [
+    "없는 인스턴스 이름: b_top xi8 → xi99",
+    "없는 넷 이름표: b_top 첫 이름표를 net277 로"
+   ]
+  },
+  {
+   "id": "15-pinnames",
+   "name": "4.1-15 출력이 둘 이상인 기호의 핀 이름",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "핀 이름 지우기: b_dqslice xi4 출력 핀 이름 outp"
+   ]
+  },
+  {
+   "id": "16-sha",
+   "name": "4.1-16 scene_sha",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "화면 지문: b_top 선 하나 이동"
+   ]
+  },
+  {
+   "id": "18-pinside",
+   "name": "4.1-18 핀 방향 (블록 화면)",
+   "status": "pass",
+   "count": 0,
+   "injected": "2/2",
+   "injected_cases": [
+    "핀 방향 위반: b_top xi8 inp(데이터 입력)를 위쪽으로",
+    "핀 방향 위반: b_dqslice xi4 ck(클럭)를 위쪽으로"
+   ]
+  },
+  {
+   "id": "23-blockpins",
+   "name": "4.1-23 블록 핀 이름 = 셀 포트 이름",
+   "status": "pass",
+   "count": 0,
+   "injected": "2/2",
+   "injected_cases": [
+    "없는 핀 이름: b_top xi8 en → zz",
+    "없는 핀 이름: b_srnand xi0 a → z"
+   ]
+  },
+  {
+   "id": "24-rcvalue",
+   "name": "4.1-24 R/C 값 = 실제 값",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "R 값 틀림: u_padesd r1 값 바꾸기"
+   ]
+  },
+  {
+   "id": "25-inside",
+   "name": "4.1-25 글자·그림이 화면 밖으로 나가지 않음",
+   "status": "pass",
+   "count": 0,
+   "injected": "1/1",
+   "injected_cases": [
+    "글자 밖으로: b_top 글자 상자를 화면 밖으로"
+   ]
+  }
+ ],
+ "self_test": {
+  "injected": 31,
+  "caught": 31,
+  "all_caught": true
+ },
+ "not_implemented": {
+  "4": "기호 = 묶음 (합친 소자를 쓰지 않아 해당 없음)",
+  "7": "선 종류 일치 (모든 선이 같은 실선이라 11번이 대신함)",
+  "8": "합친 블록 범례 (합친 블록 없음)",
+  "9": "설명 수치 (주석에 수치를 쓰지 않음, 자동 검사는 구현 안 함)",
+  "12": "CCI 배치 (구현 안 함)",
+  "17": "생성 코드 변경 범위 (수정 회차에서 손으로 보고)",
+  "19": "회색 이름표 범위 (구현 안 함)",
+  "20": "질문 형식 (구현 안 함, 손 확인)",
+  "21": "끝점 핀 (구현 안 함, 손 확인)",
+  "22": "표 간 분류 일치 (구현 안 함, 손 확인)"
+ },
+ "total_count": 0,
+ "note": "이 파일은 그린 쪽 자체 점검이다. 합격 근거가 아니다 (WORKFLOW 1절)."
+}

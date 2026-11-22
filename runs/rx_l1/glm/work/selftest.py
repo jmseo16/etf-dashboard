@@ -3,7 +3,7 @@ self_checklist.json and appends one line to selftest_log.md"""
 import json, sys, subprocess, os, collections
 W, NL, OUT, RUN, NOTE = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4]), sys.argv[5]
 subprocess.check_call([sys.executable, 'check.py', W, NL, OUT + '/verify_report.json'], stdout=subprocess.DEVNULL)
-subprocess.check_call([sys.executable, 'inject.py', W, NL, W + '/inject_result.json'], stdout=subprocess.DEVNULL)
+subprocess.check_call([sys.executable, 'inject_l1.py', W, NL, W + '/inject_result.json'], stdout=subprocess.DEVNULL)
 from check import CHECKS, NOT_IMPLEMENTED
 vr = json.load(open(OUT + '/verify_report.json'))
 inj = json.load(open(W + '/inject_result.json'))

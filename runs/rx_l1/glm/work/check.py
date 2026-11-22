@@ -417,6 +417,8 @@ class Checker:
                 if d['t'] == 'text' and d.get('cls') == k and d.get('owner') not in concept_ids:
                     nm = d['s']
                     base = re.sub(r'\s*\(.*\)$', '', nm)
+                    if ' … ' in base and all(x_ in elems for x_ in base.split(' … ')):
+                        continue
                     if base not in elems and not nm.startswith('X_') and base not in self.cells:
                         R['14-names'].append('%s: 이름 %s 이(가) netlist에 없음' % (v['id'], nm))
         for l in labs:

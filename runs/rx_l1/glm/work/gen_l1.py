@@ -12,7 +12,7 @@ for nm, bits in {'dq<7:0>': ['dq7', 'dq6', 'dq5', 'dq4', 'dq3', 'dq2', 'dq1', 'd
                  'qr<3:0>': ['qr3', 'qr2', 'qr1', 'qr0'], 'qr<7:4>': ['qr7', 'qr6', 'qr5', 'qr4'], 'qf<3:0>': ['qf3', 'qf2', 'qf1', 'qf0'], 'qf<7:4>': ['qf7', 'qf6', 'qf5', 'qf4'],
                  'rtt<2:0>': ['rtt2', 'rtt1', 'rtt0'], 't1w<2:0>': ['t1w2', 't1w1', 't1w0'], 't2w<1:0>': ['t2w1', 't2w0'], 'vrc<5:0>': ['vrc5', 'vrc4', 'vrc3', 'vrc2', 'vrc1', 'vrc0'],
                  'enb<2:0>': ['enb2', 'enb1', 'enb0'], 'oenb<2:0>': ['net207', 'net206', 'net205'], 'c<5:0>': ['c5', 'c4', 'c3', 'c2', 'c1', 'c0'],
-                 'w1<2:0>': ['w1_2', 'w1_1', 'w1_0'], 'w2<1:0>': ['w2_1', 'w2_0'], 'odtb<2:0>': ['odtb2', 'odtb1', 'odtb0']}.items():
+                 'w1<2:0>': ['w1_2', 'w1_1', 'w1_0'], 'w2<1:0>': ['w2_1', 'w2_0'], 'odtb<2:0>': ['odtb2', 'odtb1', 'odtb0'], 'ddl<2:0>': ['ddl2', 'ddl1', 'ddl0']}.items():
     AL[nm] = bits
 import hs
 hs.ALIAS.update(AL)
@@ -108,24 +108,29 @@ def view_b_dqslice(cell, vid):
     amps = {}
     for inst, yc, ins in (('xi2', 330, ('inp', 'inn')), ('xi3', 560, ('inp', 'inn'))):
         sym = h.tri(inst, 400, yc, 'AMP', inst, w=90, h=120, ins=[('inp', -30, T(inst, 'inp')), ('inn', 30, T(inst, 'inn'))], outs=[('out', 0, T(inst, 'out'))],
-                    top=[('enb', 25, T(inst, 'enb'), 'data'), ('en', 55, T(inst, 'en'), 'data')], members=[inst], sub='sbamp', link='u_sbamp')
+                    top=[('enb', 25, T(inst, 'enb'), 'data'), ('en', 55, T(inst, 'en'), 'data')], members=[inst], sub='', link='u_sbamp')
         sym['info']['pcls'] = {'inp': 'data_in', 'inn': 'data_in', 'out': 'data_out', 'en': 'control', 'enb': 'control'}
         amps[inst] = sym
+    for inst_ in amps:
+        h.default_lens[pt(amps[inst_], 'enb')] = 30; h.default_lens[pt(amps[inst_], 'en')] = 60
     sa = {}
     for inst, yc, ckp in (('xi4', 320, 'ckt'), ('xi6', 640, 'ckc')):
-        sym = h.tri(inst, 640, yc, 'SA', inst, w=100, h=240,
+        sym = h.tri(inst, 640, yc, 'SA', inst, w=120, h=240,
                     ins=[('inp', -80, T(inst, 'inp')), ('inn', -50, T(inst, 'inn')), ('h1p', -10, T(inst, 'h1p')), ('h1n', 20, T(inst, 'h1n')), ('h2p', 50, T(inst, 'h2p')), ('h2n', 80, T(inst, 'h2n'))],
                     outs=[('outp', -30, T(inst, 'outp')), ('outn', 30, T(inst, 'outn'))],
-                    top=[('w1<2:0>', 30, bus_terms(inst, ['w1_2', 'w1_1', 'w1_0']), 'bus'), ('w2<1:0>', 70, bus_terms(inst, ['w2_1', 'w2_0']), 'bus')],
-                    bottom=[('ck', 50, T(inst, 'ck'), 'clock')], clock_mark=True, members=[inst], sub='sadfe')
+                    top=[('w1<2:0>', 25, bus_terms(inst, ['w1_2', 'w1_1', 'w1_0']), 'bus'), ('w2<1:0>', 90, bus_terms(inst, ['w2_1', 'w2_0']), 'bus')],
+                    bottom=[('ck', 50, T(inst, 'ck'), 'clock')], clock_mark=True, members=[inst], sub='')
         sym['info']['pcls'] = {'inp': 'data_in', 'inn': 'data_in', 'h1p': 'data_in', 'h1n': 'data_in', 'h2p': 'data_in', 'h2n': 'data_in', 'outp': 'data_out', 'outn': 'data_out', 'ck': 'clock',
                                'w1<2:0>': 'control', 'w2<1:0>': 'control'}
         sa[inst] = sym
     sr = {}
     for inst, y0 in (('xi5', 250), ('xi7', 570)):
-        sr[inst] = draw_inst_box(h, inst, 900, y0, [('sb', y0 + 40), ('rb', y0 + 90)], [('q', y0 + 40), ('qb', y0 + 90)], w=110, hh=130, link='b_srnand',
+        sr[inst] = draw_inst_box(h, inst, 900, y0, [('sb', y0 + 40), ('rb', y0 + 110)], [('q', y0 + 40), ('qb', y0 + 110)], w=110, hh=150, link='b_srnand',
                                  pcls={'sb': 'data_in', 'rb': 'data_in', 'q': 'data_out', 'qb': 'data_out'}, main_in=['sb', 'rb'])
     inv = {}
+    for inst_ in sa:
+        for pn_, LL_ in (('inp', 30), ('inn', 60), ('h1p', 30), ('h1n', 60), ('h2p', 30), ('h2n', 60)):
+            h.default_lens[pt(sa[inst_], pn_)] = LL_
     for inst, yc, x0, lk in (('xi8', 290, 1080, 'u_invx1'), ('xi9', 290, 1200, 'u_invx4'), ('xi10', 610, 1080, 'u_invx1'), ('xi11', 610, 1200, 'u_invx4')):
         inv[inst] = inv_inst(h, inst, x0, yc, link=lk)
     h.auto('pad', [pt(esd, 'pad'), pt(od, 'B'), (110, 300)], name='pad')
@@ -155,7 +160,7 @@ def view_b_dqslice(cell, vid):
 def view_b_top(vid):
     h = new(vid, TOP, 'block', '%s — 블록 레벨 (최상위, 축소 범위)' % TOP, 2100, 1300)
     pt = h.pt
-    PRT = {'dqs_t': (110, 150), 'dqs_c': (110, 260), 'gate_open': (110, 380), 'rx_en': (110, 470), 'slp': (110, 560), 'odt_en': (110, 650), 'rtt<2:0>': (110, 710), 'vrc<5:0>': (110, 800),
+    PRT = {'dqs_t': (110, 150), 'dqs_c': (110, 260), 'gate_open': (110, 380), 'rx_en': (110, 470), 'slp': (110, 540), 'odt_en': (110, 680), 'rtt<2:0>': (110, 720), 'vrc<5:0>': (110, 830),
            'wl_ck': (110, 1130), 'wl_en': (110, 1190), 'wl_out': (2000, 1130), 't1w<2:0>': (1500, 60), 't2w<1:0>': (1560, 60),
            'dq<3:0>': (1600, 80), 'dq<7:4>': (1600, 140)}
     for n, xy in PRT.items():
@@ -172,9 +177,9 @@ def view_b_top(vid):
         esd[inst]['info']['pcls'] = {'pad': 'data_in', 'pad_r': 'data_out'}
     od6 = var_marker(h, 'xi6', 190, 70, None, ['enb2', 'enb1', 'enb0'])
     od7 = var_marker(h, 'xi7', 190, 330, None, ['enb2', 'enb1', 'enb0'])
-    dec = h.box('xi3', 150, 620, 140, 100, 'DEC', 'xi3', left=[('odt_en', 650, T('xi3', 'odt_en'), 'data'), ('rtt<2:0>', 690, bus_terms('xi3', ['rtt2', 'rtt1', 'rtt0']), 'bus')],
-                right=[('enb<2:0>', 670, bus_terms('xi3', ['enb2', 'enb1', 'enb0']), 'bus')], members=['xi3'], sub='odtctl')
-    vref = h.box('xi2', 150, 780, 140, 100, 'VREF', 'xi2', left=[('c<5:0>', 800, bus_terms('xi2', ['c5', 'c4', 'c3', 'c2', 'c1', 'c0']), 'bus')], right=[('vref', 830, T('xi2', 'vref'), 'data')], members=['xi2'], sub='vrefdac')
+    dec = h.box('xi3', 150, 650, 140, 100, 'DEC', 'xi3', left=[('odt_en', 680, T('xi3', 'odt_en'), 'data'), ('rtt<2:0>', 720, bus_terms('xi3', ['rtt2', 'rtt1', 'rtt0']), 'bus')],
+                right=[('enb<2:0>', 700, bus_terms('xi3', ['enb2', 'enb1', 'enb0']), 'bus')], members=['xi3'], sub='odtctl')
+    vref = h.box('xi2', 150, 810, 140, 100, 'VREF', 'xi2', left=[('c<5:0>', 830, bus_terms('xi2', ['c5', 'c4', 'c3', 'c2', 'c1', 'c0']), 'bus')], right=[('vref', 860, T('xi2', 'vref'), 'data')], members=['xi2'], sub='vrefdac')
     lv = draw_inst_box(h, 'xi0', 150, 450, [('in', 470)], [('out', 470), ('outb', 500)], w=90, hh=70, label='LS', main_in=['in'], pcls={}, logic_out=False)
     lv['info']['gate'] = True
     rx = h.box('xi8', 470, 110, 130, 200, 'DQS RX', 'xi8', left=[('inp', 150, T('xi8', 'inp'), 'data'), ('inn', 260, T('xi8', 'inn'), 'data')],
@@ -183,32 +188,34 @@ def view_b_top(vid):
     h.V.omitted.append({'block': 'xi1', 'cell': 'biasgen', 'reason': '고속 신호와 무관'})
     gt = h.box('xi9', 760, 110, 130, 200, 'GATE', 'xi9', left=[('ckt', 150, T('xi9', 'ckt'), 'data'), ('ckc', 260, T('xi9', 'ckc'), 'data')],
                right=[('gt', 150, T('xi9', 'gt'), 'data'), ('gc', 260, T('xi9', 'gc'), 'data')], top=[('open', 800, T('xi9', 'open'), 'data')], members=['xi9'], sub='dqsgate')
-    gt['info']['pcls'] = {'ckt': 'clock', 'ckc': 'clock', 'gt': 'clock', 'gc': 'clock', 'open': 'control'}
+    gt['info']['pcls'] = {'ckt': 'clock', 'ckc': 'clock', 'gt': 'data_out', 'gc': 'data_out', 'open': 'control'}
     gt['info']['clock_left_ok'] = True
     dl = {}
     for inst, y in (('xi10', 150), ('xi11', 260)):
         dl[inst] = h.box(inst, 1040, y - 40, 100, 80, 'DLY', inst, left=[('in', y, T(inst, 'in'), 'data')], right=[('out', y, T(inst, 'out'), 'data')], members=[inst], sub='dly3')
         dl[inst]['info']['pcls'] = {}
     bufs = {}
+    MERGED = {'xi14': ['xi14', 'xi15'], 'xi16': ['xi16', 'xi17'], 'xi18': ['xi18', 'xi19'], 'xi20': ['xi20', 'xi21']}
+    LBL = {'xi14': 'xi14 … xi15', 'xi16': 'xi16 … xi17', 'xi18': 'xi18 … xi19', 'xi20': 'xi20 … xi21'}
     def buf(inst, x0, yc):
-        s_ = h.tri(inst, x0, yc, 'BUF', inst, w=60, h=60, ins=[('a', 0, T(inst, 'a'))], outs=[('y', 0, T(inst, 'y'))], members=[inst], sub='ckbuf')
+        s_ = h.tri(inst, x0, yc, 'BUF', LBL.get(inst, inst), w=60, h=60, ins=[('a', 0, T(inst, 'a'))], outs=[('y', 0, T(inst, 'y'))], members=MERGED.get(inst, [inst]), sub='')
         s_['info']['pcls'] = {'a': 'data_in', 'y': 'data_out'}
         return s_
     b1 = {'xi12': buf('xi12', 1240, 150), 'xi13': buf('xi13', 1240, 260)}
-    stage2 = [('xi14', 'net216', 'net218', 380), ('xi16', 'net217', 'net219', 470), ('xi18', 'net216', 'net220', 560), ('xi20', 'net217', 'net221', 650), ('xi22', 'net216', 'net222', 740), ('xi23', 'net217', 'net223', 830)]
+    stage2 = [('xi14', 'net216', 'net218', 400), ('xi16', 'net217', 'net219', 520), ('xi18', 'net216', 'net220', 640), ('xi20', 'net217', 'net221', 760), ('xi22', 'net216', 'net222', 880), ('xi23', 'net217', 'net223', 1000)]
     b2 = {}
     for inst, a, y, yc in stage2:
         b2[inst] = buf(inst, 1420, yc)
     h.V.notes.append('ckbuf 쌍(xi14/xi15, xi16/xi17, xi18/xi19, xi20/xi21)은 입력·출력이 같은 병렬 인스턴스라 하나의 BUF 로 합침: xi14 … xi15, xi16 … xi17, xi18 … xi19, xi20 … xi21 (질문 Q2). 합친 블록의 첫 인스턴스만 연결을 그림')
-    slA = h.box('xi30', 1700, 200, 150, 300, 'DQ<3:0>', 'xi30 … xi33', left=[('pad', 250, [[('xi33', 'pad')], [('xi32', 'pad')], [('xi31', 'pad')], [('xi30', 'pad')]], 'bus'), ('vref', 290, T('xi30', 'vref'), 'data'),
+    slA = h.box('xi30', 1700, 200, 190, 300, 'DQ<3:0>', 'xi30 … xi33', left=[('pad', 250, [[('xi33', 'pad')], [('xi32', 'pad')], [('xi31', 'pad')], [('xi30', 'pad')]], 'bus'), ('vref', 290, T('xi30', 'vref'), 'data'),
                 ('ckt', 400, T('xi30', 'ckt'), 'data'), ('ckc', 440, T('xi30', 'ckc'), 'data')],
-                right=[('qr', 250, [[('xi33', 'qr')], [('xi32', 'qr')], [('xi31', 'qr')], [('xi30', 'qr')]], 'bus'), ('qf', 340, [[('xi33', 'qf')], [('xi32', 'qf')], [('xi31', 'qf')], [('xi30', 'qf')]], 'bus')],
-                top=[('en', 1720, T('xi30', 'en'), 'data'), ('enb', 1760, T('xi30', 'enb'), 'data'), ('w1<2:0>', 1800, bus_terms('xi30', ['w1_2', 'w1_1', 'w1_0']), 'bus')], link='b_dqslice',
+                right=[('qr', 280, [[('xi33', 'qr')], [('xi32', 'qr')], [('xi31', 'qr')], [('xi30', 'qr')]], 'bus'), ('qf', 340, [[('xi33', 'qf')], [('xi32', 'qf')], [('xi31', 'qf')], [('xi30', 'qf')]], 'bus')],
+                top=[('en', 1740, T('xi30', 'en'), 'data'), ('enb', 1780, T('xi30', 'enb'), 'data'), ('w1<2:0>', 1830, bus_terms('xi30', ['w1_2', 'w1_1', 'w1_0']), 'bus'), ('w2<1:0>', 1875, bus_terms('xi30', ['w2_1', 'w2_0']), 'bus')], link='b_dqslice',
                 members=['xi30', 'xi31', 'xi32', 'xi33'], sub='dqslice')
-    slB = h.box('xi34', 1700, 560, 150, 300, 'DQ<7:4>', 'xi34 … xi37', left=[('pad', 610, [[('xi37', 'pad')], [('xi36', 'pad')], [('xi35', 'pad')], [('xi34', 'pad')]], 'bus'), ('vref', 650, T('xi34', 'vref'), 'data'),
+    slB = h.box('xi34', 1700, 600, 190, 300, 'DQ<7:4>', 'xi34 … xi37', left=[('pad', 610, [[('xi37', 'pad')], [('xi36', 'pad')], [('xi35', 'pad')], [('xi34', 'pad')]], 'bus'), ('vref', 650, T('xi34', 'vref'), 'data'),
                 ('ckt', 760, T('xi34', 'ckt'), 'data'), ('ckc', 800, T('xi34', 'ckc'), 'data')],
-                right=[('qr', 610, [[('xi37', 'qr')], [('xi36', 'qr')], [('xi35', 'qr')], [('xi34', 'qr')]], 'bus'), ('qf', 700, [[('xi37', 'qf')], [('xi36', 'qf')], [('xi35', 'qf')], [('xi34', 'qf')]], 'bus')],
-                top=[('en', 1720, T('xi34', 'en'), 'data'), ('enb', 1760, T('xi34', 'enb'), 'data'), ('w1<2:0>', 1800, bus_terms('xi34', ['w1_2', 'w1_1', 'w1_0']), 'bus')], link='b_dqslice',
+                right=[('qr', 650, [[('xi37', 'qr')], [('xi36', 'qr')], [('xi35', 'qr')], [('xi34', 'qr')]], 'bus'), ('qf', 700, [[('xi37', 'qf')], [('xi36', 'qf')], [('xi35', 'qf')], [('xi34', 'qf')]], 'bus')],
+                top=[('en', 1740, T('xi34', 'en'), 'data'), ('enb', 1780, T('xi34', 'enb'), 'data'), ('w1<2:0>', 1830, bus_terms('xi34', ['w1_2', 'w1_1', 'w1_0']), 'bus'), ('w2<1:0>', 1875, bus_terms('xi34', ['w2_1', 'w2_0']), 'bus')], link='b_dqslice',
                 members=['xi34', 'xi35', 'xi36', 'xi37'], sub='dqslice')
     for sl_ in (slA, slB):
         sl_['info']['virtual'] = False
@@ -219,11 +226,15 @@ def view_b_top(vid):
     wl = h.box('xi39', 1700, 1120, 150, 100, 'WL', 'xi39', left=[('d', 1150, T('xi39', 'd'), 'data'), ('ck', 1190, T('xi39', 'ck'), 'data')], right=[('q', 1150, T('xi39', 'q'), 'data')],
                top=[('en', 1760, T('xi39', 'en'), 'data')], members=['xi39'], sub='wldet')
     wl['info']['pcls'] = {}
-    pw_ = h.box('mp0', 150, 520, 100, 60, 'PWR SW', 'mp0', top=[('slp', 200, [[('mp0', 'g')]], 'data')], members=['mp0'], sub='헤더')
+    pw_ = h.box('mp0', 150, 560, 100, 80, 'PWR SW', 'mp0', top=[('slp', 200, [[('mp0', 'g')]], 'data')], members=['mp0'], sub='헤더')
     pw_['info']['virtual'] = True; pw_['info']['pcls'] = {}
-    d0 = h.diode('d0', 1000, 230, flip=False); d1 = h.diode('d1', 1000, 340, flip=False)
-    pw(h, d0, 'A', 'vss', 'up'); pw(h, d1, 'A', 'vss', 'up')
+    d0 = h.diode('d0', 1190, 235, flip=True); d1 = h.diode('d1', 1190, 345, flip=True)
+    pw(h, d0, 'A', 'vss', 'down'); pw(h, d1, 'A', 'vss', 'down')
     # d0: anode vss, cathode net214 -> cathode is at the bottom; flip so cathode up? (drawn with anode up to the rail)
+    for sl_ in (slA, slB):
+        for pn_, LL_ in (('en', 30), ('enb', 60), ('w1<2:0>', 30), ('w2<1:0>', 60)):
+            h.default_lens[pt(sl_, pn_)] = LL_
+    h.default_lens[pt(lv, 'out')] = 30; h.default_lens[pt(lv, 'outb')] = 60
     # ---- routing
     h.auto('dqs_t', [pt(esd['xi4'], 'pad'), pt(od6, 'B'), PRT['dqs_t']], name='dqs_t'); h.auto('dqs_c', [pt(esd['xi5'], 'pad'), pt(od7, 'B'), PRT['dqs_c']], name='dqs_c')
     h.auto('net208', [pt(esd['xi4'], 'pad_r'), pt(rx, 'inp')]); h.auto('net209', [pt(esd['xi5'], 'pad_r'), pt(rx, 'inn')])
@@ -240,9 +251,10 @@ def view_b_top(vid):
     h.auto('net201', [pt(lv, 'out'), pt(rx, 'enq'), pt(slA, 'en'), pt(slB, 'en')], name='net201'); h.auto('net202', [pt(lv, 'outb'), pt(slA, 'enb'), pt(slB, 'enb')], name='net202')
     h.auto('gate_open', [pt(gt, 'open'), PRT['gate_open']], name='gate_open'); h.auto('slp', [pt(pw_, 'slp'), PRT['slp']], name='slp')
     h.auto('odt_en', [pt(dec, 'odt_en'), PRT['odt_en']]); h.auto('rtt<2:0>', [pt(dec, 'rtt<2:0>'), PRT['rtt<2:0>']], cls='bus')
-    h.auto('oenb<2:0>', [pt(dec, 'enb<2:0>'), pt(od6, 'enb<2:0>'), pt(od7, 'enb<2:0>')], name='oenb<2:0>', cls='bus')
+    h.auto('oenb<2:0>', [pt(dec, 'enb<2:0>'), pt(od6, 'enb<2:0>'), pt(od7, 'enb<2:0>')], name='oenb<2:0>', cls='bus', dirs={pt(od6, 'enb<2:0>'): ['up'], pt(od7, 'enb<2:0>'): ['up']})
     h.auto('vrc<5:0>', [pt(vref, 'c<5:0>'), PRT['vrc<5:0>']], cls='bus')
     h.auto('t1w<2:0>', [pt(slA, 'w1<2:0>'), pt(slB, 'w1<2:0>'), PRT['t1w<2:0>']], name='t1w<2:0>', cls='bus')
+    h.auto('t2w<1:0>', [pt(slA, 'w2<1:0>'), pt(slB, 'w2<1:0>'), PRT['t2w<1:0>']], name='t2w<1:0>', cls='bus')
     h.auto('dq<3:0>', [pt(slA, 'pad'), PRT['dq<3:0>']], cls='bus'); h.auto('dq<7:4>', [pt(slB, 'pad'), PRT['dq<7:4>']], cls='bus')
     h.auto('wl_ck', [pt(wl, 'd'), PRT['wl_ck']]); h.auto('wl_en', [pt(wl, 'en'), PRT['wl_en']]); h.auto('wl_out', [pt(wl, 'q'), PRT['wl_out']])
     for n_, xy in (('qr<3:0>', (1990, 300)), ('qf<3:0>', (1990, 360))):
@@ -256,7 +268,7 @@ def view_b_top(vid):
     for pn_, net in (('qr', 'net224'), ('qf', 'net225')):
         h.stub(pt(rep, pn_), 'right', net, name=net, L=40)
     CONF['unused_ok'][vid] = ['net224', 'net225']
-    omit(h, ['ddl<2:0>', ], 'general_control'); omit(h, ['ibias', 'net203'], 'bias'); omit(h, ['vdd', 'vddq', 'vss', 'vssq', 'net200'], 'power')
+    omit(h, ['ddl<2:0>', ], 'general_control'); omit(h, ['ibias', 'net203'], 'bias'); omit(h, ['vdd', 'vddq', 'vssq', 'net200'], 'power')
     return h
 
 
