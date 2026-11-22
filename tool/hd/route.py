@@ -250,7 +250,7 @@ def _build_scene(V, allow_pairs=()):
             T2.owner = K.id
             if T2.s:
                 S['texts'].append(T2)
-                if not (K.kind == 'inst' and T.kind in ('pin', 'title', 'cell')):
+                if not (K.kind == 'inst' and K.sym == 'box' and T.kind in ('pin', 'title', 'cell')):
                     R.block_text(T2)
         sym = {'id': K.id, 'kind': K.kind, 'members': K.members, 'cell': K.cell or '', 'target': K.target or '',
                'box': [K.x + bx[0], K.y + bx[1], K.x + bx[2], K.y + bx[3]], 'shapes': [], 'pins': [], 'x': K.x, 'y': K.y}

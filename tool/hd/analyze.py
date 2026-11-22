@@ -690,8 +690,8 @@ def analyze(cells, top, ann=None):
                               'options': ['K10(숨김)', 'K3', 'K8', 'hs_data', 'hs_clock'], 'default': 'K10(숨김)'})
         if k == 'status_in':
             questions.append({'id': 'ctl:%s' % p, 'item': p,
-                              'q': '포트 %s: 고속 클럭으로 샘플되어 출력으로만 갑니다(데이터 입력처럼 쓰임). 명령/시험 입력으로 한 줄 그립니다.' % p,
-                              'options': ['K8', 'K9', 'hs_data', 'hs_clock'], 'default': 'K8'})
+                              'q': '포트 %s: 고속 클럭으로 샘플되어 관찰용 출력으로만 갑니다(데이터 입력처럼 쓰임). 시험 입력으로 한 줄 그립니다.' % p,
+                              'options': ['K9', 'K8', 'hs_data', 'hs_clock'], 'default': 'K9'})
     A.questions = questions
     return A
 
