@@ -886,7 +886,7 @@ def view_top():
         left=[('odt_en', y_pad - 215, [[('xi22', 'odt_en')]]),
               ('rtt<2:0>', y_pad - 195, rtt_slices, 'bus')],
         right=[('enb<2:0>', y_pad - 205, enb_dec_slices, 'bus')],
-        link='u_odt_dec', members=['xi22'])
+        link='u_odt_dec', members=['xi22'], bubbles=['enb<2:0>'])
 
     V.port('odt_en', 40, y_pad - 215, d='right', io='in')
     V.wire([(40, y_pad - 215), (60, y_pad - 215)], cls='data')

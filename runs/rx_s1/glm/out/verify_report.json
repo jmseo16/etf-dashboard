@@ -10,7 +10,7 @@
    "cell": "dq_rx_unit",
    "level": "block",
    "title": "dq_rx_unit — 블록 레벨 (최상위)",
-   "scene_sha": "1c655dd4d9b38169411f71f9d08a4bf714317e9a8102f889c0c1574c6db1814c",
+   "scene_sha": "dbc26c1f60799874ecf2fb858c28e103cc2541b2a3b492446a077902e344475b",
    "connectivity": {
     "pass": true,
     "error_count": 0,
@@ -363,9 +363,6 @@
    },
    "quality_pass": false,
    "checks": {
-    "polarity": [
-     "xi22.enb<2:0>: netlist polarity inv, logic output, bubble drawn=False"
-    ],
     "pin_sides": [
      "xi20.pad: on left, expected right",
      "xi21.pad: on bottom, expected left",
