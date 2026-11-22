@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="690" height="380" viewBox="0 0 690 380" font-family="Helvetica,Arial,sans-serif">
+<rect width="100%" height="100%" fill="#fff"/>
+<line x1="130" y1="170" x2="70" y2="170" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="170" y1="130" x2="170" y2="70" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="220" y1="170" x2="360" y2="170" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="410" y1="170" x2="550" y2="170" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="200" y1="290" x2="220" y2="290" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<g class="hot" data-target="u_nd2x2" style="cursor:pointer"><rect x="130" y="130" width="80" height="80" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><circle cx="215" cy="170" r="5" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><rect x="130" y="130" width="80" height="80" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_inv4" style="cursor:pointer"><polygon points="360,150 360,190 400,170" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><circle cx="405" cy="170" r="5" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><rect x="360" y="150" width="50" height="40" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="b_dff" style="cursor:pointer"><rect x="550" y="140" width="80" height="60" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><rect x="550" y="140" width="80" height="60" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="u_inv4" style="cursor:pointer"><rect x="110" y="260" width="80" height="60" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><circle cx="195" cy="290" r="5" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" /><rect x="110" y="260" width="80" height="60" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<polygon points="54,165 65,165 70,170 65,175 54,175" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="165,54 175,54 175,65 170,70 165,65" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="236,285 225,285 220,290 225,295 236,295" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<text x="134" y="173" font-size="9" text-anchor="start" fill="#444" pointer-events="none">a</text>
+<text x="206" y="173" font-size="9" text-anchor="end" fill="#444" pointer-events="none">y</text>
+<text x="170" y="141" font-size="9" text-anchor="middle" fill="#444" pointer-events="none">b</text>
+<text x="170.0" y="174.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">nd2x2</text>
+<text x="126" y="126" font-size="9" text-anchor="end" fill="#555" font-style="italic" pointer-events="none">xi0</text>
+<text x="360" y="145" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi1</text>
+<text x="360" y="201" font-size="8" text-anchor="start" fill="#777" pointer-events="none">inv4</text>
+<text x="554" y="173" font-size="9" text-anchor="start" fill="#444" pointer-events="none">ck</text>
+<text x="590.0" y="174.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">dff</text>
+<text x="550" y="135" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi2</text>
+<text x="186" y="293" font-size="9" text-anchor="end" fill="#444" pointer-events="none">y</text>
+<text x="150.0" y="294.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">inv4</text>
+<text x="110" y="255" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi5</text>
+<text x="50" y="174" font-size="11" text-anchor="end" fill="#111" font-weight="bold" pointer-events="none">ck</text>
+<text x="170" y="50" font-size="11" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">en</text>
+<text x="240" y="294" font-size="11" text-anchor="start" fill="#111" font-weight="bold" pointer-events="none">mon</text>
+</svg>

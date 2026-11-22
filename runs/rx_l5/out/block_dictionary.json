@@ -1,0 +1,137 @@
+[
+ {
+  "cell": "lsup",
+  "row": "dec",
+  "confidence": "high"
+ },
+ {
+  "cell": "vref_dac",
+  "row": "vref",
+  "confidence": "high"
+ },
+ {
+  "cell": "odt_ctl",
+  "row": "dec",
+  "confidence": "high"
+ },
+ {
+  "cell": "esd_pad",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "odt_leg3",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "dqs_rcv",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "dqs_gate",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "dly_line",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "inv4",
+  "row": "inv",
+  "confidence": "high"
+ },
+ {
+  "cell": "ckdrv",
+  "row": "buf",
+  "confidence": "high"
+ },
+ {
+  "cell": "dq_lane",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "wl_det",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "dqs_div",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "inv1",
+  "row": "inv",
+  "confidence": "high"
+ },
+ {
+  "cell": "nd2x1",
+  "row": "gate",
+  "confidence": "high"
+ },
+ {
+  "cell": "dqs_amp",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "ac_cpl",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "lattg",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "nd2x2",
+  "row": "gate",
+  "confidence": "high"
+ },
+ {
+  "cell": "dlyc",
+  "row": "buf",
+  "confidence": "high"
+ },
+ {
+  "cell": "mux2",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "dq_afe",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "dq_smp",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "sb_amp",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "sa_dfe",
+  "row": "samp",
+  "confidence": "high"
+ },
+ {
+  "cell": "sr_nand",
+  "row": "box",
+  "confidence": "low"
+ },
+ {
+  "cell": "dff",
+  "row": "box",
+  "confidence": "low"
+ }
+]
