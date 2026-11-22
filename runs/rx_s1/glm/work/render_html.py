@@ -32,7 +32,7 @@ data = {'views': slim, 'parent': parent, 'summary': summary}
 page = r'''<!doctype html>
 <html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RX_AFE_TOP 개념도</title>
+<title>__TITLE__ 개념도</title>
 <style>
 :root{--bg:#fafaf8;--fg:#111;--mut:#666;--line:#ddd;--acc:#1d5fbf;--panel:#fff}
 *{box-sizing:border-box}
@@ -132,6 +132,6 @@ window.addEventListener('hashchange', () => show(location.hash.slice(1)));
 show(location.hash.slice(1) || DATA.views[0].id);
 </script></body></html>
 '''
-page = page.replace('__DATA__', json.dumps(data, ensure_ascii=False)).replace('__PPTX__', pptx_b64)
+page = page.replace('__TITLE__', scenes[0]['cell']).replace('__DATA__', json.dumps(data, ensure_ascii=False)).replace('__PPTX__', pptx_b64)
 open(OUT + '/concept.html', 'w').write(page)
 print('html bytes', len(page))

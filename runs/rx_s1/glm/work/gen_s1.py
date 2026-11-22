@@ -19,9 +19,13 @@ def new(vid, cell, level, title, w, h, scope=None):
     return h_
 
 
+ORDER = ['b_top', 'b_odt_dec', 'b_sa_dt', 'b_sr_nor', 'b_ck_gbuf', 'u_top_lpf', 'u_esd_dq', 'u_odt_pu', 'u_rx_pre', 'u_dfe_sum', 'u_sa_dt_stage1',
+         'u_sa_dt_stage2', 'u_inv_a', 'u_inv_c', 'u_nand2_a', 'u_nand2_c', 'u_nor2_c', 'u_ls_lh']
+
+
 def finish():
     out = []
-    for h in VIEWS:
+    for h in sorted(VIEWS, key=lambda x: ORDER.index(x.V.id) if x.V.id in ORDER else 99):
         h.done()
         d = dict(h.V.__dict__)
         d.pop('_tid', None)

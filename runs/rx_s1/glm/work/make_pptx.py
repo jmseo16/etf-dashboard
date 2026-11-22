@@ -58,7 +58,7 @@ slides = {}
 order = [v['id'] for v in scenes]
 # summary slide first
 s0 = prs.slides.add_slide(blank)
-add_text(s0, Inches(0.4), Inches(0.25), Inches(12), Inches(0.5), 'RX_AFE_TOP — High-Speed IO 개념도 (분류 확인 표)', 22, bold=True, valign='t')
+add_text(s0, Inches(0.4), Inches(0.25), Inches(12), Inches(0.5), '%s — High-Speed IO 개념도 (분류 확인 표)' % scenes[0]['cell'], 22, bold=True, valign='t')
 tbl = cls_md.split('```')[1].strip().splitlines()
 y = Inches(0.95)
 for ln in tbl:
