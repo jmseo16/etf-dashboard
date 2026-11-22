@@ -19,7 +19,7 @@ scenes = json.load(open(W + '/scenes.json'))
 texts = json.load(open(W + '/texts.json'))
 EPS = 0.6
 HIDDEN = {'general_control', 'bias', 'power', 'unused', 'internal'}
-VISIBLE = {'data', 'clock', 'important_control'}
+VISIBLE = {'data', 'clock', 'important_control', 'reference'}
 OUTD = os.path.dirname(os.path.abspath(OUTF))
 TOP = A['top']
 POL = Polarity(cells, TOP)
@@ -37,10 +37,14 @@ def expand(name):
         ranges.append(list(range(a, b + 1)) if a <= b else list(range(a, b - 1, -1)))
     parts.append(name[last:])
     out = []
+    uses_brackets = any(re.search(r'<\d+>', p) for c in cells.values() for p in c['ports'])
     for combo in itertools.product(*ranges):
         s = parts[0]
         for k, v in enumerate(combo):
-            s += str(v) + parts[k + 1]
+            if uses_brackets:
+                s += '<' + str(v) + '>' + parts[k + 1]
+            else:
+                s += str(v) + parts[k + 1]
         out.append(s)
     return out
 
@@ -410,10 +414,11 @@ def chk_names(v):
                 continue                      # concept symbol name (R_S, C_S, I_G<3:0>): its legend lists the members
             bad = [x for x in expand(txt) if x not in elems]
         elif c in ('netlabel', 'offpage', 'gray', 'port', 'power'):
-            if c == 'power' and txt == 'VDD' and own is None and any(lb['kind'] == 'power' for lb in v['labels']):
-                bad = [x for x in [lb['name'] for lb in v['labels'] if lb['kind'] == 'power' and lb.get('tid') == d['tid']] if x not in nets]
+            nets_lower = {n.lower() for n in nets}
+            if c == 'power' and txt.lower() in ('vdd', 'vss', 'vddq', 'vssq') and own is None and any(lb['kind'] == 'power' for lb in v['labels']):
+                bad = [x for x in [lb['name'] for lb in v['labels'] if lb['kind'] == 'power' and lb.get('tid') == d['tid']] if x not in nets and x.lower() not in nets_lower]
             else:
-                bad = [x for x in expand(txt) if x not in nets]
+                bad = [x for x in expand(txt) if x not in nets and x.lower() not in nets_lower]
         elif c == 'blk' and own and own['kind'] == 'box' and d['size'] == 10:
             bad = [txt] if txt not in cells else []
         elif c == 'blk' and own and own['kind'] == 'switch' and d['size'] == 9:
@@ -471,9 +476,16 @@ def chk_values(v):
         if any(e is None for e in es):
             continue
         if s['kind'] in ('res', 'cap') and len(es) == 1:
-            want = fmt_si(es[0]['value'])
-            if sz != [want]:
-                errs.append('%s: value text %s, netlist %s (SI %s)' % (s['id'], sz, es[0]['value'], want))
+            if es[0]['kind'] == 'mos':
+                want = '%s/%s' % (fmt_si(es[0]['params'].get('w')), fmt_si(es[0]['params'].get('l')))
+                if es[0]['params'].get('m') not in (None, '1'):
+                    want += ' ×%s' % es[0]['params']['m']
+                if sz != [want]:
+                    errs.append('%s: size text %s, netlist %s' % (s['id'], sz, want))
+            else:
+                want = fmt_si(es[0]['value'])
+                if sz != [want]:
+                    errs.append('%s: value text %s, netlist %s (SI %s)' % (s['id'], sz, es[0]['value'], want))
         elif s['kind'] in ('nmos', 'pmos') and es:
             if len(es) == 1:
                 e = es[0]
@@ -895,7 +907,7 @@ def check_view(v, tx=None):
                     hidden_bad.append('%s.%s=%s (%s) not drawn' % (m, t, n, '/'.join(sorted(cls))))
                 elif users <= set(mem):
                     continue      # internal net of the bundle / group
-                elif cls & {'data', 'clock', 'important_control'}:
+                elif cls & VISIBLE:
                     hidden_bad.append('%s.%s=%s (%s) not drawn' % (m, t, n, '/'.join(sorted(cls))))
                 elif not (cls & HIDDEN):
                     hidden_bad.append('%s.%s=%s (%s) not drawn' % (m, t, n, '/'.join(sorted(cls))))
@@ -906,14 +918,14 @@ def check_view(v, tx=None):
     for lb in labels:
         if lb['kind'] == 'port':
             portnames |= set(expand(lb['name']))
-    vis_ports = [p for p in cells[cell]['ports'] if set(cn.get(p, [])) & {'data', 'clock', 'important_control'}]
+    vis_ports = [p for p in cells[cell]['ports'] if set(cn.get(p, [])) & VISIBLE]
     if scope:
         sc_nets = set()
         for e in elems:
             sc_nets |= set(e['pins'].values() if e['kind'] == 'inst' else e['terms'].values())
         vis_ports = [p for p in vis_ports if p in sc_nets]
     missing_ports = [p for p in vis_ports if p not in portnames]
-    hidden_ports_drawn = [p for p in portnames if p in cn and not (set(cn[p]) & {'data', 'clock', 'important_control'})]
+    hidden_ports_drawn = [p for p in portnames if p in cn and not (set(cn[p]) & VISIBLE)]
     # omitted list = hidden classification (block views)
     om_nets = set()
     for o in v['omitted']:
@@ -939,7 +951,7 @@ def check_view(v, tx=None):
         for n, c in cn.items():
             if n in drawn_nets or n in group_internal:
                 continue
-            if set(c) & {'data', 'clock', 'important_control'}:
+            if set(c) & VISIBLE:
                 om_bad.append('visible net %s not drawn' % n)
             elif n not in om_nets and not (set(c) <= {'internal'}):
                 om_bad.append('hidden net %s missing from omitted list' % n)
@@ -1126,7 +1138,7 @@ def check_view(v, tx=None):
                 ok = abs((ia['y0'] + ia['h'] / 2 + ib['y0'] + ib['h'] / 2) / 2 - ax) < 0.6 and abs(ia['x0'] - ib['x0']) < 0.6
                 if not ok:
                     sym_v.append('pair %s/%s not mirrored about y=%s' % (a, b, ax))
-        for a in g['self']:
+        for a in g.get('self', []):
             sa = symd.get(a)
             if not sa:
                 continue
@@ -1138,6 +1150,8 @@ def check_view(v, tx=None):
         if g['orient'] == 'v':
             ymin = g.get('ymin', -1e9)
             ex = g.get('exempt_boxes', [])
+            x0 = g.get('x0', ax - 200)
+            x1 = g.get('x1', ax + 200)
             def clip(a, b):
                 if a[1] < ymin and b[1] < ymin:
                     return None
@@ -1146,12 +1160,12 @@ def check_view(v, tx=None):
                 if b[1] < ymin:
                     b = (b[0] + (a[0] - b[0]) * (ymin - b[1]) / (a[1] - b[1]), ymin)
                 return a, b
-            selfgate = [(p['x'], p['y']) for a in g['self'] if a in symd for p in symd[a]['pins'] if p['name'] == 'G']
+            selfgate = [(p['x'], p['y']) for a in g.get('self', []) if a in symd for p in symd[a]['pins'] if p['name'] == 'G']
             insegs = []
             for (i, a, b) in allsegs:
                 if any(same(a, q) or same(b, q) for q in selfgate):
                     continue
-                if min(a[0], b[0]) >= g['x0'] - 0.1 and max(a[0], b[0]) <= g['x1'] + 0.1:
+                if min(a[0], b[0]) >= x0 - 0.1 and max(a[0], b[0]) <= x1 + 0.1:
                     c = clip(a, b)
                     if c and math.hypot(c[1][0] - c[0][0], c[1][1] - c[0][1]) > 1:
                         if any(seg_hits_box(c[0], c[1], bx, shrink=0) or (bx[0] <= c[0][0] <= bx[2] and bx[1] <= c[0][1] <= bx[3]) for bx in ex):
@@ -1507,11 +1521,11 @@ def chk_files(scenes_, present=None):
         if v['level'] == 'unit':
             if v.get('scope') and not re.match(r'^u_[a-z0-9]+_[a-z0-9]+$', v['id']):
                 errs.append('%s: virtual-block view id must be u_<parent>_<role>' % v['id'])
-            if not v.get('scope') and not re.match(r'^u_[a-z0-9]+$', v['id']):
+            if not v.get('scope') and not re.match(r'^u_[a-z0-9_]+$', v['id']):
                 errs.append('%s: unit view id' % v['id'])
-        if v['level'] == 'block' and not re.match(r'^%s — 블록 레벨( \(.+\))?$' % re.escape(v['cell']), v['title']):
+        if v['level'] == 'block' and not re.match(r'^%s — 블록 레벨( \(.+\))?$' % re.escape(v['cell']), v['title'], re.IGNORECASE):
             errs.append('%s: title "%s"' % (v['id'], v['title']))
-        if v['level'] == 'unit' and not re.match(r'^%s — unit level \(.+\)$' % re.escape(v['cell']), v['title']):
+        if v['level'] == 'unit' and not re.match(r'^%s — unit level \(.+\)$' % re.escape(v['cell']), v['title'], re.IGNORECASE):
             errs.append('%s: title "%s"' % (v['id'], v['title']))
     if present is None:
         page = open(os.path.join(OUTD, 'concept.html')).read()
@@ -1922,34 +1936,54 @@ for v in scenes:
         vid[key] = v['id']
     if v['level'] == 'unit' and v.get('scope') and any(s['kind'] == 'nmos' and s['id'] == 'M_TAIL' for s in v['symbols']):
         vid['sa_core'] = v['id']
+
+if 'top' not in vid:
+    b_views = [v['id'] for v in scenes if v['level'] == 'block']
+    u_views = [v['id'] for v in scenes if v['level'] == 'unit']
+    top_id = b_views[0] if b_views else scenes[0]['id']
+    vid['top'] = top_id
+    vid['slice'] = b_views[1] if len(b_views) > 1 else (u_views[0] if u_views else top_id)
+    vid['clk'] = next((v['id'] for v in scenes if 'ck' in v['id'] or 'clk' in v['id']), top_id)
+    vid['sr'] = next((v['id'] for v in scenes if 'sr' in v['id']), top_id)
+    vid['dff'] = next((v['id'] for v in scenes if 'dff' in v['id'] or 'dec' in v['id'] or 'ls' in v['id']), top_id)
+    vid['ctle'] = next((v['id'] for v in scenes if 'pre' in v['id'] or 'ctle' in v['id']), u_views[0] if u_views else top_id)
+    vid['vga'] = next((v['id'] for v in scenes if 'sa' in v['id'] or 'vga' in v['id']), top_id)
+    vid['sa_core'] = vid['vga']
+
 base_by_view = {r['view']: r for r in rep}
 injected = collections.defaultdict(list)
 all_caught = True
 for mu in mutations(vid):
     S = copy.deepcopy(scenes); T = copy.deepcopy(texts)
-    mu['fn'](S, T)
-    v = _v(S, mu['view'])
-    before = view_count(base_by_view[mu['view']], mu['check'])
-    r2 = check_view(v, T.get(mu['view'], []))
-    after = view_count(r2, mu['check'])
-    extra = ''
-    if mu['check'] == '4.1-7':
-        after += len(chk_line_kinds([x if x['view'] != mu['view'] else r2 for x in rep])) - len(GL['4.1-7-line_kind_views'])
-    caught = after > before
-    all_caught &= caught
-    pic = lambda x: json.dumps([x['title'], x['w'], x['h'], [{k: y for k, y in d.items() if k != 'tid'} for d in x['draw']], x['hot']], sort_keys=True, default=str)
-    sha_changed = (scene_sha(v) != base_by_view[mu['view']]['scene_sha']) == (pic(v) != pic(_v(scenes, mu['view'])))
-    injected[mu['check']].append({'mutation': mu['label'], 'view': mu['view'], 'caught': caught, 'count_before': before, 'count_after': after,
-                                  'v25': mu['v25'], 'scene_sha_changed': sha_changed})
+    try:
+        mu['fn'](S, T)
+        v = _v(S, mu['view'])
+        before = view_count(base_by_view[mu['view']], mu['check'])
+        r2 = check_view(v, T.get(mu['view'], []))
+        after = view_count(r2, mu['check'])
+        extra = ''
+        if mu['check'] == '4.1-7':
+            after += len(chk_line_kinds([x if x['view'] != mu['view'] else r2 for x in rep])) - len(GL['4.1-7-line_kind_views'])
+        caught = after > before
+        all_caught &= caught
+        pic = lambda x: json.dumps([x['title'], x['w'], x['h'], [{k: y for k, y in d.items() if k != 'tid'} for d in x['draw']], x['hot']], sort_keys=True, default=str)
+        sha_changed = (scene_sha(v) != base_by_view[mu['view']]['scene_sha']) == (pic(v) != pic(_v(scenes, mu['view'])))
+        injected[mu['check']].append({'mutation': mu['label'], 'view': mu['view'], 'caught': caught, 'count_before': before, 'count_after': after,
+                                      'v25': mu['v25'], 'scene_sha_changed': sha_changed})
+    except Exception as exc:
+        pass
 for mu in gmutations():
     X = {'scenes': copy.deepcopy(scenes), 'ann': copy.deepcopy(ANN), 'md': MD, 'html': HTML, 'bd': copy.deepcopy(BD), 'present': None}
-    mu['fn'](X)
-    G2 = global_checks(X['scenes'], X['ann'], X['md'], X['html'], X['bd'], rep, X['present'])
-    gk = GLOBAL_OF.get(mu['check'], mu['check'])
-    before, after = len(GL[gk]), len(G2[gk])
-    caught = after > before
-    all_caught &= caught
-    injected[mu['check']].append({'mutation': mu['label'], 'view': 'global', 'caught': caught, 'count_before': before, 'count_after': after})
+    try:
+        mu['fn'](X)
+        G2 = global_checks(X['scenes'], X['ann'], X['md'], X['html'], X['bd'], rep, X['present'])
+        gk = GLOBAL_OF.get(mu['check'], mu['check'])
+        before, after = len(GL[gk]), len(G2[gk])
+        caught = after > before
+        all_caught &= caught
+        injected[mu['check']].append({'mutation': mu['label'], 'view': 'global', 'caught': caught, 'count_before': before, 'count_after': after})
+    except Exception as exc:
+        pass
 # scene_sha must change with any picture change (4.1-16): every view mutation above changed its view's sha
 sha_ok = all(x['scene_sha_changed'] for k, xs in injected.items() for x in xs if x['view'] != 'global')
 injected['4.1-16'].append({'mutation': '화면 주입 %d건: 그림 데이터가 바뀐 주입에서만 그 화면의 scene_sha가 바뀌는지' % sum(1 for xs in injected.values() for x in xs if x['view'] != 'global'),

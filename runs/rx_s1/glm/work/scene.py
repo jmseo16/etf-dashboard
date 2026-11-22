@@ -289,7 +289,7 @@ def rail(V, x0, x1, y, net, label='VDD'):
     V.labels.append({'name': net, 'at': [float(x0), float(y)], 'kind': 'power', 'tid': tid})
 
 
-def gray_gate(V, p, name, side):
+def gray_gate(V, p, name, side, L=20, **kwargs):
     """short gray label at a gate pin of an invisible net (no wire)"""
     x, y = p['x'], p['y']
     if side == 'left':
@@ -309,12 +309,14 @@ def tri(V, sid, x0, yc, label, inst, w=80, h=90, ins=None, outs=None, bottom=Non
     V.text(x0 + w * 0.36, yc, label, size=12, anchor='middle', weight='bold', cls='blk', owner=sid)
     pins = []
     lw = CLK_W if cls == 'clock' else SYM_W
-    for (pn, dy, terms) in (ins or []):
+    for item in (ins or []):
+        pn, dy, terms = item[0], item[1], item[2]
         V.line([(x0 - 20, yc + dy), (x0, yc + dy)], w=lw, owner=sid)
         pins.append(pin(pn, x0 - 20, yc + dy, terms, side='left'))
         if pm and pn in pm:
             V.text(x0 + 7, yc + dy, pm[pn], size=10, anchor='middle', weight='bold', cls='pm', owner=sid)
-    for (pn, dy, terms) in (outs or []):
+    for item in (outs or []):
+        pn, dy, terms = item[0], item[1], item[2]
         xe = x0 + w * (1 - abs(dy) / (h / 2))
         if pn in bubbles:
             # bubble tangent to the slope (perpendicular distance r = 4 from the slanted edge)
@@ -329,13 +331,17 @@ def tri(V, sid, x0, yc, label, inst, w=80, h=90, ins=None, outs=None, bottom=Non
         pins.append(pin(pn, x0 + w + 20, yc + dy, terms, side='right'))
         if out_names and len(outs) >= 2:
             V.text(tx, yc + dy + (-8 if dy < 0 else 9), pn, size=9, anchor='start', color='#555', cls='pintext', owner=sid)
-    for (pn, dx, terms, cl) in (bottom or []):
+    for item in (bottom or []):
+        pn, dx, terms = item[0], item[1], item[2]
+        cl = item[3] if len(item) > 3 else 'clock'
         ye = yc + (h / 2) * (1 - dx / w)
         V.line([(x0 + dx, ye), (x0 + dx, yc + h / 2 + 20)], w=CLK_W if cl == 'clock' else SYM_W, owner=sid)
         pins.append(pin(pn, x0 + dx, yc + h / 2 + 20, terms, side='bottom'))
         if clock_mark:
             V.poly([(x0 + dx - 6, ye), (x0 + dx, ye - 8), (x0 + dx + 6, ye)], fill='none', stroke=BLACK, w=1.2, owner=sid)
-    for (pn, dx, terms, cl) in (top or []):
+    for item in (top or []):
+        pn, dx, terms = item[0], item[1], item[2]
+        cl = item[3] if len(item) > 3 else 'plain'
         ye = yc - (h / 2) * (1 - dx / w)
         V.line([(x0 + dx, ye), (x0 + dx, yc - h / 2 - 20)], w=BUS_W if cl == 'bus' else SYM_W, owner=sid)
         pins.append(pin(pn, x0 + dx, yc - h / 2 - 20, terms, side='top'))
@@ -368,12 +374,16 @@ def box(V, sid, x0, y0, w, h, label, inst, left=None, right=None, bottom=None, t
     pins = []
     def lw(cl):
         return CLK_W if cl in ('clock', 'bus') else SYM_W
-    for (pn, y, terms, cl) in (left or []):
+    for item in (left or []):
+        pn, y, terms = item[0], item[1], item[2]
+        cl = item[3] if len(item) > 3 else 'plain'
         V.line([(x0 - 20, y), (x0, y)], w=lw(cl), owner=sid)
         pins.append(pin(pn, x0 - 20, y, terms, side='left'))
         if pin_text:
             V.text(x0 + 4, y, pn, size=9, anchor='start', color='#555', cls='pintext', owner=sid)
-    for (pn, y, terms, cl) in (right or []):
+    for item in (right or []):
+        pn, y, terms = item[0], item[1], item[2]
+        cl = item[3] if len(item) > 3 else 'plain'
         if pn in bubbles:
             V.circle(x0 + w + 4, y, 4, fill='#fff', owner=sid)
             V.line([(x0 + w + 8, y), (x0 + w + 20, y)], w=lw(cl), owner=sid)
@@ -382,12 +392,16 @@ def box(V, sid, x0, y0, w, h, label, inst, left=None, right=None, bottom=None, t
         pins.append(pin(pn, x0 + w + 20, y, terms, side='right'))
         if pin_text:
             V.text(x0 + w - 4, y, pn, size=9, anchor='end', color='#555', cls='pintext', owner=sid)
-    for (pn, x, terms, cl) in (bottom or []):
+    for item in (bottom or []):
+        pn, x, terms = item[0], item[1], item[2]
+        cl = item[3] if len(item) > 3 else 'plain'
         V.line([(x, y0 + h), (x, y0 + h + 20)], w=lw(cl), owner=sid)
         pins.append(pin(pn, x, y0 + h + 20, terms, side='bottom'))
         if pin_text:
             V.text(x, y0 + h - 8, pn, size=9, anchor='middle', color='#555', cls='pintext', owner=sid)
-    for (pn, x, terms, cl) in (top or []):
+    for item in (top or []):
+        pn, x, terms = item[0], item[1], item[2]
+        cl = item[3] if len(item) > 3 else 'plain'
         V.line([(x, y0), (x, y0 - 20)], w=lw(cl), owner=sid)
         pins.append(pin(pn, x, y0 - 20, terms, side='top'))
         if pin_text:

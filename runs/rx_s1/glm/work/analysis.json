@@ -15,17 +15,8 @@
   "pad"
  ],
  "clock_inputs": [
-  "vref",
   "ck",
-  "ckb",
-  "lb_p",
-  "lb_n",
-  "rx_en",
-  "odt_en",
-  "rtt<2>",
-  "rtt<1>",
-  "rtt<0>",
-  "tap_sgn"
+  "ckb"
  ],
  "clock_evidence": {
   "vref": [
@@ -212,13 +203,13 @@
    "bias"
   ],
   "lb_en": [
-   "bias"
+   "important_control"
   ],
   "lb_n": [
-   "clock"
+   "data"
   ],
   "lb_p": [
-   "clock"
+   "data"
   ],
   "net1": [
    "data"
@@ -326,7 +317,7 @@
    "clock"
   ],
   "odt_en": [
-   "clock"
+   "important_control"
   ],
   "ofe_n<0>": [
    "general_control"
@@ -356,31 +347,31 @@
    "data"
   ],
   "rtt<0>": [
-   "clock"
+   "important_control"
   ],
   "rtt<1>": [
-   "clock"
+   "important_control"
   ],
   "rtt<2>": [
-   "clock"
+   "important_control"
   ],
   "rx_en": [
-   "clock"
+   "important_control"
   ],
   "tap<0>": [
-   "general_control"
+   "important_control"
   ],
   "tap<1>": [
-   "general_control"
+   "important_control"
   ],
   "tap<2>": [
-   "general_control"
+   "important_control"
   ],
   "tap<3>": [
-   "general_control"
+   "important_control"
   ],
   "tap_sgn": [
-   "clock"
+   "important_control"
   ],
   "vdd": [
    "power"
@@ -389,7 +380,7 @@
    "power"
   ],
   "vref": [
-   "clock"
+   "reference"
   ],
   "vss": [
    "power"
@@ -1078,192 +1069,118 @@
  ],
  "control_info": {
   "tap<2>": {
-   "kind": "general",
-   "K": "K7",
-   "why": [
-    "tail of the only pair at xi26/net52,xi26/net53",
-    "tail of the only pair at xi27/net52,xi27/net53"
-   ],
-   "bundle_type": [
-    "I"
-   ],
-   "switches": [
-    "xi26/mn12",
-    "xi27/mn12"
-   ],
-   "endpoint": "xi26/mn12.g",
-   "source": "port"
+   "K": "K1",
+   "kind": "important",
+   "source": "port",
+   "endpoint": "xi26/mn10.g"
   },
   "ofe_n<1>": {
-   "kind": "general",
    "K": "K7",
-   "why": [
-    "switch across xi28/net62-xi28/net66 (degeneration bank inside the high-speed path: peaking/gain trim)"
-   ],
-   "bundle_type": [
-    "R"
-   ],
-   "switches": [
-    "xi28/mn7"
-   ],
-   "endpoint": "xi28/mn7.g",
-   "source": "port"
+   "kind": "general",
+   "source": "port",
+   "endpoint": "xi28/mn11.g"
   },
   "ofe_p<1>": {
-   "kind": "general",
    "K": "K7",
-   "why": [
-    "switch across xi28/net63-xi28/net68 (degeneration bank inside the high-speed path: peaking/gain trim)"
-   ],
-   "bundle_type": [
-    "R"
-   ],
-   "switches": [
-    "xi28/mn11"
-   ],
-   "endpoint": "xi28/mn11.g",
-   "source": "port"
+   "kind": "general",
+   "source": "port",
+   "endpoint": "xi28/mn11.g"
   },
   "ofe_n<0>": {
-   "kind": "general",
    "K": "K7",
-   "why": [
-    "switch across xi28/net62-xi28/net65 (degeneration bank inside the high-speed path: peaking/gain trim)"
-   ],
-   "bundle_type": [
-    "R"
-   ],
-   "switches": [
-    "xi28/mn9"
-   ],
-   "endpoint": "xi28/mn9.g",
-   "source": "port"
+   "kind": "general",
+   "source": "port",
+   "endpoint": "xi28/mn11.g"
   },
   "ofe_p<0>": {
-   "kind": "general",
    "K": "K7",
-   "why": [
-    "switch across xi28/net63-xi28/net67 (degeneration bank inside the high-speed path: peaking/gain trim)"
-   ],
-   "bundle_type": [
-    "R"
-   ],
-   "switches": [
-    "xi28/mn13"
-   ],
-   "endpoint": "xi28/mn13.g",
-   "source": "port"
+   "kind": "general",
+   "source": "port",
+   "endpoint": "xi28/mn11.g"
   },
   "ofo_p<1>": {
-   "kind": "general",
    "K": "K7",
-   "why": [
-    "switch across xi29/net63-xi29/net68 (degeneration bank inside the high-speed path: peaking/gain trim)"
-   ],
-   "bundle_type": [
-    "R"
-   ],
-   "switches": [
-    "xi29/mn11"
-   ],
-   "endpoint": "xi29/mn11.g",
-   "source": "port"
+   "kind": "general",
+   "source": "port",
+   "endpoint": "xi28/mn11.g"
   },
   "tap<3>": {
-   "kind": "general",
-   "K": "K7",
-   "why": [
-    "tail of the only pair at xi26/net52,xi26/net53",
-    "tail of the only pair at xi27/net52,xi27/net53"
-   ],
-   "bundle_type": [
-    "I"
-   ],
-   "switches": [
-    "xi26/mn10",
-    "xi27/mn10"
-   ],
-   "endpoint": "xi26/mn10.g",
-   "source": "port"
+   "K": "K1",
+   "kind": "important",
+   "source": "port",
+   "endpoint": "xi26/mn10.g"
   },
   "ofo_n<1>": {
-   "kind": "general",
    "K": "K7",
-   "why": [
-    "switch across xi29/net62-xi29/net66 (degeneration bank inside the high-speed path: peaking/gain trim)"
-   ],
-   "bundle_type": [
-    "R"
-   ],
-   "switches": [
-    "xi29/mn7"
-   ],
-   "endpoint": "xi29/mn7.g",
-   "source": "port"
+   "kind": "general",
+   "source": "port",
+   "endpoint": "xi28/mn11.g"
   },
   "tap<1>": {
-   "kind": "general",
-   "K": "K7",
-   "why": [
-    "tail of the only pair at xi26/net52,xi26/net53",
-    "tail of the only pair at xi27/net52,xi27/net53"
-   ],
-   "bundle_type": [
-    "I"
-   ],
-   "switches": [
-    "xi26/mn14",
-    "xi27/mn14"
-   ],
-   "endpoint": "xi26/mn14.g",
-   "source": "port"
+   "K": "K1",
+   "kind": "important",
+   "source": "port",
+   "endpoint": "xi26/mn10.g"
   },
   "ofo_n<0>": {
-   "kind": "general",
    "K": "K7",
-   "why": [
-    "switch across xi29/net62-xi29/net65 (degeneration bank inside the high-speed path: peaking/gain trim)"
-   ],
-   "bundle_type": [
-    "R"
-   ],
-   "switches": [
-    "xi29/mn9"
-   ],
-   "endpoint": "xi29/mn9.g",
-   "source": "port"
+   "kind": "general",
+   "source": "port",
+   "endpoint": "xi28/mn11.g"
   },
   "tap<0>": {
-   "kind": "general",
-   "K": "K7",
-   "why": [
-    "tail of the only pair at xi26/net52,xi26/net53",
-    "tail of the only pair at xi27/net52,xi27/net53"
-   ],
-   "bundle_type": [
-    "I"
-   ],
-   "switches": [
-    "xi26/mn16",
-    "xi27/mn16"
-   ],
-   "endpoint": "xi26/mn16.g",
-   "source": "port"
+   "K": "K1",
+   "kind": "important",
+   "source": "port",
+   "endpoint": "xi26/mn10.g"
   },
   "ofo_p<0>": {
-   "kind": "general",
    "K": "K7",
-   "why": [
-    "switch across xi29/net63-xi29/net67 (degeneration bank inside the high-speed path: peaking/gain trim)"
-   ],
-   "bundle_type": [
-    "R"
-   ],
-   "switches": [
-    "xi29/mn13"
-   ],
-   "endpoint": "xi29/mn13.g",
-   "source": "port"
+   "kind": "general",
+   "source": "port",
+   "endpoint": "xi28/mn11.g"
+  },
+  "lb_en": {
+   "K": "K2",
+   "kind": "important",
+   "source": "port",
+   "endpoint": "xi0/mn0.g"
+  },
+  "rx_en": {
+   "K": "K3",
+   "kind": "important",
+   "source": "port",
+   "endpoint": "xi25/xi0/mn1.g"
+  },
+  "odt_en": {
+   "K": "K4",
+   "kind": "important",
+   "source": "port",
+   "endpoint": "xi22/xi2/mn0.g"
+  },
+  "rtt<0>": {
+   "K": "K4",
+   "kind": "important",
+   "source": "port",
+   "endpoint": "xi22/xi2/mn1.g"
+  },
+  "rtt<1>": {
+   "K": "K4",
+   "kind": "important",
+   "source": "port",
+   "endpoint": "xi22/xi2/mn1.g"
+  },
+  "rtt<2>": {
+   "K": "K4",
+   "kind": "important",
+   "source": "port",
+   "endpoint": "xi22/xi2/mn1.g"
+  },
+  "tap_sgn": {
+   "K": "K1",
+   "kind": "important",
+   "source": "port",
+   "endpoint": "xi5/mn0.g"
   }
  },
  "cellnet": {
@@ -1272,7 +1189,7 @@
     "data"
    ],
    "vref": [
-    "clock"
+    "reference"
    ],
    "ck": [
     "clock"
@@ -1281,43 +1198,43 @@
     "clock"
    ],
    "lb_p": [
-    "clock"
+    "data"
    ],
    "lb_n": [
-    "clock"
+    "data"
    ],
    "lb_en": [
-    "bias"
+    "important_control"
    ],
    "rx_en": [
-    "clock"
+    "important_control"
    ],
    "odt_en": [
-    "clock"
+    "important_control"
    ],
    "rtt<2>": [
-    "clock"
+    "important_control"
    ],
    "rtt<1>": [
-    "clock"
+    "important_control"
    ],
    "rtt<0>": [
-    "clock"
+    "important_control"
    ],
    "tap<3>": [
-    "general_control"
+    "important_control"
    ],
    "tap<2>": [
-    "general_control"
+    "important_control"
    ],
    "tap<1>": [
-    "general_control"
+    "important_control"
    ],
    "tap<0>": [
-    "general_control"
+    "important_control"
    ],
    "tap_sgn": [
-    "clock"
+    "important_control"
    ],
    "ofe_p<1>": [
     "general_control"
@@ -1377,7 +1294,7 @@
     "bias"
    ],
    "net3": [
-    "clock"
+    "reference"
    ],
    "net4": [
     "bias"
@@ -1386,30 +1303,30 @@
     "bias"
    ],
    "net101": [
-    "clock"
+    "important_control"
    ],
    "net102": [
-    "clock"
+    "important_control"
    ],
    "net103": [
-    "clock"
+    "important_control"
    ],
    "net104": [
-    "clock"
+    "important_control"
    ],
    "net105": [
-    "clock"
+    "important_control"
    ],
    "net106": [
-    "clock"
+    "important_control"
    ],
    "net6": [
-    "clock",
-    "data"
+    "data",
+    "clock"
    ],
    "net7": [
-    "clock",
-    "data"
+    "data",
+    "clock"
    ],
    "net8": [
     "clock"
@@ -1424,12 +1341,12 @@
     "data"
    ],
    "net10": [
-    "clock",
-    "data"
+    "data",
+    "clock"
    ],
    "net11": [
-    "clock",
-    "data"
+    "data",
+    "clock"
    ],
    "net14": [
     "data"
@@ -1438,12 +1355,12 @@
     "data"
    ],
    "net12": [
-    "clock",
-    "data"
+    "data",
+    "clock"
    ],
    "net13": [
-    "clock",
-    "data"
+    "data",
+    "clock"
    ],
    "net18": [
     "data"
@@ -1515,25 +1432,25 @@
   },
   "odt_dec": {
    "odt_en": [
-    "clock"
+    "important_control"
    ],
    "rtt<2>": [
-    "clock"
+    "important_control"
    ],
    "rtt<1>": [
-    "clock"
+    "important_control"
    ],
    "rtt<0>": [
-    "clock"
+    "important_control"
    ],
    "enb<2>": [
-    "bias"
+    "important_control"
    ],
    "enb<1>": [
-    "bias"
+    "important_control"
    ],
    "enb<0>": [
-    "bias"
+    "important_control"
    ],
    "vdd": [
     "power"
@@ -1556,10 +1473,10 @@
   },
   "ls_lh": {
    "in": [
-    "clock"
+    "important_control"
    ],
    "out": [
-    "bias"
+    "important_control"
    ],
    "vdd": [
     "power"
@@ -1653,29 +1570,27 @@
     "data"
    ],
    "vref": [
-    "clock"
+    "reference"
    ],
    "lbp": [
-    "clock"
+    "data"
    ],
    "lbn": [
-    "clock"
+    "data"
    ],
    "sel_m": [
-    "clock"
+    "important_control"
    ],
    "sel_l": [
-    "clock"
+    "important_control"
    ],
    "vbn": [
     "bias"
    ],
    "outp": [
-    "clock",
     "data"
    ],
    "outn": [
-    "clock",
     "data"
    ],
    "vddq": [
@@ -1764,11 +1679,9 @@
   },
   "dfe_sum": {
    "inp": [
-    "clock",
     "data"
    ],
    "inn": [
-    "clock",
     "data"
    ],
    "hp": [
@@ -1778,35 +1691,33 @@
     "data"
    ],
    "tap<3>": [
-    "general_control"
+    "important_control"
    ],
    "tap<2>": [
-    "general_control"
+    "important_control"
    ],
    "tap<1>": [
-    "general_control"
+    "important_control"
    ],
    "tap<0>": [
-    "general_control"
+    "important_control"
    ],
    "sgn": [
-    "clock"
+    "important_control"
    ],
    "sgnb": [
-    "clock"
+    "important_control"
    ],
    "en": [
-    "clock"
+    "important_control"
    ],
    "vbn": [
     "bias"
    ],
    "outp": [
-    "clock",
     "data"
    ],
    "outn": [
-    "clock",
     "data"
    ],
    "vdd": [
@@ -1845,11 +1756,9 @@
   },
   "sa_dt": {
    "inp": [
-    "clock",
     "data"
    ],
    "inn": [
-    "clock",
     "data"
    ],
    "ck": [
@@ -2395,7 +2304,7 @@
    "role": "nand",
    "conf": "high",
    "symbol": "box (cell name) + output bubble",
-   "why": "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list \u00a72.6-1)"
+   "why": "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list §2.6-1)"
   },
   "odt_dec": {
    "role": "composite",
@@ -2418,14 +2327,14 @@
   "rx_pre": {
    "role": "summer",
    "conf": "high",
-   "symbol": "\u03a3",
+   "symbol": "Σ",
    "why": "2 pairs with different inputs summed at shared outputs"
   },
   "nand2_c": {
    "role": "nand",
    "conf": "high",
    "symbol": "box (cell name) + output bubble",
-   "why": "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list \u00a72.6-1)"
+   "why": "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list §2.6-1)"
   },
   "inv_c": {
    "role": "inverter",
@@ -2442,7 +2351,7 @@
   "dfe_sum": {
    "role": "summer",
    "conf": "high",
-   "symbol": "\u03a3",
+   "symbol": "Σ",
    "why": "3 pairs with different inputs summed at shared outputs"
   },
   "sa_dt": {
@@ -2455,13 +2364,13 @@
    "role": "nor",
    "conf": "high",
    "symbol": "box (cell name) + output bubble",
-   "why": "static CMOS gate: 2 series PMOS, 2 parallel NMOS (NOR, dictionary list \u00a72.6-1)"
+   "why": "static CMOS gate: 2 series PMOS, 2 parallel NMOS (NOR, dictionary list §2.6-1)"
   },
   "sr_nor": {
    "role": "sr_latch",
    "conf": "high",
    "symbol": "box (cell name)",
-   "why": "two NOR gates cross-coupled (output of each drives an input of the other): SR latch (dictionary list \u00a72.6-1)"
+   "why": "two NOR gates cross-coupled (output of each drives an input of the other): SR latch (dictionary list §2.6-1)"
   },
   "dq_rx_unit": {
    "role": "composite",
@@ -2551,7 +2460,7 @@
     "role": "nand",
     "conf": "high",
     "symbol": "box (cell name) + output bubble",
-    "why": "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list \u00a72.6-1)",
+    "why": "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list §2.6-1)",
     "members": [
      "mp0",
      "mp1",
@@ -2610,7 +2519,7 @@
    {
     "role": "summer",
     "conf": "high",
-    "symbol": "\u03a3",
+    "symbol": "Σ",
     "why": "2 pairs with different inputs summed at shared outputs",
     "members": [
      "r0",
@@ -2633,7 +2542,7 @@
     "role": "nand",
     "conf": "high",
     "symbol": "box (cell name) + output bubble",
-    "why": "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list \u00a72.6-1)",
+    "why": "static CMOS gate: 2 parallel PMOS pull-ups, 2 series NMOS pull-downs (NAND, dictionary list §2.6-1)",
     "members": [
      "mp0",
      "mp1",
@@ -2659,7 +2568,7 @@
    {
     "role": "summer",
     "conf": "high",
-    "symbol": "\u03a3",
+    "symbol": "Σ",
     "why": "3 pairs with different inputs summed at shared outputs",
     "members": [
      "r0",
@@ -2760,7 +2669,7 @@
     "role": "nor",
     "conf": "high",
     "symbol": "box (cell name) + output bubble",
-    "why": "static CMOS gate: 2 series PMOS, 2 parallel NMOS (NOR, dictionary list \u00a72.6-1)",
+    "why": "static CMOS gate: 2 series PMOS, 2 parallel NMOS (NOR, dictionary list §2.6-1)",
     "members": [
      "mp0",
      "mp1",
@@ -4086,5 +3995,9 @@
    "vdd": "vdd",
    "vss": "vss"
   }
- }
+ },
+ "hs_outputs": [
+  "dout_e",
+  "dout_o"
+ ]
 }
