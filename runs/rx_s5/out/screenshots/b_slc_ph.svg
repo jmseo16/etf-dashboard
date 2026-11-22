@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="650" height="280" viewBox="0 0 650 280" font-family="Helvetica,Arial,sans-serif">
+<rect width="100%" height="100%" fill="#fff"/>
+<line x1="140" y1="80" x2="80" y2="80" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="140" y1="100" x2="80" y2="100" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="200" y1="130" x2="200" y2="190" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="500" y1="80" x2="560" y2="80" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="500" y1="100" x2="560" y2="100" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="260" y1="80" x2="400" y2="80" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="260" y1="100" x2="400" y2="100" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<g class="hot" data-target="b_sa_dt" style="cursor:pointer"><rect x="140" y="50" width="120" height="80" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><rect x="140" y="50" width="120" height="80" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<g class="hot" data-target="b_sr_nor" style="cursor:pointer"><rect x="400" y="60" width="100" height="60" stroke="#111" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" /><rect x="400" y="60" width="100" height="60" fill="#fff" fill-opacity="0.01" stroke="none"/></g>
+<polygon points="64,75 75,75 80,80 75,85 64,85" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="64,95 75,95 80,100 75,105 64,105" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="195,206 205,206 205,195 200,190 195,195" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="560,75 571,75 576,80 571,85 560,85" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<polygon points="560,95 571,95 576,100 571,105 560,105" stroke="#111" stroke-width="1.6"  stroke-linecap="round" stroke-linejoin="round" fill="#fff" />
+<text x="144" y="83" font-size="9" text-anchor="start" fill="#444" pointer-events="none">inp</text>
+<text x="144" y="103" font-size="9" text-anchor="start" fill="#444" pointer-events="none">inn</text>
+<text x="256" y="83" font-size="9" text-anchor="end" fill="#444" pointer-events="none">outp</text>
+<text x="256" y="103" font-size="9" text-anchor="end" fill="#444" pointer-events="none">outn</text>
+<text x="200" y="125" font-size="9" text-anchor="middle" fill="#444" pointer-events="none">ck</text>
+<text x="200.0" y="94.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">sa_dt</text>
+<text x="140" y="45" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi0</text>
+<text x="404" y="83" font-size="9" text-anchor="start" fill="#444" pointer-events="none">s</text>
+<text x="404" y="103" font-size="9" text-anchor="start" fill="#444" pointer-events="none">r</text>
+<text x="496" y="83" font-size="9" text-anchor="end" fill="#444" pointer-events="none">q</text>
+<text x="496" y="103" font-size="9" text-anchor="end" fill="#444" pointer-events="none">qb</text>
+<text x="450.0" y="94.0" font-size="12" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">sr_nor</text>
+<text x="400" y="55" font-size="9" text-anchor="start" fill="#555" font-style="italic" pointer-events="none">xi1</text>
+<text x="60" y="84" font-size="11" text-anchor="end" fill="#111" font-weight="bold" pointer-events="none">inp</text>
+<text x="60" y="104" font-size="11" text-anchor="end" fill="#111" font-weight="bold" pointer-events="none">inn</text>
+<text x="200" y="218" font-size="11" text-anchor="middle" fill="#111" font-weight="bold" pointer-events="none">ck</text>
+<text x="580" y="84" font-size="11" text-anchor="start" fill="#111" font-weight="bold" pointer-events="none">q</text>
+<text x="580" y="104" font-size="11" text-anchor="start" fill="#111" font-weight="bold" pointer-events="none">qb</text>
+</svg>
