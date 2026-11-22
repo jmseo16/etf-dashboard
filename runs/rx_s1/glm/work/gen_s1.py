@@ -48,6 +48,17 @@ def omit(h, nets, cls, why=None):
         h.V.omitted.append({'net': n, 'class': KO.get(cls, cls)})
 
 
+def wlm(h, name):
+    p = h.el[name]['params']
+    return 'W %s, L %s, m %s' % (fmt_si(p.get('w', '?')), fmt_si(p.get('l', '?')), p.get('m', '1'))
+
+
+def legend(h, x, y, lines, title='묶음·병합 (bundles / merged)'):
+    h.V.text(x, y, title, size=11, anchor='start', weight='bold', cls='legend')
+    for i, ln in enumerate(lines):
+        h.V.text(x, y + 16 + 14 * i, ln, size=10, anchor='start', color='#444', cls='legend')
+
+
 # ---------------------------------------------------------------- static CMOS gate units
 def view_inv(cell, vid):
     h = new(vid, cell, 'unit', '%s — unit level (정적 CMOS 인버터)' % cell, 480, 420)
@@ -200,7 +211,8 @@ def view_lpf(vid):
     h.port('net3', 540, 190, 'right', 'out')
     h.auto('vref', [h.pt(R0, 'A'), (70, 190)], name='vref')
     h.auto('net3', [h.pt(R0, 'B'), h.pt(sym, 'A'), (540, 190)], name='net3')
-    h.V.notes.append('mn0 은 게이트(net3)–드레인=소스(vssq)로 묶인 MOS 커패시터이므로 커패시터 기호로 그림 (명세서에 MOS 커패시터 규칙 없음 — 질문 Q6)')
+    legend(h, 40, 330, ['C (MOS 커패시터) = mn0 (%s), 게이트 net3, 드레인=소스 vssq' % wlm(h, 'mn0')])
+    h.V.notes.append('mn0 은 게이트(net3)–드레인=소스(vssq)로 묶인 MOS 커패시터이므로 커패시터 기호로 그림 (명세서에 MOS 커패시터 규칙 없음 — 질문 Q4)')
     return h
 
 
@@ -242,7 +254,8 @@ def view_rx_pre(cell, vid):
     h.auto('sel_l', [h.pt(M6, 'G'), (300, 690)], name='sel_l')
     h.gray(h.pt(M3, 'G'), 'left', 'vbn'); h.gray(h.pt(M7, 'G'), 'left', 'vbn')
     omit(h, ['vbn'], 'bias')
-    h.V.notes.append('비대칭: mn8/mn9 는 D=S 묶음 MOS 커패시터 — inp→outp, vref→outn 으로 서로 교차 (netlist 대로, 질문 Q7)')
+    legend(h, 40, 840, ['C mn8 (MOS 커패시터) = %s, 게이트 inp, 드레인=소스 outp' % wlm(h, 'mn8'), 'C mn9 (MOS 커패시터) = %s, 게이트 vref, 드레인=소스 outn' % wlm(h, 'mn9')])
+    h.V.notes.append('비대칭: mn8/mn9 는 D=S 묶음 MOS 커패시터 — inp→outp, vref→outn 으로 서로 교차 (netlist 대로, 질문 Q4)')
     return h
 
 
@@ -253,47 +266,54 @@ def varcap_sym(h, sid, x, y, orient, a_term, b_term, members, name, size=''):
     return h.reg(sym)
 
 
-# ---------------------------------------------------------------- dfe_sum: summer (main pair + feedback pair + sign steering + tap DAC)
+# ---------------------------------------------------------------- dfe_sum: summer (round 2: pair-by-pair symmetric, Figure-B buses)
 def view_dfe_sum(cell, vid):
-    h = new(vid, cell, 'unit', '%s — unit level (Σ: 주 입력쌍 + 귀환 탭쌍, 부호 선택, 탭 전류 DAC)' % cell, 1120, 760)
-    M0 = h.mos('mn0', 230, 320, 'left', top='d'); M1 = h.mos('mn1', 390, 320, 'left', top='d')
+    h = new(vid, cell, 'unit', '%s — unit level (Σ: 주 입력쌍 + 귀환 탭쌍, 부호 선택, 탭 전류 DAC)' % cell, 1140, 800)
+    M0 = h.mos('mn0', 230, 320, 'left', top='d'); M1 = h.mos('mn1', 390, 320, 'right', top='d')
     R0 = h.res('r0', 230, 170, 'v', label_side='left'); R1 = h.res('r1', 390, 170, 'v', label_side='right')
     pw(h, R0, 'A', 'vdd', 'up'); pw(h, R1, 'A', 'vdd', 'up')
     M2 = h.mos('mn2', 310, 450, 'left', top='d'); M3 = h.mos('mn3', 310, 560, 'left', top='d')
     pw(h, M3, 'B', 'vss', 'down')
-    M8 = h.mos('mn8', 540, 320, 'left', top='d'); M6 = h.mos('mn6', 620, 320, 'right', top='d')
-    M7 = h.mos('mn7', 780, 320, 'left', top='d'); M9 = h.mos('mn9', 860, 320, 'right', top='d')
-    M4 = h.mos('mn4', 580, 470, 'left', top='d'); M5 = h.mos('mn5', 820, 470, 'right', top='d')
-    D = h.V
-    vs = scene.visrc(D, 'X_DAC<3:0>', 700, 610, name='X_DAC<3:0>', size='', top=[[('mn10', 'd')]], bot=[[('mn11', 's')]],
+    M8 = h.mos('mn8', 620, 320, 'left', top='d'); M6 = h.mos('mn6', 700, 320, 'right', top='d')
+    M7 = h.mos('mn7', 820, 320, 'left', top='d'); M9 = h.mos('mn9', 900, 320, 'right', top='d')
+    M4 = h.mos('mn4', 660, 440, 'left', top='d'); M5 = h.mos('mn5', 860, 440, 'right', top='d')
+    vs = scene.visrc(h.V, 'X_DAC<3:0>', 760, 570, name='X_DAC<3:0>', size='', top=[[('mn10', 'd')]], bot=[[('mn11', 's')]],
                      bus=[[('mn10', 'g')], [('mn12', 'g')], [('mn14', 'g')], [('mn16', 'g')]], bus_side='right',
                      members=['mn10', 'mn11', 'mn12', 'mn13', 'mn14', 'mn15', 'mn16', 'mn17'], label_side='left')
     vs['info']['concept'] = True; h.reg(vs)
     pw(h, vs, 'B', 'vss', 'down')
     # ports first
-    h.port('inp', 90, 320, 'right', 'in'); h.port('inn', 350, 120, 'down', 'in')
-    h.port('en', 150, 450, 'right', 'in'); h.port('hp', 460, 470, 'right', 'in'); h.port('hn', 980, 470, 'left', 'in')
-    h.port('sgnb', 700, 170, 'down', 'in'); h.port('sgn', 1020, 320, 'left', 'in')
-    h.port('tap<3:0>', 1030, 610, 'left', 'in')
-    h.port('outn', 110, 230, 'left', 'out'); h.port('outp', 1060, 230, 'right', 'out')
-    h.auto('inp', [h.pt(M0, 'G'), (90, 320)], name='inp')
-    h.auto('inn', [h.pt(M1, 'G'), (350, 120)], name='inn')
-    h.auto('en', [h.pt(M2, 'G'), (150, 450)], name='en')
-    h.auto('hp', [h.pt(M4, 'G'), (460, 470)], name='hp'); h.auto('hn', [h.pt(M5, 'G'), (980, 470)], name='hn')
-    h.auto('sgnb', [h.pt(M6, 'G'), h.pt(M7, 'G'), (700, 170)], name='sgnb')
-    h.auto('sgn', [h.pt(M8, 'G'), h.pt(M9, 'G'), (1020, 320)], name='sgn')
-    h.auto('tap<3:0>', [h.pt(vs, 'BUS'), (1030, 610)], name='tap<3:0>', cls='bus')
-    h.V.line([(936, 617), (950, 603)], w=1.4, owner='bus')
+    h.port('inp', 90, 320, 'right', 'in'); h.port('inn', 500, 320, 'left', 'in')
+    h.port('en', 150, 450, 'right', 'in'); h.port('hp', 540, 440, 'right', 'in'); h.port('hn', 1000, 440, 'left', 'in')
+    h.port('sgn', 1020, 320, 'left', 'in'); h.port('sgnb', 760, 110, 'down', 'in')
+    h.port('tap<3:0>', 1030, 570, 'left', 'in')
+    h.port('outn', 110, 260, 'left', 'out'); h.port('outp', 1020, 230, 'right', 'out')
+    # output buses by hand: outp bus on top (y=230), outn bus below (y=260); crossings = 2 (plan 3.3-2, one per pair)
+    h.manual('outp', [(390, 200), (390, 290)])
+    h.manual('outp', [(390, 230), (900, 230), (900, 290)])
+    h.manual('outp', [(700, 230), (700, 290)])
+    h.manual('outp', [(900, 230), (1020, 230)])
+    h.manual('outn', [(230, 200), (230, 290)])
+    h.manual('outn', [(230, 260), (820, 260), (820, 290)])
+    h.manual('outn', [(620, 260), (620, 290)])
+    h.manual('outn', [(110, 260), (230, 260)])
+    CONF['allow_cross'] = CONF.get('allow_cross', {}); CONF['allow_cross'][vid] = 2
     h.auto('net50', [h.pt(M0, 'B'), h.pt(M1, 'B'), h.pt(M2, 'T')], cls='plain')
     h.auto('net51', [h.pt(M2, 'B'), h.pt(M3, 'T')], cls='plain')
     h.auto('net52', [h.pt(M8, 'B'), h.pt(M6, 'B'), h.pt(M4, 'T')], cls='plain')
     h.auto('net53', [h.pt(M7, 'B'), h.pt(M9, 'B'), h.pt(M5, 'T')], cls='plain')
     h.auto('net54', [h.pt(M4, 'B'), h.pt(M5, 'B'), h.pt(vs, 'T')], cls='plain')
-    h.auto('outn', [h.pt(R0, 'B'), h.pt(M0, 'T'), h.pt(M8, 'T'), h.pt(M7, 'T'), (110, 230)], name='outn')
-    h.auto('outp', [h.pt(R1, 'B'), h.pt(M1, 'T'), h.pt(M6, 'T'), h.pt(M9, 'T'), (1060, 230)], name='outp')
+    h.auto('inp', [h.pt(M0, 'G'), (90, 320)], name='inp'); h.auto('inn', [h.pt(M1, 'G'), (500, 320)], name='inn')
+    h.auto('en', [h.pt(M2, 'G'), (150, 450)], name='en')
+    h.auto('hp', [h.pt(M4, 'G'), (540, 440)], name='hp'); h.auto('hn', [h.pt(M5, 'G'), (1000, 440)], name='hn')
+    h.auto('sgn', [h.pt(M9, 'G'), h.pt(M8, 'G'), (1020, 320)], name='sgn')
+    h.auto('sgnb', [h.pt(M6, 'G'), h.pt(M7, 'G'), (760, 110)], name='sgnb')
+    h.auto('tap<3:0>', [h.pt(vs, 'BUS'), (1030, 570)], name='tap<3:0>', cls='bus')
     h.gray(h.pt(M3, 'G'), 'left', 'vbn')
     omit(h, ['vbn'], 'bias')
-    h.V.notes.append('탭 DAC: 전류원 8개 (스위치 mn10/12/14/16 + 꼬리 mn11/13/15/17)를 가변 전류원 X_DAC<3:0> 하나로 묶음. 범례: mn10..mn17 = 스위치 W 400n L 30n m 8/4/2/1, 꼬리 W 1u L 240n m 8/4/2/1')
+    legend(h, 40, 680, ['X_DAC<3:0> = 스위치 mn10, mn12, mn14, mn16 (%s, %s, %s, %s)' % tuple(wlm(h, n) for n in ('mn10', 'mn12', 'mn14', 'mn16')),
+                        '             + 꼬리 mn11, mn13, mn15, mn17 (%s, %s, %s, %s)' % tuple(wlm(h, n) for n in ('mn11', 'mn13', 'mn15', 'mn17'))])
+    h.V.notes.append('탭 DAC: 전류원 8개를 가변 전류원 X_DAC<3:0> 하나로 묶음 (범례 참조)')
     return h
 
 
@@ -318,6 +338,8 @@ def view_sa1(vid):
     h.auto('inp', [h.pt(M1, 'G'), (150, 330)], name='inp'); h.auto('inn', [h.pt(M2, 'G'), (750, 330)], name='inn')
     h.auto('ck', [h.pt(M0, 'G'), h.pt(P0, 'G'), h.pt(P1, 'G'), (330, 560)], name='ck')
     omit(h, ['ofn<1>', 'ofn<0>', 'ofp<1>', 'ofp<0>'], 'general_control')
+    legend(h, 40, 610, ['C_OF_N = (mn7 + mn8) ∥ (mn9 + mn10): mn7 %s, mn8 %s, mn9 %s, mn10 %s' % tuple(wlm(h, n) for n in ('mn7', 'mn8', 'mn9', 'mn10')),
+                        'C_OF_P = (mn11 + mn12) ∥ (mn13 + mn14): mn11 %s, mn12 %s, mn13 %s, mn14 %s' % tuple(wlm(h, n) for n in ('mn11', 'mn12', 'mn13', 'mn14'))])
     h.V.notes.append('C_OF_N / C_OF_P: 스위치(mn7/mn9, mn11/mn13)와 MOS 커패시터(mn8/mn10, mn12/mn14)를 묶은 가변 C. 범례: C_OF_N = mn7+mn8 (W 200n/400n, m 2) ∥ mn9+mn10 (m 1), C_OF_P = mn11+mn12 (m 2) ∥ mn13+mn14 (m 1)')
     return h
 
@@ -581,8 +603,9 @@ def view_top(vid):
     pt = h.pt
     h.auto('pad', [pt(esd, 'pad'), pt(od, 'B'), P['pad']], name='pad')
     h.auto('net1', [pt(esd, 'pad_r'), pt(amp, 'inp')])
-    h.auto('net3', [pt(lpf, 'net3'), pt(amp, 'vref')])
-    h.auto('vref', [pt(lpf, 'vref'), P['vref']])
+    h.auto('net3', [pt(lpf, 'net3'), pt(amp, 'vref')], color=scene.GRAY)
+    h.auto('vref', [pt(lpf, 'vref'), P['vref']], color=scene.GRAY)
+    h.V.notes.append('vref — 기준 전압 (RC 필터 r0 + mn0 뒤, AMP 의 둘째 입력, 회색 선). 고속 데이터 아님 (§2.5-4 기준)')
     h.auto('lb_p', [pt(amp, 'lbp'), P['lb_p']]); h.auto('lb_n', [pt(amp, 'lbn'), P['lb_n']])
     for k in ('xi26', 'xi27'):
         pass
