@@ -1,0 +1,286 @@
+{
+ "hs_inputs": [
+  "pad"
+ ],
+ "clock_inputs": [
+  "ck",
+  "ckb"
+ ],
+ "hs_outputs": [
+  "dout_e",
+  "dout_o"
+ ],
+ "important_controls": [
+  "lb_en",
+  "rx_en",
+  "odt_en",
+  "rtt<2>",
+  "rtt<1>",
+  "rtt<0>",
+  "tap<3>",
+  "tap<2>",
+  "tap<1>",
+  "tap<0>",
+  "tap_sgn"
+ ],
+ "show_bias": [],
+ "hide": [
+  "ofe_p<1>",
+  "ofe_p<0>",
+  "ofe_n<1>",
+  "ofe_n<0>",
+  "ofo_p<1>",
+  "ofo_p<0>",
+  "ofo_n<1>",
+  "ofo_n<0>",
+  "ibias",
+  "vdd",
+  "vddq",
+  "vss",
+  "vssq"
+ ],
+ "block_roles": {
+  "inv_a": "inverter",
+  "inv_c": "inverter",
+  "nand2_a": "nand",
+  "nand2_c": "nand",
+  "nor2_c": "nor",
+  "ls_lh": "ls",
+  "esd_dq": "termination_esd",
+  "odt_pu": "termination",
+  "odt_dec": "composite",
+  "rx_bias": "bias",
+  "rx_pre": "unknown",
+  "dfe_sum": "summer",
+  "sa_dt": "comparator",
+  "sr_nor": "sr_latch",
+  "ck_gbuf": "composite",
+  "dq_rx_unit": "composite"
+ },
+ "_sources": {
+  "hs_inputs": "automatic structural analysis (pad input to ESD/ODT/preamp) + assumed answer",
+  "others": "automatic structural analysis + assumed answers below"
+ },
+ "_important_control_buses": {
+  "tap<3:0>": {
+   "bits": [
+    "tap<3>",
+    "tap<2>",
+    "tap<1>",
+    "tap<0>"
+   ],
+   "K": "K1",
+   "function": "DFE 탭 계수 가중치 — IDAC 스위치 → 탭 쌍 꼬리 전류, Σ 출력에서 합산",
+   "endpoint_pin": "xi26/mn10.g",
+   "source": "port"
+  },
+  "tap_sgn": {
+   "bits": [
+    "tap_sgn"
+   ],
+   "K": "K1",
+   "function": "DFE 탭 계수 극성 제어 — 극성 반전 스위치 게이트 구동",
+   "endpoint_pin": "xi5/mn0.g",
+   "source": "port"
+  },
+  "lb_en": {
+   "bits": [
+    "lb_en"
+   ],
+   "K": "K2",
+   "function": "루프백 선택 신호 — pad/vref 경로와 lb_p/lb_n 루프백 경로 간 상보 선택",
+   "endpoint_pin": "xi0/mn0.g",
+   "source": "port"
+  },
+  "rx_en": {
+   "bits": [
+    "rx_en"
+   ],
+   "K": "K3",
+   "function": "수신기 켜기/끄기 — 클럭 게이팅 버퍼, 프리앰프, DFE summer 꼬리 인에이블",
+   "endpoint_pin": "xi25/xi0/mn1.g",
+   "source": "port"
+  },
+  "odt_en": {
+   "bits": [
+    "odt_en"
+   ],
+   "K": "K4",
+   "function": "종단 켜기/끄기 — ODT 디코더 NAND 입력",
+   "endpoint_pin": "xi22/xi2/mn0.g",
+   "source": "port"
+  },
+  "rtt<2:0>": {
+   "bits": [
+    "rtt<2>",
+    "rtt<1>",
+    "rtt<0>"
+   ],
+   "K": "K4",
+   "function": "가변 종단 저항 코드 — ODT 디코더 거쳐 패드 풀업 저항 스위치 제어",
+   "endpoint_pin": "xi22/xi2/mn1.g",
+   "source": "port"
+  }
+ },
+ "_general_controls": [
+  "ofe_p<1>",
+  "ofe_p<0>",
+  "ofe_n<1>",
+  "ofe_n<0>",
+  "ofo_p<1>",
+  "ofo_p<0>",
+  "ofo_n<1>",
+  "ofo_n<0>"
+ ],
+ "_general_control_buses": {
+  "ofe_p<1:0>": {
+   "bits": [
+    "ofe_p<1>",
+    "ofe_p<0>"
+   ],
+   "K": "K7",
+   "function": "Even SA P측 오프셋 트림",
+   "endpoint_pin": "xi28/mn11.g",
+   "source": "port"
+  },
+  "ofe_n<1:0>": {
+   "bits": [
+    "ofe_n<1>",
+    "ofe_n<0>"
+   ],
+   "K": "K7",
+   "function": "Even SA N측 오프셋 트림",
+   "endpoint_pin": "xi28/mn7.g",
+   "source": "port"
+  },
+  "ofo_p<1:0>": {
+   "bits": [
+    "ofo_p<1>",
+    "ofo_p<0>"
+   ],
+   "K": "K7",
+   "function": "Odd SA P측 오프셋 트림",
+   "endpoint_pin": "xi29/mn11.g",
+   "source": "port"
+  },
+  "ofo_n<1:0>": {
+   "bits": [
+    "ofo_n<1>",
+    "ofo_n<0>"
+   ],
+   "K": "K7",
+   "function": "Odd SA N측 오프셋 트림",
+   "endpoint_pin": "xi29/mn7.g",
+   "source": "port"
+  }
+ },
+ "_bias": [
+  "ibias"
+ ],
+ "_questions_and_assumed_answers": [
+  {
+   "id": "Q1",
+   "template": "hs_input_role",
+   "kind": "hs_input_role",
+   "rule": "DRAWING_PLAN §2.4",
+   "fields": {
+    "item": "pad, lb_p, lb_n"
+   },
+   "item": "pad, lb_p, lb_n",
+   "question": "pad가 주 고속 데이터 입력 포트이고, lb_p 및 lb_n은 시험용 루프백 데이터 입력이 맞습니까?",
+   "assumed": "예 — pad는 최상위 주 고속 입력으로 표시하고, lb_p/lb_n은 루프백 데이터 입력으로 처리",
+   "confidence": "low (구조 분석상 두 경로 모두 차동 신호이나 pad가 패드/ESD/ODT 연결)"
+  },
+  {
+   "id": "Q2",
+   "template": "clock_input_role",
+   "kind": "clock_input_role",
+   "rule": "DRAWING_PLAN §2.4",
+   "fields": {
+    "item": "ck, ckb"
+   },
+   "item": "ck, ckb",
+   "question": "ck, ckb가 차동 고속 클럭 입력 포트가 맞습니까?",
+   "assumed": "예 — ck, ckb는 클럭 게이팅 버퍼(ck_gbuf)를 거쳐 even/odd 센스앰프의 클럭 꼬리로 연결되는 클럭 입력",
+   "confidence": "low (구조상 클럭 게이팅 버퍼 통과 확인, 이름 일치)"
+  },
+  {
+   "id": "Q3",
+   "template": "block_role_unknown",
+   "kind": "block_role_unknown",
+   "rule": "DRAWING_PLAN §2.6-3",
+   "fields": {
+    "item": "rx_pre"
+   },
+   "item": "rx_pre",
+   "question": "rx_pre는 pad/vref 및 루프백 lb_p/lb_n을 수신하는 전치증폭기/MUX 구조로 사전 기호에 정확히 일치하지 않아 일반 박스 PREAMP로 그립니다. 맞습니까?",
+   "assumed": "예 — 일반 박스 PREAMP로 그리고 내부 구성(입력쌍, 루프백쌍, 부하 R, MOS 중화 C) 요약",
+   "confidence": "low (사전 VGA/CTLE와 상이하여 일반 박스로 판정)"
+  },
+  {
+   "id": "Q4",
+   "template": "block_role_sa",
+   "kind": "block_role_sa",
+   "rule": "DRAWING_PLAN §2.6-1",
+   "fields": {
+    "item": "sa_dt"
+   },
+   "item": "sa_dt",
+   "question": "sa_dt는 2단 구조의 double-tail 동적 비교기(StrongARM 변형)입니다. 사전 비교기 기호(삼각형 SA + 클럭)로 그립니다. 맞습니까?",
+   "assumed": "예 — 비교기 기호로 그리고 유닛 화면에서 1단 및 2단 대칭 배치",
+   "confidence": "low (double-tail 구조를 비교기 행으로 대응)"
+  },
+  {
+   "id": "Q5",
+   "template": "block_role_summer",
+   "kind": "block_role_summer",
+   "rule": "DRAWING_PLAN §2.6-1",
+   "fields": {
+    "item": "dfe_sum"
+   },
+   "item": "dfe_sum",
+   "question": "dfe_sum은 주 입력과 DFE 1차 탭 피드백 및 IDAC 가중치를 합산하는 회로입니다. 사전 summer 기호(Σ)로 그립니다. 맞습니까?",
+   "assumed": "예 — 사전 summer(Σ) 기호로 그림",
+   "confidence": "low (사전 summer 행 대응 확인)"
+  },
+  {
+   "id": "Q6",
+   "template": "odt_block_role",
+   "kind": "odt_block_role",
+   "rule": "DRAWING_PLAN §2.5-8, §2.6-1",
+   "fields": {
+    "item": "odt_dec, odt_pu"
+   },
+   "item": "odt_dec, odt_pu",
+   "question": "odt_dec는 DEC 박스로 그리고, odt_pu는 패드 입력선 위의 가변 종단 저항 기호로 그립니다. 맞습니까?",
+   "assumed": "예 — odt_dec는 DEC 박스, odt_pu는 pad 선 위 가변 R 기호",
+   "confidence": "low (명세서 규칙 적용 확인)"
+  },
+  {
+   "id": "Q7",
+   "template": "control_classification",
+   "kind": "control_classification",
+   "rule": "DRAWING_PLAN §2.5-5 K7",
+   "fields": {
+    "item": "ofe_p<1:0>, ofe_n<1:0>, ofo_p<1:0>, ofo_n<1:0>"
+   },
+   "item": "ofe_p<1:0>, ofe_n<1:0>, ofo_p<1:0>, ofo_n<1:0>",
+   "question": "ofe_p<1:0>, ofe_n<1:0>, ofo_p<1:0>, ofo_n<1:0>는 센스앰프 내부 커패시티브 오프셋 트림 제어로 K7 일반 제어(숨김)로 처리합니다. 맞습니까?",
+   "assumed": "예 — K7 정적 트림 제어로 숨김 목록에 기재",
+   "confidence": "low (내부 노드 트림 스위치 판단)"
+  },
+  {
+   "id": "Q8",
+   "template": "netlist_unused_output",
+   "kind": "netlist_unused_output",
+   "rule": "DRAWING_PLAN §3.5-4",
+   "fields": {
+    "item": "xi9.y(net27), xi12.y(net29)"
+   },
+   "item": "xi9.y(net27), xi12.y(net29)",
+   "question": "xi9와 xi12 인버터의 출력 net27, net29는 아무것도 구동하지 않는 미사용 출력입니다. 짧은 선 + 이름표로 유지합니까?",
+   "assumed": "예 — 명세서 §3.5-4 미사용 출력 규칙대로 짧은 선 + 넷 이름표 표시",
+   "confidence": "low (넷리스트 상 미연결 출력 확인)"
+  }
+ ]
+}

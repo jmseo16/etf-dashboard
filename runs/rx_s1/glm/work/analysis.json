@@ -1,6 +1,11 @@
 {
  "undriven_hs": [],
- "unused_outputs": {},
+ "unused_outputs": {
+  "dq_rx_unit": [
+   "net27",
+   "net29"
+  ]
+ },
  "top": "dq_rx_unit",
  "rails": {
   "supply": "vdd",
@@ -10,17 +15,45 @@
   "pad"
  ],
  "clock_inputs": [
+  "vref",
   "ck",
   "ckb",
+  "lb_p",
+  "lb_n",
   "rx_en",
   "odt_en",
   "rtt<2>",
   "rtt<1>",
   "rtt<0>",
-  "tap_sgn",
-  "vddq"
+  "tap_sgn"
  ],
  "clock_evidence": {
+  "vref": [
+   [
+    "mn0",
+    "clocked tail"
+   ],
+   [
+    "xi24/mn1",
+    "clock steering"
+   ],
+   [
+    "xi28/mn5",
+    "reset/precharge"
+   ],
+   [
+    "xi28/mn6",
+    "reset/precharge"
+   ],
+   [
+    "xi29/mn5",
+    "reset/precharge"
+   ],
+   [
+    "xi29/mn6",
+    "reset/precharge"
+   ]
+  ],
   "ck": [
    [
     "xi28/mn0",
@@ -39,6 +72,34 @@
    [
     "xi29/mp2",
     "clocked tail"
+   ]
+  ],
+  "lb_p": [
+   [
+    "xi24/mn4",
+    "clock steering"
+   ],
+   [
+    "xi28/mn5",
+    "reset/precharge"
+   ],
+   [
+    "xi29/mn5",
+    "reset/precharge"
+   ]
+  ],
+  "lb_n": [
+   [
+    "xi24/mn5",
+    "clock steering"
+   ],
+   [
+    "xi28/mn6",
+    "reset/precharge"
+   ],
+   [
+    "xi29/mn6",
+    "reset/precharge"
    ]
   ],
   "rx_en": [
@@ -132,24 +193,6 @@
     "xi29/mn6",
     "reset/precharge"
    ]
-  ],
-  "vddq": [
-   [
-    "xi28/mn5",
-    "reset/precharge"
-   ],
-   [
-    "xi28/mn6",
-    "reset/precharge"
-   ],
-   [
-    "xi29/mn5",
-    "reset/precharge"
-   ],
-   [
-    "xi29/mn6",
-    "reset/precharge"
-   ]
   ]
  },
  "netclass": {
@@ -160,10 +203,10 @@
    "clock"
   ],
   "dout_e": [
-   "internal"
+   "data"
   ],
   "dout_o": [
-   "internal"
+   "data"
   ],
   "ibias": [
    "bias"
@@ -172,15 +215,16 @@
    "bias"
   ],
   "lb_n": [
-   "general_control"
+   "clock"
   ],
   "lb_p": [
-   "general_control"
+   "clock"
   ],
   "net1": [
    "data"
   ],
   "net10": [
+   "data",
    "clock"
   ],
   "net100": [
@@ -205,69 +249,74 @@
    "clock"
   ],
   "net11": [
+   "data",
    "clock"
   ],
   "net12": [
+   "data",
    "clock"
   ],
   "net13": [
+   "data",
    "clock"
   ],
   "net14": [
-   "bias"
+   "data"
   ],
   "net15": [
-   "bias"
+   "data"
   ],
   "net16": [
-   "bias"
+   "data"
   ],
   "net17": [
-   "bias"
+   "data"
   ],
   "net18": [
-   "bias"
+   "data"
   ],
   "net19": [
-   "bias"
+   "data"
   ],
   "net24": [
-   "bias"
+   "data"
   ],
   "net25": [
-   "bias"
+   "data"
   ],
   "net26": [
-   "bias"
+   "data"
   ],
   "net27": [
-   "internal"
+   "data"
   ],
   "net28": [
-   "bias"
+   "data"
   ],
   "net29": [
-   "internal"
+   "data"
   ],
   "net2<0>": [
-   "clock"
+   "bias"
   ],
   "net2<1>": [
-   "clock"
+   "bias"
   ],
   "net2<2>": [
-   "clock"
+   "bias"
   ],
   "net3": [
-   "general_control"
-  ],
-  "net4": [
    "clock"
   ],
+  "net4": [
+   "bias"
+  ],
   "net6": [
+   "data",
    "clock"
   ],
   "net7": [
+   "data",
    "clock"
   ],
   "net8": [
@@ -337,22 +386,22 @@
    "power"
   ],
   "vddq": [
-   "clock"
+   "power"
   ],
   "vref": [
-   "internal"
+   "clock"
   ],
   "vss": [
    "power"
   ],
   "vssq": [
-   "internal"
+   "power"
   ],
   "xi1/net5": [
    "internal"
   ],
   "xi20/net9": [
-   "general_control"
+   "bias"
   ],
   "xi21/net10": [
    "data"
@@ -385,34 +434,34 @@
    "clock"
   ],
   "xi22/xi3/nb": [
-   "clock"
+   "bias"
   ],
   "xi22/xi3/nq": [
-   "clock"
+   "bias"
   ],
   "xi22/xi4/inb": [
    "clock"
   ],
   "xi22/xi4/nb": [
-   "clock"
+   "bias"
   ],
   "xi22/xi4/nq": [
-   "clock"
+   "bias"
   ],
   "xi22/xi5/inb": [
    "clock"
   ],
   "xi22/xi5/nb": [
-   "clock"
+   "bias"
   ],
   "xi22/xi5/nq": [
-   "clock"
+   "bias"
   ],
   "xi23/enb": [
    "clock"
   ],
   "xi23/net30": [
-   "clock"
+   "bias"
   ],
   "xi24/net40": [
    "internal"
@@ -499,9 +548,11 @@
    "internal"
   ],
   "xi28/net62": [
+   "data",
    "clock"
   ],
   "xi28/net63": [
+   "data",
    "clock"
   ],
   "xi28/net64": [
@@ -526,9 +577,11 @@
    "internal"
   ],
   "xi29/net62": [
+   "data",
    "clock"
   ],
   "xi29/net63": [
+   "data",
    "clock"
   ],
   "xi29/net64": [
@@ -563,27 +616,29 @@
   ]
  },
  "bias_why": {
+  "xi22/xi3/nb": "drives only gates of load",
+  "xi22/xi5/nq": "drives only gates of load",
+  "ibias": "diode-connected (mirror) node",
+  "xi22/xi3/nq": "drives only gates of load",
   "xi28/net68": "drives only gates of active-inductor gate",
-  "net16": "drives only gates of load, tail/current source",
-  "xi29/net66": "drives only gates of active-inductor gate",
-  "xi29/net67": "drives only gates of active-inductor gate",
-  "net26": "drives only gates of load",
-  "net100": "drives only gates of load, tail/current source",
-  "net17": "drives only gates of load, tail/current source",
-  "net18": "drives only gates of load, tail/current source",
-  "net28": "drives only gates of load",
-  "net19": "drives only gates of load, tail/current source",
   "xi29/net65": "drives only gates of active-inductor gate",
-  "net25": "drives only gates of load, tail/current source",
+  "xi23/net30": "diode-connected (mirror) node",
   "lb_en": "drives only gates of load, tail/current source",
   "xi28/net67": "drives only gates of active-inductor gate",
-  "ibias": "diode-connected (mirror) node",
-  "xi28/net66": "drives only gates of active-inductor gate",
-  "net24": "drives only gates of load, tail/current source",
-  "net15": "drives only gates of load, tail/current source",
-  "net14": "drives only gates of load, tail/current source",
+  "xi29/net67": "drives only gates of active-inductor gate",
+  "xi20/net9": "drives only gates of tail/current source",
+  "xi22/xi4/nb": "drives only gates of load",
+  "xi28/net65": "drives only gates of active-inductor gate",
   "xi29/net68": "drives only gates of active-inductor gate",
-  "xi28/net65": "drives only gates of active-inductor gate"
+  "net2<1>": "drives only gates of tail/current source",
+  "net2<0>": "drives only gates of tail/current source",
+  "net100": "drives only gates of load, tail/current source",
+  "xi22/xi4/nq": "drives only gates of load",
+  "net2<2>": "drives only gates of tail/current source",
+  "xi22/xi5/nb": "drives only gates of load",
+  "xi29/net66": "drives only gates of active-inductor gate",
+  "xi28/net66": "drives only gates of active-inductor gate",
+  "net4": "diode-connected (mirror) node"
  },
  "data_trace": {
   "pad": {
@@ -605,14 +660,122 @@
   "xi21/net10": {
    "depth": 1,
    "via": "xi21/r0 (series passive)"
+  },
+  "net7": {
+   "depth": 2,
+   "via": "xi24/mn0 (g->d)"
+  },
+  "net6": {
+   "depth": 2,
+   "via": "xi24/mn8 (g->d)"
+  },
+  "net10": {
+   "depth": 3,
+   "via": "xi26/mn1 (g->d)"
+  },
+  "net12": {
+   "depth": 3,
+   "via": "xi27/mn1 (g->d)"
+  },
+  "net11": {
+   "depth": 3,
+   "via": "xi26/mn0 (g->d)"
+  },
+  "net13": {
+   "depth": 3,
+   "via": "xi27/mn0 (g->d)"
+  },
+  "xi28/net62": {
+   "depth": 4,
+   "via": "xi28/mn1 (g->d)"
+  },
+  "xi29/net62": {
+   "depth": 4,
+   "via": "xi29/mn1 (g->d)"
+  },
+  "xi28/net63": {
+   "depth": 4,
+   "via": "xi28/mn2 (g->d)"
+  },
+  "xi29/net63": {
+   "depth": 4,
+   "via": "xi29/mn2 (g->d)"
+  },
+  "net18": {
+   "depth": 5,
+   "via": "xi28/mn5 (g->d)"
+  },
+  "net24": {
+   "depth": 5,
+   "via": "xi29/mn5 (g->d)"
+  },
+  "net19": {
+   "depth": 5,
+   "via": "xi28/mn6 (g->d)"
+  },
+  "net25": {
+   "depth": 5,
+   "via": "xi29/mn6 (g->d)"
+  },
+  "net15": {
+   "depth": 6,
+   "via": "xi30/xi1/mn0 (g->d)"
+  },
+  "net17": {
+   "depth": 6,
+   "via": "xi31/xi1/mn0 (g->d)"
+  },
+  "net14": {
+   "depth": 6,
+   "via": "xi30/xi0/mn0 (g->d)"
+  },
+  "net16": {
+   "depth": 6,
+   "via": "xi31/xi0/mn0 (g->d)"
+  },
+  "net27": {
+   "depth": 7,
+   "via": "xi9/mp0 (g->d)"
+  },
+  "net29": {
+   "depth": 7,
+   "via": "xi12/mp0 (g->d)"
+  },
+  "net26": {
+   "depth": 7,
+   "via": "xi7/mp0 (g->d)"
+  },
+  "net28": {
+   "depth": 7,
+   "via": "xi10/mp0 (g->d)"
+  },
+  "dout_e": {
+   "depth": 8,
+   "via": "xi8/mp0 (g->d)"
+  },
+  "dout_o": {
+   "depth": 8,
+   "via": "xi11/mp0 (g->d)"
   }
  },
  "clock_trace": {
+  "vref": {
+   "depth": 0,
+   "via": "start"
+  },
   "ck": {
    "depth": 0,
    "via": "start"
   },
   "ckb": {
+   "depth": 0,
+   "via": "start"
+  },
+  "lb_p": {
+   "depth": 0,
+   "via": "start"
+  },
+  "lb_n": {
    "depth": 0,
    "via": "start"
   },
@@ -640,9 +803,9 @@
    "depth": 0,
    "via": "start"
   },
-  "vddq": {
-   "depth": 0,
-   "via": "start"
+  "net3": {
+   "depth": 1,
+   "via": "r0 (series passive)"
   },
   "xi25/net70": {
    "depth": 1,
@@ -651,6 +814,14 @@
   "xi25/net71": {
    "depth": 1,
    "via": "xi25/xi1/mp0 (g->d)"
+  },
+  "net7": {
+   "depth": 1,
+   "via": "xi24/mn4 (g->d)"
+  },
+  "net6": {
+   "depth": 1,
+   "via": "xi24/mn5 (g->d)"
   },
   "xi23/enb": {
    "depth": 1,
@@ -680,58 +851,6 @@
    "depth": 1,
    "via": "xi5/mp0 (g->d)"
   },
-  "xi22/xi5/nb": {
-   "depth": 1,
-   "via": "xi22/xi5/mp0 (stacked s->d)"
-  },
-  "xi22/xi5/nq": {
-   "depth": 1,
-   "via": "xi22/xi5/mp1 (stacked s->d)"
-  },
-  "net2<2>": {
-   "depth": 1,
-   "via": "xi22/xi5/mp3 (stacked s->d)"
-  },
-  "xi22/xi4/nb": {
-   "depth": 1,
-   "via": "xi22/xi4/mp0 (stacked s->d)"
-  },
-  "xi22/xi4/nq": {
-   "depth": 1,
-   "via": "xi22/xi4/mp1 (stacked s->d)"
-  },
-  "net2<1>": {
-   "depth": 1,
-   "via": "xi22/xi4/mp3 (stacked s->d)"
-  },
-  "xi22/xi3/nb": {
-   "depth": 1,
-   "via": "xi22/xi3/mp0 (stacked s->d)"
-  },
-  "xi22/xi3/nq": {
-   "depth": 1,
-   "via": "xi22/xi3/mp1 (stacked s->d)"
-  },
-  "net2<0>": {
-   "depth": 1,
-   "via": "xi22/xi3/mp3 (stacked s->d)"
-  },
-  "xi23/net30": {
-   "depth": 1,
-   "via": "xi23/mp0 (stacked s->d)"
-  },
-  "net4": {
-   "depth": 1,
-   "via": "xi23/mp1 (stacked s->d)"
-  },
-  "net7": {
-   "depth": 1,
-   "via": "xi24/r0 (series passive)"
-  },
-  "net6": {
-   "depth": 1,
-   "via": "xi24/r1 (series passive)"
-  },
   "net8": {
    "depth": 2,
    "via": "xi25/xi2/mp0 (g->d)"
@@ -739,6 +858,22 @@
   "net9": {
    "depth": 2,
    "via": "xi25/xi3/mp0 (g->d)"
+  },
+  "net10": {
+   "depth": 2,
+   "via": "xi26/mn1 (g->d)"
+  },
+  "net12": {
+   "depth": 2,
+   "via": "xi27/mn1 (g->d)"
+  },
+  "net11": {
+   "depth": 2,
+   "via": "xi26/mn0 (g->d)"
+  },
+  "net13": {
+   "depth": 2,
+   "via": "xi27/mn0 (g->d)"
   },
   "net102": {
    "depth": 2,
@@ -764,22 +899,6 @@
    "depth": 2,
    "via": "xi6/mp0 (g->d)"
   },
-  "net10": {
-   "depth": 2,
-   "via": "xi26/mn6 (g->d)"
-  },
-  "net11": {
-   "depth": 2,
-   "via": "xi26/mn7 (g->d)"
-  },
-  "net12": {
-   "depth": 2,
-   "via": "xi27/mn6 (g->d)"
-  },
-  "net13": {
-   "depth": 2,
-   "via": "xi27/mn7 (g->d)"
-  },
   "xi28/net60": {
    "depth": 3,
    "via": "xi28/xi0/mp0 (g->d)"
@@ -792,13 +911,13 @@
    "depth": 3,
    "via": "xi28/mn1 (g->d)"
   },
-  "xi28/net63": {
-   "depth": 3,
-   "via": "xi28/mn2 (g->d)"
-  },
   "xi29/net62": {
    "depth": 3,
    "via": "xi29/mn1 (g->d)"
+  },
+  "xi28/net63": {
+   "depth": 3,
+   "via": "xi28/mn2 (g->d)"
   },
   "xi29/net63": {
    "depth": 3,
@@ -807,28 +926,36 @@
  },
  "data_events": [
   [
-   "xi20/r0",
-   "common-mode node pad: stop"
+   "xi30/xi1/mp0",
+   "gate net18: drain xi30/xi1/net7 has no load (tail / steering / stacked switch): stop"
   ],
   [
-   "xi24/mn0",
-   "gate net1: drain net7 has no load (tail / steering / stacked switch): stop"
+   "xi31/xi1/mp0",
+   "gate net24: drain xi31/xi1/net7 has no load (tail / steering / stacked switch): stop"
   ],
   [
-   "xi24/mn8",
-   "gate net1: drain net6 has no load (tail / steering / stacked switch): stop"
+   "xi30/xi0/mp0",
+   "gate net19: drain xi30/xi0/net7 has no load (tail / steering / stacked switch): stop"
   ],
   [
-   "xi21/r2",
-   "common-mode node pad: stop"
+   "xi31/xi0/mp0",
+   "gate net25: drain xi31/xi0/net7 has no load (tail / steering / stacked switch): stop"
   ],
   [
-   "xi21/r1",
-   "common-mode node pad: stop"
+   "xi27/mn5",
+   "gate net15: drain xi27/net53 has no load (tail / steering / stacked switch): stop"
   ],
   [
-   "xi21/r0",
-   "common-mode node pad: stop"
+   "xi26/mn5",
+   "gate net17: drain xi26/net53 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi27/mn4",
+   "gate net14: drain xi27/net52 has no load (tail / steering / stacked switch): stop"
+  ],
+  [
+   "xi26/mn4",
+   "gate net16: drain xi26/net52 has no load (tail / steering / stacked switch): stop"
   ]
  ],
  "clock_events": [
@@ -865,6 +992,10 @@
    "gate xi23/enb: reset/precharge (rail source, dynamic node ibias): stop"
   ],
   [
+   "xi23/mn4",
+   "gate xi23/enb: reset/precharge (rail source, dynamic node net4): stop"
+  ],
+  [
    "xi22/xi5/mn0",
    "gate xi22/net20: reset/precharge (rail source, dynamic node xi22/xi5/nb): stop"
   ],
@@ -875,46 +1006,6 @@
   [
    "xi22/xi3/mn0",
    "gate xi22/net22: reset/precharge (rail source, dynamic node xi22/xi3/nb): stop"
-  ],
-  [
-   "xi22/xi5/mn3",
-   "gate xi22/xi5/nb: reset/precharge (rail source, dynamic node net2<2>): stop"
-  ],
-  [
-   "xi21/mp2",
-   "gate net2<2>: drain xi21/net12 has no load (tail / steering / stacked switch): stop"
-  ],
-  [
-   "xi22/xi4/mn3",
-   "gate xi22/xi4/nb: reset/precharge (rail source, dynamic node net2<1>): stop"
-  ],
-  [
-   "xi21/mp1",
-   "gate net2<1>: drain xi21/net11 has no load (tail / steering / stacked switch): stop"
-  ],
-  [
-   "xi22/xi3/mn3",
-   "gate xi22/xi3/nb: reset/precharge (rail source, dynamic node net2<0>): stop"
-  ],
-  [
-   "xi21/mp0",
-   "gate net2<0>: drain xi21/net10 has no load (tail / steering / stacked switch): stop"
-  ],
-  [
-   "xi23/mp0",
-   "diode: stop"
-  ],
-  [
-   "xi23/mn2",
-   "diode: stop"
-  ],
-  [
-   "xi24/mn3",
-   "gate net4: drain xi24/net41 has no load (tail / steering / stacked switch): stop"
-  ],
-  [
-   "xi24/mn7",
-   "gate net4: drain xi24/net43 has no load (tail / steering / stacked switch): stop"
   ],
   [
    "xi28/mn0",
@@ -973,12 +1064,12 @@
    "gate xi28/net62: reset/precharge (rail source, dynamic node net18): stop"
   ],
   [
-   "xi28/mn6",
-   "gate xi28/net63: reset/precharge (rail source, dynamic node net19): stop"
-  ],
-  [
    "xi29/mn5",
    "gate xi29/net62: reset/precharge (rail source, dynamic node net24): stop"
+  ],
+  [
+   "xi28/mn6",
+   "gate xi28/net63: reset/precharge (rail source, dynamic node net19): stop"
   ],
   [
    "xi29/mn6",
@@ -986,49 +1077,21 @@
   ]
  ],
  "control_info": {
-  "ofo_p<0>": {
+  "tap<2>": {
    "kind": "general",
    "K": "K7",
    "why": [
-    "switch across xi29/net63-xi29/net67 (degeneration bank inside the high-speed path: peaking/gain trim)"
+    "tail of the only pair at xi26/net52,xi26/net53",
+    "tail of the only pair at xi27/net52,xi27/net53"
    ],
    "bundle_type": [
-    "R"
+    "I"
    ],
    "switches": [
-    "xi29/mn13"
+    "xi26/mn12",
+    "xi27/mn12"
    ],
-   "endpoint": "xi29/mn13.g",
-   "source": "port"
-  },
-  "ofe_p<1>": {
-   "kind": "general",
-   "K": "K7",
-   "why": [
-    "switch across xi28/net63-xi28/net68 (degeneration bank inside the high-speed path: peaking/gain trim)"
-   ],
-   "bundle_type": [
-    "R"
-   ],
-   "switches": [
-    "xi28/mn11"
-   ],
-   "endpoint": "xi28/mn11.g",
-   "source": "port"
-  },
-  "ofo_n<1>": {
-   "kind": "general",
-   "K": "K7",
-   "why": [
-    "switch across xi29/net62-xi29/net66 (degeneration bank inside the high-speed path: peaking/gain trim)"
-   ],
-   "bundle_type": [
-    "R"
-   ],
-   "switches": [
-    "xi29/mn7"
-   ],
-   "endpoint": "xi29/mn7.g",
+   "endpoint": "xi26/mn12.g",
    "source": "port"
   },
   "ofe_n<1>": {
@@ -1046,104 +1109,19 @@
    "endpoint": "xi28/mn7.g",
    "source": "port"
   },
-  "tap<1>": {
+  "ofe_p<1>": {
    "kind": "general",
    "K": "K7",
    "why": [
-    "switch across xi26/net56-xi26/net54 (degeneration bank inside the high-speed path: peaking/gain trim)",
-    "switch across xi27/net56-xi27/net54 (degeneration bank inside the high-speed path: peaking/gain trim)"
-   ],
-   "bundle_type": [
-    "I"
-   ],
-   "switches": [
-    "xi26/mn14",
-    "xi27/mn14"
-   ],
-   "endpoint": "xi26/mn14.g",
-   "source": "port"
-  },
-  "xi20/net9": {
-   "kind": "general",
-   "K": "K7",
-   "why": [
-    "switch across vssq-net1 (degeneration bank inside the high-speed path: peaking/gain trim)"
+    "switch across xi28/net63-xi28/net68 (degeneration bank inside the high-speed path: peaking/gain trim)"
    ],
    "bundle_type": [
     "R"
    ],
    "switches": [
-    "xi20/mn0"
+    "xi28/mn11"
    ],
-   "endpoint": "xi20/mn0.g",
-   "source": "internal"
-  },
-  "tap<3>": {
-   "kind": "general",
-   "K": "K7",
-   "why": [
-    "switch across xi26/net58-xi26/net54 (degeneration bank inside the high-speed path: peaking/gain trim)",
-    "switch across xi27/net58-xi27/net54 (degeneration bank inside the high-speed path: peaking/gain trim)"
-   ],
-   "bundle_type": [
-    "I"
-   ],
-   "switches": [
-    "xi26/mn10",
-    "xi27/mn10"
-   ],
-   "endpoint": "xi26/mn10.g",
-   "source": "port"
-  },
-  "lb_p": {
-   "kind": "general",
-   "K": "K7",
-   "why": [
-    "switch across xi24/net42-net7 (degeneration bank inside the high-speed path: peaking/gain trim)"
-   ],
-   "bundle_type": [
-    "R"
-   ],
-   "switches": [
-    "xi24/mn4"
-   ],
-   "endpoint": "xi24/mn4.g",
-   "source": "port"
-  },
-  "net3": {
-   "kind": "general",
-   "K": "K7",
-   "why": [
-    "switch across net7-net7 (degeneration bank inside the high-speed path: peaking/gain trim)",
-    "switch across vssq-vssq (degeneration bank inside the high-speed path: peaking/gain trim)",
-    "tail of the only pair at net6"
-   ],
-   "bundle_type": [
-    "R"
-   ],
-   "switches": [
-    "mn0",
-    "xi24/mn1",
-    "xi24/mn9"
-   ],
-   "endpoint": "mn0.g",
-   "source": "internal"
-  },
-  "tap<2>": {
-   "kind": "general",
-   "K": "K7",
-   "why": [
-    "switch across xi26/net57-xi26/net54 (degeneration bank inside the high-speed path: peaking/gain trim)",
-    "switch across xi27/net57-xi27/net54 (degeneration bank inside the high-speed path: peaking/gain trim)"
-   ],
-   "bundle_type": [
-    "I"
-   ],
-   "switches": [
-    "xi26/mn12",
-    "xi27/mn12"
-   ],
-   "endpoint": "xi26/mn12.g",
+   "endpoint": "xi28/mn11.g",
    "source": "port"
   },
   "ofe_n<0>": {
@@ -1161,6 +1139,21 @@
    "endpoint": "xi28/mn9.g",
    "source": "port"
   },
+  "ofe_p<0>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi28/net63-xi28/net67 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "R"
+   ],
+   "switches": [
+    "xi28/mn13"
+   ],
+   "endpoint": "xi28/mn13.g",
+   "source": "port"
+  },
   "ofo_p<1>": {
    "kind": "general",
    "K": "K7",
@@ -1174,6 +1167,55 @@
     "xi29/mn11"
    ],
    "endpoint": "xi29/mn11.g",
+   "source": "port"
+  },
+  "tap<3>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "tail of the only pair at xi26/net52,xi26/net53",
+    "tail of the only pair at xi27/net52,xi27/net53"
+   ],
+   "bundle_type": [
+    "I"
+   ],
+   "switches": [
+    "xi26/mn10",
+    "xi27/mn10"
+   ],
+   "endpoint": "xi26/mn10.g",
+   "source": "port"
+  },
+  "ofo_n<1>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "switch across xi29/net62-xi29/net66 (degeneration bank inside the high-speed path: peaking/gain trim)"
+   ],
+   "bundle_type": [
+    "R"
+   ],
+   "switches": [
+    "xi29/mn7"
+   ],
+   "endpoint": "xi29/mn7.g",
+   "source": "port"
+  },
+  "tap<1>": {
+   "kind": "general",
+   "K": "K7",
+   "why": [
+    "tail of the only pair at xi26/net52,xi26/net53",
+    "tail of the only pair at xi27/net52,xi27/net53"
+   ],
+   "bundle_type": [
+    "I"
+   ],
+   "switches": [
+    "xi26/mn14",
+    "xi27/mn14"
+   ],
+   "endpoint": "xi26/mn14.g",
    "source": "port"
   },
   "ofo_n<0>": {
@@ -1195,8 +1237,8 @@
    "kind": "general",
    "K": "K7",
    "why": [
-    "switch across xi26/net55-xi26/net54 (degeneration bank inside the high-speed path: peaking/gain trim)",
-    "switch across xi27/net55-xi27/net54 (degeneration bank inside the high-speed path: peaking/gain trim)"
+    "tail of the only pair at xi26/net52,xi26/net53",
+    "tail of the only pair at xi27/net52,xi27/net53"
    ],
    "bundle_type": [
     "I"
@@ -1208,34 +1250,19 @@
    "endpoint": "xi26/mn16.g",
    "source": "port"
   },
-  "ofe_p<0>": {
+  "ofo_p<0>": {
    "kind": "general",
    "K": "K7",
    "why": [
-    "switch across xi28/net63-xi28/net67 (degeneration bank inside the high-speed path: peaking/gain trim)"
+    "switch across xi29/net63-xi29/net67 (degeneration bank inside the high-speed path: peaking/gain trim)"
    ],
    "bundle_type": [
     "R"
    ],
    "switches": [
-    "xi28/mn13"
+    "xi29/mn13"
    ],
-   "endpoint": "xi28/mn13.g",
-   "source": "port"
-  },
-  "lb_n": {
-   "kind": "general",
-   "K": "K7",
-   "why": [
-    "tail of the only pair at net6"
-   ],
-   "bundle_type": [
-    "R"
-   ],
-   "switches": [
-    "xi24/mn5"
-   ],
-   "endpoint": "xi24/mn5.g",
+   "endpoint": "xi29/mn13.g",
    "source": "port"
   }
  },
@@ -1245,7 +1272,7 @@
     "data"
    ],
    "vref": [
-    "internal"
+    "clock"
    ],
    "ck": [
     "clock"
@@ -1254,10 +1281,10 @@
     "clock"
    ],
    "lb_p": [
-    "general_control"
+    "clock"
    ],
    "lb_n": [
-    "general_control"
+    "clock"
    ],
    "lb_en": [
     "bias"
@@ -1320,40 +1347,40 @@
     "bias"
    ],
    "dout_e": [
-    "internal"
+    "data"
    ],
    "dout_o": [
-    "internal"
+    "data"
    ],
    "vdd": [
     "power"
    ],
    "vddq": [
-    "clock"
+    "power"
    ],
    "vss": [
     "power"
    ],
    "vssq": [
-    "internal"
+    "power"
    ],
    "net1": [
     "data"
    ],
    "net2<2>": [
-    "clock"
+    "bias"
    ],
    "net2<1>": [
-    "clock"
+    "bias"
    ],
    "net2<0>": [
-    "clock"
+    "bias"
    ],
    "net3": [
-    "general_control"
+    "clock"
    ],
    "net4": [
-    "clock"
+    "bias"
    ],
    "net100": [
     "bias"
@@ -1377,10 +1404,12 @@
     "clock"
    ],
    "net6": [
-    "clock"
+    "clock",
+    "data"
    ],
    "net7": [
-    "clock"
+    "clock",
+    "data"
    ],
    "net8": [
     "clock"
@@ -1389,52 +1418,56 @@
     "clock"
    ],
    "net16": [
-    "bias"
+    "data"
    ],
    "net17": [
-    "bias"
+    "data"
    ],
    "net10": [
-    "clock"
+    "clock",
+    "data"
    ],
    "net11": [
-    "clock"
+    "clock",
+    "data"
    ],
    "net14": [
-    "bias"
+    "data"
    ],
    "net15": [
-    "bias"
+    "data"
    ],
    "net12": [
-    "clock"
+    "clock",
+    "data"
    ],
    "net13": [
-    "clock"
+    "clock",
+    "data"
    ],
    "net18": [
-    "bias"
+    "data"
    ],
    "net19": [
-    "bias"
+    "data"
    ],
    "net24": [
-    "bias"
+    "data"
    ],
    "net25": [
-    "bias"
+    "data"
    ],
    "net26": [
-    "bias"
+    "data"
    ],
    "net27": [
-    "internal"
+    "data"
    ],
    "net28": [
-    "bias"
+    "data"
    ],
    "net29": [
-    "internal"
+    "data"
    ]
   },
   "esd_dq": {
@@ -1445,13 +1478,13 @@
     "data"
    ],
    "vddq": [
-    "clock"
+    "power"
    ],
    "vssq": [
-    "internal"
+    "power"
    ],
    "net9": [
-    "general_control"
+    "bias"
    ]
   },
   "odt_pu": {
@@ -1459,16 +1492,16 @@
     "data"
    ],
    "enb<2>": [
-    "clock"
+    "bias"
    ],
    "enb<1>": [
-    "clock"
+    "bias"
    ],
    "enb<0>": [
-    "clock"
+    "bias"
    ],
    "vddq": [
-    "clock"
+    "power"
    ],
    "net12": [
     "data"
@@ -1494,19 +1527,19 @@
     "clock"
    ],
    "enb<2>": [
-    "clock"
+    "bias"
    ],
    "enb<1>": [
-    "clock"
+    "bias"
    ],
    "enb<0>": [
-    "clock"
+    "bias"
    ],
    "vdd": [
     "power"
    ],
    "vddq": [
-    "clock"
+    "power"
    ],
    "vss": [
     "power"
@@ -1526,13 +1559,13 @@
     "clock"
    ],
    "out": [
-    "clock"
+    "bias"
    ],
    "vdd": [
     "power"
    ],
    "vddq": [
-    "clock"
+    "power"
    ],
    "vss": [
     "power"
@@ -1541,10 +1574,10 @@
     "clock"
    ],
    "nb": [
-    "clock"
+    "bias"
    ],
    "nq": [
-    "clock"
+    "bias"
    ]
   },
   "nand2_a": {
@@ -1576,36 +1609,37 @@
     "clock"
    ],
    "vbn_q": [
-    "clock"
+    "bias"
    ],
    "vdd": [
     "power"
    ],
    "vddq": [
-    "clock"
+    "power"
    ],
    "vss": [
     "power"
    ],
    "vssq": [
-    "internal"
+    "power"
    ],
    "enb": [
     "clock"
    ],
    "net30": [
-    "clock"
+    "bias"
    ]
   },
   "inv_a": {
    "a": [
     "bias",
-    "clock"
+    "clock",
+    "data"
    ],
    "y": [
     "bias",
     "clock",
-    "internal"
+    "data"
    ],
    "vdd": [
     "power"
@@ -1619,13 +1653,13 @@
     "data"
    ],
    "vref": [
-    "general_control"
+    "clock"
    ],
    "lbp": [
-    "general_control"
+    "clock"
    ],
    "lbn": [
-    "general_control"
+    "clock"
    ],
    "sel_m": [
     "clock"
@@ -1634,19 +1668,21 @@
     "clock"
    ],
    "vbn": [
-    "clock"
+    "bias"
    ],
    "outp": [
-    "clock"
+    "clock",
+    "data"
    ],
    "outn": [
-    "clock"
+    "clock",
+    "data"
    ],
    "vddq": [
-    "clock"
+    "power"
    ],
    "vssq": [
-    "internal"
+    "power"
    ],
    "net40": [
     "internal"
@@ -1712,12 +1748,12 @@
   },
   "inv_c": {
    "a": [
-    "bias",
-    "clock"
+    "clock",
+    "data"
    ],
    "y": [
     "clock",
-    "internal"
+    "data"
    ],
    "vdd": [
     "power"
@@ -1728,16 +1764,18 @@
   },
   "dfe_sum": {
    "inp": [
-    "clock"
+    "clock",
+    "data"
    ],
    "inn": [
-    "clock"
+    "clock",
+    "data"
    ],
    "hp": [
-    "bias"
+    "data"
    ],
    "hn": [
-    "bias"
+    "data"
    ],
    "tap<3>": [
     "general_control"
@@ -1764,10 +1802,12 @@
     "bias"
    ],
    "outp": [
-    "clock"
+    "clock",
+    "data"
    ],
    "outn": [
-    "clock"
+    "clock",
+    "data"
    ],
    "vdd": [
     "power"
@@ -1805,19 +1845,21 @@
   },
   "sa_dt": {
    "inp": [
-    "clock"
+    "clock",
+    "data"
    ],
    "inn": [
-    "clock"
+    "clock",
+    "data"
    ],
    "ck": [
     "clock"
    ],
    "outp": [
-    "bias"
+    "data"
    ],
    "outn": [
-    "bias"
+    "data"
    ],
    "ofp<1>": [
     "general_control"
@@ -1844,10 +1886,12 @@
     "internal"
    ],
    "net62": [
-    "clock"
+    "clock",
+    "data"
    ],
    "net63": [
-    "clock"
+    "clock",
+    "data"
    ],
    "net64": [
     "internal"
@@ -1867,16 +1911,16 @@
   },
   "sr_nor": {
    "s": [
-    "bias"
+    "data"
    ],
    "r": [
-    "bias"
+    "data"
    ],
    "q": [
-    "bias"
+    "data"
    ],
    "qb": [
-    "bias"
+    "data"
    ],
    "vdd": [
     "power"
@@ -1887,13 +1931,13 @@
   },
   "nor2_c": {
    "a": [
-    "bias"
+    "data"
    ],
    "b": [
-    "bias"
+    "data"
    ],
    "y": [
-    "bias"
+    "data"
    ],
    "vdd": [
     "power"
@@ -1988,38 +2032,22 @@
    "mp0": {
     "role": "logic",
     "alt": [
-     "load",
-     "load",
-     "load",
-     "load",
      "load"
     ]
    },
    "mn0": {
     "role": "logic",
     "alt": [
-     "load",
-     "load",
-     "load",
-     "load",
      "load"
     ]
    }
   },
   "inv_c": {
    "mp0": {
-    "role": "logic",
-    "alt": [
-     "load",
-     "load"
-    ]
+    "role": "logic"
    },
    "mn0": {
-    "role": "logic",
-    "alt": [
-     "load",
-     "load"
-    ]
+    "role": "logic"
    }
   },
   "nand2_a": {
@@ -2060,16 +2088,16 @@
   },
   "nor2_c": {
    "mp0": {
-    "role": "tail"
+    "role": "logic"
    },
    "mp1": {
-    "role": "cascode"
+    "role": "logic"
    },
    "mn0": {
-    "role": "load"
+    "role": "logic"
    },
    "mn1": {
-    "role": "load"
+    "role": "logic"
    }
   },
   "ls_lh": {
@@ -2094,41 +2122,53 @@
     "partner": "mp0"
    },
    "mp3": {
-    "role": "input"
+    "role": "load"
    },
    "mn3": {
-    "role": "reset"
+    "role": "load"
    }
   },
   "esd_dq": {
+   "d0": {
+    "role": "r_to_rail"
+   },
+   "d1": {
+    "role": "r_to_rail"
+   },
    "r0": {
-    "role": "termination"
+    "role": "series_res"
+   },
+   "d2": {
+    "role": "r_to_rail"
+   },
+   "d3": {
+    "role": "r_to_rail"
    },
    "mn0": {
-    "role": "switch"
+    "role": "load"
    },
    "r1": {
-    "role": "series_res"
+    "role": "gate_r"
    }
   },
   "odt_pu": {
    "mp2": {
-    "role": "unknown"
+    "role": "load"
    },
    "r2": {
-    "role": "termination"
+    "role": "series_res"
    },
    "mp1": {
-    "role": "unknown"
+    "role": "load"
    },
    "r1": {
-    "role": "termination"
+    "role": "series_res"
    },
    "mp0": {
-    "role": "unknown"
+    "role": "load"
    },
    "r0": {
-    "role": "termination"
+    "role": "series_res"
    }
   },
   "odt_dec": {},
@@ -2143,7 +2183,7 @@
     "role": "diode"
    },
    "mp1": {
-    "role": "input"
+    "role": "load"
    },
    "mn2": {
     "role": "diode"
@@ -2152,45 +2192,45 @@
     "role": "reset"
    },
    "mn4": {
-    "role": "input"
+    "role": "reset"
    }
   },
   "rx_pre": {
    "r0": {
-    "role": "series_res"
+    "role": "r_to_rail"
    },
    "r1": {
-    "role": "series_res"
+    "role": "r_to_rail"
    },
    "mn0": {
-    "role": "unknown"
+    "role": "input"
    },
    "mn1": {
-    "role": "switch"
+    "role": "input"
    },
    "mn8": {
-    "role": "unknown"
+    "role": "input"
    },
    "mn9": {
-    "role": "switch"
+    "role": "input"
    },
    "mn2": {
-    "role": "unknown"
+    "role": "clock_steering"
    },
    "mn3": {
-    "role": "unknown"
+    "role": "tail"
    },
    "mn4": {
-    "role": "switch"
+    "role": "input"
    },
    "mn5": {
-    "role": "switch"
+    "role": "input"
    },
    "mn6": {
-    "role": "unknown"
+    "role": "clock_steering"
    },
    "mn7": {
-    "role": "unknown"
+    "role": "tail"
    }
   },
   "dfe_sum": {
@@ -2213,10 +2253,10 @@
     "role": "tail"
    },
    "mn4": {
-    "role": "cascode"
+    "role": "clock_steering"
    },
    "mn5": {
-    "role": "cascode"
+    "role": "clock_steering"
    },
    "mn6": {
     "role": "input"
@@ -2328,28 +2368,28 @@
     "role": "series_res"
    },
    "mn0": {
-    "role": "switch"
+    "role": "follower"
    }
   }
  },
  "block": {
   "esd_dq": {
-   "role": "termination",
-   "conf": "high",
-   "symbol": "R/ESD mark on input line",
-   "why": "termination: R from HS input to a common-mode node"
+   "role": "unknown",
+   "conf": "low",
+   "symbol": "box (cell name)",
+   "why": "structure not in dictionary"
   },
   "odt_pu": {
-   "role": "termination",
-   "conf": "high",
-   "symbol": "R/ESD mark on input line",
-   "why": "termination: R from HS input to a common-mode node"
+   "role": "unknown",
+   "conf": "low",
+   "symbol": "box (cell name)",
+   "why": "structure not in dictionary"
   },
   "ls_lh": {
    "role": "composite",
    "conf": "high",
    "symbol": "box (cell name)",
-   "why": "hierarchical: 0 sub-blocks + 2 primitive unit(s); every sub-block is a dictionary block"
+   "why": "hierarchical: 0 sub-blocks + 4 primitive unit(s); every sub-block is a dictionary block"
   },
   "nand2_a": {
    "role": "nand",
@@ -2373,13 +2413,13 @@
    "role": "composite",
    "conf": "high",
    "symbol": "box (cell name)",
-   "why": "hierarchical: 1 sub-blocks + 2 primitive unit(s); every sub-block is a dictionary block"
+   "why": "hierarchical: 1 sub-blocks + 3 primitive unit(s); every sub-block is a dictionary block"
   },
   "rx_pre": {
-   "role": "unknown",
-   "conf": "low",
-   "symbol": "box (cell name)",
-   "why": "structure not in dictionary"
+   "role": "summer",
+   "conf": "high",
+   "symbol": "\u03a3",
+   "why": "2 pairs with different inputs summed at shared outputs"
   },
   "nand2_c": {
    "role": "nand",
@@ -2412,16 +2452,16 @@
    "why": "hierarchical: 1 sub-blocks + 6 primitive unit(s); every sub-block is a dictionary block"
   },
   "nor2_c": {
-   "role": "no_hs",
-   "conf": "low",
-   "symbol": "omit",
-   "why": "no high-speed net"
+   "role": "nor",
+   "conf": "high",
+   "symbol": "box (cell name) + output bubble",
+   "why": "static CMOS gate: 2 series PMOS, 2 parallel NMOS (NOR, dictionary list \u00a72.6-1)"
   },
   "sr_nor": {
-   "role": "no_hs",
-   "conf": "low",
-   "symbol": "omit",
-   "why": "no high-speed net"
+   "role": "sr_latch",
+   "conf": "high",
+   "symbol": "box (cell name)",
+   "why": "two NOR gates cross-coupled (output of each drives an input of the other): SR latch (dictionary list \u00a72.6-1)"
   },
   "dq_rx_unit": {
    "role": "composite",
@@ -2433,12 +2473,16 @@
  "groups": {
   "esd_dq": [
    {
-    "role": "termination",
-    "conf": "high",
-    "symbol": "R/ESD mark on input line",
-    "why": "termination: R from HS input to a common-mode node",
+    "role": "unknown",
+    "conf": "low",
+    "symbol": "box (cell name)",
+    "why": "structure not in dictionary",
     "members": [
+     "d0",
+     "d1",
      "r0",
+     "d2",
+     "d3",
      "mn0",
      "r1"
     ]
@@ -2446,10 +2490,10 @@
   ],
   "odt_pu": [
    {
-    "role": "termination",
-    "conf": "high",
-    "symbol": "R/ESD mark on input line",
-    "why": "termination: R from HS input to a common-mode node",
+    "role": "unknown",
+    "conf": "low",
+    "symbol": "box (cell name)",
+    "why": "structure not in dictionary",
     "members": [
      "mp2",
      "r2",
@@ -2478,9 +2522,25 @@
     "why": "structure not in dictionary",
     "members": [
      "mn0",
+     "mp0"
+    ]
+   },
+   {
+    "role": "unknown",
+    "conf": "low",
+    "symbol": "box (cell name)",
+    "why": "structure not in dictionary",
+    "members": [
      "mn1",
-     "mp0",
-     "mp1",
+     "mp1"
+    ]
+   },
+   {
+    "role": "unknown",
+    "conf": "low",
+    "symbol": "box (cell name)",
+    "why": "structure not in dictionary",
+    "members": [
      "mp3",
      "mn3"
     ]
@@ -2525,13 +2585,21 @@
     ]
    },
    {
-    "role": "cml_buffer",
-    "conf": "high",
-    "symbol": "triangle \"BUF\"",
-    "why": "single differential pair, common tail, loads",
+    "role": "unknown",
+    "conf": "low",
+    "symbol": "box (cell name)",
+    "why": "structure not in dictionary",
     "members": [
      "mn1",
-     "mp0",
+     "mp0"
+    ]
+   },
+   {
+    "role": "unknown",
+    "conf": "low",
+    "symbol": "box (cell name)",
+    "why": "structure not in dictionary",
+    "members": [
      "mp1",
      "mn2",
      "mn4"
@@ -2540,10 +2608,10 @@
   ],
   "rx_pre": [
    {
-    "role": "unknown",
-    "conf": "low",
-    "symbol": "box (cell name)",
-    "why": "structure not in dictionary",
+    "role": "summer",
+    "conf": "high",
+    "symbol": "\u03a3",
+    "why": "2 pairs with different inputs summed at shared outputs",
     "members": [
      "r0",
      "r1",
@@ -2687,6 +2755,21 @@
     ]
    }
   ],
+  "nor2_c": [
+   {
+    "role": "nor",
+    "conf": "high",
+    "symbol": "box (cell name) + output bubble",
+    "why": "static CMOS gate: 2 series PMOS, 2 parallel NMOS (NOR, dictionary list \u00a72.6-1)",
+    "members": [
+     "mp0",
+     "mp1",
+     "mn0",
+     "mn1"
+    ]
+   }
+  ],
+  "sr_nor": [],
   "dq_rx_unit": [
    {
     "role": "unknown",
@@ -2702,6 +2785,19 @@
  },
  "latch_pairs": [],
  "symmetry": {
+  "rx_pre": {
+   "seed": [
+    [
+     "inp",
+     "vref"
+    ],
+    [
+     "lbp",
+     "lbn"
+    ]
+   ],
+   "unmatched_devices": []
+  },
   "dfe_sum": {
    "seed": [
     [

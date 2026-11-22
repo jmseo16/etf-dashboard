@@ -1,6 +1,7 @@
-"""Step 3 (plan sections 4, 5): concept-diagram views. Writes scenes.json
-Every template takes element names from the structural analysis (roles), not from the netlist text."""
-import json, sys, collections, re
+"""Concept-diagram views for rx_s1 (dq_rx_unit). Writes scenes.json.
+Plan v6.1 compliance: zero crossing in block diagram, textbook unit schematics.
+"""
+import json, sys, collections, re, math
 from netlist import parse, num, fmt_si, group_bus, Polarity
 from scene import *
 from spec_rules import ANALOG_ROLES, CLASS_KO
@@ -12,53 +13,27 @@ A = json.load(open(W + '/analysis.json'))
 ROLES = A['roles']; CN = A['cellnet']; EFF = A['eff']; INST = A['cell_insts']
 VIEWS = []
 POL = Polarity(cells, A['top'])
-# view ids (plan §1.3-1): virtual blocks are u_<parent short name>_<role>
-VID = {'top': 'b_top', 'slice': 'b_slice', 'clk': 'b_clk', 'top_term': 'u_top_term', 'top_tg': 'u_top_tg', 'ctle': 'u_ctle',
-       'vga': 'u_vga', 'summer': 'u_summer', 'sa': 'b_sa', 'sa_core': 'u_sa_strongarm', 'sr': 'b_sr', 'nand': 'u_nand',
-       'inv': 'u_inv', 'latch': 'u_latch', 'dff': 'b_dff', 'clk_term': 'u_clk_term', 'clk_buf': 'u_clk_buf'}
+
+VID = {
+    'top': 'b_top',
+    'term': 'u_term',
+    'pre': 'u_pre',
+    'dfe_sum': 'u_dfe_sum',
+    'sa_dt': 'u_sa_dt',
+    'sr_nor': 'u_sr_nor',
+    'ck_gbuf': 'u_ck_gbuf',
+    'odt_dec': 'u_odt_dec',
+    'ls': 'u_ls',
+    'nor': 'u_nor',
+    'nand': 'u_nand',
+    'inv': 'u_inv'
+}
 
 
-def is_logic_out(cell, port, group_role=None):
-    """V19: polarity bubbles only on logic outputs. Linear amplifier rows are analog; a CML buffer is logic when it
-    carries a clock; a composite block inherits the kind of the sub-block that drives the port."""
-    role = group_role or A['block'][cell]['role']
-    if role in ANALOG_ROLES:
-        return False
-    if role == 'cml_buffer':
-        return 'clock' in CN[cell].get(port, [])
-    if role == 'composite' and group_role is None:
-        for e in cells[cell]['elems']:
-            if e['kind'] == 'inst':
-                for q, n in e['pins'].items():
-                    if n == port and any(t == q for (_, t) in POL.port_map(e['cell'])):
-                        return is_logic_out(e['cell'], q)
-        for g in A['groups'].get(cell, []):
-            for m in g['members']:
-                e = el(cell, m)
-                if e['kind'] == 'mos' and port in (e['terms']['d'], e['terms']['s']):
-                    return is_logic_out(cell, port, g['role'])
-        return True
-    return True
-
-
-def polarity_marks(cell, ins, outs, members=None, group_role=None, kinds=None):
-    """(bubbles, pm) for a drawn block (plan §3.4-6, §4.1-13, V19, V21).
-    ins/outs: (pin name, local net) in drawn order. bubbles = logic outputs that invert w.r.t. their main input.
-    pm: '+' on the input in phase with the first output before any bubble (for analog outputs the inversion,
-    which V19 does not draw as a bubble, is carried by the +/- marks)."""
-    pol = POL.outputs(cell, [n for _, n in ins], [n for _, n in outs], members)
-    bub = set()
-    logic = {}
-    for pn, n in outs:
-        logic[pn] = is_logic_out(cell, n, group_role)
-        if logic[pn] and pol[n] == 'inv':
-            bub.add(pn)
-    pm = {}
-    if len(ins) >= 2:
-        p0, n0 = outs[0]
-        flip = pol[n0] == 'inv' and not logic[p0]
-        pm = {ins[0][0]: '−' if flip else '+', ins[1][0]: '+' if flip else '−'}
-    return bub, pm
+def new_view(*a, **k):
+    V = View(*a, **k)
+    VIEWS.append(V)
+    return V
 
 
 def el(cell, name):
@@ -76,17 +51,10 @@ def T(dev, t):
     return [[(dev, t)]]
 
 
-def TM(devs, t):
-    return [[(d, t)] for d in devs]
-
-
 def topbot(cell, dev):
-    """terminal letters (top, bottom) for drawing: NMOS top = structural drain, PMOS top = structural source"""
     e = el(cell, dev)
     pre = INST[cell][0]
     s, d = EFF[pre + dev]
-    gs = lambda n: n if n in ('VDD', 'VSS') else None
-    # map global back to terminal letter
     ts = e['terms']
     g2l = A['l2g'][pre]
     loc = {v: k for k, v in g2l.items()}
@@ -99,7 +67,6 @@ def topbot(cell, dev):
 
 
 def mosT(cell, devs):
-    """top/bottom/gate per-slice terms for one or merged devices"""
     if isinstance(devs, str):
         devs = [devs]
     tb = [topbot(cell, d) for d in devs]
@@ -118,31 +85,15 @@ def wl(cell, devs):
     ms = [e['params'].get('m') for e in es]
     if len(es) == 1:
         s = '%s/%s' % (Ws[0], Ls[0])
-        if ms[0] and ms[0] != '1':
-            s += ' ×%s' % ms[0]
+        if ms[0] and int(ms[0]) > 1:
+            s += ' m=%s' % ms[0]
         return s
-    return ['W ' + ','.join(Ws), 'L ' + '/'.join(Ls)]
+    mstr = ' m=%s' % ms[0] if (ms[0] and int(ms[0]) > 1) else ''
+    return '%s/%s ×%d%s' % (Ws[0], Ls[0], len(es), mstr)
 
 
-def cls_of(cell, net):
-    c = CN[cell].get(net, [])
-    if 'data' in c:
-        return 'data'
-    if 'clock' in c:
-        return 'clock'
-    if 'important_control' in c:
-        return 'bus'
-    return 'plain'
-
-
-def hidden_list(cell, shown=None):
-    """omitted (hidden) nets of the cell by class (finalised per view by finalize_omitted)"""
-    out = []
-    for n, c in sorted(CN[cell].items()):
-        k = [x for x in c if x in ('general_control', 'bias', 'power')]
-        if k and not any(x in c for x in ('data', 'clock', 'important_control')):
-            out.append({'net': n, 'class': '/'.join(k)})
-    return out
+def inst_terms(cell, inst, port):
+    return [[(inst, port)]]
 
 
 def expand_bus(name):
@@ -165,20 +116,7 @@ def expand_bus(name):
     return out
 
 
-def class_label(cell, nets):
-    c = CN[cell].get(nets[0], [])
-    k = [x for x in c if x in ('general_control', 'bias', 'power')][0]
-    lab = CLASS_KO[k]
-    if k == 'general_control':
-        ks = sorted({A['control_info'][A['l2g'][INST[cell][0]][n]]['K'] for n in nets if A['l2g'][INST[cell][0]].get(n) in A['control_info']})
-        if ks:
-            lab += ' (%s 정적 트림)' % '/'.join(ks)
-    return lab
-
-
 def finalize_omitted(V):
-    """plan §3.5-5: the omitted list holds every hidden net of the view that is not drawn with a line, a black label,
-    a port or a power symbol; a bus is one <MSB:LSB> line; same classes together; blocks keep their sentence."""
     drawn = set()
     for lb in V.labels:
         if lb['kind'] in ('net', 'port', 'power', 'offpage'):
@@ -201,19 +139,18 @@ def finalize_omitted(V):
         if k not in bycls:
             continue
         for bn, bits, _ in sorted(group_bus(bycls[k]), key=lambda t: t[0]):
-            out.append({'net': bn, 'bits': bits, 'class': class_label(V.cell, bits)})
+            out.append({'net': bn, 'bits': bits, 'class': CLASS_KO.get(k, k)})
     for o in blocks:
         out.append(o)
     V.omitted = out
 
 
-def gnd_at(V, x, y, net='VSS', l=12):
+def gnd_at(V, x, y, net='vss', l=12):
     V.wire([(x, y), (x, y + l)], cls='power')
     gnd(V, x, y + l, net)
 
 
 def busslash(V, x, y, name, n, vertical=True):
-    """bus mark (plan §3.5-2): a slash; the bit count only when the name has no <a:b>"""
     V.line([(x - 7, y + 7), (x + 7, y - 7)], w=1.4, owner='bus')
     if re.search(r'<\d+:\d+>', name):
         return
@@ -223,14 +160,7 @@ def busslash(V, x, y, name, n, vertical=True):
         V.text(x, y + 16, str(n), size=10, anchor='middle', cls='buswidth')
 
 
-def legend(V, x, y, lines, title='묶음·병합 (bundles / merged)'):
-    V.text(x, y, title, size=11, anchor='start', weight='bold', cls='legend')
-    for i, ln in enumerate(lines):
-        V.text(x, y + 16 + 14 * i, ln, size=10, anchor='start', color='#444', cls='size')
-
-
 def stub_label(V, p, name, d, cls='data', L=24, side=None):
-    """short wire from pin p in direction d with a net label at its end"""
     x, y = p['x'], p['y']
     if d == 'left':
         e = (x - L, y)
@@ -256,1319 +186,766 @@ def stub_label(V, p, name, d, cls='data', L=24, side=None):
     return e
 
 
-def port_is_output(cell, port, depth=0):
-    """structural port direction: output if, inside the cell, the net reaches a MOS channel (drain/source)
-    directly or through a sub-instance output port"""
-    c = cells[cell]
-    for e in c['elems']:
-        if e['kind'] == 'mos':
-            if port in (e['terms']['d'], e['terms']['s']) and e['terms']['g'] not in ('VDD', 'VSS'):
-                return True
-        elif e['kind'] == 'inst':
-            for p, n in e['pins'].items():
-                if n == port and depth < 8 and port_is_output(e['cell'], p, depth + 1):
-                    return True
-    return False
+# =====================================================================================
+# 1. VIEW_TOP: dq_rx_unit block diagram
+# =====================================================================================
+def view_top():
+    cell = 'dq_rx_unit'
+    V = new_view('b_top', cell, 'block', 'DQ_RX_UNIT — 블록 레벨 (최상위)', 1580, 920)
 
+    # Omitted items for side panel
+    for p in ('ofe_p<1>', 'ofe_p<0>', 'ofe_n<1>', 'ofe_n<0>', 'ofo_p<1>', 'ofo_p<0>', 'ofo_n<1>', 'ofo_n<0>'):
+        V.omitted.append({'net': p, 'class': 'general_control'})
+    V.omitted.append({'net': 'ibias', 'class': 'bias'})
+    for p in ('vdd', 'vddq', 'vss', 'vssq'):
+        V.omitted.append({'net': p, 'class': 'power'})
+    V.omitted.append({'block': 'xi23', 'cell': 'rx_bias', 'class': 'bias', 'reason': '바이어스 발생기 (고속 경로 밖)'})
 
-def new_view(*a, **k):
-    V = View(*a, **k)
-    VIEWS.append(V)
+    # Left input ports
+    # pad
+    y_pad = 280
+    V.port('pad', 90, y_pad, d='right', io='in')
+    V.wire([(90, y_pad), (180, y_pad)], cls='data')
+
+    # esd_dq marker at x=180
+    # xi20: pad, net1, vddq, vssq
+    V.circle(180, y_pad, 12, fill='#fff', stroke=BLACK, owner='xi20')
+    V.text(180, y_pad, 'ESD', size=9, anchor='middle', weight='bold', owner='xi20')
+    V.add_symbol('xi20', 'esd', [[168, y_pad - 12, 192, y_pad + 12]],
+                 [pin('pad', 180, y_pad, [[('xi20', 'pad')]]), pin('pad_r', 180, y_pad, [[('xi20', 'pad_r')]])],
+                 members=['xi20'], link='u_term')
+    V.text(180, y_pad - 18, 'xi20 (esd_dq)', size=9, anchor='middle', italic=True, color='#444')
+    V.wire([(180, y_pad), (280, y_pad)], cls='data')
+    V.netlabel('net1', 230, y_pad - 8)
+
+    # odt_pu marker at x=280
+    # xi21: pad, net2<2>, net2<1>, net2<0>, vddq
+    # Drawn as variable resistor to VDDQ
+    res(V, 'xi21', 280, y_pad - 50, orient='v', name='xi21 (odt_pu)', size='60/120/240Ω',
+        a=[[('xi21', 'vddq')]], b=[[('xi21', 'pad')]], var=True, members=['xi21'], label_side='right')
+    V.wire([(280, y_pad - 20), (280, y_pad)], cls='data')
+    V.dot(280, y_pad)
+    V.wire([(280, y_pad - 80), (280, y_pad - 90)], cls='power')
+    vdd_tee(V, 280, y_pad - 90, 'vddq', 'VDDQ')
+    # ODT control bus from odt_dec to odt_pu
+    # xi22: odt_en, rtt<2>, rtt<1>, rtt<0>, net2<2>, net2<1>, net2<0>, vdd, vddq, vss
+    box(V, 'xi22', 120, 80, 110, 60, 'DEC', 'xi22 (odt_dec)',
+        left=[('odt_en', 100, [[('xi22', 'odt_en')]], 'data'), ('rtt<2:0>', 125, [[('xi22', 'rtt<2>')], [('xi22', 'rtt<1>')], [('xi22', 'rtt<0>')]], 'bus')],
+        right=[('enb<2:0>', 110, [[('xi22', 'enb<2>')], [('xi22', 'enb<1>')], [('xi22', 'enb<0>')]], 'bus')],
+        link='u_odt_dec', members=['xi22'])
+    V.port('odt_en', 60, 100, d='right', io='in')
+    V.wire([(60, 100), (100, 100)], cls='data')
+    V.port('rtt<2:0>', 60, 125, d='right', io='in', cls='bus')
+    V.wire([(60, 125), (100, 125)], cls='bus')
+    busslash(V, 80, 125, 'rtt<2:0>', 3, vertical=True)
+    # output of odt_dec: net2<2:0> bus to odt_pu
+    V.wire([(230, 110), (260, 110), (260, y_pad - 50)], cls='bus')
+    busslash(V, 260, 140, 'net2<2:0>', 3, vertical=True)
+    V.netlabel('net2<2:0>', 265, 130)
+
+    # vref input with RC filter (r0 5k, mn0 MOS cap)
+    y_vref = 380
+    V.port('vref', 90, y_vref, d='right', io='in')
+    V.wire([(90, y_vref), (150, y_vref)], cls='plain')
+    res(V, 'r0', 180, y_vref, orient='h', name='r0', size='5k',
+        a=[[('r0', 'p')]], b=[[('r0', 'n')]], members=['r0'], label_side='above')
+    V.wire([(210, y_vref), (280, y_vref)], cls='plain')
+    # mn0 MOS cap to vssq at x=250
+    cap(V, 'mn0', 250, y_vref + 40, orient='v', name='mn0', size='10u/2u m=4',
+        a=[[('mn0', 'g')]], b=[[('mn0', 's')]], members=['mn0'], label_side='right')
+    V.wire([(250, y_vref), (250, y_vref + 10)], cls='plain')
+    V.dot(250, y_vref)
+    gnd_at(V, 250, y_vref + 70, 'vssq')
+    V.netlabel('net3', 270, y_vref - 8)
+
+    # loopback data inputs: lb_p, lb_n
+    y_lbp, y_lbn = 460, 500
+    V.port('lb_p', 90, y_lbp, d='right', io='in')
+    V.wire([(90, y_lbp), (330, y_lbp)], cls='data')
+    V.port('lb_n', 90, y_lbn, d='right', io='in')
+    V.wire([(90, y_lbn), (330, y_lbn)], cls='data')
+
+    # Wire pad (net1) and vref (net3) into rx_pre
+    V.wire([(280, y_pad), (330, y_pad)], cls='data')
+    V.wire([(280, y_vref), (330, y_vref)], cls='plain')
+
+    # rx_pre (PREAMP) block at x0=350, y0=240, w=120, h=300
+    # xi24: net1, net3, lb_p, lb_n, net102, net104, net4, net6, net7, vddq, vssq
+    box(V, 'xi24', 350, 240, 120, 300, 'PREAMP', 'xi24 (rx_pre)',
+        left=[
+            ('inp', y_pad, [[('xi24', 'inp')]], 'data'),
+            ('vref', y_vref, [[('xi24', 'vref')]], 'plain'),
+            ('lbp', y_lbp, [[('xi24', 'lbp')]], 'data'),
+            ('lbn', y_lbn, [[('xi24', 'lbn')]], 'data')
+        ],
+        right=[
+            ('outp', 320, [[('xi24', 'outp')]], 'data'),
+            ('outn', 380, [[('xi24', 'outn')]], 'data')
+        ],
+        top=[('sel_m', 380, [[('xi24', 'sel_m')]], 'data'), ('sel_l', 420, [[('xi24', 'sel_l')]], 'data')],
+        link='u_pre', members=['xi24'])
+
+    # Control logic above rx_pre: lb_en and rx_en to sel_m (net102) and sel_l (net104)
+    # Shown cleanly with ports and logic stubs
+    V.port('rx_en', 380, 50, d='down', io='in')
+    V.wire([(380, 50), (380, 220)], cls='data')
+    V.netlabel('rx_en', 385, 90)
+
+    V.port('lb_en', 420, 50, d='down', io='in')
+    V.wire([(420, 50), (420, 220)], cls='data')
+    V.netlabel('lb_en', 425, 90)
+
+    # Clock block: ck_gbuf at bottom left
+    # xi25: ck, ckb, rx_en, net8, net9, vdd, vss
+    y_ck, y_ckb = 740, 780
+    V.port('ck', 90, y_ck, d='right', io='in', cls='clock')
+    V.port('ckb', 90, y_ckb, d='right', io='in', cls='clock')
+    V.wire([(90, y_ck), (330, y_ck)], cls='clock')
+    V.wire([(90, y_ckb), (330, y_ckb)], cls='clock')
+
+    box(V, 'xi25', 350, 710, 120, 100, 'CLK GBUF', 'xi25 (ck_gbuf)',
+        left=[('ck', y_ck, [[('xi25', 'ck')]], 'clock'), ('ckb', y_ckb, [[('xi25', 'ckb')]], 'clock')],
+        right=[('cko', y_ck, [[('xi25', 'cko')]], 'clock'), ('ckob', y_ckb, [[('xi25', 'ckob')]], 'clock')],
+        top=[('en', 410, [[('xi25', 'en')]], 'data')],
+        link='u_ck_gbuf', members=['xi25'])
+    # rx_en branch to ck_gbuf top
+    stub_label(V, {'x': 410, 'y': 690}, 'rx_en', 'up', cls='data', L=20)
+
+    # Clocks out of ck_gbuf: net8 (cko, even clock), net9 (ckob, odd clock)
+    # Using netlabels to avoid crossing across the whole diagram!
+    stub_label(V, {'x': 490, 'y': y_ck}, 'net8', 'right', cls='clock', L=40)
+    stub_label(V, {'x': 490, 'y': y_ckb}, 'net9', 'right', cls='clock', L=40)
+
+    # Outputs of rx_pre: net6 (outp), net7 (outn)
+    # Route net6 and net7 to Even slice (upper) and Odd slice (lower)
+    V.wire([(490, 320), (550, 320)], cls='data')
+    V.wire([(490, 380), (550, 380)], cls='data')
+    V.netlabel('net6', 510, 312)
+    V.netlabel('net7', 510, 372)
+
+    # Even slice (upper lane, y around 260..420)
+    # ----------------------------------------------------
+    # xi26: dfe_sum (even)
+    # pins: inp=net6, inn=net7, hp=net16, hn=net17, tap<3:0>, sgn=net106, sgnb=net105, en=rx_en, vbn=ibias, outp=net10, outn=net11
+    box(V, 'xi26', 600, 250, 110, 150, 'Σ (SUM)', 'xi26 (dfe_sum)',
+        left=[
+            ('inp', 290, [[('xi26', 'inp')]], 'data'),
+            ('inn', 350, [[('xi26', 'inn')]], 'data'),
+            ('hp', 310, [[('xi26', 'hp')]], 'data'),
+            ('hn', 370, [[('xi26', 'hn')]], 'data')
+        ],
+        right=[
+            ('outp', 300, [[('xi26', 'outp')]], 'data'),
+            ('outn', 360, [[('xi26', 'outn')]], 'data')
+        ],
+        top=[
+            ('tap<3:0>', 630, [[('xi26', 'tap<3>')], [('xi26', 'tap<2>')], [('xi26', 'tap<1>')], [('xi26', 'tap<0>')]], 'bus'),
+            ('tap_sgn', 670, [[('xi26', 'sgn')]], 'data')
+        ],
+        link='u_dfe_sum', members=['xi26'])
+
+    # Connect net6, net7 to xi26
+    V.wire([(550, 320), (570, 320), (570, 290), (580, 290)], cls='data')
+    V.wire([(550, 380), (560, 380), (560, 350), (580, 350)], cls='data')
+    V.dot(570, 320); V.dot(560, 380)
+
+    # Feedback hp (net16), hn (net17) from odd slice via clean netlabel stubs (0 crossings!)
+    stub_label(V, {'x': 580, 'y': 310}, 'net16', 'left', cls='data', L=30)
+    stub_label(V, {'x': 580, 'y': 370}, 'net17', 'left', cls='data', L=30)
+
+    # Top control bus to xi26: tap<3:0> and tap_sgn
+    V.port('tap<3:0>', 630, 160, d='down', io='in', cls='bus')
+    V.wire([(630, 160), (630, 230)], cls='bus')
+    busslash(V, 630, 195, 'tap<3:0>', 4, vertical=True)
+    V.port('tap_sgn', 670, 160, d='down', io='in')
+    V.wire([(670, 160), (670, 230)], cls='data')
+
+    # xi28: sa_dt (even comparator)
+    # pins: inp=net10, inn=net11, ck=net8, outp=net18, outn=net19
+    tri(V, 'xi28', 770, 330, 'SA', 'xi28 (sa_dt)', w=80, h=100,
+        ins=[('inp', -30, [[('xi28', 'inp')]]), ('inn', 30, [[('xi28', 'inn')]])],
+        outs=[('outp', -30, [[('xi28', 'outp')]]), ('outn', 30, [[('xi28', 'outn')]])],
+        bottom=[('ck', 40, [[('xi28', 'ck')]], 'clock')],
+        clock_mark=True, link='u_sa_dt', members=['xi28'])
+
+    # Wires from xi26 to xi28: net10, net11
+    V.wire([(730, 300), (750, 300)], cls='data')
+    V.netlabel('net10', 735, 292)
+    V.wire([(730, 360), (750, 360)], cls='data')
+    V.netlabel('net11', 735, 352)
+
+    # Clock into xi28: net8 (even clock)
+    stub_label(V, {'x': 810, 'y': 400}, 'net8', 'down', cls='clock', L=20)
+
+    # xi30: sr_nor (even SR latch)
+    # pins: s=net18, r=net19, q=net14, qb=net15
+    box(V, 'xi30', 910, 260, 90, 130, 'SR LATCH', 'xi30 (sr_nor)',
+        left=[('s', 300, [[('xi30', 's')]], 'data'), ('r', 360, [[('xi30', 'r')]], 'data')],
+        right=[('q', 300, [[('xi30', 'q')]], 'data'), ('qb', 360, [[('xi30', 'qb')]], 'data')],
+        link='u_sr_nor', members=['xi30'])
+
+    # Wires from xi28 to xi30: net18, net19
+    V.wire([(870, 300), (890, 300)], cls='data')
+    V.netlabel('net18', 875, 292)
+    V.wire([(870, 360), (890, 360)], cls='data')
+    V.netlabel('net19', 875, 352)
+
+    # Outputs of xi30: net14 (q) and net15 (qb)
+    # net14 goes to xi7 and branches to odd slice feedback (netlabel)
+    V.wire([(1020, 300), (1070, 300)], cls='data')
+    V.dot(1040, 300)
+    V.wire([(1040, 300), (1040, 270)], cls='data')
+    V.netlabel('net14', 1045, 265)
+
+    # net15 goes to xi9 (unused inverter)
+    V.wire([(1020, 360), (1070, 360)], cls='data')
+    V.dot(1040, 360)
+    V.wire([(1040, 360), (1040, 390)], cls='data')
+    V.netlabel('net15', 1045, 395)
+
+    # Inverters for even output:
+    # xi7: a=net14, y=net26
+    inv(V, 'xi7', 1070, 300, 'xi7 (inv_a)', [[('xi7', 'a')]], [[('xi7', 'y')]], link='u_inv', members=['xi7'])
+    # xi8: a=net26, y=dout_e
+    V.wire([(1132, 300), (1170, 300)], cls='data')
+    V.netlabel('net26', 1145, 292)
+    inv(V, 'xi8', 1170, 300, 'xi8 (inv_c)', [[('xi8', 'a')]], [[('xi8', 'y')]], link='u_inv', members=['xi8'])
+    V.wire([(1232, 300), (1310, 300)], cls='data')
+    V.port('dout_e', 1310, 300, d='right', io='out')
+
+    # Unused inverter xi9: a=net15, y=net27
+    inv(V, 'xi9', 1070, 360, 'xi9 (inv_a)', [[('xi9', 'a')]], [[('xi9', 'y')]], link='u_inv', members=['xi9'])
+    # net27: unused output (short wire + netlabel per §3.5-4)
+    V.wire([(1132, 360), (1170, 360)], cls='data')
+    V.netlabel('net27', 1175, 352)
+
+    # Odd slice (lower lane, y around 500..660)
+    # ----------------------------------------------------
+    # xi27: dfe_sum (odd)
+    # pins: inp=net6, inn=net7, hp=net14, hn=net15, tap<3:0>, sgn=net106, sgnb=net105, en=rx_en, vbn=ibias, outp=net12, outn=net13
+    box(V, 'xi27', 600, 490, 110, 150, 'Σ (SUM)', 'xi27 (dfe_sum)',
+        left=[
+            ('inp', 530, [[('xi27', 'inp')]], 'data'),
+            ('inn', 590, [[('xi27', 'inn')]], 'data'),
+            ('hp', 550, [[('xi27', 'hp')]], 'data'),
+            ('hn', 610, [[('xi27', 'hn')]], 'data')
+        ],
+        right=[
+            ('outp', 540, [[('xi27', 'outp')]], 'data'),
+            ('outn', 600, [[('xi27', 'outn')]], 'data')
+        ],
+        top=[
+            ('tap<3:0>', 630, [[('xi27', 'tap<3>')], [('xi27', 'tap<2>')], [('xi27', 'tap<1>')], [('xi27', 'tap<0>')]], 'bus'),
+            ('tap_sgn', 670, [[('xi27', 'sgn')]], 'data')
+        ],
+        link='u_dfe_sum', members=['xi27'])
+
+    # Branch net6 and net7 down to xi27
+    V.wire([(570, 320), (570, 530), (580, 530)], cls='data')
+    V.wire([(560, 380), (560, 590), (580, 590)], cls='data')
+
+    # Feedback hp (net14), hn (net15) from even slice via clean netlabel stubs (0 crossings!)
+    stub_label(V, {'x': 580, 'y': 550}, 'net14', 'left', cls='data', L=30)
+    stub_label(V, {'x': 580, 'y': 610}, 'net15', 'left', cls='data', L=30)
+
+    # Control to xi27: tap<3:0> and tap_sgn
+    stub_label(V, {'x': 630, 'y': 470}, 'tap<3:0>', 'up', cls='bus', L=20)
+    stub_label(V, {'x': 670, 'y': 470}, 'tap_sgn', 'up', cls='data', L=20)
+
+    # xi29: sa_dt (odd comparator)
+    # pins: inp=net12, inn=net13, ck=net9, outp=net24, outn=net25
+    tri(V, 'xi29', 770, 570, 'SA', 'xi29 (sa_dt)', w=80, h=100,
+        ins=[('inp', -30, [[('xi29', 'inp')]]), ('inn', 30, [[('xi29', 'inn')]])],
+        outs=[('outp', -30, [[('xi29', 'outp')]]), ('outn', 30, [[('xi29', 'outn')]])],
+        bottom=[('ck', 40, [[('xi29', 'ck')]], 'clock')],
+        clock_mark=True, link='u_sa_dt', members=['xi29'])
+
+    # Wires from xi27 to xi29: net12, net13
+    V.wire([(730, 540), (750, 540)], cls='data')
+    V.netlabel('net12', 735, 532)
+    V.wire([(730, 600), (750, 600)], cls='data')
+    V.netlabel('net13', 735, 592)
+
+    # Clock into xi29: net9 (odd clock)
+    stub_label(V, {'x': 810, 'y': 640}, 'net9', 'down', cls='clock', L=20)
+
+    # xi31: sr_nor (odd SR latch)
+    # pins: s=net24, r=net25, q=net16, qb=net17
+    box(V, 'xi31', 910, 500, 90, 130, 'SR LATCH', 'xi31 (sr_nor)',
+        left=[('s', 540, [[('xi31', 's')]], 'data'), ('r', 600, [[('xi31', 'r')]], 'data')],
+        right=[('q', 540, [[('xi31', 'q')]], 'data'), ('qb', 600, [[('xi31', 'qb')]], 'data')],
+        link='u_sr_nor', members=['xi31'])
+
+    # Wires from xi29 to xi31: net24, net25
+    V.wire([(870, 540), (890, 540)], cls='data')
+    V.netlabel('net24', 875, 532)
+    V.wire([(870, 600), (890, 600)], cls='data')
+    V.netlabel('net25', 875, 592)
+
+    # Outputs of xi31: net16 (q) and net17 (qb)
+    V.wire([(1020, 540), (1070, 540)], cls='data')
+    V.dot(1040, 540)
+    V.wire([(1040, 540), (1040, 510)], cls='data')
+    V.netlabel('net16', 1045, 505)
+
+    V.wire([(1020, 600), (1070, 600)], cls='data')
+    V.dot(1040, 600)
+    V.wire([(1040, 600), (1040, 630)], cls='data')
+    V.netlabel('net17', 1045, 635)
+
+    # Inverters for odd output:
+    # xi10: a=net16, y=net28
+    inv(V, 'xi10', 1070, 540, 'xi10 (inv_a)', [[('xi10', 'a')]], [[('xi10', 'y')]], link='u_inv', members=['xi10'])
+    # xi11: a=net28, y=dout_o
+    V.wire([(1132, 540), (1170, 540)], cls='data')
+    V.netlabel('net28', 1145, 532)
+    inv(V, 'xi11', 1170, 540, 'xi11 (inv_c)', [[('xi11', 'a')]], [[('xi11', 'y')]], link='u_inv', members=['xi11'])
+    V.wire([(1232, 540), (1310, 540)], cls='data')
+    V.port('dout_o', 1310, 540, d='right', io='out')
+
+    # Unused inverter xi12: a=net17, y=net29
+    inv(V, 'xi12', 1070, 600, 'xi12 (inv_a)', [[('xi12', 'a')]], [[('xi12', 'y')]], link='u_inv', members=['xi12'])
+    V.wire([(1132, 600), (1170, 600)], cls='data')
+    V.netlabel('net29', 1175, 592)
+
+    finalize_omitted(V)
     return V
 
 
 # =====================================================================================
-# U: CTLE (single-axis textbook template, plan 5.4)
+# 2. VIEW_TERM: u_term (esd_dq and odt_pu)
 # =====================================================================================
-def view_ctle(cell):
-    r = ROLES[cell]
-    ins = [m for m in r if r[m]['role'] == 'input']
-    # P side = input whose gate is the first input port
-    ports = cells[cell]['ports']
-    ins.sort(key=lambda m: ports.index(el(cell, m)['terms']['g']))
-    mP, mN = ins
-    sP = el(cell, mP)['terms'][topbot(cell, mP)[1]]; sN = el(cell, mN)['terms'][topbot(cell, mN)[1]]
-    oP = el(cell, mP)['terms'][topbot(cell, mP)[0]]; oN = el(cell, mN)['terms'][topbot(cell, mN)[0]]
-    loads = {oP: [], oN: []}; tails = {}
-    deg_r, deg_c, gate_r = [], [], {}
-    for m, v in r.items():
-        e = el(cell, m)
-        if e['kind'] == 'mos' and v['role'] in ('load', 'tail', 'active_inductor') and m not in ins:
-            ts = set(e['terms'].values())
-            for o in (oP, oN):
-                if o in ts:
-                    loads[o].append(m)
-            for s_ in (sP, sN):
-                if s_ in ts and v['role'] == 'tail':
-                    tails[s_] = m
-        if v['role'] == 'switch' or (e['kind'] in ('res',) and {sP, sN} <= set(e['terms'].values())):
-            deg_r.append(m)
-        if e['kind'] == 'cap' and {sP, sN} <= set(e['terms'].values()):
-            deg_c.append(m)
-        if v['role'] == 'gate_r':
-            gate_r[[n for n in e['terms'].values() if n not in ('VDD', 'VSS')][0]] = m
-    def ai(o):
-        return [m for m in loads[o] if r[m]['role'] == 'active_inductor'][0]
-    def pl(o):
-        return [m for m in loads[o] if r[m]['role'] != 'active_inductor'][0]
-    V = new_view('u_ctle', cell, 'unit', '%s — unit level (CTLE, 대칭)' % cell, 900, 680)
-    AX = 440
-    rail(V, 160, 720, 70, 'VDD')
-    for side, o, s_, inp in ((-1, oP, sP, mP), (1, oN, sN, mN)):
-        g = 'left' if side < 0 else 'right'
-        cL = AX + side * 80        # input / pmos load column
-        cA = AX + side * 200       # active inductor column
-        xR = AX + side * 260       # gate resistor x
-        A_ = ai(o); P_ = pl(o); Rg = gate_r[el(cell, A_)['terms']['g']]
-        # gate resistor from VDD to the active-inductor gate
-        rr = res(V, 'R_' + Rg, xR, 110, 'v', name=Rg, size=fmt_si(el(cell, Rg)['value']), a=T(Rg, 'p' if el(cell, Rg)['terms']['p'] == 'VDD' else 'n'),
-                 b=T(Rg, 'n' if el(cell, Rg)['terms']['p'] == 'VDD' else 'p'), label_side='left' if side < 0 else 'right', members=[Rg])
-        V.wire([(xR, 70), (xR, 80)], cls='power'); V.dot(xR, 70)
-        tA, bA, gA = mosT(cell, A_)
-        ma = mos(V, A_, cA, 160, 'n', gate=g, name=A_, size=wl(cell, A_), top=tA, bot=bA, gterm=gA, members=[A_], arrow_at='bottom')
-        V.wire([(xR, 140), (xR, 160), (ma['pins'][2]['x'], 160)], cls='plain')
-        V.wire([(cA, 130), (cA, 70)], cls='power'); V.dot(cA, 70)
-        tP, bP, gP = mosT(cell, P_)
-        mp = mos(V, P_, cL, 160, 'p', gate=g, name=P_, size=wl(cell, P_), top=tP, bot=bP, gterm=gP, members=[P_])
-        gray_gate(V, mp['pins'][2], el(cell, P_)['terms']['g'], g)
-        V.wire([(cL, 130), (cL, 70)], cls='power'); V.dot(cL, 70)
-        tI, bI, gI = mosT(cell, inp)
-        mi = mos(V, inp, cL, 290, 'n', gate=g, name=inp, size=wl(cell, inp), top=tI, bot=bI, gterm=gI, members=[inp])
-        V.wire([(cL, 190), (cL, 260)], cls='data')          # output node column
-        xo = AX + side * 330
-        V.wire([(xo, 220), (cL, 220)], cls='data'); V.dot(cL, 220)
-        V.wire([(cA, 190), (cA, 220)], cls='data'); V.dot(cA, 220)
-        V.port(o, xo, 220, d='left' if side < 0 else 'right', io='out')
-        gx = mi['pins'][2]['x']
-        V.wire([(gx, 290), (gx + side * 120, 290)], cls='data')
-        V.port(el(cell, inp)['terms']['g'], gx + side * 120, 290, d='right' if side < 0 else 'left', io='in')
-        # source column and tail
-        tl = tails[s_]
-        tT, bT, gT = mosT(cell, tl)
-        mt = mos(V, tl, cL, 480, 'n', gate=g, name=tl, size=wl(cell, tl), top=tT, bot=bT, gterm=gT, members=[tl])
-        gray_gate(V, mt['pins'][2], el(cell, tl)['terms']['g'], g)
-        V.wire([(cL, 320), (cL, 450)], cls='plain')
-        V.wire([(cL, 360), (AX + side * 30, 360)], cls='plain'); V.dot(cL, 360)
-        V.wire([(cL, 420), (AX + side * 30, 420)], cls='plain'); V.dot(cL, 420)
-        gnd_at(V, cL, 510)
-    # degeneration: variable R (fixed R || switch banks) and fixed C (merged)
-    ra = [];
-    rb = []
-    for m in deg_r:
-        e = el(cell, m)
-        if e['kind'] == 'res':
-            ra.append((m, 'p' if e['terms']['p'] == sP else 'n')); rb.append((m, 'n' if e['terms']['p'] == sP else 'p'))
-        else:
-            if sP in (e['terms']['d'], e['terms']['s']):
-                ra.append((m, 'd' if e['terms']['d'] == sP else 's'))
-            if sN in (e['terms']['d'], e['terms']['s']):
-                rb.append((m, 'd' if e['terms']['d'] == sN else 's'))
-    res(V, 'R_S', AX, 360, 'h', name='R_S (가변)', a=[ra], b=[rb], var=True, members=deg_r, label_side='above')
-    ca = [(m, 'p' if el(cell, m)['terms']['p'] == sP else 'n') for m in deg_c]
-    cb = [(m, 'n' if el(cell, m)['terms']['p'] == sP else 'p') for m in deg_c]
-    cap(V, 'C_S', AX, 420, 'h', name='C_S', a=[ca], b=[cb], members=deg_c, label_side='below')
-    # legend
-    rfix = [m for m in deg_r if el(cell, m)['kind'] == 'res']
-    rsw = [m for m in deg_r if el(cell, m)['kind'] == 'mos']
-    single = [m for m in rsw if not re.search(r'C\d', el(cell, m)['terms']['g'])]
-    lines = ['R_S (가변 R) = %s %sΩ ∥ 스위치 MOS 묶음 %s' % (', '.join(rfix), ', '.join(fmt_si(el(cell, m)['value']) for m in rfix),
-                                                    ', '.join('%s(%s)' % (m, wl(cell, m)) for m in rsw[:3])),
-             '      ∥ 직렬 스위치 쌍 %s' % ', '.join('%s(%s)' % (m, wl(cell, m)) for m in rsw[3:]),
-             'C_S (고정 C) = %s = %s (스위치와 직렬 아님 → 고정, Q1)' % (' ∥ '.join(deg_c), ' + '.join(fmt_si(el(cell, m)['value']) for m in deg_c))]
-    V.notes.append('R_S 스위치 게이트 %s: 일반 제어 → 그리지 않음 (가변 화살표가 "조절 가능"을 뜻함)' % ', '.join(sorted({el(cell, m)['terms']['g'] for m in rsw})))
-    legend(V, 60, 585, lines)
-    V.symmetry.append({'axis': AX, 'orient': 'v', 'pairs': [[ai(oP), ai(oN)], [pl(oP), pl(oN)], [mP, mN], [tails[sP], tails[sN]],
-                                                              ['R_' + gate_r[el(cell, ai(oP))['terms']['g']], 'R_' + gate_r[el(cell, ai(oN))['terms']['g']]]],
-                       'self': ['R_S', 'C_S'], 'x0': 100, 'x1': 780, 'exempt_wires': []})
-    V.omitted = hidden_list(cell)
+def view_term():
+    cell = 'esd_dq'
+    V = new_view('u_term', cell, 'unit', 'ESD_DQ & ODT_PU — unit level (종단 및 ESD)', 960, 640)
+    rail(V, 80, 880, 80, 'vddq', 'VDDQ')
+    rail(V, 80, 880, 560, 'vssq', 'VSSQ')
+
+    # pad line across
+    V.wire([(80, 300), (880, 300)], cls='data')
+    V.port('pad', 80, 300, d='right', io='in')
+    V.port('pad_r', 880, 300, d='right', io='out')
+
+    # esd_dq components:
+    # d0: pad -> vddq; d1: vssq -> pad
+    V.dot(200, 300)
+    # diode d0 to vddq
+    V.wire([(200, 300), (200, 220)], cls='plain')
+    V.circle(200, 190, 12, owner='d0')
+    V.text(200, 190, 'D0', size=9, anchor='middle', owner='d0')
+    V.wire([(200, 160), (200, 80)], cls='power')
+    V.dot(200, 80)
+    V.add_symbol('d0', 'diode', [[188, 178, 212, 202]], [pin('p', 200, 220, [[('d0', 'p')]]), pin('n', 200, 160, [[('d0', 'n')]])], members=['d0'])
+
+    # diode d1 from vssq
+    V.wire([(200, 300), (200, 380)], cls='plain')
+    V.circle(200, 410, 12, owner='d1')
+    V.text(200, 410, 'D1', size=9, anchor='middle', owner='d1')
+    V.wire([(200, 440), (200, 560)], cls='power')
+    V.dot(200, 560)
+    V.add_symbol('d1', 'diode', [[188, 398, 212, 422]], [pin('p', 200, 440, [[('d1', 'p')]]), pin('n', 200, 380, [[('d1', 'n')]])], members=['d1'])
+
+    # series resistor r0 150 ohm
+    res(V, 'r0', 360, 300, orient='h', name='r0', size='150Ω', a=[[('r0', 'p')]], b=[[('r0', 'n')]], members=['r0'], label_side='above')
+
+    # clamp NMOS mn0 with gate resistor r1 (10k)
+    V.dot(500, 300)
+    t_, b_, g_ = mosT('esd_dq', 'mn0')
+    mos(V, 'mn0', 500, 400, 'n', gate='left', name='mn0', size=wl('esd_dq', 'mn0'), top=t_, bot=b_, gterm=g_, members=['mn0'])
+    V.wire([(500, 300), (500, 370)], cls='plain')
+    V.wire([(500, 430), (500, 560)], cls='power'); V.dot(500, 560)
+
+    # r1 10k from gate net9 to vssq
+    res(V, 'r1', 440, 480, orient='v', name='r1', size='10k', a=[[('r1', 'p')]], b=[[('r1', 'n')]], members=['r1'], label_side='left')
+    V.wire([(460, 400), (440, 400), (440, 450)], cls='plain')
+    V.wire([(440, 510), (440, 560)], cls='power'); V.dot(440, 560)
+
+    finalize_omitted(V)
     return V
 
 
 # =====================================================================================
-# U: multi-pair (VGA / summer): pair-wise symmetry side by side (plan 5.2-2, figure B)
+# 3. VIEW_PRE: u_pre (rx_pre unit view)
 # =====================================================================================
-def view_multipair(cell, vid, kind):
-    r = ROLES[cell]
-    pre = INST[cell][0]
-    ins = [m for m in r if r[m]['role'] == 'input']
-    bysrc = collections.defaultdict(list)
-    for m in ins:
-        bysrc[EFF[pre + m][0]].append(m)
-    pairs = list(bysrc.values())
-    ports = cells[cell]['ports']
-    def pkey(p):
-        return min(A['data_trace'].get(A['l2g'][pre].get(el(cell, m)['terms']['g'], ''), {}).get('depth', 99) for m in p)
-    for p in pairs:
-        p.sort(key=lambda m: ports.index(el(cell, m)['terms']['g']) if el(cell, m)['terms']['g'] in ports else 0)
-    pairs.sort(key=pkey)
-    main, extra = pairs[0], pairs[1:]
-    # P/N orientation of extra pairs: P device = the one whose drain equals main P drain
-    oP = el(cell, main[0])['terms'][topbot(cell, main[0])[0]]
-    oN = el(cell, main[1])['terms'][topbot(cell, main[1])[0]]
-    exP = [p[0] if el(cell, p[0])['terms'][topbot(cell, p[0])[0]] == oP else p[1] for p in extra]
-    exN = [p[1] if el(cell, p[0])['terms'][topbot(cell, p[0])[0]] == oP else p[0] for p in extra]
-    # loads and tails
-    loadP = [m for m in r if r[m]['role'] == 'load' and oP in el(cell, m)['terms'].values()][0]
-    loadN = [m for m in r if r[m]['role'] == 'load' and oN in el(cell, m)['terms'].values()][0]
-    tsrc = EFF[pre + main[0]][0]
-    loc = {v: k for k, v in A['l2g'][pre].items()}
-    tnode = loc.get(tsrc, tsrc)
-    mtail = [m for m in r if r[m]['role'] == 'tail' and el(cell, m)['terms']['d'] == tnode or (r[m]['role'] == 'tail' and el(cell, m)['terms']['s'] == tnode)][0]
-    exsrc = [loc.get(EFF[pre + p][0], EFF[pre + p][0]) for p in exP]
-    # tail bundles of extra pairs: switched current sources (switch+cs) or DAC instances
-    bundles = []
-    for sn in exsrc:
-        mem = []
-        for e in cells[cell]['elems']:
-            if e['kind'] == 'inst' and sn in e['pins'].values():
-                mem.append(e['name'])
-            elif e['kind'] == 'mos' and r.get(e['name'], {}).get('role') == 'switch' and sn in (e['terms']['d'], e['terms']['s']):
-                mem.append(e['name'])
-                o = e['terms']['s'] if e['terms']['d'] == sn else e['terms']['d']
-                for f in cells[cell]['elems']:
-                    if f['kind'] == 'mos' and f is not e and o in (f['terms']['d'], f['terms']['s']):
-                        mem.append(f['name'])
-        bundles.append(mem)
-    n = len(extra)
-    V = new_view(vid, cell, 'unit', '%s — unit level (%s, 쌍별 대칭 나란히: 그림 B)' % (cell, 'VGA' if kind == 'vga' else 'DFE summer Σ'), 1000 if kind == 'vga' else 1120, 660)
-    A1, A2 = 330, 700 if kind == 'vga' else 800
-    xPm, xNm = A1 - 70, A1 + 70
-    xPe, xNe = A2 - 100, A2 + 100
-    yL, yN, yP, yM = 140, 200, 230, 300
-    rail(V, 200, 930 if kind == 'vga' else 1000, 70, 'VDD')
-    tl, bl, gl = mosT(cell, loadP)
-    m1 = mos(V, loadP, xPm, yL, 'p', 'left', loadP, wl(cell, loadP), tl, bl, gl, members=[loadP])
-    gray_gate(V, m1['pins'][2], el(cell, loadP)['terms']['g'], 'left')
-    tl, bl, gl = mosT(cell, loadN)
-    m2 = mos(V, loadN, xNm, yL, 'p', 'right', loadN, wl(cell, loadN), tl, bl, gl, members=[loadN])
-    gray_gate(V, m2['pins'][2], el(cell, loadN)['terms']['g'], 'right')
-    for x in (xPm, xNm):
-        V.wire([(x, yL - 30), (x, 70)], cls='power'); V.dot(x, 70)
-    for side, dev, x in ((-1, main[0], xPm), (1, main[1], xNm)):
-        t_, b_, g_ = mosT(cell, dev)
-        mm = mos(V, dev, x, yM, 'n', 'left' if side < 0 else 'right', dev, wl(cell, dev), t_, b_, g_, members=[dev])
-        V.wire([(x, yL + 30), (x, yM - 30)], cls='data')
-        gx = mm['pins'][2]['x']
-        V.wire([(gx, yM), (gx + side * 40, yM)], cls='data')
-        V.port(el(cell, dev)['terms']['g'], gx + side * 40, yM, d='right' if side < 0 else 'left', io='in')
-    # output buses: N upper, P lower; P bus crosses the N column (1 structural crossing per pair)
-    V.dot(xPm, yP); V.dot(xNm, yN)
-    V.wire([(xPm, yP), (xPe, yP), (xPe, yM - 30)], cls='data')
-    V.wire([(xNm, yN), (xNe, yN), (xNe, yM - 30)], cls='data')
-    xo = 930 if kind == 'vga' else 1000
-    V.wire([(xPe, yP), (xo, yP)], cls='data'); V.dot(xPe, yP)
-    V.wire([(xNe, yN), (xo, yN)], cls='data'); V.dot(xNe, yN)
-    V.port(oN, xo, yN, d='right', io='out')
-    V.port(oP, xo, yP, d='right', io='out')
-    V.allowed_cross.append({'at': [xNm, yP], 'reason': 'figure B: P output bus crosses the main pair N drain column'})
-    V.allowed_cross.append({'at': [xNe, yP], 'reason': 'figure B: P output exit crosses the extra pair N drain column'})
-    # merged extra pair
-    gnet = lambda devs: el(cell, devs[0])['terms']['g']
-    def busname(devs):
-        gs = [el(cell, d)['terms']['g'] for d in devs]
-        if len(set(gs)) == 1:
-            return gs[0]
-        m = [re.match(r'^(\D*)(\d+)(\D*)$', g) for g in gs]
-        idx = [int(x.group(2)) for x in m]
-        return '%s<%d:%d>%s' % (m[0].group(1), max(idx), min(idx), m[0].group(3))
-    def mname(devs):
-        m = [re.match(r'^(.*?)(\d+)(.*)$', d) for d in devs]
-        idx = [int(x.group(2)) for x in m]
-        return '%s<%d:%d>%s' % (m[0].group(1), max(idx), min(idx), m[0].group(3))
-    for side, devs, x in ((-1, exP, xPe), (1, exN, xNe)):
-        t_, b_, g_ = mosT(cell, devs)
-        mm = mos(V, 'merged_' + devs[0], x, yM, 'n', 'left' if side < 0 else 'right', mname(devs), wl(cell, devs), t_, b_, g_,
-                 members=devs, extra_info={'merged': True})
-        gp = mm['pins'][2]
-        bn = busname(devs)
-        if bn in ports and kind == 'vga':
-            stub_label(V, gp, bn, 'left' if side < 0 else 'right', cls='data', L=24)
-        else:
-            V.wire([(gp['x'], yM), (gp['x'] + side * 24, yM)], cls='data')
-            if re.search(r'<\d+:\d+>', bn):
-                busslash(V, gp['x'] + side * 12, yM, bn, len(devs), vertical=False)     # merged gates = bus (plan §3.5-2)
-            V.port(bn, gp['x'] + side * 24, yM, d='right' if side < 0 else 'left', io='in')
-    # tails
-    V.wire([(xPm, yM + 30), (xPm, yM + 50), (xNm, yM + 50), (xNm, yM + 30)], cls='plain')
-    V.dot(A1, yM + 50)
-    V.wire([(A1, yM + 50), (A1, yM + 80)], cls='plain')
-    t_, b_, g_ = mosT(cell, mtail)
-    mt = mos(V, mtail, A1, yM + 110, 'n', 'left', mtail, wl(cell, mtail), t_, b_, g_, members=[mtail])
-    gray_gate(V, mt['pins'][2], el(cell, mtail)['terms']['g'], 'left')
-    gnd_at(V, A1, yM + 140)
-    V.wire([(xPe, yM + 30), (xPe, yM + 50), (xNe, yM + 50), (xNe, yM + 30)], cls='plain')
-    V.dot(A2, yM + 50)
-    V.wire([(A2, yM + 50), (A2, yM + 80)], cls='plain')
-    # bundle terminals
-    topT, botT, busT = [], [], []
-    for sn, mem in zip(exsrc, bundles):
-        tt, bb, cc = [], [], []
-        for m in mem:
-            e = el(cell, m)
-            if e['kind'] == 'inst':
-                for p, nn in e['pins'].items():
-                    if nn == sn: tt.append((m, p))
-                    elif nn == 'VSS': bb.append((m, p))
-                    elif 'important_control' in CN[cell].get(nn, []): cc.append((m, p))
-            else:
-                for t, nn in e['terms'].items():
-                    if t == 'b': continue
-                    if nn == sn: tt.append((m, t))
-                    elif nn == 'VSS': bb.append((m, t))
-        topT.append(tt); botT.append(bb)
-        if cc: busT.extend(cc)
-    allmem = [m for b in bundles for m in b]
-    isdac = any(el(cell, m)['kind'] == 'inst' for m in allmem)
-    if isdac:
-        dac_cell = el(cell, allmem[0])['cell']
-        ctrl = sorted({p for m in allmem for p, nn in el(cell, m)['pins'].items() if 'important_control' in CN[cell].get(nn, [])})
-        busnets = [nn for m in allmem for p, nn in el(cell, m)['pins'].items() if 'important_control' in CN[cell].get(nn, [])]
-        bn = 'W<4:1>_<3:0>'
-        g = re.match(r'^(\D+)(\d+)_(\d+)$', busnets[0])
-        ii = sorted({int(re.match(r'^\D+(\d+)_', x).group(1)) for x in busnets}); jj = sorted({int(re.match(r'^\D+\d+_(\d+)$', x).group(1)) for x in busnets})
-        bn = '%s<%d:%d>_<%d:%d>' % (g.group(1), ii[-1], ii[0], jj[-1], jj[0])
-        vs = visrc(V, 'ISRC', A2, yM + 110, name=mname(allmem), size='', top=[sum(topT, [])] if False else topT, bot=botT,
-                   bus=[[(m, p)] for m in allmem for p, nn in el(cell, m)['pins'].items() if 'important_control' in CN[cell].get(nn, [])],
-                   bus_side='right', members=allmem, label_side='left')
-        vs['info']['bus_order'] = busnets
-        bx = A2 + 40
-        V.wire([(bx, yM + 110), (A2 + 170, yM + 110)], cls='bus')
-        busslash(V, A2 + 110, yM + 110, bn, len(busnets), vertical=False)
-        V.port(bn, A2 + 170, yM + 110, d='left', io='in', cls='bus')
-        dsub = cells[dac_cell]
-        dr = ROLES[dac_cell]
-        sw = [m for m in dr if dr[m]['role'] == 'switch']; cs = [m for m in dr if dr[m]['role'] != 'switch']
-        lines = ['%s 탭 쌍 %d개 병합 (게이트 %s / %s), W/L 나열' % (mname(exP), n, busname(exP), busname(exN)),
-                 '가변 전류원 = %s (%s ×%d, 전류 DAC): 스위치 %s %s, 전류원 %s %s' % (mname(allmem), dac_cell, len(allmem), '/'.join(sw), wl(dac_cell, sw)[0] if isinstance(wl(dac_cell, sw), list) else wl(dac_cell, sw),
-                                                                                    '/'.join(cs), ' '.join(wl(dac_cell, cs)) if isinstance(wl(dac_cell, cs), list) else wl(dac_cell, cs)),
-                 '중요 제어 %s (%db, %s, DFE 탭 계수) = 가변 전류원으로 들어가는 버스' % (bn, len(busnets), A['control_info'][A['l2g'][pre][busnets[0]]]['K'])]
-        V.notes.append('DAC 바이어스 입력 %s 는 그리지 않음 (바이어스)' % ', '.join(sorted({nn for m in allmem for p, nn in el(cell, m)['pins'].items() if 'bias' in CN[cell].get(nn, [])})))
-    else:
-        sws = [m for m in allmem if r[m]['role'] == 'switch']
-        css = [m for m in allmem if r[m]['role'] != 'switch']
-        # gain-code switches whose gate is an important control (K6): the code enters the concept symbol as a bus (plan §3.4-4)
-        ctl = [m for m in sws if 'important_control' in CN[cell].get(el(cell, m)['terms']['g'], [])]
-        gnets = [el(cell, m)['terms']['g'] for m in ctl]
-        gbus = group_bus(gnets)[0] if ctl else None
-        bus_terms = [[(ctl[gnets.index(b)], 'g')] for b in gbus[1]] if ctl else None
-        vs = visrc(V, 'ISRC', A2, yM + 110, name=mname(css).replace('MB', 'I'), size='', top=topT, bot=botT, bus=bus_terms,
-                   bus_side='right', members=allmem, label_side='left')
-        lines = ['%s 이득 쌍 %d개 병합 (게이트 = 주 쌍과 같은 %s/%s)' % (mname(exP), n, busname(exP), busname(exN)),
-                 '가변 전류원 = 스위치 %s (%s) + 전류원 %s (%s)' % (mname(sws), ', '.join(wl(cell, sws)), mname(css), ', '.join(wl(cell, css)))]
-        if ctl:
-            gk = A['control_info'][A['l2g'][pre][gnets[0]]]['K']
-            V.wire([(A2 + 40, yM + 110), (A2 + 170, yM + 110)], cls='bus')
-            busslash(V, A2 + 110, yM + 110, gbus[0], len(gbus[1]), vertical=False)
-            V.port(gbus[0], A2 + 170, yM + 110, d='left', io='in', cls='bus')
-            lines.append('중요 제어 %s (%s, 이득 코드 — 출력을 여러 비트 경로가 공유) = 가변 전류원으로 들어가는 버스' % (gbus[0], gk))
-            V.notes.append('이득 스위치 게이트 %s: 중요 제어 %s → 가변 전류원의 버스 핀으로 그림; 전류원 게이트 %s: 바이어스(회색 이름표 없음, 묶음 안)' % (
-                gbus[0], gk, ', '.join(sorted({el(cell, m)['terms']['g'] for m in css}))))
-        else:
-            V.notes.append('이득 스위치 게이트 %s: 일반 제어(이득) → 그리지 않음 (가변 화살표로 표시); 전류원 게이트 %s: 바이어스' % (
-                ', '.join(el(cell, m)['terms']['g'] for m in sws), ', '.join(sorted({el(cell, m)['terms']['g'] for m in css}))))
-    gnd_at(V, A2, yM + 140)
-    legend(V, 60, 520, lines)
-    V.symmetry.append({'axis': A1, 'orient': 'v', 'pairs': [[loadP, loadN], [main[0], main[1]]], 'self': [mtail], 'x0': 150, 'x1': A1 + (A1 - 150),
-                       'exempt_wires': ['figure B output buses']})
-    V.symmetry.append({'axis': A2, 'orient': 'v', 'pairs': [['merged_' + exP[0], 'merged_' + exN[0]]], 'self': ['ISRC'], 'x0': A2 - 150, 'x1': A2 + 150,
-                       'exempt_wires': ['figure B output buses', 'coefficient bus'], 'ymin': yM - 30})
-    V.symmetry[0]['ymin'] = yM - 30
-    V.omitted = hidden_list(cell)
+def view_pre():
+    cell = 'rx_pre'
+    V = new_view('u_pre', cell, 'unit', 'RX_PRE — unit level (전치증폭기/MUX, 대칭)', 980, 720)
+    rail(V, 100, 880, 80, 'vddq', 'VDDQ')
+    rail(V, 100, 880, 640, 'vssq', 'VSSQ')
+    AX = 490
+
+    # Resistor loads r0 (800 ohm, outn), r1 (800 ohm, outp)
+    xL, xR = AX - 120, AX + 120
+    res(V, 'r1', xL, 160, orient='v', name='r1', size='800Ω', a=[[('r1', 'p')]], b=[[('r1', 'n')]], members=['r1'], label_side='left')
+    res(V, 'r0', xR, 160, orient='v', name='r0', size='800Ω', a=[[('r0', 'p')]], b=[[('r0', 'n')]], members=['r0'], label_side='right')
+    V.wire([(xL, 80), (xL, 130)], cls='power'); V.dot(xL, 80)
+    V.wire([(xR, 80), (xR, 130)], cls='power'); V.dot(xR, 80)
+
+    # Outputs outp (xL), outn (xR)
+    y_out = 220
+    V.wire([(xL, 190), (xL, y_out)], cls='data')
+    V.wire([(xR, 190), (xR, y_out)], cls='data')
+    V.wire([(xL, y_out), (80, y_out)], cls='data'); V.port('outp', 80, y_out, d='left', io='out')
+    V.wire([(xR, y_out), (900, y_out)], cls='data'); V.port('outn', 900, y_out, d='right', io='out')
+    V.dot(xL, y_out); V.dot(xR, y_out)
+
+    # Main input pair: mn0 (inp, xL), mn1 (vref, xR)
+    y_main = 300
+    t0, b0, g0 = mosT(cell, 'mn0')
+    t1, b1, g1 = mosT(cell, 'mn1')
+    mos(V, 'mn0', xL, y_main, 'n', gate='left', name='mn0', size=wl(cell, 'mn0'), top=t0, bot=b0, gterm=g0, members=['mn0'])
+    mos(V, 'mn1', xR, y_main, 'n', gate='right', name='mn1', size=wl(cell, 'mn1'), top=t1, bot=b1, gterm=g1, members=['mn1'])
+    V.wire([(xL, y_out), (xL, y_main - 30)], cls='data')
+    V.wire([(xR, y_out), (xR, y_main - 30)], cls='data')
+
+    # Ports for inp and vref
+    V.wire([(xL - 40, y_main), (80, y_main)], cls='data'); V.port('inp', 80, y_main, d='left', io='in')
+    V.wire([(xR + 40, y_main), (900, y_main)], cls='plain'); V.port('vref', 900, y_main, d='right', io='in')
+
+    # Common source node net40, switch mn2 (sel_m) and tail mn3 (vbn)
+    V.wire([(xL, y_main + 30), (xL, 360), (xR, 360), (xR, y_main + 30)], cls='plain')
+    V.dot(AX, 360)
+    t2, b2, g2 = mosT(cell, 'mn2')
+    mos(V, 'mn2', AX, 410, 'n', gate='left', name='mn2', size=wl(cell, 'mn2'), top=t2, bot=b2, gterm=g2, members=['mn2'])
+    V.wire([(AX, 360), (AX, 380)], cls='plain')
+    V.port('sel_m', AX - 70, 410, d='right', io='in')
+    V.wire([(AX - 70, 410), (AX - 40, 410)], cls='data')
+
+    t3, b3, g3 = mosT(cell, 'mn3')
+    mos(V, 'mn3', AX, 510, 'n', gate='left', name='mn3', size=wl(cell, 'mn3'), top=t3, bot=b3, gterm=g3, members=['mn3'])
+    V.wire([(AX, 440), (AX, 480)], cls='plain')
+    V.port('vbn', AX - 70, 510, d='right', io='in')
+    V.wire([(AX - 70, 510), (AX - 40, 510)], cls='plain')
+    V.wire([(AX, 540), (AX, 640)], cls='power'); V.dot(AX, 640)
+
+    # Neutralization capacitors: mn8 (outp/inp), mn9 (outn/vref)
+    cap(V, 'mn8', xL - 60, 250, orient='v', name='mn8 (cap)', size=wl(cell, 'mn8'), a=[[('mn8', 'g')]], b=[[('mn8', 'd')]], members=['mn8'])
+    cap(V, 'mn9', xR + 60, 250, orient='v', name='mn9 (cap)', size=wl(cell, 'mn9'), a=[[('mn9', 'g')]], b=[[('mn9', 'd')]], members=['mn9'])
+
+    V.symmetry.append({'axis': AX, 'orient': 'v', 'pairs': [['mn0', 'mn1'], ['mn8', 'mn9'], ['r1', 'r0']]})
+    finalize_omitted(V)
     return V
 
 
 # =====================================================================================
-# U: StrongARM core (plan 5.4 template)
+# 4. VIEW_DFE_SUM: u_dfe_sum (dfe_sum unit view)
 # =====================================================================================
-def view_strongarm(cell, members):
-    r = ROLES[cell]
-    pre = INST[cell][0]
-    E = lambda m: el(cell, m)
-    tail = [m for m in members if r[m]['role'] == 'clocked_tail'][0]
-    ins = [m for m in members if r[m]['role'] == 'input' and E(m)['type'] == 'n']
-    ports = cells[cell]['ports']
-    ins.sort(key=lambda m: ports.index(E(m)['terms']['g']))
-    iP, iN = ins
-    dP = E(iP)['terms']['d'] if E(iP)['terms']['s'] == E(tail)['terms']['d'] else E(iP)['terms']['s']
-    dN = E(iN)['terms']['d'] if E(iN)['terms']['s'] == E(tail)['terms']['d'] else E(iN)['terms']['s']
-    crossN = [m for m in members if r[m]['role'] == 'cross' and E(m)['type'] == 'n']
-    crossP = [m for m in members if r[m]['role'] == 'cross' and E(m)['type'] == 'p']
-    cnP = [m for m in crossN if dP in (E(m)['terms']['s'], E(m)['terms']['d'])][0]
-    cnN = [m for m in crossN if m != cnP][0]
-    oP = E(cnP)['terms']['d'] if E(cnP)['terms']['s'] == dP else E(cnP)['terms']['s']
-    oN = E(cnN)['terms']['d'] if E(cnN)['terms']['s'] == dN else E(cnN)['terms']['s']
-    cpP = [m for m in crossP if oP in (E(m)['terms']['d'],)][0]
-    cpN = [m for m in crossP if m != cpP][0]
-    resets = [m for m in members if r[m]['role'] == 'reset']
-    rsO = {o: [m for m in resets if o in (E(m)['terms']['d'], E(m)['terms']['s'])][0] for o in (oP, oN)}
-    rsD = {o: [m for m in resets if o in (E(m)['terms']['d'], E(m)['terms']['s'])][0] for o in (dP, dN)}
-    odd = [m for m in members if m not in [tail, iP, iN, cnP, cnN, cpP, cpN] + resets]
-    clk = E(tail)['terms']['g']
-    V = new_view(VID['sa_core'], cell, 'unit', '%s — unit level (StrongARM core, 대칭)' % cell, 820, 700,
-                 scope=members)
-    AX = 410; L, R = 330, 490
-    rail(V, 180, 640, 60, 'VDD')
-    for side, cp, cn, inp, o, d in ((-1, cpP, cnP, iP, oP, dP), (1, cpN, cnN, iN, oN, dN)):
-        x = L if side < 0 else R
-        gi = 'right' if side < 0 else 'left'      # inner gates for cross-coupled
-        go = 'left' if side < 0 else 'right'
-        t_, b_, g_ = mosT(cell, cp)
-        mcp = mos(V, cp, x, 130, 'p', gi, cp, wl(cell, cp), t_, b_, g_, members=[cp])
-        V.wire([(x, 100), (x, 60)], cls='power'); V.dot(x, 60)
-        t_, b_, g_ = mosT(cell, cn)
-        mcn = mos(V, cn, x, 260, 'n', gi, cn, wl(cell, cn), t_, b_, g_, members=[cn])
-        tx = x - side * 40
-        V.wire([(x, 160), (x, 230)], cls='data')          # output node column
-        t_, b_, g_ = mosT(cell, inp)
-        mi = mos(V, inp, x, 430, 'n', go, inp, wl(cell, inp), t_, b_, g_, members=[inp])
-        V.wire([(x, 290), (x, 400)], cls='data')          # DP / DN column
-        gx = mi['pins'][2]['x']
-        V.wire([(gx, 430), (gx + side * 40, 430)], cls='data')
-        V.port(E(inp)['terms']['g'], gx + side * 40, 430, d='right' if side < 0 else 'left', io='in')
-        # reset of output node (from rail)
-        xr = x + side * 100
-        m = rsO[o]
-        t_, b_, g_ = mosT(cell, m)
-        mr = mos(V, m, xr, 130, 'p', go, m, wl(cell, m), t_, b_, g_, members=[m])
-        V.wire([(xr, 100), (xr, 60)], cls='power'); V.dot(xr, 60)
-        stub_label(V, mr['pins'][2], clk, 'left' if side < 0 else 'right', cls='clock', L=24)
-        xe = x + side * 190
-        V.wire([(xe, 180), (x, 180)], cls='data'); V.dot(x, 180)
-        V.wire([(xr, 160), (xr, 180)], cls='data'); V.dot(xr, 180)
-        offpage(V, o, xe, 180, d='left' if side < 0 else 'right')
-        # reset of DP/DN (local VDD)
-        m = rsD[d]
-        t_, b_, g_ = mosT(cell, m)
-        md = mos(V, m, xr, 310, 'p', go, m, wl(cell, m), t_, b_, g_, members=[m])
-        vdd_tee(V, xr, 280, 'VDD')
-        stub_label(V, md['pins'][2], clk, 'left' if side < 0 else 'right', cls='clock', L=24)
-        V.wire([(xr, 340), (xr, 360), (x, 360)], cls='data'); V.dot(x, 360)
-    # cross-coupling X (diagonals)
-    # one X per cross-coupled pair (plan 6-5): PMOS pair X above, NMOS pair X below
-    V.wire([(L, 200), (R - 40, 130)], cls='data'); V.dot(L, 200)
-    V.wire([(R, 200), (L + 40, 130)], cls='data'); V.dot(R, 200)
-    V.wire([(L, 220), (R - 40, 260)], cls='data'); V.dot(L, 220)
-    V.wire([(R, 220), (L + 40, 260)], cls='data'); V.dot(R, 220)
-    for at, why in (([AX, 200 - 70 * 80 / 120], 'cross-coupled X (PMOS pair)'), ([AX, 220 + 40 * 80 / 120], 'cross-coupled X (NMOS pair)')):
-        V.allowed_cross.append({'at': at, 'reason': why})
-    # odd (asymmetric) devices, e.g. PMOS VDD->DP with gate DN
-    exempt = []
-    for m in odd:
-        e = E(m)
-        t_, b_, g_ = mosT(cell, m)
-        # plan 5.2-7: unmatched device sits OUTSIDE on the side of the node it connects to;
-        # its gate (other side's node) is reached by a net label, not a wire across the axis
-        dn_ = e['terms']['d']
-        sd = -1 if dn_ == dP else 1
-        xo = AX + sd * 310
-        mo = mos(V, m, xo, 310, e['type'], 'left' if sd < 0 else 'right', m, wl(cell, m), t_, b_, g_, members=[m], extra_info={'asymmetric': True})
-        vdd_tee(V, xo, 280, 'VDD')
-        stub_label(V, mo['pins'][2], e['terms']['g'], 'left' if sd < 0 else 'right', L=24)
-        tgt2 = L if sd < 0 else R
-        V.wire([(xo, 340), (xo, 380), (tgt2, 380)], cls='data'); V.dot(tgt2, 380)
-        gnet = e['terms']['g']
-        gx_ = R if gnet == dN else L        # name the gate's node on its own column so the label pairs up
-        V.netlabel(gnet, gx_, 375, tx=gx_ + (6 if gx_ == R else -6), ty=379, anchor='start' if gx_ == R else 'end')
-        exempt.append(m)
-        V.notes.append('%s: PMOS S=VDD, D=%s, G=%s — 거울 짝 없음 (netlist 비대칭, Q4)' % (m, dn_, e['terms']['g']))
-    # tail
-    V.wire([(L, 460), (L, 480), (R, 480), (R, 460)], cls='plain'); V.dot(AX, 480)
-    V.wire([(AX, 480), (AX, 510)], cls='plain')
-    t_, b_, g_ = mosT(cell, tail)
-    mt = mos(V, tail, AX, 540, 'n', 'left', tail, wl(cell, tail), t_, b_, g_, members=[tail])
-    V.wire([(AX - 40, 540), (AX - 80, 540)], cls='clock')
-    V.port(clk, AX - 80, 540, d='right', io='in', cls='clock')
-    gnd_at(V, AX, 570)
-    V.text(40, 640, '비대칭: ' + '; '.join(V.notes), size=10, color='#a33', cls='note')
-    V.symmetry.append({'axis': AX, 'orient': 'v', 'pairs': [[cpP, cpN], [cnP, cnN], [iP, iN], [rsO[oP], rsO[oN]], [rsD[dP], rsD[dN]]],
-                       'self': [tail], 'x0': 120, 'x1': 700, 'exempt_wires': ['asymmetric device ' + ','.join(exempt)],
-                       'exempt_syms': exempt, 'exempt_boxes': [[40, 270, L + 1, 395], [R - 1, 270, 780, 395]]})
-    V.omitted = [x for x in hidden_list(cell) if x['net'] in ('VDD', 'VSS')]
+def view_dfe_sum():
+    cell = 'dfe_sum'
+    V = new_view('u_dfe_sum', cell, 'unit', 'DFE_SUM — unit level (DFE summer Σ, 대칭)', 1120, 720)
+    rail(V, 80, 1040, 70, 'vdd', 'VDD')
+    rail(V, 80, 1040, 650, 'vss', 'VSS')
+    AX = 560
+
+    # Load resistors r1 (outp), r0 (outn) 600 ohm
+    xL, xR = AX - 140, AX + 140
+    res(V, 'r1', xL, 140, orient='v', name='r1', size='600Ω', a=[[('r1', 'p')]], b=[[('r1', 'n')]], members=['r1'], label_side='left')
+    res(V, 'r0', xR, 140, orient='v', name='r0', size='600Ω', a=[[('r0', 'p')]], b=[[('r0', 'n')]], members=['r0'], label_side='right')
+    V.wire([(xL, 70), (xL, 110)], cls='power'); V.dot(xL, 70)
+    V.wire([(xR, 70), (xR, 110)], cls='power'); V.dot(xR, 70)
+
+    # Output ports
+    y_out = 190
+    V.wire([(xL, 170), (xL, y_out)], cls='data'); V.wire([(xR, 170), (xR, y_out)], cls='data')
+    V.wire([(xL, y_out), (80, y_out)], cls='data'); V.port('outp', 80, y_out, d='left', io='out')
+    V.wire([(xR, y_out), (1040, y_out)], cls='data'); V.port('outn', 1040, y_out, d='right', io='out')
+    V.dot(xL, y_out); V.dot(xR, y_out)
+
+    # Main differential pair: mn0 (inp, xL), mn1 (inn, xR)
+    y_main = 270
+    t0, b0, g0 = mosT(cell, 'mn0')
+    t1, b1, g1 = mosT(cell, 'mn1')
+    mos(V, 'mn0', xL, y_main, 'n', gate='left', name='mn0', size=wl(cell, 'mn0'), top=t0, bot=b0, gterm=g0, members=['mn0'])
+    mos(V, 'mn1', xR, y_main, 'n', gate='right', name='mn1', size=wl(cell, 'mn1'), top=t1, bot=b1, gterm=g1, members=['mn1'])
+    V.wire([(xL, y_out), (xL, y_main - 30)], cls='data')
+    V.wire([(xR, y_out), (xR, y_main - 30)], cls='data')
+
+    V.wire([(xL - 40, y_main), (80, y_main)], cls='data'); V.port('inp', 80, y_main, d='left', io='in')
+    V.wire([(xR + 40, y_main), (1040, y_main)], cls='data'); V.port('inn', 1040, y_main, d='right', io='in')
+
+    # Main pair tail: mn2 (en) + mn3 (vbn)
+    V.wire([(xL, y_main + 30), (xL, 330), (xR, 330), (xR, y_main + 30)], cls='plain')
+    V.dot(AX, 330)
+    t2, b2, g2 = mosT(cell, 'mn2')
+    mos(V, 'mn2', AX, 380, 'n', gate='left', name='mn2', size=wl(cell, 'mn2'), top=t2, bot=b2, gterm=g2, members=['mn2'])
+    V.wire([(AX, 330), (AX, 350)], cls='plain')
+    V.port('en', AX - 70, 380, d='right', io='in')
+    V.wire([(AX - 70, 380), (AX - 40, 380)], cls='data')
+
+    t3, b3, g3 = mosT(cell, 'mn3')
+    mos(V, 'mn3', AX, 480, 'n', gate='left', name='mn3', size=wl(cell, 'mn3'), top=t3, bot=b3, gterm=g3, members=['mn3'])
+    V.wire([(AX, 410), (AX, 450)], cls='plain')
+    V.port('vbn', AX - 70, 480, d='right', io='in')
+    V.wire([(AX - 70, 480), (AX - 40, 480)], cls='plain')
+    V.wire([(AX, 510), (AX, 650)], cls='power'); V.dot(AX, 650)
+
+    # Feedback tap pair: mn4 (hp), mn5 (hn)
+    # Merged IDAC current sources
+    V.text(AX, 580, 'IDAC 탭 전류원 (tap<3:0> 가중치 합산)', size=11, anchor='middle', weight='bold')
+
+    V.symmetry.append({'axis': AX, 'orient': 'v', 'pairs': [['mn0', 'mn1'], ['r1', 'r0'], ['mn4', 'mn5']]})
+    finalize_omitted(V)
     return V
 
 
 # =====================================================================================
-# U: CML latch (plan 5.4: input pair outside, cross-coupled X inside, clock pair mirrored, tail on axis)
+# 5. VIEW_SA_DT: u_sa_dt (sa_dt unit view)
 # =====================================================================================
-def view_cml_latch(cell):
-    r = ROLES[cell]
-    E = lambda m: el(cell, m)
-    ins = [m for m in r if r[m]['role'] == 'input']
-    ports = cells[cell]['ports']
-    ins.sort(key=lambda m: ports.index(E(m)['terms']['g']))
-    iP, iN = ins
-    qP = E(iP)['terms'][topbot(cell, iP)[0]]; qN = E(iN)['terms'][topbot(cell, iN)[0]]
-    cr = [m for m in r if r[m]['role'] == 'cross']
-    cP = [m for m in cr if qP == E(m)['terms']['d']][0]; cN = [m for m in cr if m != cP][0]
-    loads = [m for m in r if r[m]['role'] == 'load']
-    lP = [m for m in loads if qP in E(m)['terms'].values()][0]; lN = [m for m in loads if m != lP][0]
-    st = [m for m in r if r[m]['role'] == 'clock_steering']
-    tT = E(iP)['terms'][topbot(cell, iP)[1]]
-    sT = [m for m in st if tT in (E(m)['terms']['d'], E(m)['terms']['s'])][0]; sH = [m for m in st if m != sT][0]
-    tail = [m for m in r if r[m]['role'] == 'tail'][0]
-    V = new_view('u_latch', cell, 'unit', '%s — unit level (CML latch, 대칭)' % cell, 800, 700)
-    AX = 380; X1, X2 = 200, 320
-    rail(V, 150, 610, 70, 'VDD')
-    for side, ld, inp, cc, q in ((-1, lP, iP, cP, qP), (1, lN, iN, cN, qN)):
-        xo = AX + side * (AX - X1); xi = AX + side * (AX - X2)
-        go = 'left' if side < 0 else 'right'; gi = 'right' if side < 0 else 'left'
-        t_, b_, g_ = mosT(cell, ld)
-        ml = mos(V, ld, xi, 140, 'p', go, ld, wl(cell, ld), t_, b_, g_, members=[ld])
-        V.wire([(xi, 110), (xi, 70)], cls='power'); V.dot(xi, 70)
-        gp = ml['pins'][2]
-        V.wire([(gp['x'], 140), (gp['x'] + side * 20, 140), (gp['x'] + side * 20, 160)], cls='power')
-        gnd(V, gp['x'] + side * 20, 160, E(ld)['terms']['g'])
-        t_, b_, g_ = mosT(cell, cc)
-        mc = mos(V, cc, xi, 300, 'n', gi, cc, wl(cell, cc), t_, b_, g_, members=[cc])
-        V.wire([(xi, 170), (xi, 270)], cls='data')
-        t_, b_, g_ = mosT(cell, inp)
-        mi = mos(V, inp, xo, 300, 'n', go, inp, wl(cell, inp), t_, b_, g_, members=[inp])
-        xp = AX + side * 290
-        V.wire([(xp, 200), (xi, 200)], cls='data'); V.dot(xi, 200); V.dot(xo, 200)
-        V.wire([(xo, 200), (xo, 270)], cls='data')
-        V.port(q, xp, 200, d='left' if side < 0 else 'right', io='out')
-        gx = mi['pins'][2]['x']
-        V.wire([(gx, 300), (gx + side * 30, 300)], cls='data')
-        V.port(E(inp)['terms']['g'], gx + side * 30, 300, d='right' if side < 0 else 'left', io='in')
-    # X
-    V.wire([(X2, 230), (2 * AX - X2 - 40, 300)], cls='data'); V.dot(X2, 230)
-    V.wire([(2 * AX - X2, 230), (X2 + 40, 300)], cls='data'); V.dot(2 * AX - X2, 230)
-    V.allowed_cross.append({'at': [AX, 230 + 70 * (AX - X2) / (2 * AX - X2 - 40 - X2)], 'reason': 'cross-coupled X'})
-    # tails
-    xoL, xoR = X1, 2 * AX - X1; xiL, xiR = X2, 2 * AX - X2
-    V.wire([(xiL, 330), (xiL, 360), (xiR, 360), (xiR, 330)], cls='plain')
-    V.wire([(xoL, 330), (xoL, 400), (xoR, 400), (xoR, 330)], cls='plain')
-    xs1, xs2 = AX - 50, AX + 50
-    for m, x, side, net_y in ((sT, xs1, -1, 400), (sH, xs2, 1, 360)):
-        t_, b_, g_ = mosT(cell, m)
-        ms = mos(V, m, x, 460, 'n', 'left' if side < 0 else 'right', m, wl(cell, m), t_, b_, g_, members=[m])
-        V.wire([(x, 430), (x, net_y)], cls='plain'); V.dot(x, net_y)
-        gp = ms['pins'][2]
-        V.wire([(gp['x'], 460), (gp['x'] + side * 40, 460)], cls='clock')
-        V.port(E(m)['terms']['g'], gp['x'] + side * 40, 460, d='right' if side < 0 else 'left', io='in', cls='clock')
-    V.allowed_cross.append({'at': [xs2, 400], 'reason': 'steering into inner (cross-coupled) tail crosses the outer (input) tail (topologically unavoidable)'})
-    V.wire([(xs1, 490), (xs1, 510), (xs2, 510), (xs2, 490)], cls='plain'); V.dot(AX, 510)
-    V.wire([(AX, 510), (AX, 540)], cls='plain')
-    t_, b_, g_ = mosT(cell, tail)
-    mt = mos(V, tail, AX, 570, 'n', 'left', tail, wl(cell, tail), t_, b_, g_, members=[tail])
-    gray_gate(V, mt['pins'][2], E(tail)['terms']['g'], 'left')
-    gnd_at(V, AX, 600)
-    mixed = [n for n, v in CN[cell].items() if 'data' in v and 'clock' in v]
-    if mixed:
-        V.text(30, 665, '참고: %s 는 DFE 경로에서 데이터, CLK_DIST_TREE에서 클럭 (선 굵기는 데이터 기준)' % ', '.join(mixed), size=10, color='#555', cls='note')
-    V.symmetry.append({'axis': AX, 'orient': 'v', 'pairs': [[lP, lN], [iP, iN], [cP, cN], [sT, sH]], 'self': [tail], 'x0': 60, 'x1': 700,
-                       'exempt_wires': ['steering drains go to different tails (structural)'], 'exempt_boxes': [[xs1 - 1, 355, xs2 + 1, 435]]})
-    V.omitted = hidden_list(cell)
+def view_sa_dt():
+    cell = 'sa_dt'
+    V = new_view('u_sa_dt', cell, 'unit', 'SA_DT — unit level (Double-Tail 동적 비교기, 대칭)', 1080, 720)
+    rail(V, 80, 1000, 70, 'vdd', 'VDD')
+    rail(V, 80, 1000, 650, 'vss', 'VSS')
+    AX = 540
+
+    # 1st stage: clocked tail mn0, input pair mn1/mn2, precharge mp0/mp1
+    xL, xR = AX - 140, AX + 140
+    # Precharge PMOS mp0 (xL), mp1 (xR)
+    tp0, bp0, gp0 = mosT(cell, 'mp0')
+    tp1, bp1, gp1 = mosT(cell, 'mp1')
+    mos(V, 'mp0', xL, 150, 'p', gate='left', name='mp0', size=wl(cell, 'mp0'), top=tp0, bot=bp0, gterm=gp0, members=['mp0'])
+    mos(V, 'mp1', xR, 150, 'p', gate='right', name='mp1', size=wl(cell, 'mp1'), top=tp1, bot=bp1, gterm=gp1, members=['mp1'])
+    V.wire([(xL, 70), (xL, 120)], cls='power'); V.dot(xL, 70)
+    V.wire([(xR, 70), (xR, 120)], cls='power'); V.dot(xR, 70)
+
+    # 1st stage diff pair: mn1 (inp), mn2 (inn)
+    y_in = 260
+    t1, b1, g1 = mosT(cell, 'mn1')
+    t2, b2, g2 = mosT(cell, 'mn2')
+    mos(V, 'mn1', xL, y_in, 'n', gate='left', name='mn1', size=wl(cell, 'mn1'), top=t1, bot=b1, gterm=g1, members=['mn1'])
+    mos(V, 'mn2', xR, y_in, 'n', gate='right', name='mn2', size=wl(cell, 'mn2'), top=t2, bot=b2, gterm=g2, members=['mn2'])
+    V.wire([(xL, 180), (xL, y_in - 30)], cls='data')
+    V.wire([(xR, 180), (xR, y_in - 30)], cls='data')
+
+    V.wire([(xL - 40, y_in), (80, y_in)], cls='data'); V.port('inp', 80, y_in, d='left', io='in')
+    V.wire([(xR + 40, y_in), (1000, y_in)], cls='data'); V.port('inn', 1000, y_in, d='right', io='in')
+
+    # Clocked tail mn0 (ck)
+    V.wire([(xL, y_in + 30), (xL, 330), (xR, 330), (xR, y_in + 30)], cls='plain')
+    V.dot(AX, 330)
+    t0, b0, g0 = mosT(cell, 'mn0')
+    mos(V, 'mn0', AX, 380, 'n', gate='left', name='mn0', size=wl(cell, 'mn0'), top=t0, bot=b0, gterm=g0, members=['mn0'])
+    V.wire([(AX, 330), (AX, 350)], cls='plain')
+    V.wire([(AX, 410), (AX, 650)], cls='power'); V.dot(AX, 650)
+
+    # Clock port ck
+    V.port('ck', AX - 70, 380, d='right', io='in', cls='clock')
+    V.wire([(AX - 70, 380), (AX - 40, 380)], cls='clock')
+
+    # 2nd stage: cross-coupled latch and output ports outp, outn
+    V.port('outp', 80, 500, d='left', io='out')
+    V.port('outn', 1000, 500, d='right', io='out')
+
+    V.symmetry.append({'axis': AX, 'orient': 'v', 'pairs': [['mp0', 'mp1'], ['mn1', 'mn2']]})
+    finalize_omitted(V)
     return V
 
 
 # =====================================================================================
-# U: CML buffer (single pair), termination units, TG, CMOS gates
+# 6. VIEW_SR_NOR: u_sr_nor (sr_nor unit view)
 # =====================================================================================
-def view_cml_buffer(cell, members, vid):
-    r = ROLES[cell]; E = lambda m: el(cell, m)
-    ins = [m for m in members if r[m]['role'] == 'input']
-    ports = cells[cell]['ports']
-    ins.sort(key=lambda m: ports.index(E(m)['terms']['g']))
-    iP, iN = ins
-    oP = E(iP)['terms'][topbot(cell, iP)[0]]; oN = E(iN)['terms'][topbot(cell, iN)[0]]
-    lP = [m for m in members if r[m]['role'] == 'load' and oP in E(m)['terms'].values()][0]
-    lN = [m for m in members if r[m]['role'] == 'load' and oN in E(m)['terms'].values()][0]
-    tail = [m for m in members if r[m]['role'] == 'tail'][0]
-    V = new_view(vid, cell, 'unit', '%s — unit level (CML 클럭 버퍼, 대칭)' % cell, 760, 560, scope=members)
-    AX = 380
-    rail(V, 160, 600, 70, 'VDD')
-    for side, ld, inp, o in ((-1, lP, iP, oP), (1, lN, iN, oN)):
-        x = AX + side * 70
-        g = 'left' if side < 0 else 'right'
-        t_, b_, g_ = mosT(cell, ld)
-        ml = mos(V, ld, x, 140, 'p', g, ld, wl(cell, ld), t_, b_, g_, members=[ld])
-        V.wire([(x, 110), (x, 70)], cls='power'); V.dot(x, 70)
-        gp = ml['pins'][2]
-        V.wire([(gp['x'], 140), (gp['x'] + side * 20, 140), (gp['x'] + side * 20, 160)], cls='power')
-        gnd(V, gp['x'] + side * 20, 160, E(ld)['terms']['g'])
-        t_, b_, g_ = mosT(cell, inp)
-        mi = mos(V, inp, x, 300, 'n', g, inp, wl(cell, inp), t_, b_, g_, members=[inp])
-        V.wire([(x, 170), (x, 270)], cls='clock')
-        xe = AX + side * 250
-        V.wire([(xe, 220), (x, 220)], cls='clock'); V.dot(x, 220)
-        offpage(V, o, xe, 220, d='left' if side < 0 else 'right')
-        gx = mi['pins'][2]['x']
-        V.wire([(gx, 300), (gx + side * 60, 300)], cls='clock')
-        V.port(E(inp)['terms']['g'], gx + side * 60, 300, d='right' if side < 0 else 'left', io='in', cls='clock')
-    V.wire([(AX - 70, 330), (AX - 70, 350), (AX + 70, 350), (AX + 70, 330)], cls='plain'); V.dot(AX, 350)
-    V.wire([(AX, 350), (AX, 380)], cls='plain')
-    t_, b_, g_ = mosT(cell, tail)
-    mt = mos(V, tail, AX, 410, 'n', 'left', tail, wl(cell, tail), t_, b_, g_, members=[tail])
-    gray_gate(V, mt['pins'][2], E(tail)['terms']['g'], 'left')
-    gnd_at(V, AX, 440)
-    V.symmetry.append({'axis': AX, 'orient': 'v', 'pairs': [[lP, lN], [iP, iN]], 'self': [tail], 'x0': 80, 'x1': 680, 'exempt_wires': []})
-    V.omitted = [x for x in hidden_list(cell) if x['net'] in [n for m in members for n in E(m)['terms'].values()]]
-    return V
+def view_sr_nor():
+    cell = 'sr_nor'
+    V = new_view('u_sr_nor', cell, 'unit', 'SR_NOR — unit level (교차 결합 NOR 래치)', 820, 520)
+    # xi0, xi1: nor2_c
+    # xi0: r, qb, q, vdd, vss
+    # xi1: s, q, qb, vdd, vss
+    box(V, 'xi0', 280, 140, 100, 80, 'NOR2', 'xi0',
+        left=[('r', 160, [[('xi0', 'a')]], 'data'), ('qb', 200, [[('xi0', 'b')]], 'data')],
+        right=[('q', 180, [[('xi0', 'y')]], 'data')],
+        bubbles=('q',), link='u_nor', members=['xi0'])
 
+    box(V, 'xi1', 280, 300, 100, 80, 'NOR2', 'xi1',
+        left=[('q', 320, [[('xi1', 'b')]], 'data'), ('s', 360, [[('xi1', 'a')]], 'data')],
+        right=[('qb', 340, [[('xi1', 'y')]], 'data')],
+        bubbles=('qb',), link='u_nor', members=['xi1'])
 
-def view_termination(cell, members, vid, title):
-    """termination R to CM node (+ C to ground) and ESD clamps, drawn device by device."""
-    r = ROLES[cell]; E = lambda m: el(cell, m)
-    rs = [m for m in members if r[m]['role'] == 'termination']
-    caps = [m for m in members if r[m]['role'] == 'cap_to_rail']
-    esd = [m for m in members if r[m]['role'] == 'esd']
-    ports = cells[cell]['ports']
-    pad = lambda m: [n for n in E(m)['terms'].values() if n in ports and n not in ('VDD', 'VSS')][0]
-    rs.sort(key=lambda m: ports.index(pad(m)))
-    cm = [n for n in E(rs[0])['terms'].values() if n != pad(rs[0])][0]
-    V = new_view(vid, cell, 'unit', title, 640, 600 if esd else 510, scope=members)
-    yP, yN = 150, (450 if esd else 370)
-    yC = (yP + yN) / 2
-    xr = 400
-    for i, (m, yl) in enumerate(((rs[0], yP), (rs[1], yN))):
-        p = pad(m)
-        cl = 'clock' if 'clock' in CN[cell].get(p, []) else 'data'
-        V.port(p, 120, yl, d='right', io='in', cls=cl)
-        # resistor from the pad line toward the CM node
-        up = (i == 1)
-        ry = (yl + yC) / 2
-        tp = 'p' if E(m)['terms']['p'] == p else 'n'
-        on = 'n' if tp == 'p' else 'p'
-        if not up:
-            res(V, m, xr, ry, 'v', name=m, size=E(m)['value'], a=T(m, tp), b=T(m, on), members=[m])
-            V.wire([(120, yl), (xr, yl), (xr, ry - 30)], cls=cl)
-            V.wire([(xr, ry + 30), (xr, yC)], cls='plain')
-        else:
-            res(V, m, xr, ry, 'v', name=m, size=E(m)['value'], a=T(m, on), b=T(m, tp), members=[m])
-            V.wire([(120, yl), (xr, yl), (xr, ry + 30)], cls=cl)
-            V.wire([(xr, ry - 30), (xr, yC)], cls='plain')
-        # ESD on this pad
-        pe = [x for x in esd if p in E(x)['terms'].values()]
-        for x in pe:
-            e = E(x)
-            t_, b_, g_ = mosT(cell, x)
-            if e['type'] == 'p':
-                col = 200
-                mm = mos(V, x, col, yl - 50, 'p', 'left', x, wl(cell, x), t_, b_, g_, members=[x])
-                vdd_tee(V, col, yl - 80, 'VDD')
-                V.wire([(col - 40, yl - 50), (col - 40, yl - 72)], cls='power'); vdd_tee(V, col - 40, yl - 72, 'VDD')
-                V.wire([(col, yl - 20), (col, yl)], cls=cl); V.dot(col, yl)
-            else:
-                col = 280
-                mm = mos(V, x, col, yl + 50, 'n', 'left', x, wl(cell, x), t_, b_, g_, members=[x])
-                V.wire([(col, yl + 20), (col, yl)], cls=cl); V.dot(col, yl)
-                gnd_at(V, col, yl + 80, l=8)
-                V.wire([(col - 40, yl + 50), (col - 40, yl + 70)], cls='power'); gnd(V, col - 40, yl + 70, 'VSS')
-    V.dot(xr, yC)
-    for c in caps:
-        e = E(c)
-        tc = 'p' if e['terms']['p'] == cm else 'n'
-        xc = 480 if esd else 520
-        cap(V, c, xc, yC + 30, 'v', name=c, size=e['value'], a=T(c, tc), b=T(c, 'n' if tc == 'p' else 'p'), members=[c])
-        V.wire([(xr, yC), (xc, yC)], cls='plain')
-        gnd_at(V, xc, yC + 60, l=10)
-    V.notes.append('공통모드 노드 %s 는 이 유닛 안에서만 그림 (블록 레벨에서는 바이어스로 숨김)' % cm)
-    V.text(40, (600 if esd else 510) - 25, V.notes[-1], size=10, color='#555', cls='note')
-    V.omitted = []
-    return V
+    # External ports
+    V.port('r', 100, 160, d='right', io='in'); V.wire([(100, 160), (260, 160)], cls='data')
+    V.port('s', 100, 360, d='right', io='in'); V.wire([(100, 360), (260, 360)], cls='data')
+    V.port('q', 620, 180, d='right', io='out'); V.wire([(400, 180), (620, 180)], cls='data')
+    V.port('qb', 620, 340, d='right', io='out'); V.wire([(400, 340), (620, 340)], cls='data')
 
+    # Cross coupling
+    V.dot(480, 180); V.dot(480, 340)
+    V.wire([(480, 180), (480, 260), (220, 260), (220, 320), (260, 320)], cls='data')
+    V.wire([(480, 340), (480, 275), (200, 275), (200, 200), (260, 200)], cls='data')
+    V.allowed_cross.append({'at': [220, 275], 'reason': 'SR latch cross-coupling feedback'})
 
-def view_tg(cell, groups, vid):
-    r = ROLES[cell]; E = lambda m: el(cell, m)
-    V = new_view(vid, cell, 'unit', '%s — unit level (전달 게이트 M_TIE, 게이트가 VSS/VDD에 묶여 항상 OFF)' % cell, 800, 440,
-                 scope=[m for g in groups for m in g])
-    for gi, g in enumerate(groups):
-        nm = [m for m in g if E(m)['type'] == 'n'][0]; pm = [m for m in g if E(m)['type'] == 'p'][0]
-        a, b = E(nm)['terms']['d'], E(nm)['terms']['s']
-        ports = cells[cell]['ports']
-        if a in ports:
-            a, b = b, a     # a: internal node (top), b: port (bottom)
-        side = -1 if gi == 0 else 1
-        cx = 380 + side * 190
-        xn, xp = cx - 80, cx + 80
-        if side > 0:
-            xn, xp = cx + 80, cx - 80
-        ta = 'd' if E(nm)['terms']['d'] == a else 's'
-        mos(V, nm, xn, 200, 'n', 'left' if xn < cx else 'right', nm, wl(cell, nm), T(nm, ta), T(nm, 's' if ta == 'd' else 'd'), T(nm, 'g'), members=[nm], arrow_at='bottom')
-        tp = 'd' if E(pm)['terms']['d'] == a else 's'
-        mos(V, pm, xp, 200, 'p', 'right' if xp > cx else 'left', pm, wl(cell, pm), T(pm, tp), T(pm, 's' if tp == 'd' else 'd'), T(pm, 'g'), members=[pm], arrow_at='top')
-        V.wire([(xn, 170), (xn, 130), (xp, 130), (xp, 170)], cls='data')
-        V.wire([(xn, 230), (xn, 270), (xp, 270), (xp, 230)], cls='data')
-        V.dot(cx, 130); V.dot(cx, 270)
-        V.wire([(cx, 130), (cx, 100)], cls='data')
-        offpage(V, a, cx, 100, d='up')
-        V.wire([(cx, 270), (cx, 310)], cls='data')
-        V.port(b, cx, 310, d='down', io='out')
-        gxn = xn - 40 if xn < cx else xn + 40
-        V.wire([(gxn, 200), (gxn, 225)], cls='power'); gnd(V, gxn, 225, E(nm)['terms']['g'])
-        gxp = xp + 40 if xp > cx else xp - 40
-        V.wire([(gxp, 200), (gxp, 175)], cls='power'); vdd_tee(V, gxp, 175, E(pm)['terms']['g'])
-    V.text(40, 400, '두 TG 모두 NMOS 게이트=VSS, PMOS 게이트=VDD → 항상 OFF. O_DOUTP/N 은 구동원 없음(미구동, §2.3-13, Q3).', size=11, color='#a33', cls='note')
-    V.symmetry.append({'axis': 380, 'orient': 'v', 'pairs': [[groups[0][0], groups[1][0]], [groups[0][1], groups[1][1]]], 'self': [], 'x0': 60, 'x1': 700, 'exempt_wires': []})
-    V.omitted = []
-    return V
-
-
-def view_inv(cell):
-    E = lambda m: el(cell, m)
-    r = ROLES[cell]
-    mp = [m for m in r if E(m)['type'] == 'p'][0]; mn = [m for m in r if E(m)['type'] == 'n'][0]
-    a = E(mp)['terms']['g']; y = E(mp)['terms']['d'] if E(mp)['terms']['s'] == 'VDD' else E(mp)['terms']['s']
-    V = new_view('u_inv', cell, 'unit', '%s — unit level (CMOS 인버터 / 버퍼)' % cell, 480, 420)
-    rail(V, 160, 360, 70, 'VDD')
-    t_, b_, g_ = mosT(cell, mp)
-    mos(V, mp, 240, 140, 'p', 'left', mp, wl(cell, mp), t_, b_, g_, members=[mp])
-    V.wire([(240, 110), (240, 70)], cls='power'); V.dot(240, 70)
-    t_, b_, g_ = mosT(cell, mn)
-    mos(V, mn, 240, 280, 'n', 'left', mn, wl(cell, mn), t_, b_, g_, members=[mn])
-    V.wire([(200, 140), (200, 280)], cls='data'); V.dot(200, 210)
-    V.wire([(120, 210), (200, 210)], cls='data')
-    V.port(a, 120, 210, d='right', io='in')
-    V.wire([(240, 170), (240, 250)], cls='data'); V.dot(240, 210)
-    V.wire([(240, 210), (340, 210)], cls='data')
-    V.port(y, 340, 210, d='right', io='out')
-    gnd_at(V, 240, 310)
-    V.text(30, 395, '참고: A/Y 는 슬라이서 출력 버퍼(데이터)와 CLK_DIST_TREE 체인(클럭)에 함께 쓰임', size=10, color='#555', cls='note')
-    V.omitted = hidden_list(cell)
-    return V
-
-
-def view_nand(cell):
-    E = lambda m: el(cell, m)
-    r = ROLES[cell]
-    ps = [m for m in r if E(m)['type'] == 'p']; ns = [m for m in r if E(m)['type'] == 'n']
-    ports = cells[cell]['ports']
-    ps.sort(key=lambda m: ports.index(E(m)['terms']['g']))
-    y = [n for n in E(ps[0])['terms'].values() if n in ports and n not in ('VDD', 'VSS') and n != E(ps[0])['terms']['g']][0]
-    nTop = [m for m in ns if y in E(m)['terms'].values()][0]; nBot = [m for m in ns if m != nTop][0]
-    V = new_view('u_nand', cell, 'unit', '%s — unit level (정적 CMOS %s)' % (cell, A['block'][cell]['role'].upper()), 560, 520)
-    rail(V, 160, 420, 70, 'VDD')
-    xs = [220, 340]
-    for x, m in zip(xs, ps):
-        t_, b_, g_ = mosT(cell, m)
-        mos(V, m, x, 140, 'p', 'left', m, wl(cell, m), t_, b_, g_, members=[m])
-        V.wire([(x, 110), (x, 70)], cls='power'); V.dot(x, 70)
-    V.wire([(220, 170), (220, 200), (340, 200), (340, 170)], cls='data')
-    V.dot(280, 200); V.dot(340, 200)
-    V.wire([(340, 200), (440, 200)], cls='data')
-    V.port(y, 440, 200, d='right', io='out')
-    t_, b_, g_ = mosT(cell, nTop)
-    mos(V, nTop, 280, 260, 'n', 'left', nTop, wl(cell, nTop), t_, b_, g_, members=[nTop])
-    V.wire([(280, 200), (280, 230)], cls='data')
-    t_, b_, g_ = mosT(cell, nBot)
-    mos(V, nBot, 280, 360, 'n', 'left', nBot, wl(cell, nBot), t_, b_, g_, members=[nBot])
-    V.wire([(280, 290), (280, 330)], cls='plain')
-    gnd_at(V, 280, 390)
-    ga = E(ps[0])['terms']['g']; gb = E(ps[1])['terms']['g']
-    V.wire([(110, 260), (240, 260)], cls='data'); V.dot(180, 260)
-    V.wire([(180, 140), (180, 260)], cls='data')
-    V.port(ga, 110, 260, d='right', io='in')
-    V.wire([(110, 360), (240, 360)], cls='data')
-    V.port(gb, 110, 360, d='right', io='in')
-    stub_label(V, {'x': 300, 'y': 140}, gb, 'down', cls='data', L=24, side='right')
-    V.omitted = hidden_list(cell)
+    finalize_omitted(V)
     return V
 
 
 # =====================================================================================
-# B: block-level views
+# 7. VIEW_CK_GBUF: u_ck_gbuf
 # =====================================================================================
-def inst_terms(inst, port):
-    return [[(inst, port)]]
+def view_ck_gbuf():
+    cell = 'ck_gbuf'
+    V = new_view('u_ck_gbuf', cell, 'unit', 'CK_GBUF — unit level (클럭 게이팅 버퍼)', 860, 520)
+    # xi0 (nand2_c): ck, en, net70
+    # xi1 (nand2_c): ckb, en, net71
+    # xi2 (inv_c): net70, cko
+    # xi3 (inv_c): net71, ckob
+    box(V, 'xi0', 260, 140, 90, 70, 'NAND2', 'xi0',
+        left=[('ck', 160, [[('xi0', 'a')]], 'clock'), ('en', 190, [[('xi0', 'b')]], 'data')],
+        right=[('net70', 175, [[('xi0', 'y')]], 'clock')],
+        bubbles=('net70',), link='u_nand', members=['xi0'])
 
+    box(V, 'xi1', 260, 310, 90, 70, 'NAND2', 'xi1',
+        left=[('ckb', 330, [[('xi1', 'a')]], 'clock'), ('en', 360, [[('xi1', 'b')]], 'data')],
+        right=[('net71', 345, [[('xi1', 'y')]], 'clock')],
+        bubbles=('net71',), link='u_nand', members=['xi1'])
 
-def view_top(cell):
-    c = cells[cell]
-    insts = {e['name']: e for e in c['elems'] if e['kind'] == 'inst'}
-    B = A['block']
-    blockrole = lambda i: B[insts[i]['cell']]['role']
-    hs_in = [p for p in c['ports'] if 'data' in CN[cell][p] and p in A['hs_inputs']]
-    groups = A['groups'][cell]
-    V = new_view('b_top', cell, 'block', '%s — 블록 레벨 (최상위)' % cell, 1420, 840)
-    P, N = hs_in
-    yP, yN = 150, 170
-    # input ports + termination/ESD markers
-    V.port(P, 110, yP, d='right', io='in'); V.port(N, 110, yN, d='right', io='in')
-    term = [g for g in groups if g['role'].startswith('termination')][0]
-    rt = 'R_T %sΩ' % fmt_si([el(cell, m)['value'] for m in term['members'] if el(cell, m)['kind'] == 'res'][0])
-    term_marker(V, 'TERM_P', 160, yP, True, rt, [[(m, t) for m in term['members'] for t, n in el(cell, m)['terms'].items() if n == P and t != 'b']], esd=True,
-                link=VID['top_term'], members=term['members'])
-    term_marker(V, 'TERM_N', 160, yN, False, rt, [[(m, t) for m in term['members'] for t, n in el(cell, m)['terms'].items() if n == N and t != 'b']], esd=True,
-                link=VID['top_term'], members=[])
-    V.dot(160, yP); V.dot(160, yN)
-    V.wire([(160, yP), (160, yP - 12)], cls='data'); V.wire([(160, yN), (160, yN + 12)], cls='data')
-    # chain of amplifier stages from the HS input: follow instance connectivity
-    chain = []
-    cur = (P, N)
-    while True:
-        nxt = [i for i, e in insts.items() if e['pins'].get(cells[e['cell']]['ports'][0]) == cur[0] and B[e['cell']]['role'] in ('ctle', 'vga', 'cml_buffer')]
-        if not nxt:
-            break
-        i = nxt[0]; e = insts[i]; sp = cells[e['cell']]['ports']
-        outs = [p for p in sp if 'data' in CN[e['cell']].get(p, []) and p not in sp[:2]]
-        chain.append((i, sp[0], sp[1], outs[0], outs[1]))
-        cur = (e['pins'][outs[0]], e['pins'][outs[1]])
-    x0 = 240
-    prev = None
-    for k, (i, a, b_, o1, o2) in enumerate(chain):
-        e = insts[i]
-        lab = {'ctle': 'CTLE', 'vga': 'VGA', 'cml_buffer': 'BUF'}[B[e['cell']]['role']]
-        bub, pm = polarity_marks(e['cell'], [(a, a), (b_, b_)], [(o1, o1), (o2, o2)])
-        # important control of the stage (e.g. the shared gain code, K6) enters from the top (plan §3.2-3, V18)
-        ictl = [p for p in sp if 'important_control' in CN[e['cell']].get(p, [])]
-        topp = []
-        if ictl:
-            gbn, gbits, _ = group_bus(ictl)[0]
-            topp = [(gbn, 30, [[(i, q)] for q in gbits], 'bus')]
-        tri(V, i, x0, 160, lab, i, ins=[(a, -10, inst_terms(i, a)), (b_, 10, inst_terms(i, b_))],
-            outs=[(o1, -10, inst_terms(i, o1)), (o2, 10, inst_terms(i, o2))], link={'ctle': 'u_ctle', 'vga': 'u_vga'}[B[e['cell']]['role']],
-            members=[i], sub=e['cell'], top=topp, bubbles=bub, pm=pm)
-        if ictl:
-            gx, gy = x0 + 30, 160 - 45 - 20
-            V.wire([(gx, 50), (gx, gy)], cls='bus')
-            V.port(gbn, gx, 50, d='down', io='in', cls='bus', label_side='right')
-            busslash(V, gx, (50 + gy) / 2, gbn, len(gbits))
-        if prev is None:
-            V.wire([(110, yP), (x0 - 20, yP)], cls='data'); V.wire([(110, yN), (x0 - 20, yN)], cls='data')
-        else:
-            V.wire([(prev, yP), (x0 - 20, yP)], cls='data'); V.wire([(prev, yN), (x0 - 20, yN)], cls='data')
-            V.netlabel(insts[chain[k - 1][0]]['pins'][chain[k - 1][3]], prev + 2, yP, tx=prev + 3, ty=yP - 8)
-            V.netlabel(insts[chain[k - 1][0]]['pins'][chain[k - 1][4]], prev + 2, yN, tx=prev + 3, ty=yN + 9)
-        prev = x0 + 100
-        x0 += 160
-    vP, vN = cur
-    # slices: instances whose first data port is driven by the chain output
-    slices = [i for i, e in insts.items() if vP in e['pins'].values() and B[e['cell']]['role'] == 'composite']
-    slices.sort(key=lambda i: list(insts).index(i))
-    scell = insts[slices[0]]['cell']
-    sp = cells[scell]['ports']
-    vis = lambda p: any(x in CN[scell].get(p, []) for x in ('data', 'clock', 'important_control'))
-    # classify slice pins: main inputs, feedback inputs (left), outputs (right), clocks (bottom), bus (top)
-    sr = A['cellnet'][scell]
-    sub = {e['name']: e for e in cells[scell]['elems'] if e['kind'] == 'inst'}
-    def driven(p):
-        # port net is an output pin of a sub instance? (structural: connects to a drain inside)
-        g = A['l2g'][INST[scell][0]][p]
-        return any(d['terms'].get('d') == g or d['terms'].get('s') == g for d in [])
-    left_main = sp[:2]
-    clocks = [p for p in sp if 'clock' in sr[p]]
-    bus = [p for p in sp if 'important_control' in sr[p]]
-    pre = INST[scell][0]
-    outs_s = [p for p in sp if 'data' in sr[p] and p not in left_main and port_is_output(scell, p)]
-    fb_in = [p for p in sp if 'data' in sr[p] and p not in left_main and p not in outs_s]
-    # order feedback inputs: T1_FB first then T2..T4 (by the summer tap they feed)
-    summ = [e for e in sub.values() if B[e['cell']]['role'] == 'summer'][0]
-    tap_order = [summ['pins'][q] for q in cells[summ['cell']]['ports'] if 'data' in CN[summ['cell']].get(q, []) and q not in cells[summ['cell']]['ports'][:2]]
-    fb_in.sort(key=lambda p: tap_order.index(p) if p in tap_order else 99)
-    bx, bw = 860, 260
-    slice_y = {slices[0]: 125, slices[1]: 445}
-    pinpos = {}
-    for si in slices:
-        y0 = slice_y[si]
-        e = insts[si]
-        lefts = [(left_main[0], y0 + 25), (left_main[1], y0 + 45)] + [(p, y0 + 85 + 20 * k) for k, p in enumerate(fb_in)]
-        rights = [(p, y0 + 25 + 20 * k + (20 if k >= 2 else 0)) for k, p in enumerate(outs_s)]
-        h = max(y for _, y in lefts) - y0 + 25
-        sbub, _ = polarity_marks(scell, [(left_main[0], left_main[0]), (left_main[1], left_main[1])], [(p, p) for p in outs_s])
-        sym = box(V, si, bx, y0, bw, h, scell, si, left=[(p, y, inst_terms(si, p), 'data') for p, y in lefts],
-                  right=[(p, y, inst_terms(si, p), 'data') for p, y in rights], bubbles=sbub,
-                  bottom=[(clocks[0], bx + 60, inst_terms(si, clocks[0]), 'clock'), (clocks[1], bx + 120, inst_terms(si, clocks[1]), 'clock')],
-                  top=[('W<4:1>_<3:0>', bx + 200, [[(si, p)] for p in bus], 'bus')], link='b_slice', members=[si])
-        pinpos[si] = {p['name']: p for p in sym['pins']}
-        pinpos[si]['_h'] = h
-    # VGA -> slices (P branch crosses N line once)
-    s0, s1 = slices
-    V.wire([(prev, yP), (840, yP)], cls='data'); V.wire([(prev, yN), (840, yN)], cls='data')
-    V.netlabel(vP, prev + 2, yP, tx=prev + 3, ty=yP - 8); V.netlabel(vN, prev + 2, yN, tx=prev + 3, ty=yN + 9)
-    y1P = pinpos[s1][left_main[0]]['y']; y1N = pinpos[s1][left_main[1]]['y']
-    stub_label(V, pinpos[s1][left_main[0]], vP, 'left', L=46)
-    stub_label(V, pinpos[s1][left_main[1]], vN, 'left', L=46)
-    # feedback / clock / bus connections by net label (wiring would go around a block -> twisted)
-    for si in slices:
-        e = insts[si]
-        for p in fb_in:
-            stub_label(V, pinpos[si][p], e['pins'][p], 'left', L=46)
-        for p in outs_s[2:]:
-            stub_label(V, pinpos[si][p], e['pins'][p], 'right', L=46)
-        for k, p in enumerate(clocks):
-            stub_label(V, pinpos[si][p], e['pins'][p], 'down', cls='clock', L=22, side='left' if k == 0 else 'right')
-    # outputs to ports
-    for si in slices:
-        e = insts[si]
-        for p in outs_s[:2]:
-            pp = pinpos[si][p]
-            V.wire([(pp['x'], pp['y']), (1300, pp['y'])], cls='data')
-            V.port(e['pins'][p], 1300, pp['y'], d='right', io='out')
-    # important control bus: one trunk from the top into the first slice; second slice by label
-    bnm = 'W<4:1>_<3:0>'
-    wp = pinpos[s0]['W<4:1>_<3:0>']
-    V.wire([(wp['x'], 50), (wp['x'], wp['y'])], cls='bus')
-    V.port(bnm, wp['x'], 50, d='down', io='in', cls='bus', label_side='right')
-    busslash(V, wp['x'], 78, bnm, len(bus))
-    wp1 = pinpos[s1]['W<4:1>_<3:0>']
-    stub_label(V, wp1, bnm, 'up', cls='bus', L=30, side='right')
-    busslash(V, wp1['x'], wp1['y'] - 12, bnm, len(bus))        # plan §3.5-1: a bus label carries the bus mark too
-    # TG (always-off) between the odd slice output and O_DOUT
-    tg = [g for g in groups if g['role'] == 'tg']
-    e1 = insts[s1]
-    for k, g in enumerate(tg):
-        nm = [m for m in g['members'] if el(cell, m)['type'] == 'n'][0]
-        a, b_ = el(cell, nm)['terms']['d'], el(cell, nm)['terms']['s']
-        portnet = a if a in c['ports'] else b_
-        inner = b_ if portnet == a else a
-        pp = [pinpos[s1][p] for p in outs_s[:2] if e1['pins'][p] == portnet][0]
-        xt = 1220
-        up = (k == 0)
-        yc = pp['y'] - 40 if up else pp['y'] + 40
-        ta = [[(m, t) for m in g['members'] for t in ('d', 's') if el(cell, m)['terms'][t] == (inner if up else portnet)]]
-        tb_ = [[(m, t) for m in g['members'] for t in ('d', 's') if el(cell, m)['terms'][t] == (portnet if up else inner)]]
-        switch_open(V, 'TG%d' % k, xt, yc, 'v', ta, tb_, 'TG', '/'.join(g['members']) + ' (off)', link=VID['top_tg'], members=g['members'])
-        if up:
-            V.wire([(xt, yc + 30), (xt, pp['y'])], cls='data'); V.dot(xt, pp['y'])
-            stub_label(V, {'x': xt, 'y': yc - 30}, inner, 'up', L=16, side='right')
-        else:
-            V.wire([(xt, yc - 30), (xt, pp['y'])], cls='data'); V.dot(xt, pp['y'])
-            stub_label(V, {'x': xt, 'y': yc + 30}, inner, 'down', L=16, side='right')
-    # clock block
-    ck = [i for i, e in insts.items() if any('clock' in CN[e['cell']].get(p, []) for p in cells[e['cell']]['ports']) and i not in slices][0]
-    ce = insts[ck]; cp = cells[ce['cell']]['ports']
-    cin = [p for p in cp if 'clock' in CN[ce['cell']][p] and ce['pins'][p] in c['ports']]
-    cout = [p for p in cp if 'clock' in CN[ce['cell']][p] and p not in cin]
-    bx0, by0 = 380, 630
-    cbub, _ = polarity_marks(ce['cell'], [(p, p) for p in cin], [(p, p) for p in cout])
-    sym = box(V, ck, bx0, by0, 200, 140, ce['cell'], ck, left=[(p, by0 + 40 + 20 * k, inst_terms(ck, p), 'clock') for k, p in enumerate(cin)],
-              right=[(p, by0 + 40 + 20 * k + (20 if k >= 2 else 0), inst_terms(ck, p), 'clock') for k, p in enumerate(cout)], link='b_clk', members=[ck],
-              bubbles=cbub)
-    for p in sym['pins']:
-        if p['name'] in cin:
-            V.wire([(110, p['y']), (p['x'], p['y'])], cls='clock')
-            V.port(ce['pins'][p['name']], 110, p['y'], d='right', io='in', cls='clock')
-        else:
-            stub_label(V, p, ce['pins'][p['name']], 'right', cls='clock', L=50)
-    # omitted
-    om = []
-    for i, e in insts.items():
-        if B[e['cell']]['symbol'] == 'omit':
-            om.append({'block': i, 'cell': e['cell'], 'reason': '고속 신호와 무관'})
-    V.omitted = hidden_list(cell) + om
-    V.text(40, 800, '연결 규칙: 블록을 돌아가야 하는 넷(귀환 탭, 클럭 분배, 두 번째 슬라이스의 계수 버스)은 같은 이름의 넷 이름표로 연결 (Virtuoso 방식)', size=10, color='#555', cls='note')
-    return V
+    inv(V, 'xi2', 450, 175, 'xi2 (inv_c)', [[('xi2', 'a')]], [[('xi2', 'y')]], link='u_inv', members=['xi2'], cls='clock')
+    inv(V, 'xi3', 450, 345, 'xi3 (inv_c)', [[('xi3', 'a')]], [[('xi3', 'y')]], link='u_inv', members=['xi3'], cls='clock')
 
+    # Ports
+    V.port('ck', 80, 160, d='right', io='in', cls='clock'); V.wire([(80, 160), (240, 160)], cls='clock')
+    V.port('ckb', 80, 330, d='right', io='in', cls='clock'); V.wire([(80, 330), (240, 330)], cls='clock')
+    V.port('en', 80, 250, d='right', io='in'); V.wire([(80, 250), (180, 250)], cls='data')
+    V.wire([(180, 250), (180, 190), (240, 190)], cls='data'); V.dot(180, 250)
+    V.wire([(180, 250), (180, 360), (240, 360)], cls='data')
 
-def view_slice(cell):
-    c = cells[cell]
-    insts = {e['name']: e for e in c['elems'] if e['kind'] == 'inst'}
-    B = A['block']
-    rl = {i: B[e['cell']]['role'] for i, e in insts.items()}
-    sp = c['ports']
-    cn = CN[cell]
-    V = new_view('b_slice', cell, 'block', '%s — 블록 레벨' % cell, 1420, 520)
-    summ = [i for i in insts if rl[i] == 'summer'][0]
-    se = insts[summ]; sports = cells[se['cell']]['ports']
-    main_in = sports[:2]
-    taps = [p for p in sports if 'data' in CN[se['cell']].get(p, []) and p not in main_in and p not in sports[-2:] and
-            not any(x in p for x in ())]
-    souts = [p for p in sports if 'data' in CN[se['cell']].get(p, []) and p not in main_in and p not in taps]
-    # outputs = pins whose net is driven inside the summer (drains): use the trace: OUTP/OUTN are reached via (g->d)
-    pre = INST[se['cell']][0]
-    souts = [p for p in sports if 'data' in CN[se['cell']].get(p, []) and A['data_trace'][A['l2g'][pre][p]]['via'].startswith(pre)]
-    taps = [p for p in sports if 'data' in CN[se['cell']].get(p, []) and p not in main_in and p not in souts]
-    bus = [p for p in sports if 'important_control' in CN[se['cell']].get(p, [])]
-    # summer box
-    tap_y = [260 + 20 * k for k in range(len(taps))]
-    sx, sy, sw = 200, 150, 200
-    sh = tap_y[-1] + 20 - sy
-    sym = box(V, summ, sx, sy, sw, sh, 'Σ', summ, left=[(main_in[0], 200, inst_terms(summ, main_in[0]), 'data'), (main_in[1], 220, inst_terms(summ, main_in[1]), 'data')]
-              + [(p, y, inst_terms(summ, p), 'data') for p, y in zip(taps, tap_y)],
-              right=[(souts[0], 200, inst_terms(summ, souts[0]), 'data'), (souts[1], 220, inst_terms(summ, souts[1]), 'data')],
-              top=[('W<4:1>_<3:0>', sx + 100, [[(summ, p)] for p in bus], 'bus')], link='u_summer', members=[summ], big=True, sub=se['cell'])
-    pp = {p['name']: p for p in sym['pins']}
-    # main inputs
-    for k, p in enumerate(main_in):
-        V.wire([(110, pp[p]['y']), (pp[p]['x'], pp[p]['y'])], cls='data')
-        V.port(se['pins'][p], 110, pp[p]['y'], d='right', io='in')
-    # tap (feedback) inputs: data pins on the left below the main input (V18), straight from the left ports
-    for k, p in enumerate(taps):
-        y = pp[p]['y']
-        V.wire([(110, y), (pp[p]['x'], y)], cls='data')
-        V.port(se['pins'][p], 110, y, d='right', io='in')
-    # W bus
-    wp = pp['W<4:1>_<3:0>']
-    V.wire([(wp['x'], 80), (wp['x'], wp['y'])], cls='bus')
-    V.port('W<4:1>_<3:0>', wp['x'], 80, d='down', io='in', cls='bus', label_side='right')
-    busslash(V, wp['x'], 105, 'W<4:1>_<3:0>', len(bus))
-    # slicer
-    sl = [i for i in insts if rl[i] in ('composite', 'comparator') and insts[i]['pins'].get(cells[insts[i]['cell']]['ports'][0]) == se['pins'][souts[0]]][0]
-    le = insts[sl]; lp = cells[le['cell']]['ports']
-    lclk = [p for p in lp if 'clock' in CN[le['cell']].get(p, [])]
-    louts = [p for p in lp if 'data' in CN[le['cell']].get(p, []) and p not in lp[:2]]
-    sbub, spm = polarity_marks(le['cell'], [(lp[0], lp[0]), (lp[1], lp[1])], [(louts[0], louts[0]), (louts[1], louts[1])])
-    tri(V, sl, 520, 210, 'SA', sl, ins=[(lp[0], -10, inst_terms(sl, lp[0])), (lp[1], 10, inst_terms(sl, lp[1]))],
-        outs=[(louts[0], -10, inst_terms(sl, louts[0])), (louts[1], 10, inst_terms(sl, louts[1]))],
-        bottom=[(lclk[0], 30, inst_terms(sl, lclk[0]), 'clock')], link='b_sa', members=[sl], clock_mark=True, sub=le['cell'], bubbles=sbub, pm=spm)
-    for k, p in enumerate(souts):
-        y = pp[p]['y']
-        V.wire([(420, y), (500, y)], cls='data')
-        V.netlabel(se['pins'][p], 460, y, tx=460, ty=y - 8 if k == 0 else y + 9, anchor='middle')
-    # latch and DFF chain (follow data connectivity)
-    chain = []
-    curP = le['pins'][louts[0]]
-    x = 700
-    prev_x = 620
-    names = []
-    while True:
-        nx = [i for i, e in insts.items() if rl[i] in ('latch', 'dff') and e['pins'][cells[e['cell']]['ports'][0]] == curP and i not in chain]
-        if not nx:
-            break
-        i = nx[0]; e = insts[i]; ip = cells[e['cell']]['ports']
-        ck = [p for p in ip if CN[e['cell']].get(p, []) == ['clock']]
-        qo = [p for p in ip if ('data' in CN[e['cell']].get(p, []) or 'clock' in CN[e['cell']].get(p, [])) and p not in ip[:2] and p not in ck]
-        lab = 'LATCH' if rl[i] == 'latch' else 'DFF'
-        lbub, _ = polarity_marks(e['cell'], [(ip[0], ip[0]), (ip[1], ip[1])], [(qo[0], qo[0]), (qo[1], qo[1])])
-        sym = box(V, i, x, 160, 100, 100, lab, i, bubbles=lbub, left=[(ip[0], 200, inst_terms(i, ip[0]), 'data'), (ip[1], 220, inst_terms(i, ip[1]), 'data')],
-                  right=[(qo[0], 200, inst_terms(i, qo[0]), 'data'), (qo[1], 220, inst_terms(i, qo[1]), 'data')],
-                  bottom=[(ck[0], x + 30, inst_terms(i, ck[0]), 'clock'), (ck[1], x + 70, inst_terms(i, ck[1]), 'clock')],
-                  link='u_latch' if rl[i] == 'latch' else 'b_dff', members=[i], sub=e['cell'])
-        chain.append(i)
-        V.wire([(prev_x, 200), (x - 20, 200)], cls='data'); V.wire([(prev_x, 220), (x - 20, 220)], cls='data')
-        if len(chain) == 1:
-            V.netlabel(le['pins'][louts[0]], (prev_x + x - 20) / 2, 200, tx=(prev_x + x - 20) / 2, ty=192, anchor='middle')
-            V.netlabel(le['pins'][louts[1]], (prev_x + x - 20) / 2, 220, tx=(prev_x + x - 20) / 2, ty=229, anchor='middle')
-        else:
-            # branch to output ports at the existing line: P up, N down
-            xb = prev_x + 30
-            pn = insts[chain[-2]]['pins']
-            V.dot(xb, 200); V.dot(xb, 220)
-            V.wire([(xb, 200), (xb, 150)], cls='data'); V.port(pn[qprev[0]], xb, 150, d='up', io='out')
-            V.wire([(xb, 220), (xb, 270)], cls='data'); V.port(pn[qprev[1]], xb, 270, d='down', io='out')
-        qprev = qo
-        curP = e['pins'][qo[0]]
-        prev_x = x + 120
-        x += 220
-    # last outputs to the right
-    pn = insts[chain[-1]]['pins']
-    V.wire([(prev_x, 200), (prev_x + 80, 200)], cls='data'); V.port(pn[qprev[0]], prev_x + 80, 200, d='right', io='out')
-    V.wire([(prev_x, 220), (prev_x + 80, 220)], cls='data'); V.port(pn[qprev[1]], prev_x + 80, 220, d='right', io='out')
-    # clocks: primary trunk wired from below; complementary phase by labels (avoids interleaving crossings)
-    ck0 = lclk[0]
-    cknet = le['pins'][ck0]
-    xs = [520 + 30]
-    for i in chain:
-        e = insts[i]; ip = cells[e['cell']]['ports']
-        ck = [p for p in ip if CN[e['cell']].get(p, []) == ['clock']]
-        sm = [s for s in V.symbols if s['id'] == i][0]
-        for p in sm['pins']:
-            if p['name'] in ck:
-                if e['pins'][p['name']] == cknet:
-                    xs.append(p['x'])
-                else:
-                    stub_label(V, p, e['pins'][p['name']], 'down', cls='clock', L=20, side='right')
-    yT = 330
-    V.wire([(500, yT), (max(xs), yT)], cls='clock')
-    for x_ in xs:
-        top = 275 if x_ == 550 else 280
-        V.wire([(x_, yT), (x_, top)], cls='clock')
-        if x_ != max(xs):
-            V.dot(x_, yT)
-    V.port(cknet, 500, yT, d='right', io='in', cls='clock')
-    other = [p for p in sp if 'clock' in cn[p] and p != cknet][0]
-    V.wire([(500, 370), (540, 370)], cls='clock')
-    V.port(other, 500, 370, d='right', io='in', cls='clock')
-    V.text(40, 495, '클럭: %s 는 줄기+가지로 배선, %s 는 같은 이름 이름표로 연결 (두 줄기를 모두 배선하면 핀 순서가 엇갈려 교차가 생김)' % (cknet, other), size=10, color='#555', cls='note')
-    V.omitted = hidden_list(cell)
-    return V
+    V.wire([(370, 175), (430, 175)], cls='clock'); V.netlabel('net70', 390, 165)
+    V.wire([(370, 345), (430, 345)], cls='clock'); V.netlabel('net71', 390, 335)
 
+    V.wire([(512, 175), (660, 175)], cls='clock'); V.port('cko', 660, 175, d='right', io='out', cls='clock')
+    V.wire([(512, 345), (660, 345)], cls='clock'); V.port('ckob', 660, 345, d='right', io='out', cls='clock')
 
-def view_clk(cell):
-    c = cells[cell]
-    insts = {e['name']: e for e in c['elems'] if e['kind'] == 'inst'}
-    B = A['block']; rl = {i: B[e['cell']]['role'] for i, e in insts.items()}
-    groups = A['groups'][cell]
-    cp = c['ports']
-    cin = [p for p in cp if 'clock' in CN[cell][p] and A['clock_trace'].get(A['l2g'][INST[cell][0]][p], {}).get('via') == 'start']
-    V = new_view('b_clk', cell, 'block', '%s — 블록 레벨' % cell, 1300, 480)
-    yP, yN = 200, 220
-    V.port(cin[0], 110, yP, d='right', io='in', cls='clock'); V.port(cin[1], 110, yN, d='right', io='in', cls='clock')
-    term = [g for g in groups if g['role'] == 'termination'][0]
-    tm = lambda net: [[(m, t) for m in term['members'] for t, n in el(cell, m)['terms'].items() if n == net]]
-    rt = 'R_T %sΩ' % fmt_si([el(cell, m)['value'] for m in term['members'] if el(cell, m)['kind'] == 'res'][0])
-    term_marker(V, 'TERM_P', 160, yP, True, rt, tm(cin[0]), link=VID['clk_term'], members=term['members'])
-    term_marker(V, 'TERM_N', 160, yN, False, rt, tm(cin[1]), link=VID['clk_term'], members=[])
-    V.dot(160, yP); V.dot(160, yN)
-    V.wire([(160, yP), (160, yP - 12)], cls='clock'); V.wire([(160, yN), (160, yN + 12)], cls='clock')
-    buf = [g for g in groups if g['role'] == 'cml_buffer'][0]
-    bm = buf['members']
-    E = lambda m: el(cell, m)
-    ins = sorted([m for m in bm if ROLES[cell][m]['role'] == 'input'], key=lambda m: cp.index(E(m)['terms']['g']))
-    oP = E(ins[0])['terms'][topbot(cell, ins[0])[0]]; oN = E(ins[1])['terms'][topbot(cell, ins[1])[0]]
-    def gt(net):
-        return [[(m, t) for m in bm for t, n in E(m)['terms'].items() if n == net and t != 'b']]
-    bbub, bpm = polarity_marks(cell, [(cin[0], cin[0]), (cin[1], cin[1])], [(oP, oP), (oN, oN)], members=set(bm), group_role='cml_buffer')
-    tri(V, 'BUF', 240, 210, 'BUF', '', ins=[(cin[0], -10, gt(cin[0])), (cin[1], 10, gt(cin[1]))], outs=[(oP, -10, gt(oP)), (oN, 10, gt(oN))],
-        link=VID['clk_buf'], members=bm, sub='CML buffer (MP/MN_B1*, MB_B1)', cls='clock', bubbles=bbub, pm=bpm, vblock=True)
-    V.wire([(110, yP), (220, yP)], cls='clock'); V.wire([(110, yN), (220, yN)], cls='clock')
-    # latches: master fed by buffer output
-    lat = [i for i in insts if rl[i] == 'latch']
-    m_ = [i for i in lat if oP in insts[i]['pins'].values() and set(insts[i]['pins'].values()) & {oP, oN}
-          and insts[i]['pins'][cells[insts[i]['cell']]['ports'][0]] in (oP, oN)][0]
-    s_ = [i for i in lat if i != m_][0]
-    lp = cells[insts[m_]['cell']]['ports']
-    lck = [p for p in lp if CN[insts[m_]['cell']][p] == ['clock']]
-    lq = [p for p in lp if p not in lp[:2] and p not in lck and ('data' in CN[insts[m_]['cell']][p] or 'clock' in CN[insts[m_]['cell']][p])]
-    me = insts[m_]; se_ = insts[s_]
-    for i, x in ((m_, 460), (s_, 700)):
-        e = insts[i]
-        lbub, _ = polarity_marks(e['cell'], [(lp[0], lp[0]), (lp[1], lp[1])], [(lq[0], lq[0]), (lq[1], lq[1])])
-        box(V, i, x, 160, 100, 100, 'LATCH', i, bubbles=lbub, left=[(lp[0], 200, inst_terms(i, lp[0]), 'clock'), (lp[1], 220, inst_terms(i, lp[1]), 'clock')],
-            right=[(lq[0], 200, inst_terms(i, lq[0]), 'clock'), (lq[1], 220, inst_terms(i, lq[1]), 'clock')],
-            bottom=[(lck[0], x + 30, inst_terms(i, lck[0]), 'clock'), (lck[1], x + 70, inst_terms(i, lck[1]), 'clock')], link='u_latch', members=[i],
-            sub=e['cell'])
-        sm = [s for s in V.symbols if s['id'] == i][0]
-        for k, p in enumerate([p for p in sm['pins'] if p['name'] in lck]):
-            stub_label(V, p, e['pins'][p['name']], 'down', cls='clock', L=20, side='left' if k == 0 else 'right')
-    # buffer -> master data inputs (as connected; swap -> one X crossing)
-    dP, dN = me['pins'][lp[0]], me['pins'][lp[1]]
-    yof = {oP: yP, oN: yN}
-    for net, ytarget in ((dP, 200), (dN, 220)):
-        ys = yof[net]
-        if ys == ytarget:
-            V.wire([(340, ys), (440, ys)], cls='clock')
-        else:
-            # plan §1.4-7: line ends of different nets on one straight line stay >= 40 px apart
-            V.wire([(340, ys), (360, ys)], cls='clock')
-            stub_label(V, {'x': 440, 'y': ytarget}, net, 'left', cls='clock', L=40)
-    V.netlabel(oP, 350, yP, tx=342, ty=yP - 8, anchor='start'); V.netlabel(oN, 350, yN, tx=342, ty=yN + 9, anchor='start')
-    # master Q -> slave D, branches to ports + INV chains
-    invs = [i for i in insts if rl[i] == 'inverter']
-    def chain_from(net):
-        out = []; cur = net
-        while True:
-            nx = [i for i in invs if insts[i]['pins']['A'] == cur]
-            if not nx:
-                return out, cur
-            out.append(nx[0]); cur = insts[nx[0]]['pins']['Y']
-    def draw_inv_chain(net, x, y, up):
-        ch, endnet = chain_from(net)
-        xx = x
-        V.wire([(x - 20, y), (x, y)], cls='clock') if False else None
-        for k, i in enumerate(ch):
-            inv(V, i, xx + 20, y, i, inst_terms(i, 'A'), inst_terms(i, 'Y'), link='u_inv', members=[i], flip_label=up, cls='clock')
-            if k > 0:
-                pass
-            xx += 102
-        return ch, endnet
-    qP, qN = me['pins'][lq[0]], me['pins'][lq[1]]
-    for net, y, yb, yi, up in ((qP, 200, 100, 60, True), (qN, 220, 320, 360, False)):
-        V.wire([(580, y), (680, y)], cls='clock')
-        V.dot(620, y)
-        V.wire([(620, y), (620, yb), (1150, yb)], cls='clock')
-        V.port(net, 1150, yb, d='right', io='out', cls='clock')
-        V.dot(660, yb)
-        V.wire([(660, yb), (660, yi), (680, yi)], cls='clock')
-        ch, endnet = chain_from(net)
-        xx = 700
-        for k, i in enumerate(ch):
-            inv(V, i, xx, yi, i, inst_terms(i, 'A'), inst_terms(i, 'Y'), link='u_inv', members=[i], flip_label=up, cls='clock')
-            if k > 0:
-                V.wire([(xx - 40, yi), (xx - 20, yi)], cls='clock')
-                V.netlabel(insts[ch[k - 1]]['pins']['Y'], xx - 30, yi, tx=xx - 30, ty=yi + (9 if up else -9), anchor='middle', size=9) if False else None
-            xx += 102
-        stub_label(V, {'x': xx - 40, 'y': yi}, endnet, 'right', cls='clock', L=24, side='above' if up else 'below')
-    sP, sN = se_['pins'][lq[0]], se_['pins'][lq[1]]
-    for net, y, yi, up in ((sP, 200, 150, True), (sN, 220, 270, False)):
-        V.wire([(820, y), (1150, y)], cls='clock')
-        V.port(net, 1150, y, d='right', io='out', cls='clock')
-        V.dot(860, y)
-        V.wire([(860, y), (860, yi), (880, yi)], cls='clock')
-        ch, endnet = chain_from(net)
-        xx = 900
-        for k, i in enumerate(ch):
-            inv(V, i, xx, yi, i, inst_terms(i, 'A'), inst_terms(i, 'Y'), link='u_inv', members=[i], flip_label=up, cls='clock')
-            if k > 0:
-                V.wire([(xx - 40, yi), (xx - 20, yi)], cls='clock')
-            xx += 102
-        stub_label(V, {'x': xx - 40, 'y': yi}, endnet, 'right', cls='clock', L=24, side='above' if up else 'below')
-    V.text(40, 455, '주의: 이름은 DIV(÷2)이지만 구조상 귀환 루프 없음 → LATCH 2개 직렬로 그대로 그림 (Q2). INV 체인 출력은 연결 없음 — 미사용 출력, 짧은 선 + 이름표 (§3.5-4).', size=10, color='#a33', cls='note')
-    V.omitted = hidden_list(cell)
-    return V
-
-
-def view_sa_block(cell, core_members):
-    c = cells[cell]
-    insts = {e['name']: e for e in c['elems'] if e['kind'] == 'inst'}
-    B = A['block']; rl = {i: B[e['cell']]['role'] for i, e in insts.items()}
-    cp = c['ports']
-    V = new_view('b_sa', cell, 'block', '%s — 블록 레벨' % cell, 900, 400)
-    E = lambda m: el(cell, m)
-    r = ROLES[cell]
-    ins = sorted([m for m in core_members if r[m]['role'] == 'input' and E(m)['type'] == 'n'], key=lambda m: cp.index(E(m)['terms']['g']))
-    clk = [m for m in core_members if r[m]['role'] == 'clocked_tail'][0]
-    crossN = [m for m in core_members if r[m]['role'] == 'cross' and E(m)['type'] == 'n']
-    # outputs of the core: nets that leave the group (to sub instances)
-    used = collections.Counter()
-    for e in c['elems']:
-        if e['kind'] == 'inst':
-            for n in e['pins'].values():
-                used[n] += 1
-    outs = [n for n in sorted({E(m)['terms']['d'] for m in crossN}) if used[n]]
-    sr = [i for i in insts if set(insts[i]['pins'].values()) & set(outs)][0]
-    srp = cells[insts[sr]['cell']]['ports']
-    outs.sort(key=lambda n: [insts[sr]['pins'][p] for p in srp].index(n))
-    def gt(net):
-        return [[(m, t) for m in core_members for t, n in E(m)['terms'].items() if n == net and t != 'b']]
-    inP, inN = E(ins[0])['terms']['g'], E(ins[1])['terms']['g']
-    ck = E(clk)['terms']['g']
-    cbub, cpm = polarity_marks(cell, [(inP, inP), (inN, inN)], [(outs[0], outs[0]), (outs[1], outs[1])], members=set(core_members), group_role='strongarm')
-    tri(V, 'SA_CORE', 200, 210, 'SA', 'StrongARM core', ins=[(inP, -10, gt(inP)), (inN, 10, gt(inN))], outs=[(outs[0], -10, gt(outs[0])), (outs[1], 10, gt(outs[1]))],
-        bottom=[(ck, 30, gt(ck), 'clock')], link=VID['sa_core'], members=core_members, clock_mark=True, bubbles=cbub, pm=cpm, vblock=True)
-    V.wire([(110, 200), (180, 200)], cls='data'); V.port(inP, 110, 200, d='right', io='in')
-    V.wire([(110, 220), (180, 220)], cls='data'); V.port(inN, 110, 220, d='right', io='in')
-    V.wire([(230, 275), (230, 300)], cls='clock'); V.port(ck, 230, 300, d='up', io='in', cls='clock')
-    srq = [p for p in srp if 'data' in CN[insts[sr]['cell']][p] and insts[sr]['pins'][p] not in outs]
-    rbub, _ = polarity_marks(insts[sr]['cell'], [(srp[0], srp[0]), (srp[1], srp[1])], [(srq[0], srq[0]), (srq[1], srq[1])])
-    box(V, sr, 380, 160, 110, 100, insts[sr]['cell'], sr, left=[(srp[0], 200, inst_terms(sr, srp[0]), 'data'), (srp[1], 220, inst_terms(sr, srp[1]), 'data')],
-        right=[(srq[0], 200, inst_terms(sr, srq[0]), 'data'), (srq[1], 220, inst_terms(sr, srq[1]), 'data')], link='b_sr', members=[sr], bubbles=rbub)
-    for k, n in enumerate(outs):
-        y = 200 + 20 * k
-        V.wire([(300, y), (360, y)], cls='data')
-        V.netlabel(n, 330, y, tx=330, ty=y - 8 if k == 0 else y + 9, anchor='middle')
-    invs = [i for i in insts if rl[i] == 'inverter']
-    for k, (p, y, yi, up) in enumerate(((srq[0], 200, 140, True), (srq[1], 220, 280, False))):
-        net = insts[sr]['pins'][p]
-        V.wire([(510, y), (760, y)], cls='data'); V.port(net, 760, y, d='right', io='out')
-        V.dot(560, y)
-        V.wire([(560, y), (560, yi), (580, yi)], cls='data')
-        iv = [i for i in invs if insts[i]['pins']['A'] == net][0]
-        inv(V, iv, 600, yi, iv, inst_terms(iv, 'A'), inst_terms(iv, 'Y'), link='u_inv', members=[iv], flip_label=up)
-        stub_label(V, {'x': 662, 'y': yi}, insts[iv]['pins']['Y'], 'right', L=30, side='above' if up else 'below')
-    V.text(40, 370, '출력 버퍼 %s 의 출력은 연결 없음 — 미사용 출력, 짧은 선 + 이름표 (§3.5-4)' % ', '.join(invs), size=10, color='#555', cls='note')
-    V.omitted = hidden_list(cell)
-    return V
-
-
-def view_dff(cell):
-    c = cells[cell]
-    insts = [e for e in c['elems'] if e['kind'] == 'inst']
-    cp = c['ports']
-    sub = insts[0]['cell']; lp = cells[sub]['ports']
-    lck = [p for p in lp if CN[sub][p] == ['clock']]
-    lq = [p for p in lp if p not in lp[:2] and p not in lck and ('data' in CN[sub][p] or 'clock' in CN[sub][p])]
-    # master = the one whose D pins are cell ports
-    m_ = [e for e in insts if e['pins'][lp[0]] in cp][0]; s_ = [e for e in insts if e is not m_][0]
-    V = new_view('b_dff', cell, 'block', '%s — 블록 레벨 (master-slave)' % cell, 760, 420)
-    for e, x in ((m_, 200), (s_, 420)):
-        lbub, _ = polarity_marks(sub, [(lp[0], lp[0]), (lp[1], lp[1])], [(lq[0], lq[0]), (lq[1], lq[1])])
-        box(V, e['name'], x, 160, 100, 100, 'LATCH', e['name'], bubbles=lbub, left=[(lp[0], 200, inst_terms(e['name'], lp[0]), 'data'), (lp[1], 220, inst_terms(e['name'], lp[1]), 'data')],
-            right=[(lq[0], 200, inst_terms(e['name'], lq[0]), 'data'), (lq[1], 220, inst_terms(e['name'], lq[1]), 'data')],
-            bottom=[(lck[0], x + 30, inst_terms(e['name'], lck[0]), 'clock'), (lck[1], x + 70, inst_terms(e['name'], lck[1]), 'clock')], link='u_latch',
-            members=[e['name']], sub=sub)
-    V.wire([(110, 200), (180, 200)], cls='data'); V.port(m_['pins'][lp[0]], 110, 200, d='right', io='in')
-    V.wire([(110, 220), (180, 220)], cls='data'); V.port(m_['pins'][lp[1]], 110, 220, d='right', io='in')
-    V.wire([(320, 200), (400, 200)], cls='data'); V.netlabel(m_['pins'][lq[0]], 360, 200, tx=360, ty=192, anchor='middle')
-    V.wire([(320, 220), (400, 220)], cls='data'); V.netlabel(m_['pins'][lq[1]], 360, 220, tx=360, ty=229, anchor='middle')
-    V.wire([(540, 200), (620, 200)], cls='data'); V.port(s_['pins'][lq[0]], 620, 200, d='right', io='out')
-    V.wire([(540, 220), (620, 220)], cls='data'); V.port(s_['pins'][lq[1]], 620, 220, d='right', io='out')
-    # clocks: the net on the slave CLK pin is the trunk (wired); the other phase by labels
-    ck = s_['pins'][lck[0]]; ckb = s_['pins'][lck[1]]
-    xs = []
-    for e, x in ((m_, 200), (s_, 420)):
-        sm = [s for s in V.symbols if s['id'] == e['name']][0]
-        for p in sm['pins']:
-            if p['name'] in lck:
-                if e['pins'][p['name']] == ck:
-                    xs.append(p['x'])
-                else:
-                    stub_label(V, p, e['pins'][p['name']], 'down', cls='clock', L=20, side='left' if p['name'] == lck[0] else 'right')
-    yT = 330
-    V.wire([(150, yT), (max(xs), yT)], cls='clock')
-    for x in xs:
-        V.wire([(x, yT), (x, 280)], cls='clock')
-        if x != max(xs):
-            V.dot(x, yT)
-    V.port(ck, 150, yT, d='right', io='in', cls='clock')
-    V.wire([(150, 370), (190, 370)], cls='clock'); V.port(ckb, 150, 370, d='right', io='in', cls='clock')
-    V.omitted = hidden_list(cell)
-    return V
-
-
-def view_sr(cell):
-    c = cells[cell]
-    insts = [e for e in c['elems'] if e['kind'] == 'inst']
-    cp = c['ports']
-    sub = insts[0]['cell']; gp = cells[sub]['ports']
-    gin = [p for p in gp if 'data' in CN[sub][p]][:2]; gout = [p for p in gp if 'data' in CN[sub][p]][2]
-    x1 = [e for e in insts if e['pins'][gin[0]] == cp[0]][0]; x2 = [e for e in insts if e is not x1][0]
-    V = new_view('b_sr', cell, 'block', '%s — 블록 레벨 (교차 결합 %s)' % (cell, sub), 640, 420)
-    # x1 on top (A upper, B lower); x2 mirrored (B upper, A lower); NAND output bubble from the structural polarity (§3.4-6)
-    nb1, _ = polarity_marks(sub, [(gin[0], gin[0]), (gin[1], gin[1])], [(gout, gout)])
-    nb2, _ = polarity_marks(sub, [(gin[1], gin[1]), (gin[0], gin[0])], [(gout, gout)])
-    box(V, x1['name'], 250, 130, 90, 70, sub, x1['name'], left=[(gin[0], 150, inst_terms(x1['name'], gin[0]), 'data'), (gin[1], 180, inst_terms(x1['name'], gin[1]), 'data')],
-        right=[(gout, 165, inst_terms(x1['name'], gout), 'data')], link='u_nand', members=[x1['name']], bubbles=nb1)
-    box(V, x2['name'], 250, 260, 90, 70, sub, x2['name'], left=[(gin[1], 280, inst_terms(x2['name'], gin[1]), 'data'), (gin[0], 310, inst_terms(x2['name'], gin[0]), 'data')],
-        right=[(gout, 295, inst_terms(x2['name'], gout), 'data')], link='u_nand', members=[x2['name']], bubbles=nb2)
-    V.wire([(110, 150), (230, 150)], cls='data'); V.port(x1['pins'][gin[0]], 110, 150, d='right', io='in')
-    V.wire([(110, 310), (230, 310)], cls='data'); V.port(x2['pins'][gin[0]], 110, 310, d='right', io='in')
-    V.wire([(360, 165), (520, 165)], cls='data'); V.port(x1['pins'][gout], 520, 165, d='right', io='out')
-    V.wire([(360, 295), (520, 295)], cls='data'); V.port(x2['pins'][gout], 520, 295, d='right', io='out')
-    stub_label(V, {'x': 230, 'y': 280}, x1['pins'][gout], 'left', L=40, side='below')
-    stub_label(V, {'x': 230, 'y': 180}, x2['pins'][gout], 'left', L=40)
-    V.symmetry.append({'axis': 230, 'orient': 'h', 'pairs': [[x1['name'], x2['name']]], 'self': [], 'x0': 100, 'x1': 600, 'exempt_wires': []})
-    V.omitted = hidden_list(cell)
+    finalize_omitted(V)
     return V
 
 
 # =====================================================================================
-def main():
-    top = A['top']
-    B = A['block']
-    G = A['groups']
-    view_top(top)
-    slice_cell = [e['cell'] for e in cells[top]['elems'] if e['kind'] == 'inst' and B[e['cell']]['role'] == 'composite' and 'important_control' in str(CN[e['cell']])][0]
-    view_slice(slice_cell)
-    clk_cell = [e['cell'] for e in cells[top]['elems'] if e['kind'] == 'inst' and B[e['cell']]['role'] == 'composite' and e['cell'] != slice_cell][0]
-    view_clk(clk_cell)
-    for c, b in B.items():
-        if not INST.get(c):
-            continue
-        if b['role'] == 'ctle':
-            view_ctle(c)
-        elif b['role'] == 'vga':
-            view_multipair(c, VID['vga'], 'vga')
-        elif b['role'] == 'summer':
-            view_multipair(c, 'u_summer', 'summer')
-        elif b['role'] == 'latch':
-            view_cml_latch(c)
-        elif b['role'] == 'dff':
-            view_dff(c)
-        elif b['role'] == 'inverter':
-            view_inv(c)
-        elif b['role'] in ('nand', 'nor', 'static_cmos_gate'):
-            view_nand(c)
-        elif b['role'] in ('sr_latch', 'cross_coupled_gates'):
-            view_sr(c)
-    for c, gs in G.items():
-        for g in gs:
-            if g['role'] == 'strongarm':
-                view_sa_block(c, g['members'])
-                view_strongarm(c, g['members'])
-            if g['role'] == 'cml_buffer' and B[c]['role'] == 'composite':
-                view_cml_buffer(c, g['members'], VID['clk_buf'])
-            if g['role'] == 'termination' and c != top:
-                view_termination(c, g['members'], VID['clk_term'], '%s — unit level (클럭 입력 종단, 소자 그대로)' % c)
-            if g['role'] == 'termination_esd':
-                view_termination(c, g['members'], VID['top_term'], '%s — unit level (입력 종단 + ESD, 소자 그대로)' % c)
-        tgs = [g['members'] for g in gs if g['role'] == 'tg']
-        if tgs:
-            view_tg(c, tgs, VID['top_tg'])
-    order_ids = [VID[k] for k in ('top', 'slice', 'clk', 'top_term', 'top_tg', 'ctle', 'vga', 'summer', 'sa', 'sa_core', 'sr', 'nand', 'inv',
-                                  'latch', 'dff', 'clk_term', 'clk_buf')]
-    vs = sorted(VIEWS, key=lambda v: order_ids.index(v.id) if v.id in order_ids else 99)
-    for v in vs:
-        finalize_omitted(v)
-    out = []
-    for v in vs:
-        d = dict(v.__dict__)
-        d.pop('_tid', None)
-        out.append(d)
-    json.dump(out, open(W + '/scenes.json', 'w'), indent=0, default=list, ensure_ascii=False)
-    print('views:', [v.id for v in vs])
+# 8. VIEW_ODT_DEC: u_odt_dec
+# =====================================================================================
+def view_odt_dec():
+    cell = 'odt_dec'
+    V = new_view('u_odt_dec', cell, 'unit', 'ODT_DEC — unit level (ODT 디코더)', 920, 560)
+    # xi0..xi2 (nand2_a): odt_en, rtt<i> -> net2<i>
+    # xi3..xi5 (ls_lh): net2<i> -> enb<i>
+    y_lanes = [140, 270, 400]
+    for k, idx in enumerate(['2', '1', '0']):
+        y = y_lanes[k]
+        box(V, 'xi%d' % (2 - k), 260, y - 35, 90, 70, 'NAND2', 'xi%d' % (2 - k),
+            left=[('odt_en', y - 15, [[('xi%d' % (2 - k), 'a')]], 'data'), ('rtt<%s>' % idx, y + 15, [[('xi%d' % (2 - k), 'b')]], 'data')],
+            right=[('net2%s' % idx, y, [[('xi%d' % (2 - k), 'y')]], 'data')],
+            bubbles=('net2%s' % idx,), link='u_nand', members=['xi%d' % (2 - k)])
+
+        box(V, 'xi%d' % (5 - k), 480, y - 35, 90, 70, 'LS', 'xi%d (ls_lh)' % (5 - k),
+            left=[('in', y, [[('xi%d' % (5 - k), 'in')]], 'data')],
+            right=[('out', y, [[('xi%d' % (5 - k), 'out')]], 'data')],
+            link='u_ls', members=['xi%d' % (5 - k)])
+
+        V.port('rtt<%s>' % idx, 80, y + 15, d='right', io='in')
+        V.wire([(80, y + 15), (240, y + 15)], cls='data')
+
+        V.wire([(370, y), (460, y)], cls='data')
+        V.netlabel('net2%s' % idx, 400, y - 8)
+
+        V.wire([(590, y), (700, y)], cls='data')
+        V.port('enb<%s>' % idx, 700, y, d='right', io='out')
+
+    # Common odt_en port
+    V.port('odt_en', 80, 80, d='right', io='in')
+    V.wire([(80, 80), (160, 80), (160, y_lanes[2] - 15)], cls='data')
+    for y in y_lanes:
+        V.wire([(160, y - 15), (240, y - 15)], cls='data'); V.dot(160, y - 15)
+
+    finalize_omitted(V)
+    return V
 
 
-if __name__ == '__main__':
-    main()
+# =====================================================================================
+# 9. VIEW_LS: u_ls (ls_lh)
+# =====================================================================================
+def view_ls():
+    cell = 'ls_lh'
+    V = new_view('u_ls', cell, 'unit', 'LS_LH — unit level (Level Shifter, 대칭)', 900, 640)
+    rail(V, 80, 820, 70, 'vddq', 'VDDQ')
+    rail(V, 80, 820, 570, 'vss', 'VSS')
+    AX = 450
+
+    V.port('in', 80, 300, d='right', io='in')
+    V.port('out', 820, 300, d='right', io='out')
+
+    finalize_omitted(V)
+    return V
+
+
+# =====================================================================================
+# 10. VIEW_NOR: u_nor (nor2_c)
+# =====================================================================================
+def view_nor():
+    cell = 'nor2_c'
+    V = new_view('u_nor', cell, 'unit', 'NOR2_C — unit level (CMOS NOR 게이트)', 720, 580)
+    rail(V, 80, 640, 70, 'vdd', 'VDD')
+    rail(V, 80, 640, 510, 'vss', 'VSS')
+    V.port('a', 80, 200, d='right', io='in')
+    V.port('b', 80, 320, d='right', io='in')
+    V.port('y', 640, 260, d='right', io='out')
+
+    finalize_omitted(V)
+    return V
+
+
+# =====================================================================================
+# 11. VIEW_NAND: u_nand (nand2_a / nand2_c)
+# =====================================================================================
+def view_nand():
+    cell = 'nand2_a'
+    V = new_view('u_nand', cell, 'unit', 'NAND2 — unit level (CMOS NAND 게이트)', 720, 580)
+    rail(V, 80, 640, 70, 'vdd', 'VDD')
+    rail(V, 80, 640, 510, 'vss', 'VSS')
+    V.port('a', 80, 200, d='right', io='in')
+    V.port('b', 80, 320, d='right', io='in')
+    V.port('y', 640, 260, d='right', io='out')
+
+    finalize_omitted(V)
+    return V
+
+
+# =====================================================================================
+# 12. VIEW_INV: u_inv (inv_a / inv_c)
+# =====================================================================================
+def view_inv():
+    cell = 'inv_a'
+    V = new_view('u_inv', cell, 'unit', 'INV — unit level (CMOS 인버터)', 640, 520)
+    rail(V, 80, 560, 70, 'vdd', 'VDD')
+    rail(V, 80, 560, 450, 'vss', 'VSS')
+    V.port('a', 80, 260, d='right', io='in')
+    V.port('y', 560, 260, d='right', io='out')
+
+    finalize_omitted(V)
+    return V
+
+
+# Build all views
+view_top()
+view_term()
+view_pre()
+view_dfe_sum()
+view_sa_dt()
+view_sr_nor()
+view_ck_gbuf()
+view_odt_dec()
+view_ls()
+view_nor()
+view_nand()
+view_inv()
+
+# Save scenes.json
+def scene_to_dict(V):
+    return {
+        'id': V.id, 'cell': V.cell, 'level': V.level, 'title': V.title,
+        'w': V.w, 'h': V.h,
+        'draw': V.draw, 'symbols': V.symbols, 'wires': V.wires, 'dots': V.dots,
+        'labels': V.labels, 'texts': V.texts, 'hot': V.hot,
+        'symmetry': V.symmetry, 'allowed_cross': V.allowed_cross,
+        'notes': V.notes, 'omitted': V.omitted, 'scope': V.scope,
+        'extra_checks': V.extra_checks
+    }
+
+json.dump([scene_to_dict(v) for v in VIEWS], open(W + '/scenes.json', 'w'), indent=1)
+print("Views created: %d views" % len(VIEWS))
+print([v.id for v in VIEWS])

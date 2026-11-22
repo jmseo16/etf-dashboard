@@ -132,6 +132,51 @@
   "ofo_n<1>",
   "ofo_n<0>"
  ],
+ "_general_control_buses": {
+  "ofe_p<1:0>": {
+   "bits": [
+    "ofe_p<1>",
+    "ofe_p<0>"
+   ],
+   "K": "K7",
+   "function": "Even SA P측 오프셋 트림",
+   "endpoint_pin": "xi28/mn11.g",
+   "source": "port"
+  },
+  "ofe_n<1:0>": {
+   "bits": [
+    "ofe_n<1>",
+    "ofe_n<0>"
+   ],
+   "K": "K7",
+   "function": "Even SA N측 오프셋 트림",
+   "endpoint_pin": "xi28/mn7.g",
+   "source": "port"
+  },
+  "ofo_p<1:0>": {
+   "bits": [
+    "ofo_p<1>",
+    "ofo_p<0>"
+   ],
+   "K": "K7",
+   "function": "Odd SA P측 오프셋 트림",
+   "endpoint_pin": "xi29/mn11.g",
+   "source": "port"
+  },
+  "ofo_n<1:0>": {
+   "bits": [
+    "ofo_n<1>",
+    "ofo_n<0>"
+   ],
+   "K": "K7",
+   "function": "Odd SA N측 오프셋 트림",
+   "endpoint_pin": "xi29/mn7.g",
+   "source": "port"
+  }
+ },
+ "_bias": [
+  "ibias"
+ ],
  "_questions_and_assumed_answers": [
   {
    "id": "Q1",

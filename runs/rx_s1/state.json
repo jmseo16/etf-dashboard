@@ -1,11 +1,13 @@
 {
   "job": "rx_s1",
-  "step": "2_review_classify",
-  "round": 0,
+  "step": "4_draw",
+  "round": 1,
   "max_rounds": 3,
-  "next": "claude",
+  "next": "verify",
   "history": [
     ["2026-11-22T03:11:00", "1_classify", "start"],
-    ["2026-11-22T03:17:00", "2_review_classify", "glm draft done"]
+    ["2026-11-22T03:17:00", "2_review_classify", "glm draft done"],
+    ["2026-11-22T03:17:30", "3_draw", "classify review done, start draw"],
+    ["2026-11-22T03:25:00", "4_draw", "initial drawing 12 views done"]
   ]
 }

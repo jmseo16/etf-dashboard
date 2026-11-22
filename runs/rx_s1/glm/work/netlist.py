@@ -59,6 +59,11 @@ def parse(path):
                 val = tok[3] if len(tok) > 3 else ''
                 cur['elems'].append({'name': name, 'kind': {'R': 'res', 'C': 'cap', 'L': 'ind'}[k],
                                      'terms': {'p': n1, 'n': n2}, 'value': val})
+            elif k == 'D':
+                n1, n2 = tok[1:3]
+                model = tok[3] if len(tok) > 3 else ''
+                cur['elems'].append({'name': name, 'kind': 'diode',
+                                     'terms': {'p': n1, 'n': n2}, 'model': model})
             elif k == 'X':
                 # last token without '=' is the subckt name
                 toks = [t for t in tok[1:] if '=' not in t]
