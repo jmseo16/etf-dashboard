@@ -1,0 +1,22 @@
+{
+  "hs_inputs": ["PAD", "LB_P", "LB_N"],
+  "clock_inputs": ["CK", "CKB"],
+  "hs_outputs": ["DOUT_E", "DOUT_O"],
+  "important_controls": ["RX_EN", "LB_EN", "ODT_EN", "RTT<2:0>", "TAP<3:0>", "TAP_SGN"],
+  "show_bias": [],
+  "hide": ["OFE_P<1:0>", "OFE_N<1:0>", "OFO_P<1:0>", "OFO_N<1:0>", "IBIAS", "RX_BIAS"],
+  "reference_inputs": ["VREF"],
+  "block_roles": {
+    "esd_dq": "esd",
+    "odt_pu": "termination",
+    "odt_dec": "dec",
+    "ls_lh": "ls",
+    "rx_pre": "general",
+    "dfe_sum": "summer",
+    "sa_dt": "comparator_strongarm",
+    "sr_nor": "sr_latch",
+    "ck_gbuf": "composite_logic_clock_gate",
+    "rx_bias": "bias_hidden"
+  },
+  "assumed_answers_pending_user": true
+}
