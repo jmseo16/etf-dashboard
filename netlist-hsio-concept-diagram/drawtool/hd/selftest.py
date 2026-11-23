@@ -59,6 +59,23 @@ def mutations(S):
                     p['y'] = y1 + 20
         yield 'put two facing pins 20 px out of line', ('jog', 'crossing', 'short', 'text_on_wire', 'wire_through_symbol', 'tee_without_dot', 'four_way'), M
         break
+    if S['ports']:
+        # a symbol drawn further out than a port, in the direction the port points
+        M = copy.deepcopy(S)
+        p_ = M['ports'][0]
+        xs_ = [q[0] for q in p_['shape']]
+        ys_ = [q[1] for q in p_['shape']]
+        x, y = p_['x'], p_['y']
+        if max(xs_) - min(xs_) > max(ys_) - min(ys_):
+            dx = -1 if min(xs_) < x else 1
+            bx = [x + dx * 60 - 20, y - 20, x + dx * 60 + 20, y + 20]
+        else:
+            dy = -1 if min(ys_) < y else 1
+            bx = [x - 20, y + dy * 60 - 20, x + 20, y + dy * 60 + 20]
+        bx = [min(bx[0], bx[2]), min(bx[1], bx[3]), max(bx[0], bx[2]), max(bx[1], bx[3])]
+        M['symbols'].append({'id': 'injected', 'kind': 'inst', 'members': [], 'cell': '', 'target': '', 'box': bx,
+                             'shapes': [['rect', bx[0], bx[1], bx[2] - bx[0], bx[3] - bx[1]]], 'pins': [], 'x': bx[0], 'y': bx[1]})
+        yield 'draw a symbol beyond a port', ('port_facing_in',), M
     if S['dots']:
         M = copy.deepcopy(S)
         del M['dots'][0]

@@ -109,20 +109,23 @@ def build(cells, top, A, ann=None):
                 if out:
                     break
             d[port] = 'out' if out else 'in'
-        # a cell made only of pass switches (a mux): the port most switches meet at is the output, the others are inputs
+        # pass switches (a mux): of the ports their channels join, the one most switches meet at is the output
         c_ = cells[cname]
-        mos_ = [e for e in c_.devs if e.kind == 'm']
-        if mos_ and len(mos_) == len(c_.devs) and cname != top and \
-                not any(e.pins['d'] in rails_l[cname] or e.pins['s'] in rails_l[cname] for e in mos_):
+        rl_ = rails_l[cname]
+        pas_ = [e for e in c_.devs if e.kind == 'm' and e.pins['d'] not in rl_ and e.pins['s'] not in rl_ and e.pins['d'] != e.pins['s']
+                and e.pins['d'] in d and e.pins['s'] in d]     # a switch between two ports of the cell
+        driven_ = set(e.pins['d'] for e in c_.devs if e.kind == 'm' and (e.pins['s'] in rl_)) | \
+            set(n for e in c_.devs if e.kind == 'x' for p_, n in e.pins.items() if pdir.get(e.model, {}).get(p_) == 'out')
+        if pas_ and cname != top:
             cnt = defaultdict(int)
-            for e in mos_:
+            for e in pas_:
                 for t in ('d', 's'):
-                    if e.pins[t] in d:
+                    if e.pins[t] in d and e.pins[t] not in driven_:
                         cnt[e.pins[t]] += 1
-            if cnt:
+            if len(cnt) > 1:
                 top_n = max(cnt.values())
                 best = [x for x, v in cnt.items() if v == top_n]
-                if len(best) == 1 and len(cnt) > 1:
+                if len(best) == 1:
                     for x in cnt:
                         d[x] = 'out' if x == best[0] else 'in'
         pdir[cname] = d

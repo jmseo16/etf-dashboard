@@ -16,6 +16,8 @@ def svg(S, show_size=True):
         if k == 'circle':
             return '<circle cx="%s" cy="%s" r="%s" %s fill="#fff" %s/>' % (v[1], v[2], v[3], st.replace('fill="none"', ''), extra)
         pts = ' '.join('%s,%s' % (x, y) for x, y in v[1])
+        if k == 'fpoly':
+            return '<polygon points="%s" stroke="#111" stroke-width="1" stroke-linejoin="round" fill="#111" %s/>' % (pts, extra)
         if k == 'poly':
             return '<polygon points="%s" %s fill="#fff" %s/>' % (pts, st.replace('fill="none"', ''), extra)
         return '<polyline points="%s" %s %s/>' % (pts, st, extra)

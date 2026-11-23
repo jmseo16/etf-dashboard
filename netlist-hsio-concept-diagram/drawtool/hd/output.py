@@ -177,6 +177,13 @@ def pptx(scenes, summary_lines, path):
                 r = sl.shapes.add_shape(MSO_SHAPE.OVAL, X(v[1] - v[3]), Y(v[2] - v[3]), Emu(int(2 * v[3] * k)), Emu(int(2 * v[3] * k)))
                 r.fill.background()
                 r.line.color.rgb = RGBColor(0x11, 0x11, 0x11)
+            elif v[0] == 'fpoly':
+                fb = sl.shapes.build_freeform(X(v[1][0][0]), Y(v[1][0][1]), scale=1.0)
+                fb.add_line_segments([(X(a), Y(b)) for a, b in v[1][1:]], close=True)
+                f = fb.convert_to_shape()
+                f.fill.solid()
+                f.fill.fore_color.rgb = RGBColor(0x11, 0x11, 0x11)
+                f.line.color.rgb = RGBColor(0x11, 0x11, 0x11)
             else:
                 pts = v[1] + ([v[1][0]] if v[0] == 'poly' else [])
                 for a, b in zip(pts, pts[1:]):

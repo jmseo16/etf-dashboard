@@ -6,7 +6,7 @@ from collections import defaultdict
 
 CONN_KEYS = ('open', 'short', 'pin_open', 'dangling_end', 'tee_without_dot', 'width_mismatch')
 QUAL_KEYS = ('avoidable_bend', 'jog', 'detour', 'short_jog', 'crossing', 'wire_through_symbol', 'text_overlap', 'text_on_wire',
-             'text_on_symbol', 'four_way', 'lonely_label', 'empty_band', 'placement_problem')
+             'text_on_symbol', 'four_way', 'lonely_label', 'empty_band', 'port_facing_in', 'placement_problem')
 
 
 def scene_sha(S):
@@ -339,7 +339,7 @@ def check(S, cell, level):
             elif v[0] == 'circle':
                 strokes += [(v[1] - v[3], v[2], v[1] + v[3], v[2]), (v[1], v[2] - v[3], v[1], v[2] + v[3])]
             else:
-                pts = v[1] + ([v[1][0]] if v[0] == 'poly' else [])
+                pts = v[1] + ([v[1][0]] if v[0] in ('poly', 'fpoly') else [])
                 strokes += [(a_[0], a_[1], b_[0], b_[1]) for a_, b_ in zip(pts, pts[1:])]
     for tg in S['tags']:
         for v in tg['shapes']:
@@ -383,6 +383,25 @@ def check(S, cell, level):
                 if lo_ - top_ > limit:
                     R['empty_band'].append('%s %d–%d: %d px with no symbol or text' % ('y' if ax else 'x', top_, lo_, lo_ - top_))
                 top_ = max(top_, hi_)
+    # ports face the outside: nothing drawn further out in the direction the port points
+    sym_boxes = [sym['box'] for sym in S['symbols']]
+    for p_ in S['ports']:
+        xs_ = [q[0] for q in p_['shape']]
+        ys_ = [q[1] for q in p_['shape']]
+        px_, py_ = p_['x'], p_['y']
+        if max(xs_) - min(xs_) > max(ys_) - min(ys_):
+            d_ = (-1 if min(xs_) < px_ else 1, 0)
+        else:
+            d_ = (0, -1 if min(ys_) < py_ else 1)
+        reach = (16 + 6 * len(p_['name']) + 40) if d_[0] else 60
+        for b in sym_boxes:
+            if d_[0]:
+                hit = b[1] < py_ + 10 and b[3] > py_ - 10 and ((d_[0] < 0 and px_ - reach < b[2] and b[0] < px_ - 1) or (d_[0] > 0 and b[0] < px_ + reach and b[2] > px_ + 1))
+            else:
+                hit = b[0] < px_ + 10 and b[2] > px_ - 10 and ((d_[1] < 0 and py_ - reach < b[3] and b[1] < py_ - 1) or (d_[1] > 0 and b[1] < py_ + reach and b[3] > py_ + 1))
+            if hit:
+                R['port_facing_in'].append('%s points %s into the drawing' % (p_['name'], {(-1, 0): 'left', (1, 0): 'right', (0, -1): 'up', (0, 1): 'down'}[d_]))
+                break
     for p in S.get('problems', []):
         R['placement_problem'].append(p)
     nb = 0

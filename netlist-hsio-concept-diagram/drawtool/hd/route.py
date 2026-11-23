@@ -246,6 +246,14 @@ def _build_scene(V, allow_pairs=()):
         bx = K.box
         R.block_rect(K.x + bx[0] - 1, K.y + bx[1] - 1, K.x + bx[2] + 1, K.y + bx[3] + 1)
         R.boxes.append((K.x + bx[0], K.y + bx[1], K.x + bx[2], K.y + bx[3]))
+        if K.kind == 'mos' or (K.kind in ('res', 'cap', 'dio') and getattr(K, 'orient', '') == 'v'):   # leads outside the box: no wire over them
+            for P in K.pins.values():
+                if P.name == 'g':
+                    continue
+                if P.rx == 0:
+                    R.block_rect(P.x - 1, min(K.y, P.y) + (1 if P.y < K.y else 0), P.x + 1, max(K.y, P.y) - (1 if P.y > K.y else 0))
+                else:
+                    R.block_rect(min(K.x, P.x) + (1 if P.x < K.x else 0), P.y - 1, max(K.x, P.x) - (1 if P.x > K.x else 0), P.y + 1)
         for T in K.texts:
             T2 = Text(T.s, K.x + T.x, K.y + T.y, T.size, T.anchor, T.color, T.italic, T.bold, T.kind)
             T2.owner = K.id
@@ -336,6 +344,7 @@ def _build_scene(V, allow_pairs=()):
         R.block_rect(box[0], box[1], box[2], box[3])
         R.block_text(T)
         S['ports'].append({'name': name, 'x': px, 'y': py, 'dir': pdir, 'bits': list(tup), 'cls': kcls, 'shape': [list(q) for q in poly]})
+        placed_port_boxes.append(box)
 
     def port_pref(kcls, pdir):
         if pdir == 'out':
@@ -346,18 +355,45 @@ def _build_scene(V, allow_pairs=()):
             return [(0, -1), (-1, 0)]
         return [(-1, 0)]
 
+    def outward(px, py, d, name=''):
+        """A port faces open space: no symbol lies just beyond it (its symbol and name, plus 60 px) in the direction it points."""
+        reach = (16 + tw(name or 'xxxx', 11) + 40) if d[0] else 60
+        for b in R.boxes + [tuple(q) for q in placed_port_boxes]:
+            if d[0]:
+                if b[1] < py + 10 and b[3] > py - 10 and ((d[0] < 0 and px - reach < b[2] and b[0] < px - 1) or (d[0] > 0 and b[0] < px + reach and b[2] > px + 1)):
+                    return False
+            else:
+                if b[0] < px + 10 and b[2] > px - 10 and ((d[1] < 0 and py - reach < b[3] and b[1] < py - 1) or (d[1] > 0 and b[1] < py + reach and b[3] > py + 1)):
+                    return False
+        return True
+    placed_port_boxes = []
+
     # ports first try to sit straight in front of a pin (60 px lead, so other pins can join the lead)
     deferred = []
     for name, tup, kcls, pdir in V.ports:
         lst = terms.get(tup, [])
         pref = port_pref(kcls, pdir)
         done = False
-        for t in sorted(lst, key=lambda t: (pref.index(t.esc) if t.esc in pref else 9)):
-            if t.esc not in pref or t.owner is None:
+        cands = []
+        for t in lst:
+            if t.owner is None:
                 continue
-            d = t.esc
+            if getattr(t.owner, 'tg', False) and t.pin is not None:
+                # transmission gate: the port leaves the middle of the frame sideways, away from the gate
+                d = (-1, 0) if t.pin.rx < 0 else (1, 0)
+                my = t.owner.y + (20 if t.owner.mtype == 'p' else -20)
+                y1 = int(my // G)
+                stp = 1 if y1 > t.cell[1] else -1
+                head = [(t.cell[0], yy) for yy in range(t.cell[1], y1 + stp, stp)] if y1 != t.cell[1] else [t.cell]
+                cands.append((t, d, head))
+            elif t.esc in pref:
+                cands.append((t, t.esc, [t.cell]))
+        for t, d, head in sorted(cands, key=lambda c: (pref.index(c[1]) if c[1] in pref else 9)):
+            if d not in pref:
+                continue
             n = 6
-            cells = [(t.cell[0] + d[0] * k, t.cell[1] + d[1] * k) for k in range(0, n + 1)]
+            st = head[-1]
+            cells = head[:-1] + [(st[0] + d[0] * k, st[1] + d[1] * k) for k in range(0, n + 1)]
             if any((c in R.block or c in R.h or c in R.v or (c in R.pincell and R.pincell[c] != tup)) for c in cells[1:]):
                 continue
             px, py = cells[-1][0] * G, cells[-1][1] * G
@@ -370,7 +406,7 @@ def _build_scene(V, allow_pairs=()):
                 box = (px - need / 2 + 8, py - 32, px + need / 2 - 8, py - 2)
             else:
                 box = (px - need / 2 + 8, py + 2, px + need / 2 - 8, py + 32)
-            if not R.free_rect(*box, key=tup):
+            if not R.free_rect(*box, key=tup) or not outward(px, py, d, name):
                 continue
             R.add_path(tup, cells)
             pt = Term(tup, px, py, (-d[0], -d[1]), None, port=name)
@@ -532,9 +568,12 @@ def _build_scene(V, allow_pairs=()):
             groups[find(t)].append(t)
         pref = port_pref(kcls, pdir)
         got = None
-        for strict in (True, False):
+        allp = pref + [d for d in DIRS if d not in pref]
+        # facing outward first (preferred side, then any side); only if there is no such place, anywhere
+        okp = lambda x, y, d, _n=name: outward(x, y, d, _n)
+        for pr, strict, ok in ((pref, True, okp), (pref, False, okp), (allp, False, okp), (pref, False, None)):
             for g in sorted(groups.values(), key=lambda g: -len(g)):
-                got = _attach(R, tup, g, _comp_cells(R, tup, g), pref, name, port=True, strict=strict)
+                got = _attach(R, tup, g, _comp_cells(R, tup, g), pr, name, port=True, strict=strict, ok=ok)
                 if got:
                     break
             if got:
@@ -636,7 +675,7 @@ def _comp_cells(R, key, group):
     return seen
 
 
-def _attach(R, key, group, cells, pref, name, port, strict):
+def _attach(R, key, group, cells, pref, name, port, strict, ok=None):
     """Find where a port or a net label can hang on a component: a 2-cell lead out of an unwired pin,
     or a branch off one of its wires. Returns ((x0,y0), (x1,y1), dir, terminal|None, cell path) or None."""
     need = tw(name, 11 if port else 9) + (22 if port else 6)
@@ -660,7 +699,7 @@ def _attach(R, key, group, cells, pref, name, port, strict):
                 box = (x - half, y - (32 if port else 14), x + half, y - 2)
             else:
                 box = (x - half, y + 2, x + half, y + (32 if port else 14))
-            if R.free_rect(*box, key=key):
+            if R.free_rect(*box, key=key) and (ok is None or ok(x, y, d)):
                 return list(path)
         return None
     cand = []

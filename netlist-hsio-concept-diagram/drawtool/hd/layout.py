@@ -12,6 +12,7 @@ from . import netlist as NL
 
 G = 10
 ROW = 120      # vertical pitch of transistor rows
+LEAD = 30      # MOS source/drain pin distance from the device centre
 XP = 200       # horizontal pitch of transistor columns
 ESC = {'l': (-1, 0), 'r': (1, 0), 't': (0, -1), 'b': (0, 1)}
 RELAX = [0]     # spacing step used when a screen is too crowded for its labels
@@ -120,38 +121,42 @@ def geom_dev(K):
         p = K.mtype == 'p'
         if o == 'v':
             sx = -1 if gs == 'l' else 1
-            K.shapes += [('line', sx * 12, -12, sx * 12, 12), ('line', sx * 6, -16, sx * 6, 16),
-                         ('line', sx * 6, -15, 0, -15), ('line', 0, -15, 0, -30), ('line', sx * 6, 15, 0, 15), ('line', 0, 15, 0, 30)]
+            # gate plate, channel, then a 12 px stub out to the source/drain lead (the arrow sits on the source stub)
+            K.shapes += [('line', sx * 18, -12, sx * 18, 12), ('line', sx * 12, -16, sx * 12, 16),
+                         ('line', sx * 12, -15, 0, -15), ('line', 0, -15, 0, -LEAD), ('line', sx * 12, 15, 0, 15), ('line', 0, 15, 0, LEAD)]
             if p:
-                K.shapes += [('circle', sx * 16, 0, 3), ('line', sx * 19, 0, sx * 30, 0)]
+                K.shapes += [('circle', sx * 22, 0, 3), ('line', sx * 25, 0, sx * 30, 0)]
             else:
-                K.shapes += [('line', sx * 12, 0, sx * 30, 0)]
-            # arrow on the source lead
+                K.shapes += [('line', sx * 18, 0, sx * 30, 0)]
             sy = (-15 if K.top == 's' else 15)
-            K.shapes.append(('poly', [(sx * 6, sy), (sx * 1, sy - 3), (sx * 1, sy + 3)] if not p else [(0, sy), (sx * 5, sy - 3), (sx * 5, sy + 3)]))
-            K.pins[K.top].rx, K.pins[K.top].ry, K.pins[K.top].side = 0, -30, 't'
+            K.shapes.append(('fpoly', [(sx * 2, sy), (sx * 10, sy - 4), (sx * 10, sy + 4)] if not p else [(sx * 11, sy), (sx * 3, sy - 4), (sx * 3, sy + 4)]))
+            K.pins[K.top].rx, K.pins[K.top].ry, K.pins[K.top].side = 0, -LEAD, 't'
             bot = 'd' if K.top == 's' else 's'
-            K.pins[bot].rx, K.pins[bot].ry, K.pins[bot].side = 0, 30, 'b'
+            K.pins[bot].rx, K.pins[bot].ry, K.pins[bot].side = 0, LEAD, 'b'
             K.pins['g'].rx, K.pins['g'].ry, K.pins['g'].side = sx * 30, 0, gs
-            K.box = (min(sx * 20, 0) - (0 if sx < 0 else 4), -22, max(sx * 20, 0) + (4 if sx < 0 else 0), 22)
+            K.box = (min(sx * 26, 0) - (0 if sx < 0 else 4), -22, max(sx * 26, 0) + (4 if sx < 0 else 0), 22)
             tx = 8 if sx < 0 else -8
             K.texts.append(Text(name, tx, -5, 9, 'start' if sx < 0 else 'end', '#555', italic=True, kind='inst'))
             K.texts.append(Text(size, tx, 8, 9, 'start' if sx < 0 else 'end', '#1a56a0', kind='size'))
         else:
             sy = -1 if gs == 't' else 1
-            K.shapes += [('line', -12, sy * 12, 12, sy * 12), ('line', -16, sy * 6, 16, sy * 6),
-                         ('line', -15, sy * 6, -15, 0), ('line', -15, 0, -30, 0), ('line', 15, sy * 6, 15, 0), ('line', 15, 0, 30, 0)]
+            K.shapes += [('line', -12, sy * 18, 12, sy * 18), ('line', -16, sy * 12, 16, sy * 12),
+                         ('line', -15, sy * 12, -15, 0), ('line', -15, 0, -LEAD, 0), ('line', 15, sy * 12, 15, 0), ('line', 15, 0, LEAD, 0)]
             if p:
-                K.shapes += [('circle', 0, sy * 16, 3), ('line', 0, sy * 19, 0, sy * 30)]
+                K.shapes += [('circle', 0, sy * 22, 3), ('line', 0, sy * 25, 0, sy * 30)]
             else:
-                K.shapes += [('line', 0, sy * 12, 0, sy * 30)]
+                K.shapes += [('line', 0, sy * 18, 0, sy * 30)]
             tgs = getattr(K, 'tg', None)          # transmission-gate half: channel pins join the other half vertically
-            K.pins[K.left].rx, K.pins[K.left].ry, K.pins[K.left].side = -30, 0, ('l' if not tgs else ('b' if p else 't'))
+            K.pins[K.left].rx, K.pins[K.left].ry, K.pins[K.left].side = -LEAD, 0, ('l' if not tgs else ('b' if p else 't'))
             rt = 'd' if K.left == 's' else 's'
-            K.pins[rt].rx, K.pins[rt].ry, K.pins[rt].side = 30, 0, ('r' if not tgs else ('b' if p else 't'))
+            K.pins[rt].rx, K.pins[rt].ry, K.pins[rt].side = LEAD, 0, ('r' if not tgs else ('b' if p else 't'))
+            if not tgs:                  # source arrow on the source stub
+                xs = -15 if K.left == 's' else 15
+                K.shapes.append(('fpoly', [(xs, sy * 2), (xs - 4, sy * 10), (xs + 4, sy * 10)] if not p else [(xs, sy * 11), (xs - 4, sy * 3), (xs + 4, sy * 3)]))
             K.pins['g'].rx, K.pins['g'].ry, K.pins['g'].side = 0, sy * 30, gs
-            K.box = (-22, min(sy * 20, 0) - (0 if sy < 0 else 4), 22, max(sy * 20, 0) + (4 if sy < 0 else 0))
-            if tgs:
+            K.box = (-22, min(sy * 26, 0) - (0 if sy < 0 else 4), 22, max(sy * 26, 0) + (4 if sy < 0 else 0))
+            if tgs:                      # the two halves together cover the frame between their channel pins
+                K.box = (-(LEAD - 1), -28, LEAD - 1, 20) if p else (-(LEAD - 1), -20, LEAD - 1, 28)
                 ty = -22 if sy < 0 else 14
                 K.texts.append(Text(name, 38, ty, 9, 'start', '#555', italic=True, kind='inst'))
                 K.texts.append(Text(size, 38, ty + 10, 9, 'start', '#1a56a0', kind='size'))
@@ -163,8 +168,9 @@ def geom_dev(K):
     a, b = list(K.pins.keys())
     first, second = (K.top, b if K.top == a else a) if o == 'v' else (K.left, b if K.left == a else a)
     if o == 'v':
-        K.pins[first].rx, K.pins[first].ry, K.pins[first].side = 0, -30, 't'
-        K.pins[second].rx, K.pins[second].ry, K.pins[second].side = 0, 30, 'b'
+        # same pin height as a transistor, so a node shared with transistors is one straight line
+        K.pins[first].rx, K.pins[first].ry, K.pins[first].side = 0, -LEAD, 't'
+        K.pins[second].rx, K.pins[second].ry, K.pins[second].side = 0, LEAD, 'b'
         K.box = (-8, -20, 8, 20)
         if K.kind == 'res':
             pts = [(0, -30), (0, -18), (6, -15), (-6, -9), (6, -3), (-6, 3), (6, 9), (-6, 15), (0, 18), (0, 30)]
@@ -775,8 +781,8 @@ def place(V):
                 keys = [P.nets for P in K.pins.values() if P.name != 'g' and P.name not in K.rail_pins and P.name not in K.gray_pins]
                 got = [k for k in keys if k in avail]
                 if got:
-                    layer[U] = max(avail[k] for k in got)
-                    src = got[0]
+                    src = min(got, key=lambda k: avail[k])     # the side reached first is the input
+                    layer[U] = avail[src]
                     for K2 in U.comps:
                         K2.left = [p for p, P in K2.pins.items() if P.nets == src and p != 'g'][0]
                     for k in keys:
