@@ -16,6 +16,9 @@ BEND, CROSS = 40, 120
 MAXEXP = 20000
 
 
+AUTO = __import__('re').compile(r'^(net|n)\d+$')
+
+
 class Term(object):
     """Something a wire ends on: a symbol pin or a port."""
     def __init__(self, key, x, y, esc, owner, pin=None, port=None):
@@ -23,6 +26,7 @@ class Term(object):
         self.cell = (x // G, y // G)
         self.owner, self.pin, self.port = owner, pin, port
         self.wired = False
+        self.nowire = False       # must be joined by a net label (keeps a differential pair drawn the same way)
 
 
 class Router(object):
@@ -212,10 +216,52 @@ def build_scene(V, allow_pairs=()):
     import copy
     best = None
     reserve = set()
+    nowire = set()
+    for pstep in range(3):
+        S = _try_scene(V, allow_pairs, nowire)
+        add = _pair_fix(V, S)
+        if not add - nowire:
+            break
+        nowire |= add
+    for k_ in ('_labelled', '_split', '_cross'):
+        S.pop(k_, None)
+    return S
+
+
+def _pair_fix(V, S):
+    """Pins to hang on labels so that both nets of a differential pair reach a symbol the same way."""
+    lab = defaultdict(set)
+    for cid, pin, key in S.get('_labelled', []):
+        lab[cid].add(key)
+    pairs = set()
+    keys = [P.nets for K in V.comps for P in K.pins.values() if len(P.nets) == 1 and P.name not in K.rail_pins and P.name not in K.gray_pins]
+    ks = sorted(set(keys))
+    from .analyze import _pair_name
+    for i, a in enumerate(ks):
+        for b in ks[i + 1:]:
+            if _pair_name(a[0], b[0]):
+                pairs.add((a, b))
+    for a, b in S.get('_cross', []):
+        pairs.add((tuple(a), tuple(b)))
+    add = set()
+    for K in V.comps:
+        mine = dict((P.nets, P.name) for P in K.pins.values())
+        for a, b in pairs:
+            if a in mine and b in mine and ((a in lab[K.id]) != (b in lab[K.id])):
+                add.add((K.id, mine[a]))
+                add.add((K.id, mine[b]))
+    return add
+
+
+def _try_scene(V, allow_pairs, nowire):
+    import copy
+    best = None
+    reserve = set()
     for step in range(4):
         LY.RELAX[0] = max(0, step - 1)
         V2 = copy.deepcopy(V)
         V2.reserve = set(reserve)
+        V2.nowire = set(nowire)
         S = _build_scene(V2, allow_pairs)
         n = len(S.get('problems', []))
         if best is None or n < best[0]:
@@ -319,6 +365,12 @@ def _build_scene(V, allow_pairs=()):
         if ra is not rb:
             comp_of[ra] = rb
 
+    nowire = getattr(V, 'nowire', set())
+    for lst_ in terms.values():
+        for t_ in lst_:
+            if t_.pin is not None and (t_.owner.id, t_.pin.name) in nowire:
+                t_.nowire = True
+
     def port_shape(name, tup, kcls, pdir, px, py, d):
         if d == (-1, 0):
             poly = [(px - 16, py - 5), (px - 5, py - 5), (px, py), (px - 5, py + 5), (px - 16, py + 5)] if pdir == 'in' else \
@@ -376,7 +428,7 @@ def _build_scene(V, allow_pairs=()):
         done = False
         cands = []
         for t in lst:
-            if t.owner is None:
+            if t.owner is None or t.nowire:
                 continue
             if getattr(t.owner, 'tg', False) and t.pin is not None:
                 # transmission gate: the port leaves the middle of the frame sideways, away from the gate
@@ -431,7 +483,8 @@ def _build_scene(V, allow_pairs=()):
                 if P.name == 'g' or P.name in K.rail_pins or P.name in K.gray_pins:
                     continue
                 t = [t for t in terms[P.nets] if t.pin is P][0]
-                bynet[P.nets].append(t)
+                if not t.nowire:
+                    bynet[P.nets].append(t)
         for key, lst in sorted(bynet.items(), key=lambda kv: -len(kv[1])):
             if len(lst) < 2:
                 continue
@@ -482,7 +535,7 @@ def _build_scene(V, allow_pairs=()):
                     cands.append((abs(a.x - b.x) + abs(a.y - b.y), len(cands), key, a, b, d))
     cands.sort(key=lambda t: t[:2])
     for dist, _, key, a, b, d in cands:
-        if find(a) is find(b) or a.wired or b.wired:
+        if find(a) is find(b) or a.wired or b.wired or a.nowire or b.nowire:
             continue
         between = [(a.cell[0] + d[0] * k, a.cell[1] + d[1] * k) for k in range(1, max(abs(a.cell[0] - b.cell[0]), abs(a.cell[1] - b.cell[1])))]
         if any(c in R.cells[key] for c in between):
@@ -522,18 +575,22 @@ def _build_scene(V, allow_pairs=()):
                     if c not in mycells:
                         goals[c] = None
                 for t in lst:
-                    if find(t) is not myroot and not t.wired:
+                    if t.nowire:
+                        goals.pop(t.cell, None)
+                    elif find(t) is not myroot and not t.wired:
                         goals[t.cell] = {(-t.esc[0], -t.esc[1])}
                     elif find(t) is not myroot:
                         goals.pop(t.cell, None)
                 best = None
                 for t in g:
-                    if t.wired:
+                    if t.wired or t.nowire:
                         continue
                     p = R.route(key, t.cell, t.esc, goals)
                     if p is not None:
                         best = (t, p)
                         break
+                if not goals:
+                    continue
                 if best is None and all(t.wired for t in g) and mycells:
                     p = _branch(R, key, mycells, goals)
                     if p is not None:
@@ -599,6 +656,11 @@ def _build_scene(V, allow_pairs=()):
         for t in lst:
             groups[find(t)].append(t)
         name = bus_label(key)
+        if all(AUTO.match(x) for x in key):
+            # an auto-generated net name says nothing: name the label after the block pin that drives it
+            drv_ = [t for t in lst if t.pin is not None and t.owner.kind == 'inst' and t.pin.dir == 'out' and len(t.owner.members) == 1]
+            if drv_:
+                name = '%s.%s' % (drv_[0].owner.id, drv_[0].pin.name)
         if len(groups) == 1 and (len(lst) > 1 or lst[0].port):
             continue
         for r, g in groups.items():
@@ -648,6 +710,20 @@ def _build_scene(V, allow_pairs=()):
     if R.fourway and __import__('os').environ.get('HD_DEBUG'):
         print('4way', V.id, R.fourway[:3])
     S['has_mos'] = any(K.kind == 'mos' for K in comps)
+    S['_cross'] = list(getattr(V, 'cross_ok', ()))
+    # which pins hang on a label (not on the wire of the net's largest group)
+    S['_labelled'] = []
+    for key, lst in terms.items():
+        groups = defaultdict(list)
+        for t in lst:
+            groups[find(t)].append(t)
+        if len(groups) < 2:
+            continue
+        main = max(groups.values(), key=len)
+        for g in groups.values():
+            if g is not main:
+                S['_labelled'] += [(t.owner.id, t.pin.name, key) for t in g if t.pin is not None]
+        S['_split'] = S.get('_split', []) + [key]
     _normalise(S)
     S['legend'] = list(V.legend)
     S['omitted'] = list(V.omitted)

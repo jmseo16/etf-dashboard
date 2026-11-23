@@ -830,6 +830,51 @@ def place(V):
         for K in U.comps:
             if U.kind == 'pass':
                 geom_dev(K)
+    # control logic sits in a band above the signal path, right before the block it controls, and enters from the top
+    above = set()
+    hs_ = lambda U: any(P.cls in ('hs_data', 'hs_clock', 'reference') for K in U.comps for P in K.pins.values())
+    sinks_of = {}
+    for U in units:
+        if U.kind != 'inst' or hs_(U):
+            continue
+        sk = []
+        for key in drv:
+            if U in drv[key]:
+                sk += [(K, P) for K, P in key_pins[key] if comp_unit[K] is not U]
+        sinks_of[U] = sk
+    grew = True
+    while grew:
+        grew = False
+        for U, sk in sinks_of.items():
+            if U in above or not sk:
+                continue
+            if all((K.kind == 'inst' and P.side == 't' and P.dir != 'out') or comp_unit[K] in above for K, P in sk):
+                above.add(U)
+                grew = True
+    for U in sorted(above, key=lambda U: -U.layer):
+        tgt = min(comp_unit[K].layer for K, P in sinks_of[U]) - 1
+        if tgt > U.layer:
+            U.layer = tgt
+    for U in units:
+        U.band = -1 if U in above else 0
+        U.tkey = 0
+        U.grp = None
+    # connected control logic forms one group; each group gets its own rows in the band
+    gp = dict((U, U) for U in above)
+
+    def gfind(x):
+        while gp[x] is not x:
+            x = gp[x]
+        return x
+    for U in above:
+        for K, P in sinks_of[U]:
+            if comp_unit[K] in above:
+                gp[gfind(U)] = gfind(comp_unit[K])
+    for U in above:
+        U.grp = gfind(U)
+    # rows of the band nest: the unit whose target pin is further right sits higher, so the drops never cross
+    for U in sorted(above, key=lambda U: -U.layer):
+        U.tkey = max([comp_unit[K].tkey if comp_unit[K] in above else comp_unit[K].layer * 10000 + getattr(P, 'rx', 0) for K, P in sinks_of[U]])
     # ------------------------------------------------ coordinates
     def skip(K, P):
         return P.name in K.rail_pins or P.name in K.gray_pins
@@ -869,7 +914,7 @@ def place(V):
                     for P in K.pins.values():
                         if skip(K, P):
                             continue
-                        if is_in(U, K, P) and P.nets in placed_pin and y is None:
+                        if is_in(U, K, P) and P.nets in placed_pin and y is None and placed_pin[P.nets][2].band == U.band:
                             y = placed_pin[P.nets][1] - ((getattr(K, 'cy', 0) + P.ry) if not getattr(U, 'tg', False) else 0)
                             primary[U] = P.nets
                 if y is None:
@@ -877,7 +922,7 @@ def place(V):
                         for P in K.pins.values():
                             if skip(K, P) or y is not None:
                                 continue
-                            if P.nets in placed_any and (K.kind == 'inst' and P.dir == 'in' and P.side == 'l'):
+                            if U.band == 0 and P.nets in placed_any and (K.kind == 'inst' and P.dir == 'in' and P.side == 'l'):
                                 y = placed_any[P.nets][1] + 80 - (getattr(K, 'cy', 0) + P.ry)
                 if U in force:
                     y = force[U]
@@ -896,13 +941,14 @@ def place(V):
                 for K in U.comps:
                     for P in K.pins.values():
                         r = min(r, {'hs_data': 0, 'reference': 1, 'hs_clock': 2}.get(P.cls, 5))
-                cls_rank.append(r)
+                cls_rank.append(r if U.band == 0 else -U.tkey)
             first = sorted(range(len(col)), key=lambda i: (want[i] is None, want[i] if want[i] is not None else 0, cls_rank[i], i))
             # units with a wanted height first; the others go into the free room behind the unit they share a net with
             order = [i for i in first if want[i] is not None] + [i for i in first if want[i] is None]
-            used = []                   # (top, bottom, has bottom pins, index)
+            used_main, used_above = [], {}      # (top, bottom, has bottom pins, index); the band keeps one list per group
             for i in order:
                 U, b = col[i], boxes[i]
+                used = used_above.setdefault(U.grp, []) if U.band < 0 else used_main
                 has_t = any(P.side == 't' and not skip(K, P) for K in U.comps for P in K.pins.values())
                 has_b = any(P.side == 'b' and not skip(K, P) for K in U.comps for P in K.pins.values())
                 y = want[i]
@@ -936,6 +982,33 @@ def place(V):
                             placed_pin.setdefault(P.nets, (P.x, P.y if not getattr(U, 'tg', False) else U.y, U, P.side))
                         placed_any.setdefault(P.nets, (P.x, P.y))
             x = snap_up(x + wmax + 140 + 60 * RELAX[0])
+        ab = [U for U in units if U.band < 0]
+        mn = [U for U in units if U.band == 0]
+        def shift(U, dy):
+            U.y += dy
+            for K in U.comps:
+                K.y += dy
+                for P in K.pins.values():
+                    P.y += dy
+        if ab:
+            # groups stacked top to bottom, the one whose target pin is furthest right on top (drops nest, no crossing)
+            groups = defaultdict(list)
+            for U in ab:
+                groups[U.grp].append(U)
+            ytop = 0
+            for g in sorted(groups.values(), key=lambda g: -max(U.tkey for U in g)):
+                t0 = min(U.y + U.rel_bbox()[1] for U in g)
+                b0 = max(U.y + U.rel_bbox()[3] for U in g)
+                d0 = snap(ytop - t0)
+                for U in g:
+                    shift(U, d0)
+                ytop += (b0 - t0) + 60
+        if ab and mn:
+            main_top = min(U.y + U.rel_bbox()[1] for U in mn)
+            above_bot = max(U.y + U.rel_bbox()[3] for U in ab)
+            dy = snap(main_top - 140 - above_bot)
+            for U in ab:
+                shift(U, dy)
         # connections between facing pins that are not level
         mis = []
         level_ = defaultdict(int)          # unit -> sinks that already sit level with it
@@ -947,7 +1020,7 @@ def place(V):
                     if skip(K, P) or not is_in(U, K, P) or P.nets not in placed_pin:
                         continue
                     dx, dy, D, dside = placed_pin[P.nets]
-                    if D is U or D.layer >= U.layer or getattr(D, 'tg', False):
+                    if D is U or D.layer >= U.layer or getattr(D, 'tg', False) or D.band != U.band:
                         continue
                     if P.side != 'l' or dside != 'r' or dx >= P.x:
                         continue
