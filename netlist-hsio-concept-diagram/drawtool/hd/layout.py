@@ -12,6 +12,7 @@ from . import netlist as NL
 
 G = 10
 ROW = 120      # vertical pitch of transistor rows
+WRAP = 2200    # widest drawing before the next column starts a new row
 LEAD = 30      # MOS source/drain pin distance from the device centre
 XP = 200       # horizontal pitch of transistor columns
 ESC = {'l': (-1, 0), 'r': (1, 0), 't': (0, -1), 'b': (0, 1)}
@@ -900,6 +901,7 @@ def place(V):
         """One left-to-right pass. `force` fixes the height of some units (straight wires first: a unit that could
         not sit level with its driver moves the driver instead). Returns the connections that are still not level."""
         x = 0
+        row, ybase, gbot = 0, 0, 0   # a drawing wider than WRAP px continues on a new row below (no endless strip)
         placed_pin = {}            # net key -> (x, y, unit) of a pin that drives it (already placed)
         placed_any = {}
         primary = {}               # unit -> net key it was aligned on
@@ -907,6 +909,10 @@ def place(V):
             col = layers[li]
             boxes = [U.rel_bbox() for U in col]
             wmax = max(b[2] - b[0] for b in boxes)
+            if x > 0 and x + wmax > WRAP and any(U.band == 0 for U in col):
+                x, row, ybase = 0, row + 1, snap_up(gbot + 160)
+            for U in col:
+                U.row = row
             want = []
             for U, b in zip(col, boxes):
                 y = None
@@ -914,7 +920,8 @@ def place(V):
                     for P in K.pins.values():
                         if skip(K, P):
                             continue
-                        if is_in(U, K, P) and P.nets in placed_pin and y is None and placed_pin[P.nets][2].band == U.band:
+                        if is_in(U, K, P) and P.nets in placed_pin and y is None and placed_pin[P.nets][2].band == U.band \
+                                and placed_pin[P.nets][2].row == U.row:
                             y = placed_pin[P.nets][1] - ((getattr(K, 'cy', 0) + P.ry) if not getattr(U, 'tg', False) else 0)
                             primary[U] = P.nets
                 if y is None:
@@ -922,7 +929,7 @@ def place(V):
                         for P in K.pins.values():
                             if skip(K, P) or y is not None:
                                 continue
-                            if U.band == 0 and P.nets in placed_any and (K.kind == 'inst' and P.dir == 'in' and P.side == 'l'):
+                            if U.band == 0 and row == 0 and P.nets in placed_any and (K.kind == 'inst' and P.dir == 'in' and P.side == 'l'):
                                 y = placed_any[P.nets][1] + 80 - (getattr(K, 'cy', 0) + P.ry)
                 if U in force:
                     y = force[U]
@@ -955,7 +962,7 @@ def place(V):
                 if y is None:
                     rel = [u for u in used if nets_of[i] & nets_of[u[3]]]
                     ref = rel[-1] if rel else (max(used, key=lambda u: u[1]) if used else None)
-                    y = (ref[1] + 40 + 30 * RELAX[0] + (60 if has_t else 0) + (60 if ref[2] else 0) - b[1]) if ref else -b[1]
+                    y = (ref[1] + 40 + 30 * RELAX[0] + (60 if has_t else 0) + (60 if ref[2] else 0) - b[1]) if ref else (ybase if U.band == 0 else 0) - b[1]
                 y = snap(y)
                 # no overlap with units already in this layer: push down
                 moved = True
@@ -968,6 +975,8 @@ def place(V):
                             y = snap_up(bt + gap - b[1])
                             moved = True
                 used.append((y + b[1], y + b[3], has_b, i))
+                if U.band == 0:
+                    gbot = max(gbot, y + b[3])
                 U.x, U.y = snap_up(x - b[0]), y
                 for K in U.comps:
                     K.x, K.y = U.x + getattr(K, 'cx', 0), U.y + getattr(K, 'cy', 0)
@@ -1020,7 +1029,7 @@ def place(V):
                     if skip(K, P) or not is_in(U, K, P) or P.nets not in placed_pin:
                         continue
                     dx, dy, D, dside = placed_pin[P.nets]
-                    if D is U or D.layer >= U.layer or getattr(D, 'tg', False) or D.band != U.band:
+                    if D is U or D.layer >= U.layer or getattr(D, 'tg', False) or D.band != U.band or D.row != U.row:
                         continue
                     if P.side != 'l' or dside != 'r' or dx >= P.x:
                         continue

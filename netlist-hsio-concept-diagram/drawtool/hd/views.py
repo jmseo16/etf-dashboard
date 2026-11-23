@@ -295,6 +295,7 @@ def build(cells, top, A, ann=None):
                 V.comps.append(K)
         # ------------------------------------------------ regular structures drawn as one symbol
         _collapse_trees(V)
+        _fold_slices(V, c.ports, rl)
         _collapse_ladders(V, cl, rl, c.ports)
         # ------------------------------------------------ bus pins on one symbol (cell ports stem<k>)
         for K in V.comps:
@@ -335,8 +336,10 @@ def build(cells, top, A, ann=None):
             return set(t for n, ts in owner.items() if len(ts) > 1 for t in ts if len(t) > 1)
         broken = broken_tuples()
         # a merged block whose bus overlaps another use of the same nets is drawn as separate instances again
+        bad_folds = set(getattr(K, 'fold', None) for K in V.comps if len(K.members) > 1 and any(P.nets in broken for P in K.pins.values()))
+        bad_folds.discard(None)
         for K in list(V.comps):
-            if len(K.members) > 1 and any(P.nets in broken for P in K.pins.values()):
+            if len(K.members) > 1 and (any(P.nets in broken for P in K.pins.values()) or getattr(K, 'fold', None) in bad_folds):
                 i = V.comps.index(K)
                 V.comps[i:i + 1] = K.orig
                 V.legend = [l for l in V.legend if not l.startswith(K.id + ' = ')]
@@ -694,3 +697,120 @@ def _collapse_ladders(V, cl, rl, ports):
             V.comps.remove(K)
         V.comps.insert(min(i, len(V.comps)), F)
         V.legend.append('%s = %s (직렬 저항 %d개, 탭 %d개)' % (F.id, ', '.join(F.members), len(chain), len(taps)))
+
+
+def _fold_slices(V, ports, rl):
+    """Repeated transistor branches (same devices and wiring, only the bit index of a bus and the multiplier differ)
+    are drawn once: 'name ×N', bus pins for the indexed nets. Weighted taps, binary current sources, ..."""
+    import copy
+    devs = [K for K in V.comps if K.kind in ('mos', 'res', 'cap') and K.dev is not None and len(K.members) == 1]
+    if len(devs) < 4:
+        return
+    use = defaultdict(list)
+    for K in V.comps:
+        for P in K.pins.values():
+            for x in P.nets:
+                use[x].append(K)
+    anon = lambda x: ANON.match(NL.bus_split(x)[0]) is not None and NL.bus_split(x)[1] is not None
+    private = set(x for x, ks in use.items() if anon(x) and x not in ports and x not in rl and len(ks) <= 3
+                  and all(k.kind != 'inst' for k in ks))
+    par = dict((K, K) for K in devs)
+
+    def find(a):
+        while par[a] is not a:
+            a = par[a]
+        return a
+    for x in private:
+        ks = [k for k in use[x] if k in par]
+        for k in ks[1:]:
+            par[find(k)] = find(ks[0])
+    slices = OrderedDict()
+    for K in devs:
+        slices.setdefault(find(K), []).append(K)
+
+    def tok(K, pname, x):
+        st, ix = NL.bus_split(x)
+        if x in rl and not (ix is not None and x in ports and not ANON.match(st)):
+            return ('R', x)
+        if x in private:
+            return ('P', tuple(sorted((k.kind, getattr(k, 'mtype', ''), pn) for k in use[x] for pn, P in k.pins.items() if P.nets == (x,))))
+        st, ix = NL.bus_split(x)
+        if ix is not None and not ANON.match(st):
+            return ('B', st)
+        return ('N', x)
+
+    def dsig(K):
+        d = K.dev
+        return (K.kind, getattr(K, 'mtype', ''), d.model, d.params.get('w'), d.params.get('l'),
+                tuple(sorted((pn, tok(K, pn, P.nets[0]), pn in K.gray_pins) for pn, P in K.pins.items())))
+    groups = OrderedDict()
+    for root, lst in slices.items():
+        if len(lst) > 4 or any(len(P.nets) != 1 for K in lst for P in K.pins.values()):
+            continue
+        lst = sorted(lst, key=lambda K: (dsig(K), V.comps.index(K)))
+        sig = tuple(dsig(K) for K in lst)
+        if len(set(sig)) != len(sig):
+            continue
+        groups.setdefault(sig, []).append(lst)
+    fid = 0
+    for sig, sl in groups.items():
+        if len(sl) < 2:
+            continue
+        # every indexed net must differ between the slices, and the same index order must hold for all of them
+        bpins = [(k, pn) for k, ds in enumerate(sig) for pn, t, g in ds[5] if t[0] == 'B']
+        if not bpins:
+            continue
+        idx = lambda lst_, k, pn: NL.bus_split(lst_[k].pins[pn].nets[0])[1]
+        k0, pn0 = bpins[0]
+        sl = sorted(sl, key=lambda lst_: -idx(lst_, k0, pn0))
+        ok = True
+        for k, pn in bpins:
+            ix = [idx(lst_, k, pn) for lst_ in sl]
+            if len(set(ix)) != len(ix) or ix != sorted(ix, reverse=True):
+                ok = False
+        if not ok:
+            continue
+        fid += 1
+        n = len(sl)
+        reps = []
+        for k, K0 in enumerate(sl[0]):
+            mates = [lst_[k] for lst_ in sl]
+            K = copy.copy(K0)
+            K.pins = OrderedDict()
+            for pn, P0 in K0.pins.items():
+                nets = [m.pins[pn].nets[0] for m in mates]
+                if len(set(nets)) == 1:
+                    K.pins[pn] = Pin(P0.name, [nets[0]], P0.side, P0.cls, P0.dir, [[(m.id, pn) for m in mates]])
+                else:
+                    K.pins[pn] = Pin(P0.name, nets, P0.side, P0.cls, P0.dir, [[(m.id, pn)] for m in mates])
+            K.gray_pins = dict(K0.gray_pins)
+            K.rail_pins = dict(K0.rail_pins)
+            for dct in (K.gray_pins, K.rail_pins):      # an indexed bus is drawn as a bus, not as a tag
+                for pn in list(dct):
+                    if len(K.pins[pn].nets) > 1:
+                        del dct[pn]
+            K.members = [m.id for m in mates]
+            K.orig = list(mates)
+            K.fold = fid
+            K.id = '%s ×%d' % (K0.id, n)
+            sizes = [m.size_text for m in mates]
+            if len(set(sizes)) > 1:
+                base = [t.split(' x')[0] for t in sizes]
+                mul = [(t.split(' x')[1] if ' x' in t else '1') for t in sizes]
+                K.size_text = ('%s x(%s)' % (base[0], ','.join(mul))) if len(set(base)) == 1 else '%s … %s' % (sizes[0], sizes[-1])
+            reps.append((K, mates))
+        # an indexed net used elsewhere as a scalar would split the bus: keep the branches as they are
+        folded = set(m for K, mates in reps for m in mates)
+        clash = False
+        for K, mates in reps:
+            for P in K.pins.values():
+                if len(P.nets) > 1 and any(o not in folded for x in P.nets for o in use[x]):
+                    clash = True
+        if clash:
+            continue
+        for K, mates in reps:
+            i = V.comps.index(mates[0])
+            for m in mates:
+                V.comps.remove(m)
+            V.comps.insert(min(i, len(V.comps)), K)
+            V.legend.append('%s = %s (같은 가지 ×%d)' % (K.id, ', '.join(K.members), n))

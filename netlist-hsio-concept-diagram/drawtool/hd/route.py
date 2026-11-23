@@ -78,6 +78,10 @@ class Router(object):
         pn = self.pincell.get(b)
         if pn is not None and pn != net:
             return -1
+        if b in self.cells[net]:
+            a = self.arms[(net, b)]
+            if bin(a).count('1') >= 3 and not a & BIT[(-d[0], -d[1])]:
+                return -1                 # a fourth line into one point: never
         same, perp = (self.h, self.v) if d[1] == 0 else (self.v, self.h)
         o = same.get(b)
         if o is not None and o != net:
