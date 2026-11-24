@@ -200,6 +200,20 @@ def pptx(scenes, summary_lines, path):
         for sym in S['symbols']:
             for v in sym['shapes']:
                 shape(v)
+        import math
+        for x, y, d in S.get('humps', []):
+            r = sl.shapes.add_shape(MSO_SHAPE.RECTANGLE, X(x - 5), Y(y - 5), Emu(int(10 * k)), Emu(int(10 * k)))
+            r.fill.solid()
+            r.fill.fore_color.rgb = RGBColor(0xff, 0xff, 0xff)
+            r.line.fill.background()
+            if d == 'h':
+                line(x, y - 7, x, y + 7)
+                pts = [(x - 5 * math.cos(math.pi * i / 6), y - 5 * math.sin(math.pi * i / 6)) for i in range(7)]
+            else:
+                line(x - 7, y, x + 7, y)
+                pts = [(x + 5 * math.sin(math.pi * i / 6), y - 5 * math.cos(math.pi * i / 6)) for i in range(7)]
+            for a, b in zip(pts, pts[1:]):
+                line(a[0], a[1], b[0], b[1])
         for p in S['ports']:
             shape(['poly', p['shape']])
         for x, y in S['dots']:

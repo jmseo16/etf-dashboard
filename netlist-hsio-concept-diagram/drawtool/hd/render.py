@@ -39,6 +39,16 @@ def svg(S, show_size=True):
                      % (sym['target'], g, b[0], b[1], b[2] - b[0], b[3] - b[1]))
         else:
             o.append(g)
+    for x, y, d in S.get('humps', []):
+        # the feedback wire is lifted over the wire it crosses: erase 5 px each side, redraw the crossed wire, add the arc
+        if d == 'h':
+            o.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="#fff" stroke-width="3.4"/>' % (x - 5, y, x + 5, y))
+            o.append('<line x1="%s" y1="%s" x2="%s" y2="%s" %s/>' % (x, y - 7, x, y + 7, st))
+            o.append('<path d="M%s,%s A5,5 0 0 1 %s,%s" %s/>' % (x - 5, y, x + 5, y, st))
+        else:
+            o.append('<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="#fff" stroke-width="3.4"/>' % (x, y - 5, x, y + 5))
+            o.append('<line x1="%s" y1="%s" x2="%s" y2="%s" %s/>' % (x - 7, y, x + 7, y, st))
+            o.append('<path d="M%s,%s A5,5 0 0 1 %s,%s" %s/>' % (x, y - 5, x, y + 5, st))
     for x, y in S['dots']:
         o.append('<circle cx="%s" cy="%s" r="3" fill="#111"/>' % (x, y))
     for x, y, d in S['slashes']:

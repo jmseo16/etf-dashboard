@@ -285,7 +285,8 @@ def _build_scene(V, allow_pairs=()):
     for a, b in allow_pairs:
         allow.add((a, b))
         allow.add((b, a))
-    R = Router(allow_cross=lambda a, b: (a, b) in allow)
+    fb = set(getattr(V, 'feedback', ()))
+    R = Router(allow_cross=lambda a, b: (a, b) in allow or a in fb or b in fb)
     S = {'id': V.id, 'title': V.title, 'level': V.level, 'cell': V.cell, 'symbols': [], 'wires': [], 'dots': [], 'labels': [],
          'ports': [], 'texts': [], 'tags': [], 'slashes': []}
     comps = [K for U in units for K in U.comps]
@@ -559,7 +560,7 @@ def _build_scene(V, allow_pairs=()):
         key, lst = kv
         chan = any(t.owner is not None and t.owner.kind != 'inst' and t.pin.name != 'g' for t in lst)
         c = V.netcls.get(key[0], 'other')
-        return (0 if chan else 1, {'hs_data': 0, 'hs_clock': 1, 'reference': 2}.get(c, 3), len(lst), _span(lst))
+        return (2 if key in fb else (0 if chan else 1), {'hs_data': 0, 'hs_clock': 1, 'reference': 2}.get(c, 3), len(lst), _span(lst))
     for key, lst in sorted(terms.items(), key=prio):
         if len(lst) < 2:
             continue
@@ -603,7 +604,7 @@ def _build_scene(V, allow_pairs=()):
                     continue
                 t, p = best
                 man = abs(p[0][0] - p[-1][0]) + abs(p[0][1] - p[-1][1])
-                if len(p) - 1 > 1.5 * man and len(p) - 1 - man >= 8:
+                if key not in fb and len(p) - 1 > 1.5 * man and len(p) - 1 - man >= 8:
                     continue                      # a detour (more than 1.5 x the direct distance): labels are clearer
                 R.add_path(key, p)
                 t.wired = True
@@ -713,6 +714,14 @@ def _build_scene(V, allow_pairs=()):
                 S['slashes'].append([mx, my, 'h' if best[1] == best[3] else 'v'])
     if R.fourway and __import__('os').environ.get('HD_DEBUG'):
         print('4way', V.id, R.fourway[:3])
+    # humps: where a feedback wire crosses another wire, the feedback wire jumps over it
+    S['humps'] = []
+    for c, hn in R.h.items():
+        vn = R.v.get(c)
+        if vn is not None and vn != hn and (hn in fb or vn in fb):
+            S['humps'].append([c[0] * G, c[1] * G, 'h' if hn in fb else 'v'])
+    S['humps'].sort()
+    S['feedback'] = sorted(list(k) for k in fb)
     S['has_mos'] = any(K.kind == 'mos' for K in comps)
     S['_cross'] = list(getattr(V, 'cross_ok', ()))
     # which pins hang on a label (not on the wire of the net's largest group)
@@ -923,6 +932,7 @@ def _normalise(S):
     for w in S['wires']:
         w['segs'] = [[s[0] + dx, s[1] + dy, s[2] + dx, s[3] + dy] for s in w['segs']]
     S['dots'] = [[x + dx, y + dy] for x, y in S['dots']]
+    S['humps'] = [[x + dx, y + dy, o] for x, y, o in S.get('humps', [])]
     S['slashes'] = [[x + dx, y + dy, o] for x, y, o in S['slashes']]
     for l in S['labels']:
         for k in ('x', 'ax'):

@@ -11,6 +11,8 @@ QUAL_KEYS = ('avoidable_bend', 'jog', 'detour', 'short_jog', 'crossing', 'wire_t
 
 def scene_sha(S):
     keep = dict((k, S[k]) for k in ('id', 'title', 'w', 'h', 'symbols', 'wires', 'dots', 'labels', 'ports', 'texts', 'tags', 'slashes'))
+    if S.get('humps'):
+        keep['humps'] = S['humps']
     return hashlib.sha256(json.dumps(keep, sort_keys=True, ensure_ascii=False).encode('utf-8')).hexdigest()
 
 
@@ -108,14 +110,21 @@ def check(S, cell, level):
     # ---------------------------------------------------------------- crossings and 4-way points
     H = [s for s in allsegs if s[1] == s[3]]
     Vv = [s for s in allsegs if s[0] == s[2]]
+    humps = set((x, y) for x, y, d in S.get('humps', []))
+    seen_h = set()
     ncross = 0
     for h in H:
         for v in Vv:
             p = (v[0], h[1])
             if _interior(p, h) and _interior(p, v) and p not in dots:
                 ncross += 1
+                if p in humps and find((h[0], h[1])) != find((v[0], v[1])):
+                    seen_h.add(p)             # a feedback wire jumping over another wire: drawn as a hump
+                    continue
                 if (level == 'block' and not S.get('has_mos')) or find((h[0], h[1])) == find((v[0], v[1])):
                     R['crossing'].append('(%d,%d)' % p)
+    for p in sorted(humps - seen_h):
+        R['crossing'].append('hump at (%d,%d) where no two wires cross' % p)
     deg = defaultdict(set)
     for a, b in pieces:
         deg[a].add(b)
@@ -250,6 +259,14 @@ def check(S, cell, level):
             if _interior(pt, s):
                 return False
         return True
+    # a feedback wire has to loop round: the detour rule does not apply to it
+    fbnets = set(tuple(k) for k in S.get('feedback', []))
+    fbpts = set()
+    for w in S['wires']:
+        if tuple(w['net']) in fbnets:
+            for s_ in w['segs']:
+                fbpts.add((s_[0], s_[1]))
+                fbpts.add((s_[2], s_[3]))
     pin_side, pin_sym = {}, {}
     for sym in S['symbols']:
         for p in sym['pins']:
@@ -276,7 +293,7 @@ def check(S, cell, level):
             run = [a] + corners + [b]
             length = sum(abs(u[0] - v[0]) + abs(u[1] - v[1]) for u, v in zip(run, run[1:]))
             man = abs(a[0] - b[0]) + abs(a[1] - b[1])
-            if a != b and length > 1.5 * man and length - man >= 80:
+            if a != b and length > 1.5 * man and length - man >= 80 and a not in fbpts and b not in fbpts:
                 R['detour'].append('(%d,%d)-(%d,%d): %d px for a distance of %d' % (a[0], a[1], b[0], b[1], length, man))
             # two facing pins of different symbols joined by a small step: the symbols should sit level instead
             if len(corners) == 2 and a in pin_sym and b in pin_sym and pin_sym[a] != pin_sym[b]:

@@ -860,6 +860,15 @@ def place(V):
         U.band = -1 if U in above else 0
         U.tkey = 0
         U.grp = None
+    # feedback: a net that runs back to a block at or before its driver (drawn as a wire that loops round; it may
+    # cross other wires, each crossing drawn as a hump). Block screens only.
+    V.feedback = set()
+    if V.level == 'block':
+        for key in drv:
+            ds = [D for D in drv[key] if D.kind == 'inst' and D not in above]
+            sk = [S_ for S_ in snk[key] if S_.kind == 'inst' and S_ not in above]
+            if ds and any(S_.layer <= D.layer and S_ is not D for D in ds for S_ in sk):
+                V.feedback.add(key)
     # connected control logic forms one group; each group gets its own rows in the band
     gp = dict((U, U) for U in above)
 
@@ -909,7 +918,7 @@ def place(V):
             col = layers[li]
             boxes = [U.rel_bbox() for U in col]
             wmax = max(b[2] - b[0] for b in boxes)
-            if x > 0 and x + wmax > WRAP and any(U.band == 0 for U in col):
+            if x > 0 and x + wmax > WRAP and all(U.kind == 'cluster' for U in col):   # transistor groups only: a block chain stays one row
                 x, row, ybase = 0, row + 1, snap_up(gbot + 160)
             for U in col:
                 U.row = row

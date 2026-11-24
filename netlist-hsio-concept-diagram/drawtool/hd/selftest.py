@@ -59,6 +59,10 @@ def mutations(S):
                     p['y'] = y1 + 20
         yield 'put two facing pins 20 px out of line', ('jog', 'crossing', 'short', 'text_on_wire', 'wire_through_symbol', 'tee_without_dot', 'four_way'), M
         break
+    if S.get('humps'):
+        M = copy.deepcopy(S)
+        del M['humps'][0]
+        yield 'remove the hump from a crossing', ('crossing',), M
     if S['ports']:
         # a symbol drawn further out than a port, in the direction the port points
         M = copy.deepcopy(S)
