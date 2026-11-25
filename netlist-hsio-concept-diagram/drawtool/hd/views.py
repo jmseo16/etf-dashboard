@@ -116,12 +116,29 @@ def build(cells, top, A, ann=None):
                 and e.pins['d'] in d and e.pins['s'] in d]     # a switch between two ports of the cell
         driven_ = set(e.pins['d'] for e in c_.devs if e.kind == 'm' and (e.pins['s'] in rl_)) | \
             set(n for e in c_.devs if e.kind == 'x' for p_, n in e.pins.items() if pdir.get(e.model, {}).get(p_) == 'out')
+        cnt = defaultdict(int)
+        if cname != top and not pas_ and lst:
+            # the same for switches inside sub-cells (a mux built from transmission-gate cells)
+            logic_ = set()
+            for path0, local0 in lst[:6]:         # over several uses: an input may be tied off in one of them
+                pre0 = path0 + '/'
+                back = dict((fn, ln) for ln, fn in local0.items() if ln in d and fn not in A.rails)
+                for i_, (pth, dv, pm) in enumerate(A.flat):
+                    if not pth.startswith(pre0) or dv.kind != 'm':
+                        continue
+                    if pm['d'] != pm['s'] and pm['d'] in back and pm['s'] in back:
+                        cnt[back[pm['d']]] += 1
+                        cnt[back[pm['s']]] += 1
+                    if A.gate_out(i_) in back:
+                        logic_.add(back[A.gate_out(i_)])      # driven by a logic stage: not a switch terminal
+            for x in logic_:
+                cnt.pop(x, None)
         if pas_ and cname != top:
-            cnt = defaultdict(int)
             for e in pas_:
                 for t in ('d', 's'):
                     if e.pins[t] in d and e.pins[t] not in driven_:
                         cnt[e.pins[t]] += 1
+        if cnt and cname != top:
             if len(cnt) > 1:
                 top_n = max(cnt.values())
                 best = [x for x, v in cnt.items() if v == top_n]
@@ -187,6 +204,10 @@ def build(cells, top, A, ann=None):
             for n in e.pins.values():
                 use[n] += 1
         unused = all(use[n] == 1 and n not in cells[cname].ports for n in outs)
+        supply = set.intersection(*[set(ln for ln, fn in local.items() if fn in A.rails) for path, local in occ[d.model]])
+        ins_all = [n for p, n in d.pins.items() if pdir[d.model][p] == 'in' and p not in supply]
+        if ins_all and all(n in rails_l[cname] for n in ins_all):
+            return True                       # every input tied to a supply: it never switches
         return bool(outs) and unused and not vis_in and bool(tied)
 
     def make(cname):
@@ -232,7 +253,7 @@ def build(cells, top, A, ann=None):
                     V.omitted.append('%s (%s) — %s' % (d.name, d.model, '고속 신호와 무관' if not vis_any or all(cl.get(n) in ('bias', 'hidden', 'other') for n in outs) else '일반 제어만 만듦'))
                     continue
                 if is_dummy(d, cname):
-                    V.omitted.append('%s (%s) — 더미(입력이 전원에 묶이고 출력 미사용)' % (d.name, d.model))
+                    V.omitted.append('%s (%s) — 더미(입력이 전원에 묶임)' % (d.name, d.model))
                     continue
                 K = Comp(d.name, 'inst')
                 K.cell, K.dev = d.model, d
@@ -269,7 +290,9 @@ def build(cells, top, A, ann=None):
                         if nonrail:
                             V.omitted.append('%s — %s' % (d.name, '일반 제어·바이어스에만 연결'))
                         continue
-                    if d.kind == 'd' and len(nonrail) == 1 and cl.get(nonrail[0]) == 'hs_clock' or \
+                    padnet = d.kind == 'd' and len(nonrail) == 1 and any(local.get(nonrail[0]) in A.padgrp for path, local in occ[cname])
+                    if d.kind == 'd' and len(nonrail) == 1 and not padnet and level == 'block' or \
+                            d.kind == 'd' and len(nonrail) == 1 and cl.get(nonrail[0]) == 'hs_clock' and not padnet or \
                             (d.kind == 'd' and len(nonrail) == 1 and nonrail[0] not in c.ports and 'ant' in d.model):
                         V.omitted.append('%s — 안테나 다이오드(패드가 아닌 넷 → 전원)' % d.name)
                         continue

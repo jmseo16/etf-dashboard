@@ -1,1 +1,1 @@
-VERSION = "0.7c"
+VERSION = "0.8"

@@ -221,12 +221,17 @@ def build_scene(V, allow_pairs=()):
     best = None
     reserve = set()
     nowire = set()
+    keep = None
     for pstep in range(3):
         S = _try_scene(V, allow_pairs, nowire)
+        np_ = len(S.get('problems', []))
+        if keep is None or np_ <= keep[0]:
+            keep = (np_, S)                   # redrawing for pair consistency must not cost a label its place
         add = _pair_fix(V, S)
         if not add - nowire:
             break
         nowire |= add
+    S = keep[1]
     for k_ in ('_labelled', '_split', '_cross'):
         S.pop(k_, None)
     return S
@@ -672,6 +677,9 @@ def _build_scene(V, allow_pairs=()):
             if any(t.port for t in g):
                 continue                      # the port names this part of the net
             got = _attach(R, key, g, _comp_cells(R, key, g), [(-1, 0), (1, 0), (0, -1), (0, 1)], name, port=False, strict=False)
+            if not got and name != bus_label(key):
+                name = bus_label(key)             # the longer pin name does not fit here: the short net name does
+                got = _attach(R, key, g, _comp_cells(R, key, g), [(-1, 0), (1, 0), (0, -1), (0, 1)], name, port=False, strict=False)
             if not got:
                 t = g[0]
                 S.setdefault('problems', []).append('label %s: no room' % name)

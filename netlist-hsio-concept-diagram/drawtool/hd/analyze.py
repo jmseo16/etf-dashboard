@@ -148,9 +148,22 @@ def analyze(cells, top, ann=None):
         return len(cs) == 2 and len(chan_of.get(x, ())) == 2 and not gate_of.get(x) and not pas_of.get(x) and \
             all(mtype[j] == t for j in cs) and x not in tports
 
+    # a transmission gate with one side on a rail (a mux input tied to a constant): n and p across the same two nets
+    grp_ = defaultdict(list)
+    for i in range(n):
+        if ismos(i):
+            grp_[frozenset(ch[i])].append(i)
+    tgrail = set()
+    for k_, v_ in grp_.items():
+        if len(k_) == 2 and len(k_ & rails) == 1 and set(mtype[i] for i in v_) == {'n', 'p'} and \
+                not (set(gt[i] for i in v_ if mtype[i] == 'n') & set(gt[i] for i in v_ if mtype[i] == 'p')):
+            tgrail.update(v_)
+
     def gate_out(i):
         """Output net of the static stage device i belongs to (the end of its series stack away from the rail).
         None for a pass device (both channel nets are ordinary nodes)."""
+        if i in tgrail:
+            return None
         t = mtype[i]
         ends = [x for x in ch[i] if x not in rails and not pure_stack(x, t)]
         if len(ends) == 2:
@@ -244,6 +257,7 @@ def analyze(cells, top, ann=None):
         if ismos(i) and ch[i][0] not in rails and ch[i][1] not in rails:
             tg.setdefault(frozenset(ch[i]), []).append(i)
     tgs = [(k, v) for k, v in tg.items() if len(k) == 2 and set(mtype[i] for i in v) == {'n', 'p'}]
+    tgset = set(i for k_, v_ in tgs for i in v_) | tgrail      # transmission gates: the only devices treated as pass switches
 
     def drives(x, y, depth=4):
         """y is reachable from x through gate -> channel steps (static stages)."""
@@ -261,6 +275,7 @@ def analyze(cells, top, ann=None):
             fr = nx
         return False
 
+    stor, latch_d = set(), set()       # latch storage nodes / data inputs of latches
     for k1, v1 in tgs:
         g1n = [gt[i] for i in v1 if mtype[i] == 'n'][0]
         g1p = [gt[i] for i in v1 if mtype[i] == 'p'][0]
@@ -275,6 +290,10 @@ def analyze(cells, top, ann=None):
                 if drives(x, y1) or drives(x, y2):
                     ckgate.update((g1n, g1p))
                     ckdev.update(v1 + v2)
+                    stor.add(x)
+                    for y in (y1, y2):
+                        if not drives(x, y):
+                            latch_d.add(y)        # the far side of the input switch: where data enters the latch
     A.ckgate, A.regen = ckgate, regen
     # ---------------------------------------------------------------- pads and port pairs
     def esd_mos(i):
@@ -311,12 +330,15 @@ def analyze(cells, top, ann=None):
 
     # ---------------------------------------------------------------- forward tracing
     drivers = defaultdict(set)
+    drivers_all = drivers
+    padset = set()                 # output pads (filled once they are known)
 
-    def trace(seeds, stop_ck, caps=True, blocked=()):
+    def trace(seeds, stop_ck, caps=True, blocked=(), rec=None):
+        drivers = drivers_all if rec is None else rec
         seen, fr = set(seeds), list(seeds)
         hit_ck = False
         while fr:
-            x = fr.pop()
+            x = fr.pop(0)                     # nearest first: a net is 'driven' by the side the signal reaches it from
             for i in gate_of.get(x, ()):
                 if i in ckdev:
                     hit_ck = True
@@ -324,7 +346,8 @@ def analyze(cells, top, ann=None):
                         continue
                 for o in ch[i]:
                     if o not in rails:
-                        drivers[o].add(i)
+                        if i not in tgset:
+                            drivers[o].add(i)     # a transmission gate is not driven by its select: data flow sets its direction
                         if o not in seen:
                             seen.add(o)
                             fr.append(o)
@@ -338,6 +361,8 @@ def analyze(cells, top, ann=None):
                 o = other(i, x)
                 if kind[i] != 'r' and (not caps or o in blocked):
                     continue
+                if kind[i] == 'r' and o in padset:
+                    drivers[o].add(i)             # every leg that reaches a pad drives it
                 if o not in rails and o not in seen:
                     if kind[i] == 'r':
                         drivers[o].add(i)
@@ -399,6 +424,81 @@ def analyze(cells, top, ann=None):
             (clk_seeds if clock_reach(a) and clock_reach(b) else data_seeds).extend([a, b])
         elif first_stage_logic(a) and first_stage_logic(b) and clock_reach(a) and clock_reach(b):
             clk_seeds += [a, b]
+    # ---------------------------------------------------------------- transmit side: inputs that are not pads
+    def fwd(seeds, through_clock=False, clock_gates=False):
+        """Nets reached going forward (gate -> stage output, static pass switches, R). No side effects."""
+        seen, fr = set(seeds), list(seeds)
+        while fr:
+            x = fr.pop()
+            for i in gate_of.get(x, ()):
+                if i in ckdev and not clock_gates:
+                    continue                      # what gates a clocked device is a clock, not data moving on
+                o = gate_out(i)
+                if o is None and i not in tgset:
+                    outs_ = [y for y in ch[i] if y not in rails and y != src[i]]      # pair device: its drain side
+                else:
+                    outs_ = [o] if o is not None else ([y for y in ch[i] if y not in rails] if clock_gates else [])
+                for o in outs_:
+                    if o not in seen:
+                        seen.add(o)
+                        fr.append(o)
+            for i in chan_of.get(x, ()):
+                o = other(i, x)
+                if o in rails or o in seen or (i in ckdev and not through_clock):
+                    continue
+                if i in tgset:                    # pass switch
+                    seen.add(o)
+                    fr.append(o)
+            for i in pas_of.get(x, ()):
+                o = other(i, x)
+                if kind[i] == 'r' and o not in rails and o not in seen:
+                    seen.add(o)
+                    fr.append(o)
+        return seen
+    inside = fwd(stor | regen)                 # what a state element drives: not a first entry of data
+    after_latch = fwd(stor)
+    primary_d = latch_d - inside
+    taken = set(pads) | set(x for ab in pairs for x in ab)
+
+    def undriven(p):
+        return not any(ismos(j) and (gate_out(j) == p) for j in chan_of.get(p, ()))
+    driven_ports = set(q for q in tports if q not in rails and (not undriven(q) or q in pads))
+    tx_data, tx_clk = [], []
+    for p in tports:
+        if p in rails or p in taken or p in data_seeds or p in clk_seeds or not undriven(p) or not gate_of.get(p) and not chan_of.get(p):
+            continue
+        # a single-ended clock: the port, or its buffered copy, clocks a state element
+        chain, fr_ = {p}, [p]
+        for _ in range(6):
+            fr_ = [y for x in fr_ for y in inv_out(x) if y not in chain]
+            chain.update(fr_)
+        if chain & ckgate:
+            tx_clk.append(p)
+            continue
+        reach = fwd([p])
+        if not (reach & primary_d):
+            continue
+        # ... and what it becomes after sampling leaves through an output
+        if (fwd([p], through_clock=True) - {p}) & driven_ports:
+            tx_data.append(p)
+    data_seeds += tx_data
+    clk_seeds += tx_clk
+    # a pad whose legs are switched by that data is an output, not an input
+    T_tx = set()
+    if tx_data or tx_clk:
+        T_tx = fwd(tx_data + [x for ab in pairs for x in ab if x in data_seeds], through_clock=True) | \
+            fwd(tx_clk + [x for ab in pairs for x in ab if x in clk_seeds], through_clock=True, clock_gates=True)
+    out_pads = []
+    for p in pads:
+        nodes = [p] + [other(i, p) for i in pas_of.get(p, ()) if kind[i] == 'r' and other(i, p) not in rails]
+        if any(ismos(j) and railside(j) == z and gt[j] in T_tx for z in nodes for j in chan_of.get(z, ())):
+            out_pads.append(p)
+    for p in out_pads:
+        for lst in (data_seeds, clk_seeds):
+            if p in lst:
+                lst.remove(p)
+    A.out_pads = out_pads
+    padset.update(out_pads)
     for p, c in forced.items():
         if p in tports:
             for lst in (data_seeds, clk_seeds):
@@ -447,7 +547,8 @@ def analyze(cells, top, ann=None):
         return ref - bias_nodes
 
     def full_trace(caps, blocked):
-        T_clk, _ = trace(clk_seeds, stop_ck=True, caps=caps, blocked=blocked)
+        ckrec = defaultdict(set)              # what the clock walk found; pass switches on data nets do not count
+        T_clk, _ = trace(clk_seeds, stop_ck=True, caps=caps, blocked=blocked, rec=ckrec)
         T_data, _ = trace(data_seeds, stop_ck=False, caps=caps, blocked=blocked)
         T_clk -= T_data - set(clk_seeds)
         # nodes under a clocked tail / precharge device belong to the data path
@@ -460,8 +561,26 @@ def analyze(cells, top, ann=None):
                         drivers[o].add(i)
         more, _ = trace(list(T_data | add), stop_ck=False, caps=caps, blocked=blocked)
         T_data |= more - T_clk
+        # clock dividers: a clocked latch that no data reaches (it samples its own output) makes a new clock
+        for _ in range(6):
+            new = set()
+            for i in ckdev:
+                if gate_out(i) is None and gt[i] in T_clk:
+                    for o in ch[i]:
+                        if o not in rails and o not in T_data and o not in T_clk and o in inside:
+                            new.add(o)        # fed from a state element, not from outside
+            if not new:
+                break
+            m2, _ = trace(list(new), stop_ck=True, caps=caps, blocked=blocked, rec=ckrec)
+            T_clk |= m2 - T_data - set(q for q in m2 if q in tports and undriven(q))   # an input that a latch samples stays an input
+        for o, ds in ckrec.items():
+            for i in ds:
+                if (i not in tgset and (o not in T_data or gate_out(i) is not None)) or (i in tgset and o in T_clk):
+                    drivers[o].add(i)
         return T_data, T_clk
 
+    rx_seeds = [x for x in data_seeds if x not in tx_data]
+    T_rxonly = (trace(rx_seeds, stop_ck=False)[0] if (rx_seeds and tx_data) else None)
     T_data, T_clk = full_trace(False, ())
     ref = find_ref(T_data, T_data | T_clk)
     T_data, T_clk = full_trace(True, ref)
@@ -512,7 +631,8 @@ def analyze(cells, top, ann=None):
                         continue
                     if o not in rails and (pol ^ 1) not in vis.setdefault(o, set()):
                         vis[o].add(pol ^ 1)
-                        drivers[o].add(i)
+                        if i not in tgset:
+                            drivers[o].add(i)     # a transmission gate does not drive what it connects: its select only opens it
                         fr.append((o, pol ^ 1))
             for i in chan_of.get(x, ()):
                 o = other(i, x)
@@ -561,6 +681,8 @@ def analyze(cells, top, ann=None):
             return 'pwr'
         if not ismos(i):
             return 'gate'
+        if via == 'gate' and gate_out(i) in loopnodes:
+            return 'state'
         hs = [x for x in (a, b) if x in target]
         non = [x for x in (a, b) if x not in target]
         # termination: rail -- switch -- (R) -- pad
@@ -615,6 +737,124 @@ def analyze(cells, top, ann=None):
                         return True
         return False
 
+    # ---------------------------------------------------------------- three-valued switch-level evaluation
+    def net_paths(o, t, val):
+        """(definitely on, possibly on) for the type-t network between node o and its rail."""
+        want = 1 if t == 'n' else 0
+        rail_ok = gnd if t == 'n' else sup
+        best = [False, False]
+
+        def walk(x, seen, definite, depth):
+            for i in chan_of.get(x, ()):
+                if not ismos(i) or mtype[i] != t or i in seen:
+                    continue
+                g = gt[i]
+                v = (1 if g in sup else 0) if g in rails else val.get(g)
+                if v is not None and v != want:
+                    continue
+                d2 = definite and v == want
+                y = other(i, x)
+                if y in rail_ok:
+                    best[1] = True
+                    if d2:
+                        best[0] = True
+                elif y not in rails and depth < 4 and not gate_of.get(y) and y not in tports:
+                    walk(y, seen | {i}, d2, depth + 1)
+        walk(o, frozenset(), True, 0)
+        return best
+
+    def node_value(o, val):
+        pd, pdp = net_paths(o, 'n', val)
+        if pd:
+            return 0
+        pu, pup = net_paths(o, 'p', val)
+        if pu and not pdp:
+            return 1
+        return None
+
+    def propagate(init):
+        val = dict(init)
+        fr = list(init)
+        guard = 0
+        while fr and guard < 4000:
+            guard += 1
+            x = fr.pop()
+            for i in gate_of.get(x, ()):
+                o = gate_out(i)
+                if o is None or o in val or o in rails:
+                    continue
+                v = node_value(o, val)
+                if v is not None:
+                    val[o] = v
+                    fr.append(o)
+        return val
+    A.propagate = propagate
+    # driver legs on output pads: (device, pad)
+    legs, leg_pad = [], {}
+    for pd_ in out_pads:
+        nodes = [pd_] + [other(i, pd_) for i in pas_of.get(pd_, ()) if kind[i] == 'r' and other(i, pd_) not in rails]
+        for z in nodes:
+            for j in chan_of.get(z, ()):
+                if ismos(j) and railside(j) == z and gt[j] not in rails and not esd_mos(j):
+                    legs.append(j)
+                    leg_pad[j] = pd_
+    leg_gate = defaultdict(list)
+    for j in legs:
+        leg_gate[gt[j]].append(j)
+    ctl_set = set(ctl_ports)
+    cone = {}
+
+    def cone_of(q):
+        if q not in cone:
+            cone[q] = fwd([q])
+        return cone[q]
+
+    def leg_state(j, val):
+        v = val.get(gt[j])
+        if v is None:
+            return 'x'
+        return 'on' if (v == 1) == (mtype[j] == 'n') else 'off'
+
+    def force_class(p):
+        """How a control acts on the pad driver legs it reaches: 'term' (can hold a leg on whatever the data does),
+        'drv' (can only switch a leg off / let the data through), or None."""
+        mine = [g for g in leg_gate if g in cone_of(p)]
+        if not mine:
+            return None, []
+        res, hit = None, []
+        for g in mine[:3]:
+            j = leg_gate[g][0]
+            co = [q for q in ctl_ports if q != p and g in cone_of(q)][:7]
+            for m in range(1 << len(co)):
+                base = dict((q, (m >> k) & 1) for k, q in enumerate(co))
+                st = []
+                for v in (0, 1):
+                    base[p] = v
+                    st.append(leg_state(j, propagate(base)))
+                if 'on' in st and st[0] != st[1]:
+                    return 'term', [j]
+                if 'off' in st and 'x' in st:
+                    res = 'drv'
+                    hit = leg_gate[g]
+        return res, hit
+
+    def forces_nothing(p):
+        """Neither value of the control pins any high-speed node: it only changes strength or timing (a trim)."""
+        gates_ = set(gt[i] for i, pol, via in A.endpoints.get(p, ()))
+        for v in (0, 1):
+            val = propagate({p: v})
+            if any(g not in val for g in gates_):
+                return False                  # the evaluation did not get as far as the endpoints: not known
+            if any(x in T for x in val if x != p):
+                return False
+        return True
+    # nodes of latch loops (a set / reset device sits on one of them)
+    loopnodes = set(stor)
+    for x in stor:
+        for y in fwd([x]):
+            if y != x and x in fwd([y], through_clock=True):
+                loopnodes.add(y)
+
     port_k, port_why = OrderedDict(), {}
     ctl_vis = {}
     for p in ctl_ports:
@@ -623,7 +863,7 @@ def analyze(cells, top, ann=None):
         A.endpoints[p] = ends
         types = [end_type(i, via) for i, pol, via in ends]
         pols = set(pol ^ (1 if mtype[i] == 'p' else 0) for i, pol, via in ends
-                   if via == 'gate' and ismos(i) and ch[i][0] not in rails and ch[i][1] not in rails and not has_partner(i))
+                   if via == 'gate' and ismos(i) and ((ch[i][0] not in rails and ch[i][1] not in rails) or i in tgrail) and not has_partner(i))
         why = ''
         if p in bias_nodes or any(x in bias_nodes for x in vis) and not ends:
             k, why = 'K11', '다이오드 연결 노드(바이어스)'
@@ -631,6 +871,17 @@ def analyze(cells, top, ann=None):
             k, why = 'status_in', '출력 포트로만 감'
         elif not ends:
             k, why = 'K10', '고속 노드에 닿는 끝점 없음'
+        elif legs and force_class(p)[0] == 'term':
+            k, why = 'K4', '데이터와 무관하게 패드 다리를 켤 수 있음(종단)'
+        elif legs and force_class(p)[0] == 'drv':
+            hit = force_class(p)[1]
+            others = [j for j in legs if j not in hit and leg_pad[j] in set(leg_pad[h] for h in hit)]
+            if hit and all(gt[j] in after_latch for j in hit) and others and not all(gt[j] in after_latch for j in others):
+                k, why = 'K1', '한 박자 늦은 데이터로 구동되는 패드 다리의 가중치(디엠퍼시스/FFE)'
+            else:
+                k, why = 'K5', '패드 드라이버 다리를 고르는 코드(구동 세기)'
+        elif types and all(t == 'state' for t in types):
+            k, why = 'K8', '상태 소자(래치/플립플롭)의 세트·리셋'
         elif 'term' in types:
             k, why = 'K4', '패드로 가는 R의 직렬 스위치'
         elif 'ref' in types:
@@ -646,6 +897,8 @@ def analyze(cells, top, ann=None):
             k, why = 'K1', '합산 가지(차동쌍 아래 스위치)'
         elif 'pwr' in types:
             k, why = 'K3', '전원 스위치(헤더/풋터)'
+        elif all(t == 'gate' for t in types) and all(via == 'gate' and gate_out(i) is not None for i, pol, via in ends) and forces_nothing(p):
+            k, why = 'K7', '어느 값으로도 고속 노드를 묶지 못함(세기·타이밍 트림)'
         else:
             k, why = 'K3', '고속 경로의 게이트/꼬리 스위치'
         port_k[p], port_why[p] = k, why
@@ -656,6 +909,8 @@ def analyze(cells, top, ann=None):
         stems[s if ix is not None else p].append(p)
     for s, ps in stems.items():
         ks = set(port_k[p] for p in ps)
+        if len(ps) == 1 and port_k[ps[0]] == 'K5':
+            port_k[ps[0]], port_why[ps[0]] = 'K3', '1비트: 패드 드라이버를 켜고 끔'
         if len(ps) == 1 and port_k[ps[0]] == 'K1':
             port_k[ps[0]], port_why[ps[0]] = 'K3', '1비트: 고속 경로의 꼬리 스위치(켜기)'
         elif len(ks) > 1:
@@ -693,6 +948,8 @@ def analyze(cells, top, ann=None):
             continue
         if p in T and p not in data_seeds and p not in clk_seeds:
             out_ports.add(p)
+            if T_rxonly is not None and p not in T_rxonly and p not in padgrp:
+                cls[p] = 'status'             # sampled side input (not from a pad) leaving through its own output
         elif p not in T and p not in ctl_ports:
             pass
     for p in tports:

@@ -111,6 +111,8 @@ def check(S, cell, level):
     H = [s for s in allsegs if s[1] == s[3]]
     Vv = [s for s in allsegs if s[0] == s[2]]
     humps = set((x, y) for x, y, d in S.get('humps', []))
+    fbn_ = set(tuple(k) for k in S.get('feedback', []))
+    fbsegs = set(_norm(s_) for w in S['wires'] if tuple(w['net']) in fbn_ for s_ in w['segs'])
     seen_h = set()
     ncross = 0
     for h in H:
@@ -121,7 +123,7 @@ def check(S, cell, level):
                 if p in humps and find((h[0], h[1])) != find((v[0], v[1])):
                     seen_h.add(p)             # a feedback wire jumping over another wire: drawn as a hump
                     continue
-                if (level == 'block' and not S.get('has_mos')) or find((h[0], h[1])) == find((v[0], v[1])):
+                if (level == 'block' and not S.get('has_mos')) or find((h[0], h[1])) == find((v[0], v[1])) or h in fbsegs or v in fbsegs:
                     R['crossing'].append('(%d,%d)' % p)
     for p in sorted(humps - seen_h):
         R['crossing'].append('hump at (%d,%d) where no two wires cross' % p)
@@ -272,6 +274,7 @@ def check(S, cell, level):
         for p in sym['pins']:
             pin_side[(p['x'], p['y'])] = p['side']
             pin_sym[(p['x'], p['y'])] = sym['id']
+    level_pairs, jogs = set(), []
     for start in node:
         for nxt in deg.get(start, ()):
             if (start, nxt) in seen:
@@ -288,6 +291,8 @@ def check(S, cell, level):
             corners = [path[i] for i in range(1, len(path) - 1)
                        if (path[i - 1][0] == path[i][0]) != (path[i][0] == path[i + 1][0])]
             if not corners:
+                if path[0] in pin_sym and path[-1] in pin_sym:
+                    level_pairs.add(frozenset((pin_sym[path[0]], pin_sym[path[-1]])))
                 continue
             a, b = path[0], path[-1]
             run = [a] + corners + [b]
@@ -300,7 +305,7 @@ def check(S, cell, level):
                 sa, sb = pin_side[a], pin_side[b]
                 off = abs(a[1] - b[1]) if set((sa, sb)) == set('lr') else (abs(a[0] - b[0]) if set((sa, sb)) == set('tb') else 0)
                 if 0 < off <= 40:
-                    R['jog'].append('(%d,%d)-(%d,%d): step of %d px' % (a[0], a[1], b[0], b[1], off))
+                    jogs.append((frozenset((pin_sym[a], pin_sym[b])), '(%d,%d)-(%d,%d): step of %d px' % (a[0], a[1], b[0], b[1], off)))
             for u, v in zip(run[1:-1], run[2:-1]):
                 if abs(u[0] - v[0]) + abs(u[1] - v[1]) < 20:
                     R['short_jog'].append('(%d,%d)-(%d,%d)' % (u[0], u[1], v[0], v[1]))
@@ -316,6 +321,10 @@ def check(S, cell, level):
                         okside = False
                 if okside and free_line(a, b):
                     R['avoidable_bend'].append('(%d,%d)-(%d,%d): %d bends' % (a[0], a[1], b[0], b[1], len(corners)))
+    # two symbols that already sit level on one pin pair cannot be level on a second pair with another pitch
+    for pr, msg in jogs:
+        if pr not in level_pairs:
+            R['jog'].append(msg)
     # ---------------------------------------------------------------- wires through symbols, text overlaps
     for s in segs:
         for sym in S['symbols']:
